@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String?
+  email         String?  @unique
+  image         String?
+  cfHandle      String?  @unique
+  cfUserId      Int?
+  rating        Int?
+  maxRating     Int?
+  contestsCount Int?
+  solvedCount   Int?
+  streakDays    Int       @default(0)
+  lastSolvedAt  DateTime?
+  collegeId     String?
+  lastSyncAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  college        College?        @relation(fields: [collegeId], references: [id])
+  participations Participation[]
+  submissions    Submission[]
+  snapshots      RatingSnapshot[]
+
+  accounts       Account[]
+  sessions       Session[]
+
+  // back relation to contests the user created
+  contestsCreated Contest[]      @relation("ContestCreator")
+}
+
+model College {
+  id        String  @id @default(cuid())
+  name      String
+  domain    String?
+  joinCode  String?
+  verified  Boolean  @default(false)
+  ownerId   String
+  createdAt DateTime @default(now())
+
+  members   User[]
+  contests  Contest[]
+}
+
+model Contest {
+  id            String  @id
+  source        String
+  cfContestId   Int?
+  name          String
+  startTime     DateTime
+  durationSec   Int
+  isPrivate     Boolean  @default(false)
+  collegeId     String?
+  creatorId     String?
+  ratingAffects Boolean  @default(false)
+
+  college       College?         @relation(fields: [collegeId], references: [id])
+  creator       User?            @relation("ContestCreator", fields: [creatorId], references: [id])
+  problems      ContestProblem[]
+  standings     Participation[]
+}
+
+model ContestProblem {
+  id        String @id @default(cuid())
+  contestId String
+  problemId String
+
+  contest   Contest @relation(fields: [contestId], references: [id])
+  problem   Problem @relation(fields: [problemId], references: [id])
+
+  @@unique([contestId, problemId])
+}
+
+model Problem {
+  id        String  @id
+  name      String
+  rating    Int?
+  tags      String[]
+  contestId Int?
+  index     String
+
+  // back-relations
+  contestProblems ContestProblem[]
+  submissions     Submission[]
+}
+
+model Submission {
+  id             String   @id @default(cuid())
+  userId         String
+  problemId      String
+  cfSubmissionId Int?
+  verdict        String
+  language       String?
+  submittedAt    DateTime
+  fromCF         Boolean  @default(true)
+
+  user           User     @relation(fields: [userId], references: [id])
+  problem        Problem  @relation(fields: [problemId], references: [id])
+
+  @@index([userId, submittedAt])
+  @@unique([userId, cfSubmissionId])
+}
+
+model Participation {
+  id         String  @id @default(cuid())
+  contestId  String
+  userId     String
+  rank       Int?
+  points     Float?
+  oldRating  Int?
+  delta      Int?
+  newRating  Int?
+  isVirtual  Boolean @default(false)
+
+  contest    Contest @relation(fields: [contestId], references: [id])
+  user       User    @relation(fields: [userId], references: [id])
+
+  @@unique([contestId, userId])
+}
+
+model RatingSnapshot {
+  id         String   @id @default(cuid())
+  userId     String
+  at         DateTime
+  rating     Int
+  solvedDay  Int?
+  solvedWeek Int?
+
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, at])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@id([identifier, token])
+}
+
+model Cache {
+  key       String  @id
+  value     String
+  expiresAt DateTime
+}

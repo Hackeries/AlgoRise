@@ -11,6 +11,7 @@ model User {
   id            String   @id @default(cuid())
   name          String?
   email         String?  @unique
+  emailVerified  DateTime?
   image         String?
   cfHandle      String?  @unique
   cfUserId      Int?
@@ -24,6 +25,7 @@ model User {
   lastSyncAt    DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  @@map("users")
 
   college        College?        @relation(fields: [collegeId], references: [id])
   participations Participation[]
@@ -101,7 +103,7 @@ model Submission {
   language       String?
   submittedAt    DateTime
   fromCF         Boolean  @default(true)
-
+  @@map("submission")
   user           User     @relation(fields: [userId], references: [id])
   problem        Problem  @relation(fields: [problemId], references: [id])
 

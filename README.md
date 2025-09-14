@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AlgoRise - Competitive Programming Platform
 
-## Getting Started
+A comprehensive platform for competitive programming practice, analytics, and community features.
 
-First, run the development server:
+## 🚨 IMPORTANT: Database Setup Required
+
+**Before running the application**, you must set up the database:
+
+1. **Open Supabase Dashboard** → SQL Editor
+2. **Execute** the contents of `SUPABASE_SETUP.sql`
+3. **Verify** tables are created successfully
+
+## 🚀 Quick Start
 
 ```bash
+# Install dependencies
+npm install
+
+# Start development server  
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build for production
+npm run build
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📋 Key Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Codeforces Integration** - OAuth verification and API sync
+- **Adaptive Learning** - Personalized problem recommendations
+- **Progress Analytics** - Detailed performance tracking
+- **Group Competitions** - Team contests and leaderboards
+- **Streak Tracking** - Daily practice motivation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔧 Tech Stack
 
-## Learn More
+- **Framework**: Next.js 15.5.2
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **Styling**: Tailwind CSS
+- **Language**: TypeScript
 
-To learn more about Next.js, take a look at the following resources:
+## 📚 Documentation
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **`CLIENT_HANDOVER.md`** - Complete handover documentation
+- **`DEPLOYMENT_CHECKLIST.md`** - Pre-launch checklist
+- **`DATABASE_SETUP_GUIDE.md`** - Database configuration guide
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🐛 Issues Fixed
 
-## Deploy on Vercel
+- ✅ "Failed to store verification" error resolved
+- ✅ Database schema properly configured
+- ✅ CF OAuth endpoints working correctly
+- ✅ Authentication flows secured
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🆘 Need Help?
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Check `CLIENT_HANDOVER.md` for comprehensive setup instructions
+2. Verify database setup is complete
+3. Ensure environment variables are configured
+4. Check console for any error messages
+
+---
+
+**Status**: ✅ Ready for production deployment after database setup

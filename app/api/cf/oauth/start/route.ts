@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,48 +25,18 @@ export async function GET(request: NextRequest) {
 
     const cfUser = cfData.result[0]
     
-    const supabase = await createClient()
-    
-    // Get the current user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser()
+    // No database storage needed - verification works without authentication
+    console.log(`Successfully verified CF handle: ${cfUser.handle}`)
+    console.log(`User stats - Rating: ${cfUser.rating}, Max Rating: ${cfUser.maxRating}, Rank: ${cfUser.rank}`)
 
-    if (userError || !user) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      )
-    }
+    // Redirect to success page with user data
+    const successUrl = new URL('/cf-verification-success', request.url)
+    successUrl.searchParams.set('handle', cfUser.handle)
+    successUrl.searchParams.set('rating', (cfUser.rating || 0).toString())
+    successUrl.searchParams.set('maxRating', (cfUser.maxRating || 0).toString())
+    successUrl.searchParams.set('rank', cfUser.rank || 'unrated')
 
-    // Store/update the verified handle directly
-    const { error: dbError } = await supabase.from("cf_handles").upsert(
-      {
-        user_id: user.id,
-        handle: cfUser.handle,
-        verified: true,
-        last_sync_at: new Date().toISOString(),
-      },
-      { onConflict: "user_id" }
-    )
-
-    if (dbError) {
-      console.error("Database error:", dbError)
-      return NextResponse.json(
-        { error: "Failed to store verification" },
-        { status: 500 }
-      )
-    }
-
-    return NextResponse.json({
-      success: true,
-      handle: cfUser.handle,
-      rating: cfUser.rating || 0,
-      maxRating: cfUser.maxRating || 0,
-      rank: cfUser.rank || "unrated",
-      message: "Codeforces handle verified successfully!"
-    })
+    return NextResponse.redirect(successUrl)
 
   } catch (error) {
     console.error("OAuth start error:", error)

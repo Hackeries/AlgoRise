@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CheckCircle, AlertCircle, Zap, Shield, Clock, ArrowRight, X } from 'lucide-react'
+import { CheckCircle, AlertCircle, Zap, Shield, Clock, ArrowRight } from 'lucide-react'
 import { toast } from '@/hooks/use-toast'
 
 interface CFVerificationDialogProps {
@@ -80,19 +80,9 @@ export default function CFVerificationDialog({ open, onOpenChange, onSuccess }: 
     }}>
       <DialogContent className="sm:max-w-[600px] bg-slate-900 border-slate-700">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-semibold text-white">
-              Verify Codeforces Account
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-              className="text-slate-400 hover:text-white"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+          <DialogTitle className="text-xl font-semibold text-white">
+            Verify Codeforces Account
+          </DialogTitle>
           {step === 'method' && (
             <DialogDescription className="text-slate-300">
               Choose your preferred method to verify your Codeforces account:

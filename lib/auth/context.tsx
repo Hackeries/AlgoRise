@@ -18,9 +18,22 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
+  
+  // Try to create Supabase client with error handling
+  let supabase: any = null
+  try {
+    supabase = createClient()
+  } catch (error) {
+    console.warn("Supabase client creation failed:", error)
+    // Continue without Supabase functionality
+  }
 
   const refreshUser = async () => {
+    if (!supabase) {
+      setUser(null)
+      return
+    }
+    
     try {
       const {
         data: { user },
@@ -33,6 +46,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    if (!supabase) {
+      setUser(null)
+      window.location.href = "/"
+      return
+    }
+    
     try {
       await supabase.auth.signOut()
       setUser(null)
@@ -46,16 +65,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get initial session
     refreshUser().finally(() => setLoading(false))
 
+    if (!supabase) return
+
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
     return () => subscription.unsubscribe()
-  }, [supabase.auth])
+  }, [supabase])
 
   return <AuthContext.Provider value={{ user, loading, signOut, refreshUser }}>{children}</AuthContext.Provider>
 }

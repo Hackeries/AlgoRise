@@ -19,6 +19,9 @@ yarn-error.log*
 # env files
 .env*
 
+# contest data storage
+/data/
+
 # vercel
 .vercel
 

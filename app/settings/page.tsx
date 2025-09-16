@@ -6,19 +6,37 @@ import { CFVerification } from "@/components/auth/cf-verification"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useCFVerification } from "@/lib/context/cf-verification"
 import { useState } from "react"
+import { useToast } from "@/hooks/use-toast"
 
 export default function SettingsPage() {
   const { user } = useAuth()
-  const [cfHandle, setCfHandle] = useState("")
-  const [isVerified, setIsVerified] = useState(false)
+  const { isVerified, verificationData } = useCFVerification()
+  const { toast } = useToast()
+  const [emailNotifications, setEmailNotifications] = useState(true)
+  const [dailyReminders, setDailyReminders] = useState(true)
 
-  if (!user) {
-    return (
-      <div className="flex-1 w-full flex items-center justify-center p-6">
-        <p>Please sign in to access settings.</p>
-      </div>
-    )
+  const handleEmailNotificationsToggle = () => {
+    setEmailNotifications(!emailNotifications)
+    toast({
+      title: "Email Notifications",
+      description: `Email notifications ${!emailNotifications ? 'enabled' : 'disabled'}`,
+    })
+  }
+
+  const handleDailyRemindersToggle = () => {
+    setDailyReminders(!dailyReminders)
+    toast({
+      title: "Daily Training Reminders",
+      description: `Daily reminders ${!dailyReminders ? 'enabled' : 'disabled'}`,
+    })
+  }
+
+  // For demo purposes, create a mock user if none exists
+  const demoUser = user || { 
+    email: "demo@example.com", 
+    id: "demo-user-123" 
   }
 
   return (
@@ -26,6 +44,14 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-4">
         <h1 className="text-3xl font-bold">Settings</h1>
         <p className="text-muted-foreground">Manage your account and competitive programming profile</p>
+        {isVerified && (
+          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+            <span className="text-sm text-green-700">
+              Codeforces verified as <strong>{verificationData?.handle}</strong>
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6">
@@ -37,19 +63,21 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Email</Label>
-              <Input value={user.email || ""} disabled />
+              <Input value={demoUser.email || ""} disabled />
             </div>
             <div className="space-y-2">
               <Label>User ID</Label>
-              <Input value={user.id} disabled className="font-mono text-sm" />
+              <Input value={demoUser.id} disabled className="font-mono text-sm" />
             </div>
           </CardContent>
         </Card>
 
         <CFVerification
-          currentHandle={cfHandle}
+          currentHandle={verificationData?.handle || ""}
           isVerified={isVerified}
-          onVerificationComplete={() => setIsVerified(true)}
+          onVerificationComplete={() => {
+            // Verification completion is handled by the global context
+          }}
         />
 
         <Card>
@@ -62,18 +90,28 @@ export default function SettingsPage() {
               <div>
                 <Label>Email Notifications</Label>
                 <p className="text-sm text-muted-foreground">Receive updates about contests and achievements</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Status: <span className={emailNotifications ? "text-green-600" : "text-red-600"}>
+                    {emailNotifications ? "Enabled" : "Disabled"}
+                  </span>
+                </p>
               </div>
-              <Button variant="outline" size="sm">
-                Configure
+              <Button variant="outline" size="sm" onClick={handleEmailNotificationsToggle}>
+                {emailNotifications ? "Disable" : "Enable"}
               </Button>
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <Label>Daily Training Reminders</Label>
                 <p className="text-sm text-muted-foreground">Get reminded to maintain your streak</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Status: <span className={dailyReminders ? "text-green-600" : "text-red-600"}>
+                    {dailyReminders ? "Enabled" : "Disabled"}
+                  </span>
+                </p>
               </div>
-              <Button variant="outline" size="sm">
-                Configure
+              <Button variant="outline" size="sm" onClick={handleDailyRemindersToggle}>
+                {dailyReminders ? "Disable" : "Enable"}
               </Button>
             </div>
           </CardContent>

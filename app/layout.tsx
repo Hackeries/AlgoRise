@@ -2,12 +2,13 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Suspense } from "react"
 import { Analytics } from "@vercel/analytics/next"
-import { SiteNav } from "@/components/site-nav"
+import { SidebarLayout } from "@/components/sidebar-layout"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import { PWARegister } from "@/components/pwa/register"
 import { AuthProvider } from "@/lib/auth/context"
+import { CFVerificationProvider } from "@/lib/context/cf-verification"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -35,11 +36,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className="min-h-dvh bg-[#0B1020] text-white font-sans">
         <AuthProvider>
-          <SiteNav />
-          <Suspense fallback={null}>{children}</Suspense>
-          <Toaster />
-          <PWARegister />
-          <Analytics />
+          <CFVerificationProvider>
+            <SidebarLayout>
+              <Suspense fallback={null}>{children}</Suspense>
+            </SidebarLayout>
+            <Toaster />
+            <PWARegister />
+            <Analytics />
+          </CFVerificationProvider>
         </AuthProvider>
       </body>
     </html>

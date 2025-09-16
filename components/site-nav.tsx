@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { AuthButton } from "@/components/auth/auth-button"
+import { useCFVerification } from "@/lib/context/cf-verification"
 
 const links = [
   { href: "/train", label: "Train" },
@@ -18,6 +19,7 @@ const links = [
 
 export function SiteNav() {
   const pathname = usePathname()
+  const { isVerified, verificationData } = useCFVerification()
 
   return (
     <header className="w-full border-b border-white/10 bg-[#0B1020]/80 backdrop-blur supports-[backdrop-filter]:bg-[#0B1020]/60">
@@ -45,13 +47,15 @@ export function SiteNav() {
         </div>
 
         <div className="flex items-center gap-3">
-          <span
-            className="hidden sm:inline-flex items-center rounded-full bg-amber-500/15 px-3 py-1 text-xs font-medium text-amber-400 ring-1 ring-amber-500/30"
-            aria-label="CF verified handles available"
-            title="CF-verified handles"
-          >
-            CF-verified
-          </span>
+          {isVerified && verificationData && (
+            <span
+              className="hidden sm:inline-flex items-center rounded-full bg-green-500/15 px-3 py-1 text-xs font-medium text-green-400 ring-1 ring-green-500/30"
+              aria-label={`CF verified as ${verificationData.handle}`}
+              title={`CF-verified: ${verificationData.handle} (${verificationData.rating})`}
+            >
+              CF-verified: {verificationData.handle}
+            </span>
+          )}
           <Button className="bg-[#2563EB] hover:bg-[#1D4FD8]" asChild>
             <Link href="/train">Start Daily Training</Link>
           </Button>

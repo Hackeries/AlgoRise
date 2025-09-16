@@ -8,13 +8,13 @@ import { AdaptiveRightRailData } from "@/components/adaptive/right-rail"
 import type { FilterState } from "@/components/adaptive/filter-bar"
 import { SheetSettings, type SRMode } from "@/components/adaptive/sheet-settings"
 import CFVerificationTrigger from "@/components/auth/cf-verification-trigger"
+import { useCFVerification } from "@/lib/context/cf-verification"
 
 export function AdaptiveSheetPageClient() {
+  const { isVerified, verificationData } = useCFVerification()
   const [filters, setFilters] = useState<FilterState>({ ratingBase: 1500, tags: [] })
   const [snoozeMinutes, setSnoozeMinutes] = useState<number>(60)
   const [srMode, setSrMode] = useState<SRMode>("standard")
-  const [isVerified, setIsVerified] = useState(false)
-  const [cfHandle, setCfHandle] = useState<string>('')
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -24,6 +24,7 @@ export function AdaptiveSheetPageClient() {
     const urlBase = sp.get("ratingBase")
     const parsedTags = urlTags ? urlTags.split(",").filter(Boolean) : []
     const base = urlBase ? Number(urlBase) : undefined
+    
     // If recovery mode: downshift rating by 200 unless ratingBase explicitly provided
     if (mode === "recovery" || parsedTags.length || typeof base === "number") {
       setFilters((prev) => ({
@@ -31,7 +32,15 @@ export function AdaptiveSheetPageClient() {
         tags: parsedTags.length ? parsedTags : prev.tags,
       }))
     }
-  }, [])
+    
+    // Set rating base from verified CF data if available
+    if (isVerified && verificationData?.rating) {
+      setFilters(prev => ({
+        ...prev,
+        ratingBase: verificationData.rating
+      }))
+    }
+  }, [isVerified, verificationData])
 
   return (
     <DashboardShell
@@ -55,17 +64,7 @@ export function AdaptiveSheetPageClient() {
           </header>
           {!isVerified ? (
             <div className="max-w-2xl mx-auto mt-12">
-              <CFVerificationTrigger 
-                onVerificationComplete={(data) => {
-                  setIsVerified(true)
-                  setCfHandle(data.handle)
-                  // Update rating base based on user's CF rating
-                  setFilters(prev => ({
-                    ...prev,
-                    ratingBase: data.rating || 1200
-                  }))
-                }}
-              />
+              <CFVerificationTrigger />
             </div>
           ) : (
             <AdaptiveSheetContent
@@ -73,7 +72,7 @@ export function AdaptiveSheetPageClient() {
               onFiltersChange={setFilters}
               snoozeMinutes={snoozeMinutes}
               srMode={srMode}
-              cfHandle={cfHandle}
+              cfHandle={verificationData?.handle || ''}
             />
           )}
         </div>

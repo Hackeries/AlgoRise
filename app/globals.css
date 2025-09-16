@@ -127,3 +127,40 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom scrollbar styles */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-track-transparent {
+    scrollbar-color: transparent transparent;
+  }
+  
+  .scrollbar-thumb-white\/20 {
+    scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  }
+  
+  .hover\:scrollbar-thumb-white\/30:hover {
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  }
+
+  /* Webkit scrollbar styles for better cross-browser support */
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+  }
+  
+  .scrollbar-thin:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+}

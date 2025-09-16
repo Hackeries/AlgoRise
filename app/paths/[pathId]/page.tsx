@@ -38,56 +38,107 @@ const PATH_CONTENT: Record<string, PathContent> = {
   "start-here": {
     id: "start-here",
     title: "Start Here",
-    description:
-      "Perfect for complete beginners. Hand-picked easy problems with detailed explanations and visual guides.",
-    level: "Beginner",
-    totalProblems: 50,
-    estimatedTime: "2-4 weeks",
+    description: "Complete learning path from C++ basics to advanced competitive programming concepts.",
+    level: "Beginner to Advanced",
+    totalProblems: 334,
+    estimatedTime: "12-16 weeks",
     progress: 0,
-    features: ["Step-by-step solutions", "Visual explanations", "CF basics guide", "Hint system"],
+    features: ["Step-by-step solutions", "Visual explanations", "CF basics guide", "CSES problems"],
     modules: [
       {
-        id: "basics",
-        title: "Programming Basics",
-        description: "Learn fundamental programming concepts and problem-solving approaches",
-        problems: 10,
-        estimatedTime: "3-5 days",
-        topics: ["Input/Output", "Variables", "Basic Operations"],
+        id: "cpp-basics",
+        title: "C++ Basics",
+        description: "Master C++ fundamentals - conditions, loops, functions, and basic I/O",
+        problems: 50,
+        estimatedTime: "2-3 weeks",
+        topics: ["Variables", "Conditions", "Loops", "Functions", "Arrays", "Strings"],
         completed: false,
         locked: false,
       },
       {
-        id: "arrays",
-        title: "Arrays & Strings",
-        description: "Master array manipulation and string processing techniques",
-        problems: 15,
-        estimatedTime: "5-7 days",
-        topics: ["Array Traversal", "String Operations", "Basic Algorithms"],
+        id: "mathematics",
+        title: "Mathematics for CP",
+        description: "Essential mathematical concepts for competitive programming",
+        problems: 60,
+        estimatedTime: "3-4 weeks",
+        topics: ["Number Theory", "Modular Arithmetic", "GCD/LCM", "Prime Numbers", "Combinatorics"],
         completed: false,
         locked: true,
       },
       {
-        id: "math",
-        title: "Basic Mathematics",
-        description: "Essential math concepts for competitive programming",
-        problems: 12,
-        estimatedTime: "4-6 days",
-        topics: ["Arithmetic", "Modular Math", "GCD/LCM"],
+        id: "stl",
+        title: "Standard Template Library (STL)",
+        description: "Master C++ STL containers, algorithms, and data structures",
+        problems: 30,
+        estimatedTime: "2-3 weeks",
+        topics: ["Vector", "Map", "Set", "Stack", "Queue", "Priority Queue", "Algorithms"],
         completed: false,
         locked: true,
       },
       {
-        id: "implementation",
-        title: "Implementation Problems",
-        description: "Practice implementing solutions to straightforward problems",
-        problems: 13,
-        estimatedTime: "6-8 days",
-        topics: ["Simulation", "Ad-hoc", "Careful Implementation"],
+        id: "cses-intro",
+        title: "CSES Introductory Problems",
+        description: "Solve classic introductory problems from CSES Problem Set",
+        problems: 20,
+        estimatedTime: "2-3 weeks",
+        topics: ["Weird Algorithm", "Missing Number", "Repetitions", "Increasing Array"],
+        completed: false,
+        locked: true,
+      },
+      {
+        id: "div2a",
+        title: "Codeforces Div2A Problems",
+        description: "Master the easiest problems in CF contests - build confidence",
+        problems: 50,
+        estimatedTime: "3-4 weeks",
+        topics: ["Ad-hoc", "Implementation", "Math", "Greedy"],
+        completed: false,
+        locked: true,
+      },
+      {
+        id: "div2b",
+        title: "Codeforces Div2B Problems", 
+        description: "Step up to harder implementation and algorithmic thinking",
+        problems: 60,
+        estimatedTime: "4-5 weeks",
+        topics: ["Arrays", "Strings", "Math", "Greedy", "Sorting"],
+        completed: false,
+        locked: true,
+      },
+      {
+        id: "div2c",
+        title: "Codeforces Div2C Problems",
+        description: "Advanced problem solving with data structures and algorithms",
+        problems: 64,
+        estimatedTime: "5-6 weeks", 
+        topics: ["DP", "Graphs", "Binary Search", "Two Pointers", "Data Structures"],
         completed: false,
         locked: true,
       },
     ],
   },
+}
+
+// Helper function to get appropriate links for each module
+function getModuleLink(moduleId: string): string {
+  switch (moduleId) {
+    case "cpp-basics":
+      return "/adaptive-sheet?tags=implementation,constructive algorithms&ratingBase=800"
+    case "mathematics":
+      return "/adaptive-sheet?tags=math,number theory&ratingBase=900"
+    case "stl":
+      return "/adaptive-sheet?tags=data structures,implementation&ratingBase=1000"
+    case "cses-intro":
+      return "https://cses.fi/problemset/"
+    case "div2a":
+      return "/adaptive-sheet?tags=implementation,math&ratingBase=800"
+    case "div2b":
+      return "/adaptive-sheet?tags=greedy,implementation&ratingBase=1100"
+    case "div2c":
+      return "/adaptive-sheet?tags=dp,graphs,binary search&ratingBase=1400"
+    default:
+      return "/adaptive-sheet"
+  }
 }
 
 export default function PathDetailPage() {
@@ -271,7 +322,7 @@ export default function PathDetailPage() {
                     {module.locked ? (
                       "Complete previous modules to unlock"
                     ) : (
-                      <Link href={`/paths/${pathId}/${module.id}`}>
+                      <Link href={getModuleLink(module.id)}>
                         {module.completed ? "Review Module" : "Start Module"}
                       </Link>
                     )}

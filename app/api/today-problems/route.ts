@@ -4,15 +4,16 @@ import { createClient } from "@/lib/supabase/server"
 export const dynamic = "force-dynamic"
 
 export async function GET(req: Request) {
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  if (!user) {
-    return NextResponse.json({ problems: [] })
-  }
+    if (!user) {
+      return NextResponse.json({ problems: [] })
+    }
 
   // Get user's current rating and weak tags from recent attempts
   const { data: userProfile } = await supabase
@@ -79,4 +80,11 @@ export async function GET(req: Request) {
   ]
 
   return NextResponse.json({ problems })
+  } catch (error) {
+    console.error("Error in GET /api/today-problems:", error)
+    if (error instanceof Error && error.message.includes("Supabase configuration missing")) {
+      return NextResponse.json({ problems: [], error: "Authentication service not configured" }, { status: 503 })
+    }
+    return NextResponse.json({ problems: [], error: "Internal server error" }, { status: 500 })
+  }
 }

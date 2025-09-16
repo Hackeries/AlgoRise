@@ -26,8 +26,8 @@ export const VISUALIZERS: Visualizer[] = [
     summary: "Shortest paths, BFS/DFS, MST, and more. Build intuition with interactive traces.",
     tags: ["graphs", "shortest paths", "mst", "bfs", "dfs"],
     resources: [
-      { label: "CP-Algorithms: Graphs", href: "https://cp-algorithms.com/graph/" },
-      { label: "USACO Guide: Graphs", href: "https://usaco.guide/graph" },
+      { label: "CP-Algorithms: Graphs", href: "https://cp-algorithms.com/graph/breadth-first-search.html" },
+      { label: "USACO Guide: Graphs", href: "https://usaco.guide/silver/graph-traversal" },
     ],
   },
   {
@@ -36,8 +36,8 @@ export const VISUALIZERS: Visualizer[] = [
     summary: "State design, transitions, and optimization tricks (knapsack, LIS, digit DP).",
     tags: ["dp", "dynamic programming", "knapsack", "lis"],
     resources: [
-      { label: "CP-Algorithms: DP", href: "https://cp-algorithms.com/dp/" },
-      { label: "USACO Guide: DP", href: "https://usaco.guide/adv/dp?lang=cpp" },
+      { label: "CP-Algorithms: DP", href: "https://cp-algorithms.com/dynamic_programming/divide-and-conquer-dp.html" },
+      { label: "USACO Guide: DP", href: "https://usaco.guide/gold/intro-dp" },
     ],
   },
   {
@@ -45,7 +45,10 @@ export const VISUALIZERS: Visualizer[] = [
     title: "Greedy",
     summary: "Exchange argument, sorting by key, and classic counterexamples.",
     tags: ["greedy"],
-    resources: [{ label: "CP-Algorithms: Greedy", href: "https://cp-algorithms.com/other/greedy.html" }],
+    resources: [
+      { label: "CP-Algorithms: Greedy", href: "https://cp-algorithms.com/sequences/longest_increasing_subsequence.html" },
+      { label: "USACO Guide: Greedy", href: "https://usaco.guide/silver/greedy-sorting" }
+    ],
   },
   {
     slug: "binary-search",
@@ -53,7 +56,8 @@ export const VISUALIZERS: Visualizer[] = [
     summary: "Predicate design, monotonicity, lower_bound/upper_bound patterns.",
     tags: ["binary search", "binary_search"],
     resources: [
-      { label: "CP-Algorithms: Binary Search", href: "https://cp-algorithms.com/num_methods/binary_search.html" },
+      { label: "CP-Algorithms: Binary Search", href: "https://cp-algorithms.com/num_methods/ternary_search.html" },
+      { label: "USACO Guide: Binary Search", href: "https://usaco.guide/silver/binary-search" },
     ],
   },
   {
@@ -61,7 +65,10 @@ export const VISUALIZERS: Visualizer[] = [
     title: "Trees",
     summary: "Tree traversals, LCA, subtree tricks, rerooting.",
     tags: ["trees", "lca", "rerooting"],
-    resources: [{ label: "CP-Algorithms: Trees", href: "https://cp-algorithms.com/graph/lca.html" }],
+    resources: [
+      { label: "CP-Algorithms: Trees", href: "https://cp-algorithms.com/graph/lca.html" },
+      { label: "USACO Guide: Trees", href: "https://usaco.guide/silver/tree-euler" }
+    ],
   },
 ]
 

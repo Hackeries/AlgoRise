@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CheckCircle, AlertCircle, ExternalLink } from "lucide-react"
+import { useCFVerification } from "@/lib/context/cf-verification"
 
 interface CFVerificationProps {
   currentHandle?: string
@@ -14,13 +15,19 @@ interface CFVerificationProps {
   onVerificationComplete?: () => void
 }
 
-export function CFVerification({ currentHandle, isVerified, onVerificationComplete }: CFVerificationProps) {
-  const [handle, setHandle] = useState(currentHandle || "")
+export function CFVerification({ currentHandle, isVerified: propIsVerified, onVerificationComplete }: CFVerificationProps) {
+  const { isVerified: globalIsVerified, verificationData, clearVerification } = useCFVerification()
+  const [handle, setHandle] = useState(currentHandle || verificationData?.handle || "")
   const [verificationToken, setVerificationToken] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  // Use global verification status, fallback to prop
+  const isActuallyVerified = globalIsVerified || propIsVerified
+  const displayHandle = verificationData?.handle || currentHandle || handle
+  
   const [step, setStep] = useState<"input" | "verify" | "complete">(
-    isVerified ? "complete" : currentHandle ? "verify" : "input",
+    isActuallyVerified ? "complete" : displayHandle ? "verify" : "input",
   )
 
   const generateToken = async () => {
@@ -80,7 +87,7 @@ export function CFVerification({ currentHandle, isVerified, onVerificationComple
     }
   }
 
-  if (step === "complete" || isVerified) {
+  if (step === "complete" || isActuallyVerified) {
     return (
       <Card className="border-green-200 bg-green-50">
         <CardHeader>
@@ -89,9 +96,35 @@ export function CFVerification({ currentHandle, isVerified, onVerificationComple
             Codeforces Verified
           </CardTitle>
           <CardDescription>
-            Your Codeforces handle <strong>{currentHandle || handle}</strong> has been verified
+            Your Codeforces handle <strong>{displayHandle}</strong> has been verified
           </CardDescription>
         </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <a 
+                href={`https://codeforces.com/profile/${displayHandle}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-1"
+              >
+                View Profile <ExternalLink className="h-3 w-3" />
+              </a>
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                clearVerification()
+                setStep("input")
+                setHandle("")
+                setError(null)
+              }}
+            >
+              Re-verify
+            </Button>
+          </div>
+        </CardContent>
       </Card>
     )
   }
@@ -119,6 +152,30 @@ export function CFVerification({ currentHandle, isVerified, onVerificationComple
             </div>
             <Button onClick={generateToken} disabled={loading} className="w-full">
               {loading ? "Generating..." : "Generate Verification Token"}
+            </Button>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or</span>
+              </div>
+            </div>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                if (!handle.trim()) {
+                  setError("Please enter your Codeforces handle first")
+                  return
+                }
+                window.open(`/api/cf/oauth/start?handle=${handle.trim()}`, '_blank')
+              }} 
+              disabled={loading} 
+              className="w-full"
+            >
+              Quick Verify with OAuth
             </Button>
           </>
         )}

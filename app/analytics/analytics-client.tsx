@@ -14,27 +14,22 @@ import { RatingTrend } from '@/components/analytics/rating-trend'
 import { TagAccuracy } from '@/components/analytics/tag-accuracy'
 import CFVerificationTrigger from '@/components/auth/cf-verification-trigger'
 import CFVerificationDialog from '@/components/auth/cf-verification-dialog'
+import { useCFVerification } from '@/lib/context/cf-verification'
 import useSWR from 'swr'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 export default function AnalyticsPageClient() {
-  const [isVerifyOpen, setIsVerifyOpen] = useState(false)
-  const [cfHandle, setCfHandle] = useState<string | null>(null)
+  const { isVerified, verificationData } = useCFVerification()
   const [range, setRange] = useState<"7d" | "30d">("7d")
 
-  // Fetch summary analytics
+  // Fetch summary analytics only if verified
   const { data: summary, isLoading: summaryLoading } = useSWR(
-    `/api/analytics/summary?range=${range}`,
+    isVerified && verificationData ? `/api/analytics/summary?range=${range}&handle=${verificationData.handle}` : null,
     fetcher
   )
 
-  const handleVerificationSuccess = (handle: string) => {
-    setCfHandle(handle)
-    setIsVerifyOpen(false)
-  }
-
-  if (!cfHandle) {
+  if (!isVerified) {
     return (
       <DashboardShell
         left={<LeftRail />}
@@ -57,7 +52,6 @@ export default function AnalyticsPageClient() {
                 </p>
                 
                 <CFVerificationTrigger 
-                  onVerificationComplete={(data) => handleVerificationSuccess(data.handle)}
                   showTitle={false}
                   compact={true}
                 />
@@ -109,7 +103,7 @@ export default function AnalyticsPageClient() {
               <div>
                 <h1 className="text-3xl font-bold">Progress & Analytics</h1>
                 <p className="text-muted-foreground">
-                  Detailed insights for <Badge variant="secondary">{cfHandle}</Badge>
+                  Detailed insights for <Badge variant="secondary">{verificationData?.handle}</Badge>
                 </p>
               </div>
               <div className="flex items-center space-x-2">

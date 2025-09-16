@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { AuthConfigurationAlert } from "@/components/auth/auth-configuration-alert"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export default function Page() {
   const [email, setEmail] = useState("")
@@ -17,11 +18,24 @@ export default function Page() {
   const [repeatPassword, setRepeatPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isConfigured, setIsConfigured] = useState(true)
   const router = useRouter()
+
+  useEffect(() => {
+    // Check if Supabase is configured
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    
+    if (!supabaseUrl || !supabaseAnonKey || 
+        supabaseUrl === 'https://your-project-ref.supabase.co' || 
+        supabaseAnonKey === 'your-anon-key-here' ||
+        supabaseAnonKey === '[YOUR-ANON-KEY-HERE]') {
+      setIsConfigured(false)
+    }
+  }, [])
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
-    const supabase = createClient()
     setIsLoading(true)
     setError(null)
 
@@ -32,6 +46,7 @@ export default function Page() {
     }
 
     try {
+      const supabase = createClient()
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -42,10 +57,25 @@ export default function Page() {
       if (error) throw error
       router.push("/auth/sign-up-success")
     } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
+      if (error instanceof Error && error.message.includes("Supabase configuration missing")) {
+        setError("Authentication is not configured. Please contact the administrator.")
+      } else {
+        setError(error instanceof Error ? error.message : "An error occurred")
+      }
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (!isConfigured) {
+    return (
+      <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+        <AuthConfigurationAlert 
+          title="Sign Up Unavailable"
+          description="Authentication is not configured. Please set up Supabase to enable user registration."
+        />
+      </div>
+    )
   }
 
   return (

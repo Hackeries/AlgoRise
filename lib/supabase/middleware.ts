@@ -12,7 +12,9 @@ export async function updateSession(request: NextRequest) {
   // If Supabase is not configured properly, skip auth middleware
   if (!supabaseUrl || !supabaseAnonKey || 
       supabaseUrl === 'https://your-project.supabase.co' || 
-      supabaseAnonKey === 'your-anon-key-here') {
+      supabaseUrl === 'https://your-project-ref.supabase.co' ||
+      supabaseAnonKey === 'your-anon-key-here' ||
+      supabaseAnonKey === '[YOUR-ANON-KEY-HERE]') {
     console.warn("[v0] Supabase environment variables not found, skipping auth middleware")
     return supabaseResponse
   }
@@ -49,7 +51,16 @@ export async function updateSession(request: NextRequest) {
     !user &&
     !request.nextUrl.pathname.startsWith("/login") &&
     !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/api/") // Don't redirect API routes
+    !request.nextUrl.pathname.startsWith("/api/") && // Don't redirect API routes
+    !request.nextUrl.pathname.startsWith("/cf-verification-success") && // Allow CF verification success page
+    !request.nextUrl.pathname.startsWith("/analytics") && // Allow analytics page for demo
+    !request.nextUrl.pathname.startsWith("/train") && // Allow train page for demo
+    !request.nextUrl.pathname.startsWith("/contests") && // Allow contests page for demo
+    !request.nextUrl.pathname.startsWith("/adaptive-sheet") && // Allow adaptive sheet for demo
+    !request.nextUrl.pathname.startsWith("/groups") && // Allow groups page for demo
+    !request.nextUrl.pathname.startsWith("/visualizers") && // Allow visualizers page for demo
+    !request.nextUrl.pathname.startsWith("/paths") && // Allow paths page for demo
+    !request.nextUrl.pathname.startsWith("/settings") // Allow settings page for demo
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()

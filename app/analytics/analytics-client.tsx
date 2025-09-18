@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
-import { TrendingUp, Trophy, Target, Calendar, Flame, BarChart3, User } from 'lucide-react'
+import { TrendingUp, Trophy, Target, Calendar, Flame, BarChart3, User, LogIn } from 'lucide-react'
 import { DashboardShell } from '@/components/dashboard/shell'
 import { LeftRail } from '@/components/dashboard/left-rail'
 import { SummaryCards } from '@/components/analytics/summary-cards'
@@ -15,13 +15,68 @@ import { TagAccuracy } from '@/components/analytics/tag-accuracy'
 import CFVerificationTrigger from '@/components/auth/cf-verification-trigger'
 import CFVerificationDialog from '@/components/auth/cf-verification-dialog'
 import { useCFVerification } from '@/lib/context/cf-verification'
+import { useAuth } from '@/lib/auth/context'
 import useSWR from 'swr'
+import Link from 'next/link'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 export default function AnalyticsPageClient() {
+  const { user, loading } = useAuth()
   const { isVerified, verificationData } = useCFVerification()
   const [range, setRange] = useState<"7d" | "30d">("7d")
+
+  // Show loading state
+  if (loading) {
+    return (
+      <DashboardShell
+        left={<LeftRail />}
+        center={
+          <div className="flex items-center justify-center h-64">
+            <div className="text-white/70">Loading...</div>
+          </div>
+        }
+      />
+    )
+  }
+
+  // Show login prompt if user is not authenticated
+  if (!user) {
+    return (
+      <DashboardShell
+        left={<LeftRail />}
+        center={
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center py-12">
+              <div className="mb-8">
+                <BarChart3 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                <h1 className="text-3xl font-bold mb-2">Progress & Analytics</h1>
+                <p className="text-muted-foreground text-lg mb-8">
+                  Track your competitive programming journey with detailed analytics and insights
+                </p>
+              </div>
+              
+              <div className="bg-muted/20 rounded-lg p-8 mb-8">
+                <LogIn className="h-12 w-12 mx-auto text-blue-400 mb-4" />
+                <h3 className="text-xl font-semibold mb-2 text-white">Please Sign In</h3>
+                <p className="text-white/70 mb-6">
+                  You need to sign in to view your analytics and track your competitive programming progress.
+                </p>
+                <div className="flex gap-4 justify-center">
+                  <Button asChild className="bg-blue-600 hover:bg-blue-700">
+                    <Link href="/auth/login">Sign In</Link>
+                  </Button>
+                  <Button asChild variant="outline">
+                    <Link href="/auth/sign-up">Create Account</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      />
+    )
+  }
 
   // Fetch summary analytics only if verified
   const { data: summary, isLoading: summaryLoading } = useSWR(

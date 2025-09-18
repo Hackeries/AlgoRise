@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { useCFVerification } from '@/lib/context/cf-verification'
+import { useAuth } from '@/lib/auth/context'
 import { 
   BarChart3, 
   Target, 
@@ -15,49 +16,80 @@ import {
   CheckCircle,
   XCircle,
   MessageSquare,
-  TrendingUp
+  TrendingUp,
+  LogIn,
+  UserCheck
 } from 'lucide-react'
 import Link from 'next/link'
 
 export default function DashboardPage() {
+  const { user, loading } = useAuth()
   const { isVerified, verificationData } = useCFVerification()
 
-  // Mock data - in real app this would come from API
-  const stats = {
-    currentRating: isVerified && verificationData ? verificationData.rating : 1181,
-    problemsSolved: 89,
-    currentStreak: 12,
-    contests: 3
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-white/70">Loading...</div>
+        </div>
+      </div>
+    )
   }
 
-  const recentActivity = [
-    {
-      id: 1,
-      problem: "Two Sum",
-      rating: 800,
-      status: "solved",
-      time: "23 min",
-      tags: ["array", "hash-table"]
-    },
-    {
-      id: 2,
-      problem: "Binary Search",
-      rating: 1000,
-      status: "failed",
-      time: "3 attempts",
-      tags: ["binary-search"]
-    },
-    {
-      id: 3,
-      problem: "Graph Traversal",
-      rating: 1200,
-      status: "solved",
-      time: "45 min",
-      tags: ["graphs", "dfs"]
-    }
-  ]
+  // Show login prompt if user is not authenticated
+  if (!user) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <LogIn className="h-16 w-16 text-blue-400" />
+          <h2 className="text-2xl font-bold text-white">Please Sign In</h2>
+          <p className="text-white/70 text-center max-w-md">
+            You need to sign in to view your dashboard and track your competitive programming progress.
+          </p>
+          <div className="flex gap-4">
+            <Button asChild className="bg-blue-600 hover:bg-blue-700">
+              <Link href="/auth/login">Sign In</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/auth/sign-up">Create Account</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
-  const userName = isVerified && verificationData ? verificationData.handle : "Aviral"
+  // Show CF verification prompt if user is authenticated but not verified
+  if (!isVerified) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex flex-col items-center justify-center h-64 space-y-4">
+          <UserCheck className="h-16 w-16 text-orange-400" />
+          <h2 className="text-2xl font-bold text-white">Verify Your Codeforces Account</h2>
+          <p className="text-white/70 text-center max-w-md">
+            To track your progress and get personalized recommendations, please verify your Codeforces handle.
+          </p>
+          <Button asChild className="bg-orange-600 hover:bg-orange-700">
+            <Link href="/profile">Verify Codeforces Account</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // Only show real data when user is verified
+  const stats = {
+    currentRating: verificationData?.rating || 0,
+    problemsSolved: 0, // TODO: Fetch from database
+    currentStreak: 0,  // TODO: Fetch from database  
+    contests: 0        // TODO: Fetch from database
+  }
+
+  // Empty recent activity - TODO: Fetch from database
+  const recentActivity: any[] = []
+
+  const userName = verificationData?.handle || user?.email?.split('@')[0] || "User"
 
   return (
     <div className="p-6 space-y-6">
@@ -86,7 +118,6 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-blue-400" />
-                <span className="text-green-400 text-sm">++15</span>
               </div>
             </div>
           </CardContent>
@@ -101,7 +132,6 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Target className="h-5 w-5 text-blue-400" />
-                <span className="text-green-400 text-sm">++5</span>
               </div>
             </div>
           </CardContent>
@@ -116,7 +146,6 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Flame className="h-5 w-5 text-orange-400" />
-                <span className="text-green-400 text-sm">++1</span>
               </div>
             </div>
           </CardContent>
@@ -131,7 +160,6 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-yellow-400" />
-                <span className="text-green-400 text-sm">+1 new</span>
               </div>
             </div>
           </CardContent>
@@ -152,9 +180,11 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               Rating Progress
-              <Badge variant="secondary" className="bg-blue-600/20 text-blue-400">
-                +447 overall
-              </Badge>
+              {stats.currentRating > 0 && (
+                <Badge variant="secondary" className="bg-blue-600/20 text-blue-400">
+                  Current: {stats.currentRating}
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -177,40 +207,51 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {recentActivity.map((activity) => (
-                <div key={activity.id} className="flex items-center justify-between p-3 bg-[#0f1423] rounded-lg">
-                  <div className="flex items-center gap-3">
-                    {activity.status === 'solved' ? (
-                      <CheckCircle className="h-4 w-4 text-green-400" />
-                    ) : (
-                      <XCircle className="h-4 w-4 text-red-400" />
-                    )}
-                    <div>
-                      <p className="text-white font-medium">{activity.problem}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        {activity.tags.map((tag) => (
-                          <Badge key={tag} variant="outline" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex items-center justify-between p-3 bg-[#0f1423] rounded-lg">
+                    <div className="flex items-center gap-3">
+                      {activity.status === 'solved' ? (
+                        <CheckCircle className="h-4 w-4 text-green-400" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-400" />
+                      )}
+                      <div>
+                        <p className="text-white font-medium">{activity.problem}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          {activity.tags.map((tag: string) => (
+                            <Badge key={tag} variant="outline" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     </div>
+                    <div className="text-right">
+                      <Badge 
+                        variant="secondary" 
+                        className={activity.rating <= 900 ? "bg-gray-600" : activity.rating <= 1200 ? "bg-green-600" : "bg-blue-600"}
+                      >
+                        {activity.rating}
+                      </Badge>
+                      <p className="text-xs text-white/60 mt-1">{activity.time}</p>
+                    </div>
+                    <Button variant="ghost" size="sm">
+                      <MessageSquare className="h-4 w-4" />
+                      Notes
+                    </Button>
                   </div>
-                  <div className="text-right">
-                    <Badge 
-                      variant="secondary" 
-                      className={activity.rating <= 900 ? "bg-gray-600" : activity.rating <= 1200 ? "bg-green-600" : "bg-blue-600"}
-                    >
-                      {activity.rating}
-                    </Badge>
-                    <p className="text-xs text-white/60 mt-1">{activity.time}</p>
-                  </div>
-                  <Button variant="ghost" size="sm">
-                    <MessageSquare className="h-4 w-4" />
-                    Notes
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Target className="h-12 w-12 text-white/30 mb-3" />
+                  <p className="text-white/70 font-medium">No recent activity</p>
+                  <p className="text-white/50 text-sm mt-1">Start solving problems to see your activity here</p>
+                  <Button asChild className="mt-3" variant="outline" size="sm">
+                    <Link href="/adaptive-sheet">Begin Practice</Link>
                   </Button>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>

@@ -31,9 +31,17 @@ export function CFVerificationProvider({ children }: CFVerificationProviderProps
   // Initialize verification status from localStorage
   const refreshVerificationStatus = () => {
     try {
+      // Clear any hardcoded demo data
       const storedData = localStorage.getItem('cf_verification')
       if (storedData) {
         const data = JSON.parse(storedData) as CFVerificationData
+        // Check if this is demo data and clear it
+        if (data.handle === 'ItsAllMe' || data.handle === 'itsallme') {
+          localStorage.removeItem('cf_verification')
+          setVerificationDataState(null)
+          setIsVerified(false)
+          return
+        }
         setVerificationDataState(data)
         setIsVerified(true)
       } else {
@@ -71,6 +79,14 @@ export function CFVerificationProvider({ children }: CFVerificationProviderProps
 
   // Initialize on mount and listen for storage changes
   useEffect(() => {
+    // Clear any demo/hardcoded data on first load
+    const demoKeys = ['demo_cf_data', 'cf_demo', 'hardcoded_cf']
+    demoKeys.forEach(key => {
+      if (localStorage.getItem(key)) {
+        localStorage.removeItem(key)
+      }
+    })
+    
     refreshVerificationStatus()
 
     // Listen for localStorage changes from other tabs/windows

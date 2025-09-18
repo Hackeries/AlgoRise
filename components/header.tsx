@@ -44,14 +44,6 @@ export function Header({ title = "Competitive Programming" }: HeaderProps) {
         <h1 className="text-lg font-semibold text-white">
           {title}
         </h1>
-        
-        {/* CF Verification Status */}
-        {isVerified && verificationData && (
-          <Badge variant="outline" className="bg-green-500/10 border-green-500/30 text-green-400">
-            <Trophy className="h-3 w-3 mr-1" />
-            CF: {verificationData.handle} ({verificationData.rating})
-          </Badge>
-        )}
       </div>
 
       {/* Right Section */}

@@ -12,19 +12,19 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/lib/auth/context"
-import { useCFVerification } from "@/lib/context/cf-verification"
 import { 
   Bell, 
   Settings, 
   User, 
-  Trophy, 
   LogOut, 
   Moon, 
   Sun,
   Search,
   Command,
   HelpCircle,
-  Zap
+  Zap,
+  Home,
+  BarChart3
 } from "lucide-react"
 
 interface HeaderProps {
@@ -33,7 +33,6 @@ interface HeaderProps {
 
 export function Header({ title = "Competitive Programming" }: HeaderProps) {
   const { user, loading, signOut } = useAuth()
-  const { isVerified, verificationData } = useCFVerification()
 
   const userInitials = user?.email?.charAt(0).toUpperCase() || "U"
 
@@ -148,11 +147,6 @@ export function Header({ title = "Competitive Programming" }: HeaderProps) {
                 <div className="flex flex-col space-y-1 leading-none">
                   <p className="font-medium text-white">{user.email?.split("@")[0]}</p>
                   <p className="text-xs text-white/70 truncate w-[150px]">{user.email}</p>
-                  {isVerified && verificationData && (
-                    <Badge variant="outline" className="text-xs bg-green-500/10 border-green-500/30 text-green-400 w-fit">
-                      CF: {verificationData.handle}
-                    </Badge>
-                  )}
                 </div>
               </div>
 
@@ -166,14 +160,14 @@ export function Header({ title = "Competitive Programming" }: HeaderProps) {
               
               <DropdownMenuItem asChild className="hover:bg-[#2a3441]">
                 <Link href="/" className="cursor-pointer text-white">
-                  <Trophy className="mr-2 h-4 w-4" />
+                  <Home className="mr-2 h-4 w-4" />
                   Dashboard
                 </Link>
               </DropdownMenuItem>
               
               <DropdownMenuItem asChild className="hover:bg-[#2a3441]">
                 <Link href="/analytics" className="cursor-pointer text-white">
-                  <Trophy className="mr-2 h-4 w-4" />
+                  <BarChart3 className="mr-2 h-4 w-4" />
                   Analytics
                 </Link>
               </DropdownMenuItem>

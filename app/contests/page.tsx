@@ -580,9 +580,25 @@ export default function ContestsPage() {
                         >
                           {contest.status}
                         </Badge>
-                        <Button size="sm" variant="ghost" className="h-8 px-2 text-xs">
-                          View Details
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="h-8 px-2 text-xs"
+                            onClick={() => window.open(`/contests/${contest.id}`, '_blank')}
+                          >
+                            View Details
+                          </Button>
+                          {(contest.status === 'upcoming' || contest.status === 'active') && (
+                            <Button 
+                              size="sm" 
+                              className="h-8 px-2 text-xs bg-green-600 hover:bg-green-700"
+                              onClick={() => window.open(`/contests/${contest.id}/participate`, '_blank')}
+                            >
+                              Participate
+                            </Button>
+                          )}
+                        </div>
                       </div>
                       {contest.start_time && (
                         <div className="mt-3 text-xs text-white/60">

@@ -1,8 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { DashboardShell } from "@/components/dashboard/shell"
-import { LeftRail } from "@/components/dashboard/left-rail"
 import { AdaptiveSheetContent } from "@/components/adaptive/sheet-content"
 import { AdaptiveRightRailData } from "@/components/adaptive/right-rail"
 import type { FilterState } from "@/components/adaptive/filter-bar"
@@ -43,9 +41,8 @@ export function AdaptiveSheetPageClient() {
   }, [isVerified, verificationData])
 
   return (
-    <DashboardShell
-      left={<LeftRail active="sheet" />}
-      center={
+    <main className="flex-1 flex">
+      <div className="flex-1 p-6">
         <div className="space-y-4">
           <header className="flex items-start justify-between gap-3">
             <div>
@@ -76,8 +73,10 @@ export function AdaptiveSheetPageClient() {
             />
           )}
         </div>
-      }
-      right={<AdaptiveRightRailData baseRating={filters.ratingBase} tags={filters.tags} />}
-    />
+      </div>
+      <div className="w-80 border-l bg-muted/30 p-6">
+        <AdaptiveRightRailData baseRating={filters.ratingBase} tags={filters.tags} />
+      </div>
+    </main>
   )
 }

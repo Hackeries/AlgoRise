@@ -1,167 +1,202 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
-import { CalendarIcon, ClockIcon, UsersIcon, PlusIcon, ExternalLinkIcon } from 'lucide-react'
-import { toast } from '@/hooks/use-toast'
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import {
+  CalendarIcon,
+  ClockIcon,
+  UsersIcon,
+  PlusIcon,
+  ExternalLinkIcon,
+} from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 type CodeforcesContest = {
-  id: number
-  name: string
-  type: string
-  phase: string
-  durationSeconds: number
-  startTimeSeconds?: number
-  relativeTimeSeconds?: number
-}
+  id: number;
+  name: string;
+  type: string;
+  phase: string;
+  durationSeconds: number;
+  startTimeSeconds?: number;
+  relativeTimeSeconds?: number;
+};
 
 type PrivateContest = {
-  id: string
-  name: string
-  description?: string
-  status: string
-  start_time?: string
-  end_time?: string
-  duration_minutes?: number
-  max_participants?: number
-  allow_late_join?: boolean
-  created_by?: string
-  created_at: string
-}
+  id: string;
+  name: string;
+  description?: string;
+  status: string;
+  start_time?: string;
+  end_time?: string;
+  duration_minutes?: number;
+  max_participants?: number;
+  allow_late_join?: boolean;
+  created_by?: string;
+  created_at: string;
+};
 
 export default function ContestsPage() {
-  const [upcomingCfContests, setUpcomingCfContests] = useState<CodeforcesContest[]>([])
-  const [privateContests, setPrivateContests] = useState<PrivateContest[]>([])
-  const [loading, setLoading] = useState(true)
-  const [createDialogOpen, setCreateDialogOpen] = useState(false)
-  const [creating, setCreating] = useState(false)
+  const [upcomingCfContests, setUpcomingCfContests] = useState<
+    CodeforcesContest[]
+  >([]);
+  const [privateContests, setPrivateContests] = useState<PrivateContest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    startDate: '',
-    startTime: '',
-    problemCount: '5', // New: number of problems (5-7)
-    ratingMin: '1200', // New: minimum rating
-    ratingMax: '1400', // New: maximum rating
-    maxParticipants: '',
-    allowLateJoin: true
-  })
+    name: "",
+    description: "",
+    startDate: "",
+    startTime: "",
+    problemCount: "5", // New: number of problems (5-7)
+    ratingMin: "1200", // New: minimum rating
+    ratingMax: "1400", // New: maximum rating
+    maxParticipants: "",
+    allowLateJoin: true,
+  });
 
   useEffect(() => {
-    fetchContests()
-  }, [])
+    fetchContests();
+  }, []);
 
   const fetchContests = async () => {
     try {
       // Fetch Codeforces contests
       try {
-        const cfResponse = await fetch('/api/cf/contests')
+        const cfResponse = await fetch("/api/cf/contests");
         if (cfResponse.ok) {
-          const cfData = await cfResponse.json()
-          setUpcomingCfContests(cfData.upcoming || [])
+          const cfData = await cfResponse.json();
+          setUpcomingCfContests(cfData.upcoming || []);
         } else {
-          console.error('Failed to fetch CF contests:', cfResponse.status)
+          console.error("Failed to fetch CF contests:", cfResponse.status);
         }
       } catch (cfError) {
-        console.error('Error fetching CF contests:', cfError)
+        console.error("Error fetching CF contests:", cfError);
       }
 
       // Fetch private contests
       try {
-        const privateResponse = await fetch('/api/contests')
+        const privateResponse = await fetch("/api/contests");
         if (privateResponse.ok) {
-          const privateData = await privateResponse.json()
-          setPrivateContests(privateData.contests || [])
+          const privateData = await privateResponse.json();
+          setPrivateContests(privateData.contests || []);
         } else {
-          console.error('Failed to fetch private contests:', privateResponse.status)
+          console.error(
+            "Failed to fetch private contests:",
+            privateResponse.status
+          );
         }
       } catch (privateError) {
-        console.error('Error fetching private contests:', privateError)
+        console.error("Error fetching private contests:", privateError);
       }
     } catch (error) {
-      console.error('Error fetching contests:', error)
+      console.error("Error fetching contests:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to fetch contests',
-        variant: 'destructive'
-      })
+        title: "Error",
+        description: "Failed to fetch contests",
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      description: '',
-      startDate: '',
-      startTime: '',
-      problemCount: '5',
-      ratingMin: '1200',
-      ratingMax: '1400',
-      maxParticipants: '',
-      allowLateJoin: true
-    })
-  }
+      name: "",
+      description: "",
+      startDate: "",
+      startTime: "",
+      problemCount: "5",
+      ratingMin: "1200",
+      ratingMax: "1400",
+      maxParticipants: "",
+      allowLateJoin: true,
+    });
+  };
 
   const calculateEndTime = () => {
-    if (!formData.startDate || !formData.startTime) return null
-    
-    const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`)
-    const durationMs = 2 * 60 * 60 * 1000 // Fixed 2 hours duration
-    const endDateTime = new Date(startDateTime.getTime() + durationMs)
-    
-    return endDateTime.toISOString()
-  }
+    if (!formData.startDate || !formData.startTime) return null;
+
+    const startDateTime = new Date(
+      `${formData.startDate}T${formData.startTime}`
+    );
+    const durationMs = 2 * 60 * 60 * 1000; // Fixed 2 hours duration
+    const endDateTime = new Date(startDateTime.getTime() + durationMs);
+
+    return endDateTime.toISOString();
+  };
 
   const createContest = async () => {
     if (!formData.name.trim()) {
       toast({
-        title: 'Error',
-        description: 'Contest name is required',
-        variant: 'destructive'
-      })
-      return
+        title: "Error",
+        description: "Contest name is required",
+        variant: "destructive",
+      });
+      return;
     }
 
     if (!formData.startDate || !formData.startTime) {
       toast({
-        title: 'Error', 
-        description: 'Start date and time are required',
-        variant: 'destructive'
-      })
-      return
+        title: "Error",
+        description: "Start date and time are required",
+        variant: "destructive",
+      });
+      return;
     }
 
     // Validate rating range
-    const minRating = parseInt(formData.ratingMin)
-    const maxRating = parseInt(formData.ratingMax)
+    const minRating = parseInt(formData.ratingMin);
+    const maxRating = parseInt(formData.ratingMax);
     if (minRating >= maxRating) {
       toast({
-        title: 'Error',
-        description: 'Maximum rating must be higher than minimum rating',
-        variant: 'destructive'
-      })
-      return
+        title: "Error",
+        description: "Maximum rating must be higher than minimum rating",
+        variant: "destructive",
+      });
+      return;
     }
 
-    setCreating(true)
+    setCreating(true);
     try {
-      const startDateTime = new Date(`${formData.startDate}T${formData.startTime}`).toISOString()
-      const endDateTime = calculateEndTime()
+      const startDateTime = new Date(
+        `${formData.startDate}T${formData.startTime}`
+      ).toISOString();
+      const endDateTime = calculateEndTime();
 
-      const response = await fetch('/api/contests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/contests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.name.trim(),
           description: formData.description.trim() || null,
@@ -171,73 +206,75 @@ export default function ContestsPage() {
           problem_count: parseInt(formData.problemCount),
           rating_min: parseInt(formData.ratingMin),
           rating_max: parseInt(formData.ratingMax),
-          max_participants: formData.maxParticipants ? parseInt(formData.maxParticipants) : null,
-          allow_late_join: formData.allowLateJoin
-        })
-      })
+          max_participants: formData.maxParticipants
+            ? parseInt(formData.maxParticipants)
+            : null,
+          allow_late_join: formData.allowLateJoin,
+        }),
+      });
 
       if (response.ok) {
         toast({
-          title: 'Success',
-          description: 'Contest created successfully!'
-        })
-        resetForm()
-        setCreateDialogOpen(false)
-        fetchContests() // Refresh the list
+          title: "Success",
+          description: "Contest created successfully!",
+        });
+        resetForm();
+        setCreateDialogOpen(false);
+        fetchContests(); // Refresh the list
       } else {
-        const error = await response.json()
+        const error = await response.json();
         toast({
-          title: 'Error',
-          description: error.error || 'Failed to create contest',
-          variant: 'destructive'
-        })
+          title: "Error",
+          description: error.error || "Failed to create contest",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error('Contest creation error:', error)
+      console.error("Contest creation error:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to create contest',
-        variant: 'destructive'
-      })
+        title: "Error",
+        description: "Failed to create contest",
+        variant: "destructive",
+      });
     } finally {
-      setCreating(false)
+      setCreating(false);
     }
-  }
+  };
 
   const formatTime = (seconds: number) => {
-    const date = new Date(seconds * 1000)
-    return date.toLocaleString()
-  }
+    const date = new Date(seconds * 1000);
+    return date.toLocaleString();
+  };
 
   const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    return `${hours}h ${minutes}m`
-  }
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}h ${minutes}m`;
+  };
 
   const getCodeforcesContestUrl = (contestId: number) => {
-    return `https://codeforces.com/contest/${contestId}`
-  }
+    return `https://codeforces.com/contestRegistration/${contestId}`;
+  };
 
   const handleCodeforcesContestClick = (contestId: number) => {
-    const url = getCodeforcesContestUrl(contestId)
-    window.open(url, '_blank', 'noopener,noreferrer')
-  }
+    const url = getCodeforcesContestUrl(contestId);
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   const getTimeUntilStart = (startSeconds: number) => {
-    const now = Math.floor(Date.now() / 1000)
-    const diff = startSeconds - now
-    
-    if (diff < 0) return 'Started'
-    
-    const days = Math.floor(diff / 86400)
-    const hours = Math.floor((diff % 86400) / 3600)
-    const minutes = Math.floor((diff % 3600) / 60)
-    
-    if (days > 0) return `${days}d ${hours}h`
-    if (hours > 0) return `${hours}h ${minutes}m`
-    return `${minutes}m`
-  }
+    const now = Math.floor(Date.now() / 1000);
+    const diff = startSeconds - now;
+
+    if (diff < 0) return "Started";
+
+    const days = Math.floor(diff / 86400);
+    const hours = Math.floor((diff % 86400) / 3600);
+    const minutes = Math.floor((diff % 3600) / 60);
+
+    if (days > 0) return `${days}d ${hours}h`;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+  };
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
@@ -245,10 +282,11 @@ export default function ContestsPage() {
         <div>
           <h1 className="text-2xl font-semibold">Contests</h1>
           <p className="mt-2 text-white/80 leading-relaxed">
-            Host or join private training contests. After the contest, view rating simulation and get a recovery set.
+            Host or join private training contests. After the contest, view
+            rating simulation and get a recovery set.
           </p>
         </div>
-        
+
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -271,7 +309,9 @@ export default function ContestsPage() {
                   id="contest-name"
                   placeholder="Enter contest name..."
                   value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
                 />
               </div>
 
@@ -282,7 +322,12 @@ export default function ContestsPage() {
                   id="contest-description"
                   placeholder="Describe your contest (optional)..."
                   value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   rows={3}
                 />
               </div>
@@ -299,8 +344,13 @@ export default function ContestsPage() {
                       id="start-date"
                       type="date"
                       value={formData.startDate}
-                      onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
-                      min={new Date().toISOString().split('T')[0]}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          startDate: e.target.value,
+                        }))
+                      }
+                      min={new Date().toISOString().split("T")[0]}
                     />
                   </div>
                   <div className="space-y-2">
@@ -309,7 +359,12 @@ export default function ContestsPage() {
                       id="start-time"
                       type="time"
                       value={formData.startTime}
-                      onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          startTime: e.target.value,
+                        }))
+                      }
                     />
                   </div>
                 </div>
@@ -329,14 +384,15 @@ export default function ContestsPage() {
               {/* Problem Configuration */}
               <div className="space-y-4">
                 <h4 className="font-medium">Problem Configuration</h4>
-                
+
                 {/* Number of Problems */}
                 <div className="space-y-2">
                   <Label htmlFor="problem-count">Number of Problems *</Label>
                   <Select
                     value={formData.problemCount}
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, problemCount: value }))}
-                  >
+                    onValueChange={(value) =>
+                      setFormData((prev) => ({ ...prev, problemCount: value }))
+                    }>
                     <SelectTrigger>
                       <SelectValue placeholder="Select number of problems" />
                     </SelectTrigger>
@@ -353,11 +409,16 @@ export default function ContestsPage() {
                   <Label>Problem Rating Range *</Label>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="rating-min" className="text-sm text-white/70">Minimum Rating</Label>
+                      <Label
+                        htmlFor="rating-min"
+                        className="text-sm text-white/70">
+                        Minimum Rating
+                      </Label>
                       <Select
                         value={formData.ratingMin}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, ratingMin: value }))}
-                      >
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({ ...prev, ratingMin: value }))
+                        }>
                         <SelectTrigger>
                           <SelectValue placeholder="Min" />
                         </SelectTrigger>
@@ -375,11 +436,16 @@ export default function ContestsPage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="rating-max" className="text-sm text-white/70">Maximum Rating</Label>
+                      <Label
+                        htmlFor="rating-max"
+                        className="text-sm text-white/70">
+                        Maximum Rating
+                      </Label>
                       <Select
                         value={formData.ratingMax}
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, ratingMax: value }))}
-                      >
+                        onValueChange={(value) =>
+                          setFormData((prev) => ({ ...prev, ratingMax: value }))
+                        }>
                         <SelectTrigger>
                           <SelectValue placeholder="Max" />
                         </SelectTrigger>
@@ -400,7 +466,8 @@ export default function ContestsPage() {
                     </div>
                   </div>
                   <p className="text-xs text-white/50">
-                    Problems will be selected from Codeforces within this rating range. Difficulty and topics will be hidden.
+                    Problems will be selected from Codeforces within this rating
+                    range. Difficulty and topics will be hidden.
                   </p>
                 </div>
               </div>
@@ -410,7 +477,7 @@ export default function ContestsPage() {
               {/* Contest Settings */}
               <div className="space-y-4">
                 <h4 className="font-medium">Contest Settings</h4>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="max-participants">Max Participants</Label>
                   <Input
@@ -418,7 +485,12 @@ export default function ContestsPage() {
                     type="number"
                     placeholder="Leave empty for unlimited"
                     value={formData.maxParticipants}
-                    onChange={(e) => setFormData(prev => ({ ...prev, maxParticipants: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        maxParticipants: e.target.value,
+                      }))
+                    }
                     min="1"
                     max="1000"
                   />
@@ -433,7 +505,12 @@ export default function ContestsPage() {
                   </div>
                   <Switch
                     checked={formData.allowLateJoin}
-                    onCheckedChange={(checked) => setFormData(prev => ({ ...prev, allowLateJoin: checked }))}
+                    onCheckedChange={(checked) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        allowLateJoin: checked,
+                      }))
+                    }
                   />
                 </div>
               </div>
@@ -445,25 +522,40 @@ export default function ContestsPage() {
                   <div className="space-y-2">
                     <h4 className="font-medium">Preview</h4>
                     <div className="text-sm text-muted-foreground space-y-1">
-                      <p><strong>Start:</strong> {new Date(`${formData.startDate}T${formData.startTime}`).toLocaleString()}</p>
+                      <p>
+                        <strong>Start:</strong>{" "}
+                        {new Date(
+                          `${formData.startDate}T${formData.startTime}`
+                        ).toLocaleString()}
+                      </p>
                       {calculateEndTime() && (
-                        <p><strong>End:</strong> {new Date(calculateEndTime()!).toLocaleString()}</p>
+                        <p>
+                          <strong>End:</strong>{" "}
+                          {new Date(calculateEndTime()!).toLocaleString()}
+                        </p>
                       )}
-                      <p><strong>Duration:</strong> {formData.durationHours}h {formData.durationMinutes}m</p>
+                      <p>
+                        <strong>Duration:</strong> {formData.durationHours}h{" "}
+                        {formData.durationMinutes}m
+                      </p>
                     </div>
                   </div>
                 </>
               )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => {
-                setCreateDialogOpen(false)
-                resetForm()
-              }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setCreateDialogOpen(false);
+                  resetForm();
+                }}>
                 Cancel
               </Button>
-              <Button onClick={createContest} disabled={creating || !formData.name.trim()}>
-                {creating ? 'Creating...' : 'Create Contest'}
+              <Button
+                onClick={createContest}
+                disabled={creating || !formData.name.trim()}>
+                {creating ? "Creating..." : "Create Contest"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -480,24 +572,27 @@ export default function ContestsPage() {
           {/* Upcoming Codeforces Contests */}
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-xl font-semibold">Upcoming Codeforces Contests</h2>
+              <h2 className="text-xl font-semibold">
+                Upcoming Codeforces Contests
+              </h2>
               <Badge variant="secondary">{upcomingCfContests.length}</Badge>
             </div>
-            
+
             {upcomingCfContests.length === 0 ? (
               <Card>
                 <CardContent className="p-6">
-                  <p className="text-white/60 text-center">No upcoming Codeforces contests found.</p>
+                  <p className="text-white/60 text-center">
+                    No upcoming Codeforces contests found.
+                  </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {upcomingCfContests.slice(0, 6).map((contest) => (
-                  <Card 
-                    key={contest.id} 
+                  <Card
+                    key={contest.id}
                     className="hover:bg-white/5 transition-colors cursor-pointer"
-                    onClick={() => handleCodeforcesContestClick(contest.id)}
-                  >
+                    onClick={() => handleCodeforcesContestClick(contest.id)}>
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <CardTitle className="text-sm font-medium leading-tight">
@@ -548,13 +643,15 @@ export default function ContestsPage() {
               <h2 className="text-xl font-semibold">Private Contests</h2>
               <Badge variant="secondary">{privateContests.length}</Badge>
             </div>
-            
+
             {privateContests.length === 0 ? (
               <Card>
                 <CardContent className="p-6">
                   <div className="text-center">
                     <UsersIcon className="w-12 h-12 text-white/20 mx-auto mb-4" />
-                    <p className="text-white/60 mb-4">No private contests yet.</p>
+                    <p className="text-white/60 mb-4">
+                      No private contests yet.
+                    </p>
                     <Button onClick={() => setCreateDialogOpen(true)}>
                       <PlusIcon className="w-4 h-4 mr-2" />
                       Create Your First Contest
@@ -565,36 +662,50 @@ export default function ContestsPage() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {privateContests.map((contest) => (
-                  <Card key={contest.id} className="hover:bg-white/5 transition-colors cursor-pointer">
+                  <Card
+                    key={contest.id}
+                    className="hover:bg-white/5 transition-colors cursor-pointer">
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium">{contest.name}</CardTitle>
+                      <CardTitle className="text-sm font-medium">
+                        {contest.name}
+                      </CardTitle>
                       <CardDescription className="text-xs">
-                        Created {new Date(contest.created_at).toLocaleDateString()}
+                        Created{" "}
+                        {new Date(contest.created_at).toLocaleDateString()}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div className="flex items-center justify-between">
-                        <Badge 
-                          variant={contest.status === 'active' ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
+                        <Badge
+                          variant={
+                            contest.status === "active"
+                              ? "default"
+                              : "secondary"
+                          }
+                          className="text-xs">
                           {contest.status}
                         </Badge>
                         <div className="flex gap-2">
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             className="h-8 px-2 text-xs"
-                            onClick={() => window.open(`/contests/${contest.id}`, '_blank')}
-                          >
+                            onClick={() =>
+                              window.open(`/contests/${contest.id}`, "_blank")
+                            }>
                             View Details
                           </Button>
-                          {(contest.status === 'upcoming' || contest.status === 'active') && (
-                            <Button 
-                              size="sm" 
+                          {(contest.status === "upcoming" ||
+                            contest.status === "active") && (
+                            <Button
+                              size="sm"
                               className="h-8 px-2 text-xs bg-green-600 hover:bg-green-700"
-                              onClick={() => window.open(`/contests/${contest.id}/participate`, '_blank')}
-                            >
+                              onClick={() =>
+                                window.open(
+                                  `/contests/${contest.id}/participate`,
+                                  "_blank"
+                                )
+                              }>
                               Participate
                             </Button>
                           )}
@@ -604,7 +715,9 @@ export default function ContestsPage() {
                         <div className="mt-3 text-xs text-white/60">
                           <div className="flex items-center gap-2">
                             <CalendarIcon className="w-3 h-3" />
-                            <span>{new Date(contest.start_time).toLocaleString()}</span>
+                            <span>
+                              {new Date(contest.start_time).toLocaleString()}
+                            </span>
                           </div>
                           {contest.description && (
                             <div className="mt-2 text-xs text-white/50">
@@ -613,8 +726,13 @@ export default function ContestsPage() {
                           )}
                           {(contest as any).problem_count && (
                             <div className="mt-2 flex items-center gap-4 text-xs text-white/50">
-                              <span>{(contest as any).problem_count} Problems</span>
-                              <span>Rating: {(contest as any).rating_min}-{(contest as any).rating_max}</span>
+                              <span>
+                                {(contest as any).problem_count} Problems
+                              </span>
+                              <span>
+                                Rating: {(contest as any).rating_min}-
+                                {(contest as any).rating_max}
+                              </span>
                               <span>2h Duration</span>
                             </div>
                           )}
@@ -629,5 +747,5 @@ export default function ContestsPage() {
         </div>
       )}
     </main>
-  )
+  );
 }

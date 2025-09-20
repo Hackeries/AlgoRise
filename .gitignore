@@ -28,3 +28,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Ignore all markdown files by default
+*.md
+
+# But keep these important markdown files
+!CODE_OF_CONDUCT.md
+!LOGIN_GUIDE.md
+!LEARNING_ROADMAP.md
+!DETAILED_PROJECT_REPORT.md
+!DEPLOYMENT_CHECKLIST.md
+!DATABASE_SETUP_GUIDE.md
+!AUTH_DEMO_STATUS.md
+!CONTRIBUTING.md
+!README.md

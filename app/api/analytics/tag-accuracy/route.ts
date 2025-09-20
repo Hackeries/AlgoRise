@@ -46,9 +46,23 @@ export async function GET(req: Request) {
       tag,
       accuracy: Math.round((stats.solved / stats.total) * 100),
       solved: stats.solved,
+      total: stats.total,
     }))
     .sort((a, b) => b.solved - a.solved)
     .slice(0, 10) // Top 10 tags
 
-  return NextResponse.json({ tags, mock: false })
+  // Also provide weak tags (sorted by lowest accuracy)
+  const weakTags = Object.entries(tagStats)
+    .filter(([_, stats]) => stats.total >= 3) // Only show tags with at least 3 attempts
+    .map(([tag, stats]) => ({
+      tag,
+      accuracy: Math.round((stats.solved / stats.total) * 100),
+      solved: stats.solved,
+      total: stats.total,
+    }))
+    .filter((item) => item.accuracy < 70) // Show tags with less than 70% accuracy as weak
+    .sort((a, b) => a.accuracy - b.accuracy) // Sort by lowest accuracy first
+    .slice(0, 6) // Top 6 weak tags
+
+  return NextResponse.json({ tags, weakTags, mock: false })
 }

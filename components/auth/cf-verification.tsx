@@ -16,7 +16,7 @@ interface CFVerificationProps {
 }
 
 export function CFVerification({ currentHandle, isVerified: propIsVerified, onVerificationComplete }: CFVerificationProps) {
-  const { isVerified: globalIsVerified, verificationData, clearVerification } = useCFVerification()
+  const { isVerified: globalIsVerified, verificationData, resetVerificationUI } = useCFVerification()
   const [handle, setHandle] = useState(currentHandle || verificationData?.handle || "")
   const [verificationToken, setVerificationToken] = useState("")
   const [loading, setLoading] = useState(false)
@@ -115,7 +115,7 @@ export function CFVerification({ currentHandle, isVerified: propIsVerified, onVe
               variant="outline" 
               size="sm" 
               onClick={() => {
-                clearVerification()
+                resetVerificationUI()
                 setStep("input")
                 setHandle("")
                 setError(null)

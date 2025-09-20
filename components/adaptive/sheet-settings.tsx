@@ -19,14 +19,12 @@ export function SheetSettings({
   srMode,
   onSrModeChange,
 }: {
-  snoozeMinutes: number
-  onSnoozeMinutesChange: (m: number) => void
+  snoozeMinutes?: number
+  onSnoozeMinutesChange?: (m: number) => void
   srMode: SRMode
   onSrModeChange: (m: SRMode) => void
 }) {
   const [open, setOpen] = useState(false)
-
-  const snoozeOptions = [15, 60, 240, 1440] // 15m, 1h, 4h, 1d
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -51,14 +49,7 @@ export function SheetSettings({
         >
           {srMode === "aggressive" ? "• " : ""} Aggressive
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel>Snooze duration</DropdownMenuLabel>
-        {snoozeOptions.map((m) => (
-          <DropdownMenuItem key={m} onClick={() => onSnoozeMinutesChange(m)}>
-            {m < 60 ? `${m} minutes` : m < 1440 ? `${m / 60} hours` : `${m / 1440} day`}
-            {m === snoozeMinutes ? " •" : ""}
-          </DropdownMenuItem>
-        ))}
+
       </DropdownMenuContent>
     </DropdownMenu>
   )

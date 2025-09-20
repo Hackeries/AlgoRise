@@ -1,13 +1,15 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import useSWR from "swr"
 import { AdaptiveFilterBar, type FilterState } from "./filter-bar"
 import { AdaptiveProblemCard } from "./problem-card"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
-import { tagToSlug } from "@/lib/visualizers"
 import { useRealtimeUpdates } from "@/lib/hooks/use-real-time"
 
 type Outcome = "solved" | "failed" | "skipped"
@@ -75,13 +77,11 @@ function fmtDue(dueIso: string) {
 export function AdaptiveSheetContent({
   controlledFilters,
   onFiltersChange,
-  snoozeMinutes = 60,
   srMode = "standard",
   cfHandle,
 }: {
   controlledFilters?: FilterState
   onFiltersChange?: (s: FilterState) => void
-  snoozeMinutes?: number
   srMode?: "standard" | "aggressive"
   cfHandle?: string
 }) {
@@ -89,8 +89,26 @@ export function AdaptiveSheetContent({
   const filters = controlledFilters ?? uncontrolled
   const setFilters = onFiltersChange ?? setUncontrolled
 
+  // Notes state
+  const [notesDialogOpen, setNotesDialogOpen] = useState(false)
+  const [currentProblem, setCurrentProblem] = useState<SheetItem | null>(null)
+  const [notes, setNotes] = useState("")
+  const [problemNotes, setProblemNotes] = useState<Record<string, string>>({})
+
   const { toast } = useToast()
   const router = useRouter()
+
+  // Load notes from localStorage on mount
+  useEffect(() => {
+    const savedNotes = localStorage.getItem('adaptive-problem-notes')
+    if (savedNotes) {
+      try {
+        setProblemNotes(JSON.parse(savedNotes))
+      } catch (e) {
+        console.error('Failed to parse saved notes:', e)
+      }
+    }
+  }, [])
 
   const LIMITS = { now: 8, soon: 8, later: 8 }
 
@@ -157,7 +175,7 @@ export function AdaptiveSheetContent({
     }
   }
 
-  function handleSolve(item: SheetItem) {
+  function handleCompleted(item: SheetItem) {
     postAction(
       "/api/adaptive-sheet/solve",
       { problemId: item.id, baseRating: filters.ratingBase, tags: filters.tags },
@@ -165,7 +183,7 @@ export function AdaptiveSheetContent({
     ).then(async () => {
       // base toast about next due
       toast({
-        title: "Marked as solved — great job!",
+        title: "Marked as completed — great job!",
         description: `Next review: ${fmtDue(item.nextDueAt)}`,
       })
       // streak update + milestone celebration
@@ -183,6 +201,27 @@ export function AdaptiveSheetContent({
       }
     })
   }
+
+  function handleNotes(item: SheetItem) {
+    setCurrentProblem(item)
+    setNotes(problemNotes[item.id] || "")
+    setNotesDialogOpen(true)
+  }
+
+  function saveNotes() {
+    if (currentProblem) {
+      const newNotes = { ...problemNotes, [currentProblem.id]: notes }
+      setProblemNotes(newNotes)
+      localStorage.setItem('adaptive-problem-notes', JSON.stringify(newNotes))
+      toast({
+        title: "Notes saved",
+        description: "Your learning notes have been saved locally.",
+      })
+    }
+    setNotesDialogOpen(false)
+    setCurrentProblem(null)
+    setNotes("")
+  }
   function handleSkip(item: SheetItem) {
     postAction("/api/adaptive-sheet/skip", { problemId: item.id }, item.id).then(() =>
       toast({
@@ -199,28 +238,7 @@ export function AdaptiveSheetContent({
       }),
     )
   }
-  function handleSnooze(item: SheetItem) {
-    postAction("/api/adaptive-sheet/snooze", { problemId: item.id, minutes: snoozeMinutes }, item.id).then(() =>
-      toast({
-        title: "Snoozed",
-        description: `Snoozed for ${snoozeMinutes}m.`,
-      }),
-    )
-  }
-  function handleLearn(item: SheetItem) {
-    // Prefer visualizer deep-link using the first tag; fallback to visualizers index or problem URL.
-    const primaryTag = item.problem.tags?.[0]
-    if (primaryTag) {
-      const slug = tagToSlug(primaryTag)
-      router.push(`/visualizers/${slug}`)
-      return
-    }
-    if (item.problem.url) {
-      window.open(item.problem.url, "_blank", "noopener,noreferrer")
-      return
-    }
-    router.push("/visualizers")
-  }
+
 
   const sections = useMemo(() => {
     return [
@@ -266,11 +284,8 @@ export function AdaptiveSheetContent({
                       tags: item.problem.tags,
                     }}
                     subtitle={fmtDue(item.nextDueAt)}
-                    onSolve={() => handleSolve(item)}
-                    onSkip={() => handleSkip(item)}
-                    onFail={() => handleFail(item)}
-                    onSnooze={() => handleSnooze(item)}
-                    onLearn={() => handleLearn(item)}
+                    onCompleted={() => handleCompleted(item)}
+                    onNotes={() => handleNotes(item)}
                   />
                 ))}
               </div>
@@ -278,6 +293,40 @@ export function AdaptiveSheetContent({
           ) : null,
         )
       )}
+
+      {/* Notes Dialog */}
+      <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>
+              Notes for: {currentProblem?.problem.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline">Rating {currentProblem?.problem.rating}</Badge>
+              {currentProblem?.problem.tags.map((tag) => (
+                <Badge key={tag} variant="secondary">{tag}</Badge>
+              ))}
+            </div>
+            <Textarea
+              placeholder="Write your learning notes here... What did you learn? What approach did you use? Any key insights?"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={8}
+              className="resize-none"
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setNotesDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={saveNotes}>
+                Save Notes
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

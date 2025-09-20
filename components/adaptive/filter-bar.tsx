@@ -8,7 +8,7 @@ import { Slider } from "@/components/ui/slider"
 const DEFAULT_TAGS = ["graphs", "dp", "greedy", "math", "strings", "trees", "bruteforce", "number theory"]
 
 export type FilterState = {
-  ratingBase: number // window is [base-200, base+200]
+  ratingBase: number // window is [base-100, base+200] (minimum 800)
   tags: string[]
 }
 
@@ -24,7 +24,7 @@ export function AdaptiveFilterBar({
   const [ratingBase, setRatingBase] = useState(initialRatingBase)
   const [tags, setTags] = useState<string[]>(initialTags)
 
-  const windowMin = ratingBase - 200
+  const windowMin = Math.max(800, ratingBase - 100) // Match API logic: minimum 800
   const windowMax = ratingBase + 200
 
   function toggleTag(tag: string) {
@@ -41,7 +41,7 @@ export function AdaptiveFilterBar({
         <div>
           <p className="text-sm text-muted-foreground">Rating window</p>
           <p className="text-sm">
-            {windowMin} to {windowMax} <span className="text-muted-foreground">(base {ratingBase} ±200)</span>
+            {windowMin} to {windowMax} <span className="text-muted-foreground">(base {ratingBase} +200/-100)</span>
           </p>
           <div className="mt-2 max-w-sm">
             <Slider

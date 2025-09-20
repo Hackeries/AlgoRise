@@ -11,7 +11,6 @@ import { useCFVerification } from "@/lib/context/cf-verification"
 export function AdaptiveSheetPageClient() {
   const { isVerified, verificationData } = useCFVerification()
   const [filters, setFilters] = useState<FilterState>({ ratingBase: 1500, tags: [] })
-  const [snoozeMinutes, setSnoozeMinutes] = useState<number>(60)
   const [srMode, setSrMode] = useState<SRMode>("standard")
 
   useEffect(() => {
@@ -33,9 +32,10 @@ export function AdaptiveSheetPageClient() {
     
     // Set rating base from verified CF data if available
     if (isVerified && verificationData?.rating) {
+      const currentRating = Math.floor(verificationData.rating) // Floor the current rating
       setFilters(prev => ({
         ...prev,
-        ratingBase: verificationData.rating
+        ratingBase: currentRating
       }))
     }
   }, [isVerified, verificationData])
@@ -53,8 +53,6 @@ export function AdaptiveSheetPageClient() {
               </p>
             </div>
             <SheetSettings
-              snoozeMinutes={snoozeMinutes}
-              onSnoozeMinutesChange={setSnoozeMinutes}
               srMode={srMode}
               onSrModeChange={setSrMode}
             />
@@ -67,7 +65,6 @@ export function AdaptiveSheetPageClient() {
             <AdaptiveSheetContent
               controlledFilters={filters}
               onFiltersChange={setFilters}
-              snoozeMinutes={snoozeMinutes}
               srMode={srMode}
               cfHandle={verificationData?.handle || ''}
             />

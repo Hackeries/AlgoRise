@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { useCFVerification } from "@/lib/context/cf-verification"
 import { useState } from "react"
 import { useToast } from "@/hooks/use-toast"
+import { CFVerificationDebug } from "@/components/debug/cf-verification-debug"
 
 export default function SettingsPage() {
   const { user } = useAuth()
@@ -116,6 +117,8 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        <CFVerificationDebug />
       </div>
     </div>
   )

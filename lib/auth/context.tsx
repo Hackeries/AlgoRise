@@ -48,11 +48,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     if (!supabase) {
       setUser(null)
+      // Clear CF verification data from localStorage
+      localStorage.removeItem('cf_verification')
       window.location.href = "/"
       return
     }
     
     try {
+      // Clear CF verification data from localStorage before signing out
+      localStorage.removeItem('cf_verification')
       await supabase.auth.signOut()
       setUser(null)
       window.location.href = "/"

@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { ExternalLink, CheckCircle, StickyNote } from "lucide-react"
 
 export type Problem = {
   id: string
@@ -14,21 +15,21 @@ export type Problem = {
 
 export function AdaptiveProblemCard({
   problem,
-  onSolve,
-  onSkip,
-  onLearn,
+  onCompleted,
+  onNotes,
   subtitle,
-  onFail,
-  onSnooze,
 }: {
   problem: Problem
-  onSolve?: (p: Problem) => void
-  onSkip?: (p: Problem) => void
-  onLearn?: (p: Problem) => void
+  onCompleted?: (p: Problem) => void
+  onNotes?: (p: Problem) => void
   subtitle?: string
-  onFail?: (p: Problem) => void
-  onSnooze?: (p: Problem) => void
 }) {
+  const handleSolve = () => {
+    if (problem.url) {
+      window.open(problem.url, '_blank', 'noopener,noreferrer')
+    }
+  }
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -45,25 +46,29 @@ export function AdaptiveProblemCard({
           ))}
         </div>
         <div className="flex items-center gap-2">
-          <Button className="bg-blue-600 hover:bg-blue-600/90" onClick={() => onSolve?.(problem)}>
+          <Button 
+            className="bg-blue-600 hover:bg-blue-600/90 flex items-center gap-2" 
+            onClick={handleSolve}
+          >
+            <ExternalLink className="h-4 w-4" />
             Solve
           </Button>
-          <Button variant="outline" onClick={() => onSkip?.(problem)}>
-            Skip
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            onClick={() => onCompleted?.(problem)}
+          >
+            <CheckCircle className="h-4 w-4" />
+            Completed
           </Button>
-          <Button variant="ghost" onClick={() => onLearn?.(problem)}>
-            Learn
+          <Button 
+            variant="ghost" 
+            className="flex items-center gap-2"
+            onClick={() => onNotes?.(problem)}
+          >
+            <StickyNote className="h-4 w-4" />
+            Notes
           </Button>
-          {onFail ? (
-            <Button variant="ghost" onClick={() => onFail?.(problem)}>
-              Fail
-            </Button>
-          ) : null}
-          {onSnooze ? (
-            <Button variant="ghost" onClick={() => onSnooze?.(problem)}>
-              Snooze
-            </Button>
-          ) : null}
         </div>
       </CardContent>
     </Card>

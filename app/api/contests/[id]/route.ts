@@ -1,64 +1,34 @@
 import { NextResponse } from "next/server"
-import fs from 'fs'
-import path from 'path'
+import { createServerClient } from "@supabase/ssr"
+import { cookies } from "next/headers"
 
-// File path for persistent storage
-const CONTESTS_FILE = path.join(process.cwd(), 'data', 'contests.json')
+export async function POST(req: Request, { params }: { params: { id: string } }) {
+  const contestId = params.id
+  const body = await req.json().catch(() => ({}))
+  const problem_id = (body?.problemId as string | undefined)?.trim()
+  const status = body?.status as "solved" | "failed" | undefined
+  const penalty_s = Number(body?.penalty ?? 0)
 
-// Load contests from file
-function loadContests() {
-  try {
-    if (fs.existsSync(CONTESTS_FILE)) {
-      const data = fs.readFileSync(CONTESTS_FILE, 'utf8')
-      return JSON.parse(data)
-    }
-    return []
-  } catch (error) {
-    console.error('Error loading contests:', error)
-    return []
-  }
-}
+  if (!problem_id || !status) return NextResponse.json({ error: "problemId and status required" }, { status: 400 })
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const contests = loadContests()
-    const contest = contests.find((c: any) => c.id === params.id)
-    
-    if (!contest) {
-      return NextResponse.json({ error: "Contest not found" }, { status: 404 })
-    }
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies },
+  )
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 })
 
-    // Add computed status based on current time
-    const now = new Date()
-    const startTime = new Date(contest.start_time)
-    const endTime = contest.end_time ? new Date(contest.end_time) : 
-      new Date(startTime.getTime() + (contest.duration_minutes || 120) * 60 * 1000)
+  const { error } = await supabase.from("contest_submissions").insert({
+    contest_id: contestId,
+    user_id: user.id,
+    problem_id,
+    status,
+    penalty_s: isFinite(penalty_s) ? penalty_s : 0,
+  })
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-    let status = 'upcoming'
-    if (now >= startTime && now < endTime) {
-      status = 'live'
-    } else if (now >= endTime) {
-      status = 'ended'
-    }
-
-    // Calculate time remaining
-    const timeRemaining = status === 'live' ? 
-      Math.max(0, endTime.getTime() - now.getTime()) : 
-      (status === 'upcoming' ? startTime.getTime() - now.getTime() : 0)
-
-    return NextResponse.json({
-      contest: {
-        ...contest,
-        status,
-        timeRemaining,
-        shareUrl: `${req.headers.get('origin')}/contests/${contest.id}/participate`
-      }
-    })
-  } catch (error) {
-    console.error('Error getting contest:', error)
-    return NextResponse.json({ error: "Failed to get contest" }, { status: 500 })
-  }
+  return NextResponse.json({ ok: true })
 }

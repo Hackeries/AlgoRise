@@ -1,38 +1,44 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# ========================
+# GitHub ignoring files
+# ========================
 
-# dependencies
-/node_modules
+# Dependencies
+/node_modules/
 
-# next.js
+# Next.js build output
 /.next/
 /out/
 
-# production
-/build
+# Production build
+/build/
 
-# debug
+# Debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
+# Environment files
 .env*
 
-# contest data storage
+# Contest data storage
 /data/
 
-# vercel
-.vercel
+# Vercel deployment config
+.vercel/
 
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
 
-# Ignore all markdown files by default
+# ========================
+# Markdown files
+# ========================
+
+# Ignore all .md files by default
 *.md
 
-# But keep these important markdown files
+# But keep important documentation
 !CODE_OF_CONDUCT.md
 !LOGIN_GUIDE.md
 !LEARNING_ROADMAP.md
@@ -42,3 +48,9 @@ next-env.d.ts
 !AUTH_DEMO_STATUS.md
 !CONTRIBUTING.md
 !README.md
+
+# ========================
+# Local test / development scripts
+# ========================
+test-db.js
+test-contest-creation.js

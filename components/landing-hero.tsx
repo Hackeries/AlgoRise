@@ -8,6 +8,7 @@ import { Trophy, Target, TrendingUp, Calendar, Users } from 'lucide-react'
 import CFVerificationTrigger from '@/components/auth/cf-verification-trigger'
 import ContestSection from './contests-section'
 import BannerLanding from './banner-landing'
+import { motion } from "framer-motion"
 
 interface UserStats {
   totalSolved: number
@@ -145,7 +146,7 @@ export default function ModernLanding() {
       <ContestSection />
 
       {/* Features Section */}
-      <section className="py-16 px-4 bg-slate-900 rounded-md">
+      <section className="py-40 px-4 bg-radial-[at_50%_75%] from-indigo-700 to-neutral-900 to-70% rounded-md">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Why Choose <span className='text-yellow-400'>AlgoRise</span>?</h2>
@@ -178,13 +179,18 @@ export default function ModernLanding() {
               }
             ].map((feature, i) => (
               <div key={feature.title}>
-                <Card className="border-1 border-solid border-[#DCD9D4] backdrop-blur-sm shadow-lg text-center h-full">
-                  <CardContent className="p-6">
-                    <feature.icon className="h-12 w-12 mx-auto mb-4 text-[#DCD9D4] drop-shadow-[0_0_15px_var(--primary)] animate-bounce" />
-                    <h3 className="font-semibold mb-2">{feature.title}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{feature.description}</p>
-                  </CardContent>
-                </Card>
+                <motion.div className="block h-full"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}>
+                  <Card className="border-1 border-solid border-[#DCD9D4] backdrop-blur-sm shadow-lg text-center h-full hover:drop-shadow-[0_0_2px_var(--primary)]">
+                    <CardContent className="p-6">
+                      <feature.icon className="h-12 w-12 mx-auto mb-4 text-[#DCD9D4] drop-shadow-[0_0_15px_var(--primary)] animate-bounce" />
+                      <h3 className="font-semibold mb-2">{feature.title}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{feature.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               </div>
             ))}
           </div>

@@ -1,5 +1,5 @@
 'use client'
-import PixelBlast from "@/app/visualizers/bg/pixelblast"
+import PixelBlast from "@/components/bg/pixelblast"
 import { Target, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'

@@ -26,9 +26,9 @@ export default function VisualizersPage() {
               <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 relative z-10">
                 {VISUALIZERS.map((v) => (
                   <Link key={v.slug} href={`/visualizers/${v.slug}`} className='transform-gpu transition-transform duration-200 ease-in-out hover:scale-101'>
-                    <Card className="h-full">
+                    <Card className="h-full text-indigo-300">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-base">{v.title}</CardTitle>
+                        <CardTitle className="text-lg">{v.title}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-stone-400">{v.summary}</p>

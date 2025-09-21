@@ -31,8 +31,8 @@ export const LEARNING_PATH_DATA: Section[] = [
     id: "basic-cpp",
     title: "Basic C++",
     description: "Master C++ fundamentals with essential programming concepts",
-    totalProblems: 65,
-    estimatedTime: "3-4 weeks",
+    totalProblems: 53,
+    estimatedTime: "2 weeks",
     icon: "💻",
     subsections: [
       {
@@ -42,30 +42,279 @@ export const LEARNING_PATH_DATA: Section[] = [
         estimatedTime: "1 week",
         problems: [
           {
-            id: "gfg-hello-world",
-            title: "Hello World in C++",
+            id: "cpp1",
+            title: "Hello World",
             url: "https://www.geeksforgeeks.org/c-hello-world-program/",
             platform: "GFG",
             difficulty: "Easy",
             tags: ["basics", "syntax"]
           },
           {
-            id: "usaco-basic-io",
-            title: "Basic Input/Output",
-            url: "https://usaco.guide/bronze/io",
-            platform: "USACO",
+            id: "cpp2",
+            title: "Display Your Name",
+            url: "https://www.geeksforgeeks.org/program-display-name-cpp/",
+            platform: "GFG",
             difficulty: "Easy",
-            tags: ["io", "basics"]
+            tags: ["basics", "io"]
           },
           {
-            id: "cf-watermelon",
-            title: "Watermelon",
-            url: "https://codeforces.com/problem/4/A",
-            platform: "CF",
+            id: "cpp3",
+            title: "User Input",
+            url: "https://www.geeksforgeeks.org/basic-input-output-c/",
+            platform: "GFG",
             difficulty: "Easy",
-            tags: ["implementation", "math"]
+            tags: ["input", "io"]
           },
-          // Add more problems here...
+          {
+            id: "cpp4",
+            title: "Sum of Two Numbers",
+            url: "https://www.geeksforgeeks.org/program-calculate-sum-numbers-cpp/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arithmetic", "basics"]
+          },
+          {
+            id: "cpp5",
+            title: "Swap two numbers",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-swap-two-numbers/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arithmetic", "variables"]
+          },
+          {
+            id: "cpp6",
+            title: "Size of int, float, double, char",
+            url: "https://www.geeksforgeeks.org/c-program-to-find-size-of-int-float-double-and-char-in-your-system/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["variables", "basics"]
+          },
+          {
+            id: "cpp7",
+            title: "Float Multiplication",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-multiply-two-floating-point-numbers/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arithmetic", "basics"]
+          },
+          {
+            id: "cpp8",
+            title: "ASCII Value of a Character",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-find-ascii-value-of-a-character/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["characters", "basics"]
+          },
+          {
+            id: "cpp9",
+            title: "Convert Fahrenheit to Celsius",
+            url: "https://www.geeksforgeeks.org/c-program-for-celsius-to-fahrenheit-conversion/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arithmetic", "basics"]
+          },
+          {
+            id: "cpp10",
+            title: "Calculate Simple Interest",
+            url: "https://www.geeksforgeeks.org/program-to-calculate-simple-interest/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arithmetic", "basics"]
+          },
+          {
+            id: "cpp11",
+            title: "Calculate Compound Interest",
+            url: "https://www.geeksforgeeks.org/c-program-to-calculate-compound-interest/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arithmetic", "basics"]
+          },
+          {
+            id: "cpp12",
+            title: "Area and Perimeter of Rectangle",
+            url: "https://www.geeksforgeeks.org/c-program-to-calculate-area-and-perimeter-of-a-rectangle/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arithmetic", "basics"]
+          },
+          // C++ Control Flow Programs
+          {
+            id: "cpp13",
+            title: "Check for Even Odd",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-check-if-a-number-is-even-or-odd/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["control-flow", "if-else"]
+          },
+          {
+            id: "cpp14",
+            title: "Largest Among 3",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-find-largest-among-three-numbers/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["control-flow", "if-else"]
+          },
+          {
+            id: "cpp15",
+            title: "Vowel/Consonant Check",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-check-character-is-vowel-or-consonant/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["control-flow", "if-else"]
+          },
+          {
+            id: "cpp16",
+            title: "Leap Year Check",
+            url: "https://www.geeksforgeeks.org/c-cpp-program-to-check-leap-year/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["control-flow", "if-else"]
+          },
+          {
+            id: "cpp17",
+            title: "Multiplication Table",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-generate-multiplication-table/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["loops", "basics"]
+          },
+          {
+            id: "cpp18",
+            title: "Sum of n Natural Numbers",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-find-sum-of-natural-numbers/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["loops", "arithmetic"]
+          },
+          {
+            id: "cpp19",
+            title: "Factorial of a Number",
+            url: "https://www.geeksforgeeks.org/c-program-for-factorial-of-a-number/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["loops", "arithmetic"]
+          },
+          {
+            id: "cpp20",
+            title: "Reverse a Number",
+            url: "https://www.geeksforgeeks.org/reverse-digits-integer-overflow-handled/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["loops", "arithmetic"]
+          },
+          {
+            id: "cpp21",
+            title: "GCD of two numbers",
+            url: "https://www.geeksforgeeks.org/c-program-find-gcd-hcf-two-numbers/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["loops", "arithmetic"]
+          },
+          {
+            id: "cpp22",
+            title: "LCM of two numbers",
+            url: "https://www.geeksforgeeks.org/c-program-to-calculate-lcm-of-two-numbers/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["loops", "arithmetic"]
+          },
+          {
+            id: "cpp23",
+            title: "Palindrome Check",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-check-whether-a-number-is-palindrome-or-not/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["control-flow", "loops"]
+          },
+          {
+            id: "cpp24",
+            title: "Prime Check",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-check-whether-a-number-is-prime-or-not/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["loops", "math"]
+          },
+          {
+            id: "cpp25",
+            title: "Primes in Range",
+            url: "https://www.geeksforgeeks.org/cpp/cpp-program-to-find-prime-numbers-between-given-interval/",
+            platform: "GFG",
+            difficulty: "Medium",
+            tags: ["loops", "math"]
+          },
+          {
+            id: "cpp26",
+            title: "Armstrong Number",
+            url: "https://www.geeksforgeeks.org/cpp/cpp-program-to-check-armstrong-numbers/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["loops", "math"]
+          },
+          {
+            id: "cpp27",
+            title: "Armstrong Numbers Between 1 to 1000",
+            url: "https://www.geeksforgeeks.org/cpp/cpp-program-to-print-armstrong-numbers-between-1-to-1000/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["loops", "math"]
+          },
+          {
+            id: "cpp28",
+            title: "nth Fibonacci Number",
+            url: "https://www.geeksforgeeks.org/cpp/cpp-program-for-fibonacci-numbers/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["loops", "math"]
+          },
+          {
+            id: "cpp29",
+            title: "Basic Calculator",
+            url: "https://www.geeksforgeeks.org/cpp/c-c-program-to-make-a-simple-calculator/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["conditionals", "math"]
+          },
+          {
+            id: "cpp30",
+            title: "Right Half Pyramid",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-print-pyramid-patterns/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["patterns", "loops"]
+          },
+          {
+            id: "cpp31",
+            title: "Left Half Pyramid",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-print-pyramid-patterns/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["patterns", "loops"]
+          },
+          {
+            id: "cpp32",
+            title: "Full Pyramid",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-print-pyramid-patterns/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["patterns", "loops"]
+          },
+          {
+            id: "cpp33",
+            title: "Inverted Pyramid",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-print-pyramid-patterns/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["patterns", "loops"]
+          },
+          {
+            id: "cpp34",
+            title: "Triangle Pattern",
+            url: "https://www.geeksforgeeks.org/cpp-program-to-print-pyramid-patterns/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["patterns", "loops"]
+          }
+          // ...add more as needed
         ]
       },
       {
@@ -75,14 +324,158 @@ export const LEARNING_PATH_DATA: Section[] = [
         estimatedTime: "1 week",
         problems: [
           {
-            id: "gfg-functions",
+            id: "cpp35",
             title: "C++ Functions",
             url: "https://www.geeksforgeeks.org/functions-in-c/",
             platform: "GFG",
             difficulty: "Easy",
             tags: ["functions"]
           },
-          // Add more problems...
+          {
+            id: "cpp36",
+            title: "Primes in Range",
+            url: "https://www.geeksforgeeks.org/c-program-to-print-all-prime-numbers-between-1-to-n/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["functions", "math"]
+          },
+          {
+            id: "cpp37",
+            title: "Sum of Two Primes Check",
+            url: "https://www.geeksforgeeks.org/check-if-a-number-can-be-expressed-as-sum-of-two-primes/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["functions", "math"]
+          },
+          {
+            id: "cpp38",
+            title: "Recursive Sum of n",
+            url: "https://www.geeksforgeeks.org/program-to-find-sum-of-first-n-natural-numbers-using-recursion/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["functions", "recursion"]
+          },
+          {
+            id: "cpp39",
+            title: "Factorial using Recursion",
+            url: "https://www.geeksforgeeks.org/program-for-factorial-of-a-number/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["functions", "recursion"]
+          },
+          {
+            id: "cpp40",
+            title: "Recursive Sentence Reverse",
+            url: "https://www.geeksforgeeks.org/program-reverse-sentence-word-wise/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["functions", "recursion", "strings"]
+          },
+          {
+            id: "cpp41",
+            title: "Power using Recursion",
+            url: "https://www.geeksforgeeks.org/write-a-c-program-to-calculate-powxn/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["functions", "recursion"]
+          },
+          {
+            id: "cpp42",
+            title: "Variadic Templates",
+            url: "https://www.geeksforgeeks.org/variadic-templates-in-c/",
+            platform: "GFG",
+            difficulty: "Medium",
+            tags: ["functions", "templates"]
+          },
+          // C++ Array Programs
+          {
+            id: "cpp43",
+            title: "Array Equality Check",
+            url: "https://www.geeksforgeeks.org/check-if-two-arrays-are-equal-or-not/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arrays"]
+          },
+          {
+            id: "cpp44",
+            title: "Array Max & Min",
+            url: "https://www.geeksforgeeks.org/maximum-and-minimum-in-an-array/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arrays"]
+          },
+          {
+            id: "cpp45",
+            title: "Array Average",
+            url: "https://www.geeksforgeeks.org/c-program-to-calculate-average-using-arrays/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arrays", "math"]
+          },
+          {
+            id: "cpp46",
+            title: "Merge Arrays",
+            url: "https://www.geeksforgeeks.org/merge-two-sorted-arrays/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arrays", "sorting"]
+          },
+          {
+            id: "cpp47",
+            title: "2D Array",
+            url: "https://www.geeksforgeeks.org/multidimensional-arrays-in-c-cpp/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arrays", "2d"]
+          },
+          {
+            id: "cpp48",
+            title: "Common Array Elements",
+            url: "https://www.geeksforgeeks.org/common-elements-in-all-rows-of-a-given-matrix/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arrays"]
+          },
+          {
+            id: "cpp49",
+            title: "Remove Duplicates",
+            url: "https://www.geeksforgeeks.org/remove-duplicates-sorted-array/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arrays"]
+          },
+          {
+            id: "cpp50",
+            title: "Remove Element",
+            url: "https://www.geeksforgeeks.org/remove-element-array/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arrays"]
+          },
+          {
+            id: "cpp51",
+            title: "Prefix Sum",
+            url: "https://www.geeksforgeeks.org/prefix-sum-array-implementation-applications-competitive-programming/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arrays", "prefix-sum"]
+          },
+          {
+            id: "cpp52",
+            title: "Rotate Array",
+            url: "https://www.geeksforgeeks.org/array-rotation/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arrays"]
+          },
+          {
+            id: "cpp53",
+            title: "Reverse Copy Array",
+            url: "https://www.geeksforgeeks.org/write-a-program-to-reverse-an-array-or-string/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["arrays", "reverse"]
+          }
         ]
       }
     ]
@@ -91,8 +484,8 @@ export const LEARNING_PATH_DATA: Section[] = [
     id: "mathematics",
     title: "Mathematics",
     description: "Essential mathematical concepts for competitive programming",
-    totalProblems: 90,
-    estimatedTime: "4-5 weeks",
+    totalProblems: 28,
+    estimatedTime: "2 weeks",
     icon: "🧮",
     subsections: [
       {
@@ -101,35 +494,42 @@ export const LEARNING_PATH_DATA: Section[] = [
         description: "GCD, LCM, Prime numbers, Modular arithmetic",
         estimatedTime: "2 weeks",
         problems: [
-          {
-            id: "cf-gcd-lcm",
-            title: "GCD and LCM",
-            url: "https://codeforces.com/problem/1/A",
-            platform: "CF",
-            difficulty: "Easy",
-            tags: ["math", "gcd"]
-          },
-          // Add more problems...
+          // Easy
+          { id: "mul7", title: "Efficient Way to Multiply with 7", url: "https://www.geeksforgeeks.org/efficient-way-to-multiply-with-7/", platform: "GFG", difficulty: "Easy", tags: ["math"] },
+          { id: "div7", title: "Check Divisibility by 7", url: "https://www.geeksforgeeks.org/check-divisibility-by-7/", platform: "GFG", difficulty: "Easy", tags: ["math", "divisibility"] },
+          { id: "fib-check", title: "Check if a Number is Fibonacci", url: "https://www.geeksforgeeks.org/check-number-fibonacci-number/", platform: "GFG", difficulty: "Easy", tags: ["math", "fibonacci"] },
+          { id: "mul-noloop", title: "Multiply Without Operators", url: "https://www.geeksforgeeks.org/multiply-two-integers-without-using-multiplication-division-and-bitwise-operators-and-no-loops/", platform: "GFG", difficulty: "Easy", tags: ["math", "trick"] },
+          { id: "power-custom", title: "Power Without * and /", url: "https://www.geeksforgeeks.org/write-your-own-power-without-using-multiplication-and-division-operators/", platform: "GFG", difficulty: "Easy", tags: ["math", "power"] },
+          { id: "avg-stream", title: "Average of a Stream", url: "https://www.geeksforgeeks.org/average-of-a-stream-of-numbers/", platform: "GFG", difficulty: "Easy", tags: ["math", "stream"] },
+          { id: "point-triangle", title: "Point Inside Triangle", url: "https://www.geeksforgeeks.org/check-whether-given-point-lies-inside-triangle-not/", platform: "GFG", difficulty: "Easy", tags: ["geometry"] },
+          { id: "prime-factors", title: "Prime Factors", url: "https://www.geeksforgeeks.org/efficient-program-to-print-all-prime-factors-of-a-given-number/", platform: "GFG", difficulty: "Easy", tags: ["math", "prime"] },
+          { id: "russian-mul", title: "Russian Peasant Multiplication", url: "https://www.geeksforgeeks.org/russian-peasant-multiply-two-numbers-using-bitwise-operators/", platform: "GFG", difficulty: "Easy", tags: ["math", "bitwise"] },
+
+          // Medium
+          { id: "sieve", title: "Sieve of Eratosthenes", url: "https://www.geeksforgeeks.org/sieve-of-eratosthenes/", platform: "GFG", difficulty: "Medium", tags: ["math", "prime"] },
+          { id: "mul3", title: "Check Multiple of 3", url: "https://www.geeksforgeeks.org/write-an-efficient-method-to-check-if-a-number-is-multiple-of-3/", platform: "GFG", difficulty: "Medium", tags: ["math", "bit"] },
+          { id: "perm-string", title: "All Permutations of String", url: "https://www.geeksforgeeks.org/write-a-program-to-print-all-permutations-of-a-given-string/", platform: "GFG", difficulty: "Medium", tags: ["backtracking"] },
+          { id: "lucky", title: "Lucky Numbers", url: "https://www.geeksforgeeks.org/lucky-numbers/", platform: "GFG", difficulty: "Medium", tags: ["math"] },
+          { id: "base14", title: "Add Numbers in Base 14", url: "https://www.geeksforgeeks.org/write-a-program-to-add-two-numbers-in-base-14/", platform: "GFG", difficulty: "Medium", tags: ["math", "base"] },
+          { id: "babylonian-sqrt", title: "Babylonian Square Root", url: "https://www.geeksforgeeks.org/square-root-of-a-perfect-square/", platform: "GFG", difficulty: "Medium", tags: ["math", "sqrt"] },
+          { id: "sum-combinations", title: "Combinations of Points", url: "https://www.geeksforgeeks.org/print-all-combinations-of-points-that-can-compose-a-given-number/", platform: "GFG", difficulty: "Medium", tags: ["math", "dp"] },
+          { id: "fair-coin", title: "Fair Coin from Biased Coin", url: "https://www.geeksforgeeks.org/make-a-fair-coin-from-a-biased-coin/", platform: "GFG", difficulty: "Medium", tags: ["probability"] },
+          { id: "shuffle", title: "Fisher–Yates Shuffle", url: "https://www.geeksforgeeks.org/shuffle-a-given-array-using-fisher-yates-shuffle-algorithm/", platform: "GFG", difficulty: "Medium", tags: ["random"] },
+
+          // Hard
+          { id: "count-3", title: "Count Numbers Without 3", url: "https://www.geeksforgeeks.org/count-numbers-that-dont-contain-3/", platform: "GFG", difficulty: "Hard", tags: ["math"] },
+          { id: "magic-square", title: "Magic Square (Odd Order)", url: "https://www.geeksforgeeks.org/magic-square/", platform: "GFG", difficulty: "Hard", tags: ["math", "matrix"] },
+          { id: "largest-mul3", title: "Largest Multiple of 3", url: "https://www.geeksforgeeks.org/find-the-largest-multiple-of-3/", platform: "GFG", difficulty: "Hard", tags: ["math", "queue"] },
+          { id: "dfa-div", title: "DFA Based Division", url: "https://www.geeksforgeeks.org/dfa-based-division/", platform: "GFG", difficulty: "Hard", tags: ["automata"] },
+          { id: "rand1-7", title: "Generate 1-7 with Equal Probability", url: "https://www.geeksforgeeks.org/generate-integer-from-1-to-7-with-equal-probability/", platform: "GFG", difficulty: "Hard", tags: ["probability"] },
+          { id: "next-palindrome", title: "Next Smallest Palindrome", url: "https://www.geeksforgeeks.org/given-a-number-find-next-smallest-palindrome-larger-than-this-number/", platform: "GFG", difficulty: "Hard", tags: ["math", "palindrome"] },
+          { id: "day-week", title: "Day of Week for Date", url: "https://www.geeksforgeeks.org/find-day-of-the-week-for-a-given-date/", platform: "GFG", difficulty: "Hard", tags: ["math", "date"] },
+          { id: "lexi-perm", title: "Lexicographic Permutations", url: "https://www.geeksforgeeks.org/lexicographic-permutations-of-string/", platform: "GFG", difficulty: "Hard", tags: ["backtracking"] },
+          { id: "reservoir-sampling", title: "Reservoir Sampling", url: "https://www.geeksforgeeks.org/reservoir-sampling/", platform: "GFG", difficulty: "Hard", tags: ["probability"] },
+          { id: "lexi-rank", title: "Lexicographic Rank of String", url: "https://www.geeksforgeeks.org/lexicographic-rank-of-a-string/", platform: "GFG", difficulty: "Hard", tags: ["math", "string"] }
         ]
+
       },
-      {
-        id: "combinatorics",
-        title: "Combinatorics",
-        description: "Permutations, combinations, probability",
-        estimatedTime: "1.5 weeks",
-        problems: [
-          // Add problems...
-        ]
-      },
-      {
-        id: "probability",
-        title: "Probability",
-        description: "Basic probability concepts and problems",
-        estimatedTime: "1 week",
-        problems: [
-          // Add problems...
-        ]
-      }
     ]
   },
   {

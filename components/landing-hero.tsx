@@ -146,16 +146,16 @@ export default function ModernLanding() {
       <ContestSection />
 
       {/* Features Section */}
-      <section className="py-40 px-4 bg-radial-[at_50%_75%] from-indigo-700 to-neutral-900 to-70% rounded-md">
+      <section className="py-40 px-4 bg-radial-[at_50%_75%] from-indigo-700 to-transparent to-70% rounded-md">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Choose <span className='text-yellow-400'>AlgoRise</span>?</h2>
+            <h2 className="text-4xl font-bold mb-4">Why Choose <span className='text-yellow-400'>AlgoRise</span>?</h2>
             <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Built for competitive programmers who want to improve systematically at your own pace
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 py-5">
             {[
               {
                 icon: Target,

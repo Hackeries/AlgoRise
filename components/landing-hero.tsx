@@ -150,7 +150,7 @@ export default function ModernLanding() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Why Choose <span className='text-yellow-400'>AlgoRise</span>?</h2>
             <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Built for competitive programmers who want to improve systematically
+              Built for competitive programmers who want to improve systematically at your own pace
             </p>
           </div>
 
@@ -180,7 +180,7 @@ export default function ModernLanding() {
               <div key={feature.title}>
                 <Card className="border-1 border-solid border-[#DCD9D4] backdrop-blur-sm shadow-lg text-center h-full">
                   <CardContent className="p-6">
-                    <feature.icon className="h-12 w-12 mx-auto mb-4 text-[#DCD9D4] drop-shadow-[0_0_15px_var(--primary)]" />
+                    <feature.icon className="h-12 w-12 mx-auto mb-4 text-[#DCD9D4] drop-shadow-[0_0_15px_var(--primary)] animate-bounce" />
                     <h3 className="font-semibold mb-2">{feature.title}</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">{feature.description}</p>
                   </CardContent>

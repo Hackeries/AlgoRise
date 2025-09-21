@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { Suspense } from "react"
 import { Analytics } from "@vercel/analytics/next"
 import { SidebarLayout } from "@/components/sidebar-layout"
-import { Inter, JetBrains_Mono } from "next/font/google"
+import { Inter, JetBrains_Mono, Bricolage_Grotesque } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import { PWARegister } from "@/components/pwa/register"
@@ -21,6 +21,12 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
 })
 
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-bricolage",
+})
+
 export const metadata: Metadata = {
   title: "AlgoRise",
   description: "Practice that adapts. Compete when it counts.",
@@ -29,7 +35,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} dark antialiased`}>
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} ${bricolage.variable} dark antialiased`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0B1020" />

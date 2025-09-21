@@ -58,10 +58,10 @@ export default function ContestSection() {
     }
 
     return (
-        <section className="py-16 px-4">
+        <section className="py-16 px-4 mb-8 mt-5">
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold mb-4">Upcoming Contests</h2>
+                    <h2 className="text-3xl font-bold mb-4 text-[#EDEB99]">Upcoming Contests</h2>
                     <p className="text-gray-600 dark:text-gray-400">
                         Stay updated with the latest Codeforces contests
                     </p>
@@ -82,8 +82,14 @@ export default function ContestSection() {
                         ))
                     ) : upcomingContests.length > 0 ? (
                         upcomingContests.map((contest) => (
-                            <div key={contest.id}>
-                                <Card className="bg-white/20 dark:bg-gray-800/20 backdrop-blur-md border border-white/30 dark:border-gray-700/30 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                            <a
+                                key={contest.id}
+                                href={`https://codeforces.com/contest/${contest.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block h-full"
+                            >
+                                <Card className="bg-white/20 dark:bg-gray-800/20 backdrop-blur-md border border-white/30 dark:border-gray-700/30 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 h-full cursor-pointer">
                                     <CardHeader>
                                         <div className="flex justify-between items-start">
                                             <CardTitle className="text-lg line-clamp-2">{contest.name}</CardTitle>
@@ -104,8 +110,16 @@ export default function ContestSection() {
                                                 </span>
                                             </div>
 
-                                            <Button asChild className="w-full mt-4 text-white bg-sky-500/50 hover:bg-sky-900">
-                                                <a href={`https://codeforces.com/contest/${contest.id}`} target="_blank" rel="noopener noreferrer">
+                                            <Button
+                                                asChild
+                                                className="w-full mt-4 text-white bg-sky-500/50 hover:bg-sky-900"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <a
+                                                    href={`https://codeforces.com/contest/${contest.id}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
                                                     View Contest
                                                     <ArrowRight className="ml-2 h-4 w-4" />
                                                 </a>
@@ -113,8 +127,7 @@ export default function ContestSection() {
                                         </div>
                                     </CardContent>
                                 </Card>
-
-                            </div>
+                            </a>
                         ))
                     ) : (
                         <div className="col-span-full text-center py-12">
@@ -123,6 +136,7 @@ export default function ContestSection() {
                     )}
                 </div>
             </div>
+            <hr className='border-gray-800 dark:border-white-800 m-10' aria-role="separator"></hr>
         </section>
     )
 }

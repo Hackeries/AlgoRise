@@ -85,15 +85,14 @@ export default function ContestSection() {
                         upcomingContests.map((contest) => (
                             <motion.div
                                 key={contest.id}
-                                href={`https://codeforces.com/contest/${contest.id}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block h-full"
+                                className="block h-full cursor-pointer"
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, ease: "easeInOut" }}
                                 viewport={{ once: true, amount: 0.2 }}
-                            >
+                                onClick={() => window.open(`https://codeforces.com/contest/${contest.id}`, "_blank")}
+                                role="link"
+                                tabIndex={0}>
                                 <Card className="bg-white/20 dark:bg-gray-800/20 backdrop-blur-md border border-white/30 dark:border-gray-700/30 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 h-full cursor-pointer">
                                     <CardHeader>
                                         <div className="flex justify-between items-start">

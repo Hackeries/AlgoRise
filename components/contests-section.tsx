@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Timer, Calendar, ArrowRight } from 'lucide-react'
 import { CardHeader, Card, CardTitle, CardContent } from './ui/card'
+import { motion } from "framer-motion"
 
 interface Contest {
     id: number
@@ -82,12 +83,16 @@ export default function ContestSection() {
                         ))
                     ) : upcomingContests.length > 0 ? (
                         upcomingContests.map((contest) => (
-                            <a
+                            <motion.div
                                 key={contest.id}
                                 href={`https://codeforces.com/contest/${contest.id}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="block h-full"
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5, ease: "easeInOut" }}
+                                viewport={{ once: true, amount: 0.2 }}
                             >
                                 <Card className="bg-white/20 dark:bg-gray-800/20 backdrop-blur-md border border-white/30 dark:border-gray-700/30 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 h-full cursor-pointer">
                                     <CardHeader>
@@ -127,7 +132,7 @@ export default function ContestSection() {
                                         </div>
                                     </CardContent>
                                 </Card>
-                            </a>
+                            </motion.div>
                         ))
                     ) : (
                         <div className="col-span-full text-center py-12">
@@ -136,7 +141,7 @@ export default function ContestSection() {
                     )}
                 </div>
             </div>
-            <hr className='border-gray-800 dark:border-white-800 m-10' aria-role="separator"></hr>
+            <hr className='border-gray-800 dark:border-white-800 m-10'></hr>
         </section>
     )
 }

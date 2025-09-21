@@ -1,5 +1,8 @@
 'use client'
 import PixelBlast from "@/app/visualizers/bg/pixelblast"
+import { Target, Calendar } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 export default function BannerLanding() {
     return (
@@ -16,6 +19,25 @@ export default function BannerLanding() {
                 Master competitive programming with adaptive practice sheets,
                 real-time contest tracking, and comprehensive progress analytics.
             </p>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button asChild className="text-lg px-8 py-6 bg-[#f0f0f0] hover:bg-[#b0b0b0]">
+                    <Link href="/adaptive-sheet" className="flex items-center">
+                        <Target className="mr-2 h-5 w-5" />
+                        Start Adaptive Practice
+                    </Link>
+                </Button>
+
+                <Button
+                    asChild
+                    className="w-auto px-6 py-6 text-lg flex items-center justify-center text-white bg-slate-600 hover:bg-slate-800">
+                    <Link href="/contests" className="flex items-center">
+                        <Calendar className="mr-2 h-5 w-5" />
+                        View Contests
+                    </Link>
+                </Button>
+            </div>
         </div>
     )
 }

@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Trophy, Target, TrendingUp, Calendar, Users } from 'lucide-react'
-import Link from 'next/link'
 import CFVerificationTrigger from '@/components/auth/cf-verification-trigger'
 import ContestSection from './contests-section'
 import BannerLanding from './banner-landing'
@@ -140,25 +139,6 @@ export default function ModernLanding() {
               </Card>
             </div>
           )}
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild className="text-lg px-8 py-6 bg-[#f0f0f0] hover:bg-[#b0b0b0]">
-              <Link href="/adaptive-sheet" className="flex items-center">
-                <Target className="mr-2 h-5 w-5" />
-                Start Adaptive Practice
-              </Link>
-            </Button>
-
-            <Button
-              asChild
-              className="w-auto px-6 py-6 text-lg flex items-center justify-center text-white bg-slate-600 hover:bg-slate-800">
-              <Link href="/contests" className="flex items-center">
-                <Calendar className="mr-2 h-5 w-5" />
-                View Contests
-              </Link>
-            </Button>
-          </div>
         </div>
       </section>
 
@@ -168,7 +148,7 @@ export default function ModernLanding() {
       <section className="py-16 px-4 bg-slate-900 rounded-md">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Choose AlgoRise?</h2>
+            <h2 className="text-3xl font-bold mb-4">Why Choose <span className='text-yellow-400'>AlgoRise</span>?</h2>
             <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Built for competitive programmers who want to improve systematically
             </p>

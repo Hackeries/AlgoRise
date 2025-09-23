@@ -20,18 +20,13 @@ import {
   Moon, 
   Sun,
   Search,
-  Command,
-  HelpCircle,
   Zap,
   Home,
-  BarChart3
+  BarChart3,
+  Code2
 } from "lucide-react"
 
-interface HeaderProps {
-  title?: string
-}
-
-export function Header({ title = "Competitive Programming" }: HeaderProps) {
+export function Header() {
   const { user, loading, signOut } = useAuth()
 
   const userInitials = user?.email?.charAt(0).toUpperCase() || "U"
@@ -39,10 +34,13 @@ export function Header({ title = "Competitive Programming" }: HeaderProps) {
   return (
     <header className="h-16 border-b border-white/10 bg-[#0B1020]/80 backdrop-blur flex items-center justify-between px-6 flex-shrink-0">
       {/* Left Section */}
-      <div className="flex items-center gap-4">
-        <h1 className="text-lg font-semibold text-white">
-          {title}
-        </h1>
+      <div className="p-6 flex-shrink-0">
+        <Link href="/" className="flex items-center gap-2">
+          <Code2 className="h-6 w-6 text-[#2563EB]" />
+          <span className="font-semibold text-lg tracking-tight text-white">
+            AlgoRise
+          </span>
+        </Link>
       </div>
 
       {/* Right Section */}
@@ -52,17 +50,12 @@ export function Header({ title = "Competitive Programming" }: HeaderProps) {
           <Search className="h-4 w-4" />
         </Button>
 
-        {/* Command Palette */}
-        <Button variant="ghost" size="sm" className="text-white/70 hover:text-white">
-          <Command className="h-4 w-4" />
-        </Button>
-
         {/* Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="text-white/70 hover:text-white relative">
               <Bell className="h-4 w-4" />
-              <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 text-xs bg-red-600 border-0">
+              <Badge className="absolute -top-1 -right-1 h-4 w-4 p-0 text-xs bg-white border-0">
                 3
               </Badge>
             </Button>
@@ -100,15 +93,10 @@ export function Header({ title = "Competitive Programming" }: HeaderProps) {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Help */}
-        <Button variant="ghost" size="sm" className="text-white/70 hover:text-white">
-          <HelpCircle className="h-4 w-4" />
-        </Button>
-
         {/* Quick Action Button */}
         <Button className="bg-[#2563EB] hover:bg-[#1D4FD8]" asChild>
           <Link href="/adaptive-sheet">
-            <Zap className="h-4 w-4 mr-2" />
+            <Zap className="h-4 w-4 mr-1" />
             Start Training
           </Link>
         </Button>
@@ -118,10 +106,10 @@ export function Header({ title = "Competitive Programming" }: HeaderProps) {
           <div className="w-8 h-8 bg-white/10 rounded-full animate-pulse" />
         ) : !user ? (
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" asChild className="text-white/70 hover:text-white">
+            <Button variant="ghost" asChild className="text-white/70 hover:text-white">
               <Link href="/auth/login">Sign In</Link>
             </Button>
-            <Button size="sm" asChild className="bg-[#2563EB] hover:bg-[#1D4FD8]">
+            <Button asChild className="bg-[#2563EB] hover:bg-[#1D4FD8]">
               <Link href="/auth/sign-up">Sign Up</Link>
             </Button>
           </div>

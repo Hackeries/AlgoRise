@@ -41,10 +41,10 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-8 p-6 max-w-4xl mx-auto">
-      <div className="flex flex-col gap-4">
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Manage your account and competitive programming profile</p>
+  <main className="flex-1 w-full flex flex-col gap-10 p-6 md:p-10 max-w-4xl mx-auto">
+  <header className="flex flex-col gap-3 mb-6">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Settings</h1>
+        <p className="text-base md:text-lg text-muted-foreground">Manage your account and competitive programming profile</p>
         {isVerified && (
           <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
             <div className="h-2 w-2 bg-green-500 rounded-full"></div>
@@ -53,12 +53,12 @@ export default function SettingsPage() {
             </span>
           </div>
         )}
-      </div>
+      </header>
 
-      <div className="grid gap-6">
-        <Card>
+  <section className="grid gap-8">
+  <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle>Account Information</CardTitle>
+            <CardTitle className="text-xl md:text-2xl">Account Information</CardTitle>
             <CardDescription>Your basic account details</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -81,13 +81,13 @@ export default function SettingsPage() {
           }}
         />
 
-        <Card>
+  <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle>Preferences</CardTitle>
+            <CardTitle className="text-xl md:text-2xl">Preferences</CardTitle>
             <CardDescription>Customize your AlgoRise experience</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
+          <CardContent className="space-y-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
                 <Label>Email Notifications</Label>
                 <p className="text-sm text-muted-foreground">Receive updates about contests and achievements</p>
@@ -97,11 +97,11 @@ export default function SettingsPage() {
                   </span>
                 </p>
               </div>
-              <Button variant="outline" size="sm" onClick={handleEmailNotificationsToggle}>
+              <Button variant="outline" size="sm" onClick={handleEmailNotificationsToggle} className="w-full md:w-auto" tabIndex={0}>
                 {emailNotifications ? "Disable" : "Enable"}
               </Button>
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
               <div>
                 <Label>Daily Training Reminders</Label>
                 <p className="text-sm text-muted-foreground">Get reminded to maintain your streak</p>
@@ -111,7 +111,7 @@ export default function SettingsPage() {
                   </span>
                 </p>
               </div>
-              <Button variant="outline" size="sm" onClick={handleDailyRemindersToggle}>
+              <Button variant="outline" size="sm" onClick={handleDailyRemindersToggle} className="w-full md:w-auto" tabIndex={0}>
                 {dailyReminders ? "Disable" : "Enable"}
               </Button>
             </div>
@@ -119,7 +119,7 @@ export default function SettingsPage() {
         </Card>
 
         <CFVerificationDebug />
-      </div>
-    </div>
+      </section>
+    </main>
   )
 }

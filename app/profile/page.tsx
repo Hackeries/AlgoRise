@@ -126,25 +126,24 @@ export default function ProfilePage() {
     })
   }
 
+  // ...existing code...
   return (
-    <main className="mx-auto max-w-3xl px-4 py-8">
-      <header className="mb-6">
-        <h1 className="text-pretty text-2xl font-semibold">Profile</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Link and verify your Codeforces handle to earn a verified badge, improve recommendations, and appear on
-          leaderboards.
+    <main className="mx-auto max-w-3xl px-4 py-8 md:py-12 w-full">
+      <header className="mb-8 flex flex-col gap-2 md:gap-3">
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Profile</h1>
+        <p className="text-base md:text-lg text-muted-foreground">
+          Link and verify your Codeforces handle to earn a verified badge, improve recommendations, and appear on leaderboards.
         </p>
       </header>
-
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Codeforces Verification</CardTitle>
+      <section className="grid gap-8">
+        <Card className="shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl md:text-2xl">Codeforces Verification</CardTitle>
             <CardDescription>Link your CF handle and verify ownership with a one-time token.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6">
             {/* Status Row */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 md:gap-4">
               <div className="flex items-center gap-3">
                 <span className="text-sm text-muted-foreground">Status</span>
                 {verified ? (
@@ -156,89 +155,89 @@ export default function ProfilePage() {
                 )}
               </div>
               {verified && (rating || maxRating) ? (
-                <div className="text-right text-sm text-muted-foreground">
+                <div className="text-right text-sm text-muted-foreground flex flex-col md:items-end gap-1">
                   {typeof rating === "number" && <div>Rating: {rating}</div>}
                   {typeof maxRating === "number" && <div>Max: {maxRating}</div>}
                 </div>
               ) : null}
             </div>
-
             {/* Handle input */}
             <div className="grid gap-2">
               <Label htmlFor="handle">Codeforces Handle</Label>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch gap-2">
                 <Input
                   id="handle"
                   placeholder="e.g. tourist"
                   value={handle}
                   onChange={(e) => setHandle(e.target.value)}
+                  className="flex-1 min-w-0"
+                  inputMode="text"
+                  autoComplete="username"
+                  autoCorrect="off"
+                  spellCheck={false}
                 />
-                <Button onClick={startVerification} disabled={!canStart || loading}>
+                <Button onClick={startVerification} disabled={!canStart || loading} className="w-full sm:w-auto" size="sm">
                   {loading ? "Starting..." : "Start"}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                We’ll create a one-time token. Paste it in Codeforces → Settings → Social → Organization.
+                We&apos;ll create a one-time token. Paste it in <span className="font-semibold">Codeforces &rarr; Settings &rarr; Social &rarr; Organization</span>.
               </p>
             </div>
-
             {/* Token display */}
             {token && (
-              <div className="grid gap-2 rounded-md border border-white/10 p-3">
-                <div className="flex items-center justify-between">
+              <div className="grid gap-2 rounded-md border border-white/10 p-3 bg-muted/50">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-2 md:gap-4">
                   <div>
                     <div className="text-sm font-medium">Verification Token</div>
                     <div className="text-xs text-muted-foreground">
                       Paste this token into your CF Organization field, save, then click Check.
                     </div>
                   </div>
-                  <Button variant="secondary" onClick={copyToken}>
+                  <Button variant="secondary" onClick={copyToken} className="w-full md:w-auto" size="sm">
                     Copy
                   </Button>
                 </div>
-                <code className="rounded bg-black/40 px-2 py-1 text-sm">{token}</code>
-                <div className="flex items-center gap-2">
-                  <Button asChild variant="link" className="px-0">
+                <code className="rounded bg-black/40 px-2 py-1 text-sm break-all">{token}</code>
+                <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                  <Button asChild variant="link" className="px-0 w-full sm:w-auto" size="sm">
                     <Link href={cfSettingsUrl} target="_blank" rel="noreferrer">
                       Open Codeforces Settings
                     </Link>
                   </Button>
-                  <Button onClick={checkVerification} disabled={checking}>
+                  <Button onClick={checkVerification} disabled={checking} className="w-full sm:w-auto" size="sm">
                     {checking ? "Checking..." : "Check"}
                   </Button>
                 </div>
               </div>
             )}
-
             {/* Manual check / retry */}
             {!token && (
-              <div className="flex items-center gap-3">
-                <Button variant="secondary" onClick={checkVerification} disabled={checking}>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button variant="secondary" onClick={checkVerification} disabled={checking} className="w-full sm:w-auto" size="sm">
                   {checking ? "Checking..." : "Check status"}
                 </Button>
-                <Button asChild variant="link" className="px-0">
+                <Button asChild variant="link" className="px-0 w-full sm:w-auto" size="sm">
                   <Link href={cfSettingsUrl} target="_blank" rel="noreferrer">
                     Open Codeforces Settings
                   </Link>
                 </Button>
               </div>
             )}
-
-            {error && <p className="text-sm text-red-500">{error}</p>}
+            {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
           </CardContent>
         </Card>
-
         {/* Coming soon: profile preferences */}
-        <Card>
+        <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle>Preferences</CardTitle>
+            <CardTitle className="text-xl md:text-2xl">Preferences</CardTitle>
             <CardDescription>Set your training defaults and notification preferences (coming soon).</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">We&apos;ll add preferences after verification is complete.</p>
           </CardContent>
         </Card>
-      </div>
+      </section>
     </main>
   )
 }

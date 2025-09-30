@@ -69,7 +69,6 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     open: { x: 0, opacity: 1, transition: { type: "spring" as const, stiffness: 300, damping: 30 } },
     closed: { x: "-100%", opacity: 0, transition: { type: "spring" as const, stiffness: 300, damping: 35 } },
   }
-
   // Desktop: always visible, no animation. Mobile: animate in/out.
   const SidebarContent = (
     <div className="w-64 border-r border-white/10 bg-[#0B1020] flex flex-col h-full shadow-xl">
@@ -89,7 +88,6 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
         </motion.button>
       </div>
-
       {/* Menu - Scrollable */}
       <nav className="flex-1 p-4 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30">
         <div className="mb-6">

@@ -53,6 +53,7 @@
     "lucide-react": "^0.454.0",
     "next": "^15.0.0",
     "next-themes": "latest",
+    "postprocessing": "^6.37.8",
     "react": "^18",
     "react-day-picker": "latest",
     "react-dom": "^18",
@@ -63,6 +64,7 @@
     "swr": "latest",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "three": "^0.180.0",
     "vaul": "latest",
     "zod": "3.25.67"
   },
@@ -71,6 +73,7 @@
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/three": "^0.180.0",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
     "tw-animate-css": "1.3.3",

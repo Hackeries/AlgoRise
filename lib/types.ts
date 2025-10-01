@@ -1,11 +1,14 @@
 export type Problem = {
   id: string
-  platform: "codeforces"
+  platform: "codeforces" | "cses" | "atcoder" | "gfg" | "usaco"
   problemId: string
   rating: number
   tags: string[]
   title: string
   url: string
+  description?: string // Short summary for UI
+  color?: string // Hex or theme color for UI
+  icon?: string // Emoji or icon name for UI
 }
 
 export type Outcome = "solved" | "failed" | "skipped"

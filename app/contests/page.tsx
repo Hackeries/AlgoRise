@@ -112,6 +112,7 @@ export default function ContestsPage() {
 
   fetchUserRating();
 }, []);
+
   useEffect(() => {
     fetchContests();
   }, []);

@@ -5,6 +5,7 @@ import { getVisualizer } from "@/lib/visualizers"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { SortingVisualizer } from "@/components/visualizers/sorting-visualizer"
 import { GraphVisualizer } from "@/components/visualizers/graph-visualizer"
+import { TreeVisualizer } from "@/components/visualizers/tree-visualizer"
 
 export default async function VisualizerDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -17,6 +18,8 @@ export default async function VisualizerDetailPage({ params }: { params: Promise
         return <SortingVisualizer />
       case 'graphs':
         return <GraphVisualizer />
+      case 'trees':
+        return <TreeVisualizer />
       default:
         return (
           <Card>

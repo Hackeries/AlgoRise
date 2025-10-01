@@ -1,34 +1,32 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { VISUALIZERS } from "@/lib/visualizers";
-import ModernLanding from "@/components/landing-hero";
-import PixelBlast from "@/components/bg/pixelblast";
+
+
+import PixelBlast from "@/components/bg/pixelblast"; 
+import ModernLanding from "@/components/landing-hero"; 
+
 
 export default function VisualizersPage() {
   return (
+
     <main className="relative w-full min-h-screen overflow-hidden">
+      
       {/* Background Animation */}
       <div className="absolute inset-0 -z-10">
         <PixelBlast color="#63EDA1" />
       </div>
 
-      {/* Hero Section */}
-      <section className="relative z-10">
-        <ModernLanding />
-      </section>
-
-      {/* Explore Section */}
-      <section className="relative z-10 py-16 px-4">
-        <div className="max-w-6xl mx-auto text-center">
-          <h1 className="text-4xl font-bold text-[#63EDA1] mb-6">Explore</h1>
-          <h3 className="text-2xl font-semibold text-white mb-6">
-            Visualizers
-          </h3>
-          <p className="text-white/80 mb-12">
+      {/* Main content container */}
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-10">
+        
+        {/* Visualizers Section */}
+        <section>
+          <h1 className="text-4xl font-bold text-white mb-6 text-center">Visualizers</h1>
+          <p className="text-white/80 mb-12 text-center">
             Learn complex algorithms visually, then jump straight into a curated
             practice set for that topic.
           </p>
-
           <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
             {VISUALIZERS.map((v) => (
               <Link
@@ -47,8 +45,13 @@ export default function VisualizersPage() {
               </Link>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
+
+        <section className="mt-16">
+          <ModernLanding />
+        </section>
+
+      </div>
     </main>
   );
 }

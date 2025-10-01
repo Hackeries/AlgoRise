@@ -27,7 +27,7 @@ export default function AnalyticsPageClient() {
   // Show loading state
   if (loading) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="flex items-center justify-center h-full p-6 space-y-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-white/70">Loading...</div>
         </div>
@@ -38,7 +38,7 @@ export default function AnalyticsPageClient() {
   // Show login prompt if user is not authenticated
   if (!user) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="flex items-center justify-center h-full p-6 space-y-6">
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <LogIn className="h-16 w-16 text-blue-400" />
           <h2 className="text-2xl font-bold text-white">Please Sign In</h2>

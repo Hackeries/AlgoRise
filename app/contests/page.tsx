@@ -82,6 +82,8 @@ export default function ContestsPage() {
     ratingMax: "1400", // New: maximum rating
     maxParticipants: "",
     allowLateJoin: true,
+    durationHours: 2,
+    durationMinutes: 0,
   });
 
   useEffect(() => {
@@ -141,6 +143,8 @@ export default function ContestsPage() {
       ratingMax: "1400",
       maxParticipants: "",
       allowLateJoin: true,
+      durationHours: 2,
+      durationMinutes: 0,
     });
   };
 
@@ -294,14 +298,14 @@ export default function ContestsPage() {
               Create Contest
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30">
             <DialogHeader>
               <DialogTitle>Create New Contest</DialogTitle>
               <DialogDescription>
                 Create a private training contest for your group or friends.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-6 py-4 max-h-[60vh] overflow-y-auto">
+            <div className="space-y-6 py-4">
               {/* Contest Name */}
               <div className="space-y-2">
                 <Label htmlFor="contest-name">Contest Name *</Label>

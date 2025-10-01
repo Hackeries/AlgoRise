@@ -39,7 +39,6 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       <Header />
 
       <div className="flex-1 flex">
-
         {/* Sidebar */}
         <div className="w-64 border-r border-white/10 bg-[#0B1020] flex flex-col h-[calc(100vh-theme(spacing.16))]">
           {/* Menu - Scrollable */}

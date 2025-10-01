@@ -1,3 +1,52 @@
+// Visualizer types
+export type Visualizer = {
+  slug: string
+  title: string
+  summary: string
+  tags: string[]
+  resources: { label: string; href: string }[]
+}
+
+// Learning Path types
+export type LearningPathSection = {
+  id: string
+  title: string
+  description: string
+  subsections: LearningPathSubSection[]
+  totalProblems: number
+  estimatedTime: string
+  icon: string
+}
+
+export type LearningPathSubSection = {
+  id: string
+  title: string
+  description: string
+  problems: Problem[]
+  estimatedTime: string
+}
+
+// User Profile types
+export type UserProfile = {
+  id: string
+  username: string
+  avatarUrl?: string
+  bio?: string
+  solvedProblems: string[]
+  streak: number
+  joinedAt: string // ISO date
+}
+
+// Contest Metadata types
+export type Contest = {
+  id: string
+  name: string
+  platform: string
+  startTime: string // ISO date
+  durationMinutes: number
+  problems: Problem[]
+  participants: number
+}
 export type Problem = {
   id: string
   platform: "codeforces" | "cses" | "atcoder" | "gfg" | "usaco"

@@ -46,11 +46,9 @@ export default function ContestSection() {
       }
 
       const data = await response.json();
-
       setUpcomingContests(data.upcoming || []);
     } catch (error) {
       console.error("Error fetching contests:", error);
-      // Set empty array on error to show "No upcoming contests found"
       setUpcomingContests([]);
     } finally {
       setLoading(false);

@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { PWARegister } from "@/components/pwa/register";
 import { AuthProvider } from "@/lib/auth/context";
 import { CFVerificationProvider } from "@/lib/context/cf-verification";
+
 const inter = Inter({
   subsets: ["latin"],
   display: "swap",
@@ -19,7 +20,6 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
   variable: "--font-mono",
 });
-
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
   display: "swap",

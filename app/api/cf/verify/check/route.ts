@@ -43,6 +43,19 @@ export async function POST() {
       .eq("user_id", user.id)
     if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 })
 
+ const { error: snapErr } = await supabase.from("cf_snapshots").insert({
+  user_id: user.id,
+  handle: cf.handle,
+  rating: cf.rating ?? null,
+  max_rating: cf.maxRating ?? null,
+  captured_at: new Date().toISOString(),
+})
+
+if (snapErr) {
+  console.error("Snapshot insert error:", snapErr)
+  return NextResponse.json({ error: snapErr }, { status: 500 })
+}
+
     return NextResponse.json({ verified: true, rating: cf.rating ?? null, maxRating: cf.maxRating ?? null })
   } catch (e: any) {
     return NextResponse.json({ error: e?.message || "unknown error" }, { status: 500 })

@@ -169,7 +169,7 @@ export default function GroupsPage() {
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">Groups</h1>
+          <h1 className="text-3xl font-bold">Groups / Leaderboards</h1>
           <p className="text-muted-foreground mt-1">
             Join groups to compete with friends and classmates
           </p>

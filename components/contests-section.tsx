@@ -4,8 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Timer, Calendar, ArrowRight } from "lucide-react";
-import { CardHeader, Card, CardTitle, CardContent } from "./ui/card";
+import { CardHeader, Card, CardTitle, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { toast } from "@/hooks/use-toast";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
 
 interface Contest {
   id: number;
@@ -55,14 +59,44 @@ export default function ContestSection() {
   const [upcomingContests, setUpcomingContests] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
   const [tick, setTick] = useState(0); // force rerender for countdown
+  const [userRating, setUserRating] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchUserRating = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+
+      // ==> ERROR FIX: Check if userId exists before querying
+      if (!userId) {
+        console.log("User not logged in, skipping rating fetch.");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("cf_snapshots")
+        .select("rating")
+        .eq("user_id", userId)
+        .order("captured_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error("Error fetching rating:", error);
+        return;
+      }
+
+      if (data?.rating) {
+        setUserRating(data.rating);
+      }
+    };
+
+    fetchUserRating();
+  }, []);
 
   useEffect(() => {
     fetchUpcomingContests();
 
-    // ⏱ Update countdown every second
     const timer = setInterval(() => setTick((t) => t + 1), 1000);
-
-    // 🔄 Refetch contests every 5 minutes
     const refresher = setInterval(fetchUpcomingContests, 5 * 60 * 1000);
 
     return () => {
@@ -77,7 +111,6 @@ export default function ContestSection() {
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-
       const data = await response.json();
       setUpcomingContests(data.upcoming || []);
     } catch (error) {
@@ -88,10 +121,50 @@ export default function ContestSection() {
     }
   };
 
+  const getCodeforcesContestUrl = (contestId: number) => {
+    return `https://codeforces.com/contestRegistration/${contestId}`;
+  };
+
+  const handleCodeforcesContestClick = (
+    contestId: number,
+    startSeconds: number,
+    contestName: string
+  ) => {
+    const url = getCodeforcesContestUrl(contestId);
+    const timeLeftMs = (startSeconds || 0) * 1000 - Date.now();
+    const daysLeft = Math.floor(timeLeftMs / (1000 * 60 * 60 * 24));
+    const lowername = contestName.toLowerCase();
+
+    if (lowername.includes("div. 1") && !lowername.includes("div. 2")) {
+      if (userRating < 1900) {
+        // Rating check should be < 1900 as per issue
+        toast({
+          title: "Not Eligible",
+          description:
+            "Register for Div2 because your current rating is <1900.",
+          variant: "destructive",
+          className: "text-white",
+        });
+        return;
+      }
+    }
+
+    if (daysLeft < 2) {
+      // Logic should be less than 2 days
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else {
+      toast({
+        title: "Registration Not Started",
+        description: `Registration isn't opened yet, please wait ~${daysLeft} days to register!`,
+        variant: "destructive",
+        className: "text-white",
+      });
+    }
+  };
+
   return (
     <section className="py-16 px-4 mb-8 mt-5">
       <div className="max-w-6xl mx-auto">
-        {/* Heading */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -108,7 +181,6 @@ export default function ContestSection() {
           </p>
         </motion.div>
 
-        {/* Contest Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
             Array.from({ length: 3 }).map((_, i) => (
@@ -126,6 +198,7 @@ export default function ContestSection() {
               </Card>
             ))
           ) : upcomingContests.length > 0 ? (
+            // ==> ERROR FIX: Removed the extra, nested .map() and return statement
             upcomingContests.map((contest, i) => {
               const now = Math.floor(Date.now() / 1000);
               const timeDiff = contest.startTimeSeconds - now;
@@ -140,9 +213,10 @@ export default function ContestSection() {
                   transition={{ duration: 0.5, delay: i * 0.15 }}
                   viewport={{ once: true, amount: 0.2 }}
                   onClick={() =>
-                    window.open(
-                      `https://codeforces.com/contest/${contest.id}`,
-                      "_blank"
+                    handleCodeforcesContestClick(
+                      contest.id,
+                      contest.startTimeSeconds || 0,
+                      contest.name
                     )
                   }
                   role="link"

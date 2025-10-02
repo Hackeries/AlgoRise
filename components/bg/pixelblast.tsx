@@ -217,7 +217,7 @@ float Bayer2(vec2 a) {
 #define Bayer4(a) (Bayer2(.5*(a))*0.25 + Bayer2(a))
 #define Bayer8(a) (Bayer4(.5*(a))*0.25 + Bayer2(a))
 
-#define FBM_OCTAVES     5
+#define FBM_OCTAVES 5
 #define FBM_LACUNARITY  1.25
 #define FBM_GAIN        1.0
 
@@ -323,10 +323,10 @@ void main(){
   float jitterScale = 1.0 + (h - 0.5) * uPixelJitter;
   float coverage = bw * jitterScale;
   float M;
-  if      (uShapeType == SHAPE_CIRCLE)   M = maskCircle (pixelUV, coverage);
+if (uShapeType == SHAPE_CIRCLE) M = maskCircle (pixelUV, coverage);
   else if (uShapeType == SHAPE_TRIANGLE) M = maskTriangle(pixelUV, pixelId, coverage);
   else if (uShapeType == SHAPE_DIAMOND)  M = maskDiamond(pixelUV, coverage);
-  else                                   M = coverage;
+  else M = coverage;
 
   if (uEdgeFade > 0.0) {
     vec2 norm = gl_FragCoord.xy / uResolution;

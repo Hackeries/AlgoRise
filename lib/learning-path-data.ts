@@ -1,30 +1,45 @@
 export type Problem = {
-  id: string
-  title: string
-  url: string
-  platform: "CF" | "GFG" | "USACO" | "AtCoder" | "CSES" | "LeetCode" | "Codeforces"
-  difficulty: "Easy" | "Medium" | "Hard" | "Div3" | "Div2-A" | "Div2-B" | "Div2-C" | "Div2-D"
-  tags: string[]
-  solved?: boolean
-}
+  id: string;
+  title: string;
+  url: string;
+  platform:
+    | "CF"
+    | "GFG"
+    | "USACO"
+    | "AtCoder"
+    | "CSES"
+    | "LeetCode"
+    | "Codeforces";
+  difficulty:
+    | "Easy"
+    | "Medium"
+    | "Hard"
+    | "Div3"
+    | "Div2-A"
+    | "Div2-B"
+    | "Div2-C"
+    | "Div2-D";
+  tags: string[];
+  solved?: boolean;
+};
 
 export type SubSection = {
-  id: string
-  title: string
-  description: string
-  problems: Problem[]
-  estimatedTime: string
-}
+  id: string;
+  title: string;
+  description: string;
+  problems: Problem[];
+  estimatedTime: string;
+};
 
 export type Section = {
-  id: string
-  title: string
-  description: string
-  subsections: SubSection[]
-  totalProblems: number
-  estimatedTime: string
-  icon: string
-}
+  id: string;
+  title: string;
+  description: string;
+  subsections: SubSection[];
+  totalProblems: number;
+  estimatedTime: string;
+  icon: string;
+};
 
 export const LEARNING_PATH_DATA: Section[] = [
   {
@@ -47,7 +62,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/c-hello-world-program/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["basics", "syntax"]
+            tags: ["basics", "syntax"],
           },
           {
             id: "cpp2",
@@ -55,7 +70,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/program-display-name-cpp/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["basics", "io"]
+            tags: ["basics", "io"],
           },
           {
             id: "cpp3",
@@ -63,7 +78,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/basic-input-output-c/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["input", "io"]
+            tags: ["input", "io"],
           },
           {
             id: "cpp4",
@@ -71,7 +86,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/program-calculate-sum-numbers-cpp/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arithmetic", "basics"]
+            tags: ["arithmetic", "basics"],
           },
           {
             id: "cpp5",
@@ -79,7 +94,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-swap-two-numbers/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arithmetic", "variables"]
+            tags: ["arithmetic", "variables"],
           },
           {
             id: "cpp6",
@@ -87,7 +102,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/c-program-to-find-size-of-int-float-double-and-char-in-your-system/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["variables", "basics"]
+            tags: ["variables", "basics"],
           },
           {
             id: "cpp7",
@@ -95,7 +110,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-multiply-two-floating-point-numbers/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arithmetic", "basics"]
+            tags: ["arithmetic", "basics"],
           },
           {
             id: "cpp8",
@@ -103,7 +118,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-find-ascii-value-of-a-character/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["characters", "basics"]
+            tags: ["characters", "basics"],
           },
           {
             id: "cpp9",
@@ -111,7 +126,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/c-program-for-celsius-to-fahrenheit-conversion/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arithmetic", "basics"]
+            tags: ["arithmetic", "basics"],
           },
           {
             id: "cpp10",
@@ -119,7 +134,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/program-to-calculate-simple-interest/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arithmetic", "basics"]
+            tags: ["arithmetic", "basics"],
           },
           {
             id: "cpp11",
@@ -127,7 +142,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/c-program-to-calculate-compound-interest/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arithmetic", "basics"]
+            tags: ["arithmetic", "basics"],
           },
           {
             id: "cpp12",
@@ -135,7 +150,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/c-program-to-calculate-area-and-perimeter-of-a-rectangle/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arithmetic", "basics"]
+            tags: ["arithmetic", "basics"],
           },
           // C++ Control Flow Programs
           {
@@ -144,7 +159,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-check-if-a-number-is-even-or-odd/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["control-flow", "if-else"]
+            tags: ["control-flow", "if-else"],
           },
           {
             id: "cpp14",
@@ -152,7 +167,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-find-largest-among-three-numbers/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["control-flow", "if-else"]
+            tags: ["control-flow", "if-else"],
           },
           {
             id: "cpp15",
@@ -160,7 +175,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-check-character-is-vowel-or-consonant/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["control-flow", "if-else"]
+            tags: ["control-flow", "if-else"],
           },
           {
             id: "cpp16",
@@ -168,7 +183,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/c-cpp-program-to-check-leap-year/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["control-flow", "if-else"]
+            tags: ["control-flow", "if-else"],
           },
           {
             id: "cpp17",
@@ -176,7 +191,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-generate-multiplication-table/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["loops", "basics"]
+            tags: ["loops", "basics"],
           },
           {
             id: "cpp18",
@@ -184,7 +199,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-find-sum-of-natural-numbers/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["loops", "arithmetic"]
+            tags: ["loops", "arithmetic"],
           },
           {
             id: "cpp19",
@@ -192,7 +207,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/c-program-for-factorial-of-a-number/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["loops", "arithmetic"]
+            tags: ["loops", "arithmetic"],
           },
           {
             id: "cpp20",
@@ -200,7 +215,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/reverse-digits-integer-overflow-handled/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["loops", "arithmetic"]
+            tags: ["loops", "arithmetic"],
           },
           {
             id: "cpp21",
@@ -208,7 +223,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/c-program-find-gcd-hcf-two-numbers/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["loops", "arithmetic"]
+            tags: ["loops", "arithmetic"],
           },
           {
             id: "cpp22",
@@ -216,7 +231,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/c-program-to-calculate-lcm-of-two-numbers/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["loops", "arithmetic"]
+            tags: ["loops", "arithmetic"],
           },
           {
             id: "cpp23",
@@ -224,7 +239,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-check-whether-a-number-is-palindrome-or-not/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["control-flow", "loops"]
+            tags: ["control-flow", "loops"],
           },
           {
             id: "cpp24",
@@ -232,7 +247,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-check-whether-a-number-is-prime-or-not/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["loops", "math"]
+            tags: ["loops", "math"],
           },
           {
             id: "cpp25",
@@ -240,7 +255,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp/cpp-program-to-find-prime-numbers-between-given-interval/",
             platform: "GFG",
             difficulty: "Medium",
-            tags: ["loops", "math"]
+            tags: ["loops", "math"],
           },
           {
             id: "cpp26",
@@ -248,7 +263,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp/cpp-program-to-check-armstrong-numbers/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["loops", "math"]
+            tags: ["loops", "math"],
           },
           {
             id: "cpp27",
@@ -256,7 +271,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp/cpp-program-to-print-armstrong-numbers-between-1-to-1000/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["loops", "math"]
+            tags: ["loops", "math"],
           },
           {
             id: "cpp28",
@@ -264,7 +279,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp/cpp-program-for-fibonacci-numbers/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["loops", "math"]
+            tags: ["loops", "math"],
           },
           {
             id: "cpp29",
@@ -272,7 +287,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp/c-c-program-to-make-a-simple-calculator/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["conditionals", "math"]
+            tags: ["conditionals", "math"],
           },
           {
             id: "cpp30",
@@ -280,7 +295,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-print-pyramid-patterns/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["patterns", "loops"]
+            tags: ["patterns", "loops"],
           },
           {
             id: "cpp31",
@@ -288,7 +303,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-print-pyramid-patterns/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["patterns", "loops"]
+            tags: ["patterns", "loops"],
           },
           {
             id: "cpp32",
@@ -296,7 +311,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-print-pyramid-patterns/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["patterns", "loops"]
+            tags: ["patterns", "loops"],
           },
           {
             id: "cpp33",
@@ -304,7 +319,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-print-pyramid-patterns/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["patterns", "loops"]
+            tags: ["patterns", "loops"],
           },
           {
             id: "cpp34",
@@ -312,10 +327,10 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp-program-to-print-pyramid-patterns/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["patterns", "loops"]
-          }
+            tags: ["patterns", "loops"],
+          },
           // ...add more as needed
-        ]
+        ],
       },
       {
         id: "cpp-functions",
@@ -329,7 +344,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/functions-in-c/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["functions"]
+            tags: ["functions"],
           },
           {
             id: "cpp36",
@@ -337,7 +352,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/c-program-to-print-all-prime-numbers-between-1-to-n/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["functions", "math"]
+            tags: ["functions", "math"],
           },
           {
             id: "cpp37",
@@ -345,7 +360,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/check-if-a-number-can-be-expressed-as-sum-of-two-primes/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["functions", "math"]
+            tags: ["functions", "math"],
           },
           {
             id: "cpp38",
@@ -353,7 +368,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/program-to-find-sum-of-first-n-natural-numbers-using-recursion/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["functions", "recursion"]
+            tags: ["functions", "recursion"],
           },
           {
             id: "cpp39",
@@ -361,7 +376,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/program-for-factorial-of-a-number/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["functions", "recursion"]
+            tags: ["functions", "recursion"],
           },
           {
             id: "cpp40",
@@ -369,7 +384,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/program-reverse-sentence-word-wise/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["functions", "recursion", "strings"]
+            tags: ["functions", "recursion", "strings"],
           },
           {
             id: "cpp41",
@@ -377,7 +392,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/write-a-c-program-to-calculate-powxn/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["functions", "recursion"]
+            tags: ["functions", "recursion"],
           },
           {
             id: "cpp42",
@@ -385,7 +400,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/variadic-templates-in-c/",
             platform: "GFG",
             difficulty: "Medium",
-            tags: ["functions", "templates"]
+            tags: ["functions", "templates"],
           },
           // C++ Array Programs
           {
@@ -394,7 +409,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/check-if-two-arrays-are-equal-or-not/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arrays"]
+            tags: ["arrays"],
           },
           {
             id: "cpp44",
@@ -402,7 +417,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/maximum-and-minimum-in-an-array/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arrays"]
+            tags: ["arrays"],
           },
           {
             id: "cpp45",
@@ -410,7 +425,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/c-program-to-calculate-average-using-arrays/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arrays", "math"]
+            tags: ["arrays", "math"],
           },
           {
             id: "cpp46",
@@ -418,7 +433,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/merge-two-sorted-arrays/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arrays", "sorting"]
+            tags: ["arrays", "sorting"],
           },
           {
             id: "cpp47",
@@ -426,7 +441,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/multidimensional-arrays-in-c-cpp/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arrays", "2d"]
+            tags: ["arrays", "2d"],
           },
           {
             id: "cpp48",
@@ -434,7 +449,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/common-elements-in-all-rows-of-a-given-matrix/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arrays"]
+            tags: ["arrays"],
           },
           {
             id: "cpp49",
@@ -442,7 +457,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/remove-duplicates-sorted-array/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arrays"]
+            tags: ["arrays"],
           },
           {
             id: "cpp50",
@@ -450,7 +465,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/remove-element-array/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arrays"]
+            tags: ["arrays"],
           },
           {
             id: "cpp51",
@@ -458,7 +473,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/prefix-sum-array-implementation-applications-competitive-programming/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arrays", "prefix-sum"]
+            tags: ["arrays", "prefix-sum"],
           },
           {
             id: "cpp52",
@@ -466,7 +481,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/array-rotation/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arrays"]
+            tags: ["arrays"],
           },
           {
             id: "cpp53",
@@ -474,11 +489,11 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/write-a-program-to-reverse-an-array-or-string/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["arrays", "reverse"]
-          }
-        ]
-      }
-    ]
+            tags: ["arrays", "reverse"],
+          },
+        ],
+      },
+    ],
   },
   {
     id: "mathematics",
@@ -495,42 +510,237 @@ export const LEARNING_PATH_DATA: Section[] = [
         estimatedTime: "2 weeks",
         problems: [
           // Easy
-          { id: "mul7", title: "Efficient Way to Multiply with 7", url: "https://www.geeksforgeeks.org/efficient-way-to-multiply-with-7/", platform: "GFG", difficulty: "Easy", tags: ["math"] },
-          { id: "div7", title: "Check Divisibility by 7", url: "https://www.geeksforgeeks.org/check-divisibility-by-7/", platform: "GFG", difficulty: "Easy", tags: ["math", "divisibility"] },
-          { id: "fib-check", title: "Check if a Number is Fibonacci", url: "https://www.geeksforgeeks.org/check-number-fibonacci-number/", platform: "GFG", difficulty: "Easy", tags: ["math", "fibonacci"] },
-          { id: "mul-noloop", title: "Multiply Without Operators", url: "https://www.geeksforgeeks.org/multiply-two-integers-without-using-multiplication-division-and-bitwise-operators-and-no-loops/", platform: "GFG", difficulty: "Easy", tags: ["math", "trick"] },
-          { id: "power-custom", title: "Power Without * and /", url: "https://www.geeksforgeeks.org/write-your-own-power-without-using-multiplication-and-division-operators/", platform: "GFG", difficulty: "Easy", tags: ["math", "power"] },
-          { id: "avg-stream", title: "Average of a Stream", url: "https://www.geeksforgeeks.org/average-of-a-stream-of-numbers/", platform: "GFG", difficulty: "Easy", tags: ["math", "stream"] },
-          { id: "point-triangle", title: "Point Inside Triangle", url: "https://www.geeksforgeeks.org/check-whether-given-point-lies-inside-triangle-not/", platform: "GFG", difficulty: "Easy", tags: ["geometry"] },
-          { id: "prime-factors", title: "Prime Factors", url: "https://www.geeksforgeeks.org/efficient-program-to-print-all-prime-factors-of-a-given-number/", platform: "GFG", difficulty: "Easy", tags: ["math", "prime"] },
-          { id: "russian-mul", title: "Russian Peasant Multiplication", url: "https://www.geeksforgeeks.org/russian-peasant-multiply-two-numbers-using-bitwise-operators/", platform: "GFG", difficulty: "Easy", tags: ["math", "bitwise"] },
+          {
+            id: "mul7",
+            title: "Efficient Way to Multiply with 7",
+            url: "https://www.geeksforgeeks.org/efficient-way-to-multiply-with-7/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["math"],
+          },
+          {
+            id: "div7",
+            title: "Check Divisibility by 7",
+            url: "https://www.geeksforgeeks.org/check-divisibility-by-7/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["math", "divisibility"],
+          },
+          {
+            id: "fib-check",
+            title: "Check if a Number is Fibonacci",
+            url: "https://www.geeksforgeeks.org/check-number-fibonacci-number/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["math", "fibonacci"],
+          },
+          {
+            id: "mul-noloop",
+            title: "Multiply Without Operators",
+            url: "https://www.geeksforgeeks.org/multiply-two-integers-without-using-multiplication-division-and-bitwise-operators-and-no-loops/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["math", "trick"],
+          },
+          {
+            id: "power-custom",
+            title: "Power Without * and /",
+            url: "https://www.geeksforgeeks.org/write-your-own-power-without-using-multiplication-and-division-operators/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["math", "power"],
+          },
+          {
+            id: "avg-stream",
+            title: "Average of a Stream",
+            url: "https://www.geeksforgeeks.org/average-of-a-stream-of-numbers/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["math", "stream"],
+          },
+          {
+            id: "point-triangle",
+            title: "Point Inside Triangle",
+            url: "https://www.geeksforgeeks.org/check-whether-given-point-lies-inside-triangle-not/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["geometry"],
+          },
+          {
+            id: "prime-factors",
+            title: "Prime Factors",
+            url: "https://www.geeksforgeeks.org/efficient-program-to-print-all-prime-factors-of-a-given-number/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["math", "prime"],
+          },
+          {
+            id: "russian-mul",
+            title: "Russian Peasant Multiplication",
+            url: "https://www.geeksforgeeks.org/russian-peasant-multiply-two-numbers-using-bitwise-operators/",
+            platform: "GFG",
+            difficulty: "Easy",
+            tags: ["math", "bitwise"],
+          },
 
           // Medium
-          { id: "sieve", title: "Sieve of Eratosthenes", url: "https://www.geeksforgeeks.org/sieve-of-eratosthenes/", platform: "GFG", difficulty: "Medium", tags: ["math", "prime"] },
-          { id: "mul3", title: "Check Multiple of 3", url: "https://www.geeksforgeeks.org/write-an-efficient-method-to-check-if-a-number-is-multiple-of-3/", platform: "GFG", difficulty: "Medium", tags: ["math", "bit"] },
-          { id: "perm-string", title: "All Permutations of String", url: "https://www.geeksforgeeks.org/write-a-program-to-print-all-permutations-of-a-given-string/", platform: "GFG", difficulty: "Medium", tags: ["backtracking"] },
-          { id: "lucky", title: "Lucky Numbers", url: "https://www.geeksforgeeks.org/lucky-numbers/", platform: "GFG", difficulty: "Medium", tags: ["math"] },
-          { id: "base14", title: "Add Numbers in Base 14", url: "https://www.geeksforgeeks.org/write-a-program-to-add-two-numbers-in-base-14/", platform: "GFG", difficulty: "Medium", tags: ["math", "base"] },
-          { id: "babylonian-sqrt", title: "Babylonian Square Root", url: "https://www.geeksforgeeks.org/square-root-of-a-perfect-square/", platform: "GFG", difficulty: "Medium", tags: ["math", "sqrt"] },
-          { id: "sum-combinations", title: "Combinations of Points", url: "https://www.geeksforgeeks.org/print-all-combinations-of-points-that-can-compose-a-given-number/", platform: "GFG", difficulty: "Medium", tags: ["math", "dp"] },
-          { id: "fair-coin", title: "Fair Coin from Biased Coin", url: "https://www.geeksforgeeks.org/make-a-fair-coin-from-a-biased-coin/", platform: "GFG", difficulty: "Medium", tags: ["probability"] },
-          { id: "shuffle", title: "Fisher–Yates Shuffle", url: "https://www.geeksforgeeks.org/shuffle-a-given-array-using-fisher-yates-shuffle-algorithm/", platform: "GFG", difficulty: "Medium", tags: ["random"] },
+          {
+            id: "sieve",
+            title: "Sieve of Eratosthenes",
+            url: "https://www.geeksforgeeks.org/sieve-of-eratosthenes/",
+            platform: "GFG",
+            difficulty: "Medium",
+            tags: ["math", "prime"],
+          },
+          {
+            id: "mul3",
+            title: "Check Multiple of 3",
+            url: "https://www.geeksforgeeks.org/write-an-efficient-method-to-check-if-a-number-is-multiple-of-3/",
+            platform: "GFG",
+            difficulty: "Medium",
+            tags: ["math", "bit"],
+          },
+          {
+            id: "perm-string",
+            title: "All Permutations of String",
+            url: "https://www.geeksforgeeks.org/write-a-program-to-print-all-permutations-of-a-given-string/",
+            platform: "GFG",
+            difficulty: "Medium",
+            tags: ["backtracking"],
+          },
+          {
+            id: "lucky",
+            title: "Lucky Numbers",
+            url: "https://www.geeksforgeeks.org/lucky-numbers/",
+            platform: "GFG",
+            difficulty: "Medium",
+            tags: ["math"],
+          },
+          {
+            id: "base14",
+            title: "Add Numbers in Base 14",
+            url: "https://www.geeksforgeeks.org/write-a-program-to-add-two-numbers-in-base-14/",
+            platform: "GFG",
+            difficulty: "Medium",
+            tags: ["math", "base"],
+          },
+          {
+            id: "babylonian-sqrt",
+            title: "Babylonian Square Root",
+            url: "https://www.geeksforgeeks.org/square-root-of-a-perfect-square/",
+            platform: "GFG",
+            difficulty: "Medium",
+            tags: ["math", "sqrt"],
+          },
+          {
+            id: "sum-combinations",
+            title: "Combinations of Points",
+            url: "https://www.geeksforgeeks.org/print-all-combinations-of-points-that-can-compose-a-given-number/",
+            platform: "GFG",
+            difficulty: "Medium",
+            tags: ["math", "dp"],
+          },
+          {
+            id: "fair-coin",
+            title: "Fair Coin from Biased Coin",
+            url: "https://www.geeksforgeeks.org/make-a-fair-coin-from-a-biased-coin/",
+            platform: "GFG",
+            difficulty: "Medium",
+            tags: ["probability"],
+          },
+          {
+            id: "shuffle",
+            title: "Fisher–Yates Shuffle",
+            url: "https://www.geeksforgeeks.org/shuffle-a-given-array-using-fisher-yates-shuffle-algorithm/",
+            platform: "GFG",
+            difficulty: "Medium",
+            tags: ["random"],
+          },
 
           // Hard
-          { id: "count-3", title: "Count Numbers Without 3", url: "https://www.geeksforgeeks.org/count-numbers-that-dont-contain-3/", platform: "GFG", difficulty: "Hard", tags: ["math"] },
-          { id: "magic-square", title: "Magic Square (Odd Order)", url: "https://www.geeksforgeeks.org/magic-square/", platform: "GFG", difficulty: "Hard", tags: ["math", "matrix"] },
-          { id: "largest-mul3", title: "Largest Multiple of 3", url: "https://www.geeksforgeeks.org/find-the-largest-multiple-of-3/", platform: "GFG", difficulty: "Hard", tags: ["math", "queue"] },
-          { id: "dfa-div", title: "DFA Based Division", url: "https://www.geeksforgeeks.org/dfa-based-division/", platform: "GFG", difficulty: "Hard", tags: ["automata"] },
-          { id: "rand1-7", title: "Generate 1-7 with Equal Probability", url: "https://www.geeksforgeeks.org/generate-integer-from-1-to-7-with-equal-probability/", platform: "GFG", difficulty: "Hard", tags: ["probability"] },
-          { id: "next-palindrome", title: "Next Smallest Palindrome", url: "https://www.geeksforgeeks.org/given-a-number-find-next-smallest-palindrome-larger-than-this-number/", platform: "GFG", difficulty: "Hard", tags: ["math", "palindrome"] },
-          { id: "day-week", title: "Day of Week for Date", url: "https://www.geeksforgeeks.org/find-day-of-the-week-for-a-given-date/", platform: "GFG", difficulty: "Hard", tags: ["math", "date"] },
-          { id: "lexi-perm", title: "Lexicographic Permutations", url: "https://www.geeksforgeeks.org/lexicographic-permutations-of-string/", platform: "GFG", difficulty: "Hard", tags: ["backtracking"] },
-          { id: "reservoir-sampling", title: "Reservoir Sampling", url: "https://www.geeksforgeeks.org/reservoir-sampling/", platform: "GFG", difficulty: "Hard", tags: ["probability"] },
-          { id: "lexi-rank", title: "Lexicographic Rank of String", url: "https://www.geeksforgeeks.org/lexicographic-rank-of-a-string/", platform: "GFG", difficulty: "Hard", tags: ["math", "string"] }
-        ]
-
+          {
+            id: "count-3",
+            title: "Count Numbers Without 3",
+            url: "https://www.geeksforgeeks.org/count-numbers-that-dont-contain-3/",
+            platform: "GFG",
+            difficulty: "Hard",
+            tags: ["math"],
+          },
+          {
+            id: "magic-square",
+            title: "Magic Square (Odd Order)",
+            url: "https://www.geeksforgeeks.org/magic-square/",
+            platform: "GFG",
+            difficulty: "Hard",
+            tags: ["math", "matrix"],
+          },
+          {
+            id: "largest-mul3",
+            title: "Largest Multiple of 3",
+            url: "https://www.geeksforgeeks.org/find-the-largest-multiple-of-3/",
+            platform: "GFG",
+            difficulty: "Hard",
+            tags: ["math", "queue"],
+          },
+          {
+            id: "dfa-div",
+            title: "DFA Based Division",
+            url: "https://www.geeksforgeeks.org/dfa-based-division/",
+            platform: "GFG",
+            difficulty: "Hard",
+            tags: ["automata"],
+          },
+          {
+            id: "rand1-7",
+            title: "Generate 1-7 with Equal Probability",
+            url: "https://www.geeksforgeeks.org/generate-integer-from-1-to-7-with-equal-probability/",
+            platform: "GFG",
+            difficulty: "Hard",
+            tags: ["probability"],
+          },
+          {
+            id: "next-palindrome",
+            title: "Next Smallest Palindrome",
+            url: "https://www.geeksforgeeks.org/given-a-number-find-next-smallest-palindrome-larger-than-this-number/",
+            platform: "GFG",
+            difficulty: "Hard",
+            tags: ["math", "palindrome"],
+          },
+          {
+            id: "day-week",
+            title: "Day of Week for Date",
+            url: "https://www.geeksforgeeks.org/find-day-of-the-week-for-a-given-date/",
+            platform: "GFG",
+            difficulty: "Hard",
+            tags: ["math", "date"],
+          },
+          {
+            id: "lexi-perm",
+            title: "Lexicographic Permutations",
+            url: "https://www.geeksforgeeks.org/lexicographic-permutations-of-string/",
+            platform: "GFG",
+            difficulty: "Hard",
+            tags: ["backtracking"],
+          },
+          {
+            id: "reservoir-sampling",
+            title: "Reservoir Sampling",
+            url: "https://www.geeksforgeeks.org/reservoir-sampling/",
+            platform: "GFG",
+            difficulty: "Hard",
+            tags: ["probability"],
+          },
+          {
+            id: "lexi-rank",
+            title: "Lexicographic Rank of String",
+            url: "https://www.geeksforgeeks.org/lexicographic-rank-of-a-string/",
+            platform: "GFG",
+            difficulty: "Hard",
+            tags: ["math", "string"],
+          },
+        ],
       },
-    ]
+    ],
   },
   {
     id: "stl",
@@ -552,7 +762,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/problems/vector-insertion/1",
             platform: "CF",
             difficulty: "Easy",
-            tags: ["stl", "vector"]
+            tags: ["stl", "vector"],
           },
           {
             id: "sort-and-reverse-vector",
@@ -560,7 +770,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/problems/sort-and-reverse-vector/1",
             platform: "CF",
             difficulty: "Easy",
-            tags: ["stl", "vector"]
+            tags: ["stl", "vector"],
           },
           {
             id: "set-insertion-and-deletion",
@@ -568,7 +778,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/cpp/cpp-stl-set-insertion-and-deletion/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["stl", "set"]
+            tags: ["stl", "set"],
           },
           {
             id: "set-basic-operations",
@@ -576,9 +786,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://www.geeksforgeeks.org/set-in-cpp-stl/",
             platform: "GFG",
             difficulty: "Easy",
-            tags: ["stl", "set"]
-          }
-        ]
+            tags: ["stl", "set"],
+          },
+        ],
       },
       {
         id: "stl-algorithms",
@@ -592,67 +802,67 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/sort-colors/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["stl", "sort"]
+            tags: ["stl", "sort"],
           },
           {
             id: "sort-people",
             title: "Sort the People",
-            "url": "https://leetcode.com/problems/sort-the-people/",
-            "platform": "LeetCode",
-            "difficulty": "Easy",
-            "tags": ["stl", "sort"]
+            url: "https://leetcode.com/problems/sort-the-people/",
+            platform: "LeetCode",
+            difficulty: "Easy",
+            tags: ["stl", "sort"],
           },
           {
             id: "binary-search",
             title: "Binary Search",
-            "url": "https://leetcode.com/problems/binary-search/",
-            "platform": "LeetCode",
-            "difficulty": "Easy",
-            "tags": ["stl", "binary_search"]
+            url: "https://leetcode.com/problems/binary-search/",
+            platform: "LeetCode",
+            difficulty: "Easy",
+            tags: ["stl", "binary_search"],
           },
           {
             id: "guess-number",
             title: "Guess Number Higher or Lower",
-            "url": "https://leetcode.com/problems/guess-number-higher-or-lower/",
-            "platform": "LeetCode",
-            "difficulty": "Easy",
-            "tags": ["stl", "binary_search"]
+            url: "https://leetcode.com/problems/guess-number-higher-or-lower/",
+            platform: "LeetCode",
+            difficulty: "Easy",
+            tags: ["stl", "binary_search"],
           },
           {
             id: "search-insert",
             title: "Search Insert Position",
-            "url": "https://leetcode.com/problems/search-insert-position/",
-            "platform": "LeetCode",
-            "difficulty": "Easy",
-            "tags": ["stl", "lower_bound"]
+            url: "https://leetcode.com/problems/search-insert-position/",
+            platform: "LeetCode",
+            difficulty: "Easy",
+            tags: ["stl", "lower_bound"],
           },
           {
             id: "first-last-position",
             title: "Find First and Last Position of Element in Sorted Array",
-            "url": "https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/",
-            "platform": "LeetCode",
-            "difficulty": "Easy",
-            "tags": ["stl", "lower_bound"]
+            url: "https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/",
+            platform: "LeetCode",
+            difficulty: "Easy",
+            tags: ["stl", "lower_bound"],
           },
           {
             id: "smallest-letter",
             title: "Find Smallest Letter Greater Than Target",
-            "url": "https://leetcode.com/problems/find-smallest-letter-greater-than-target/",
-            "platform": "LeetCode",
-            "difficulty": "Easy",
-            "tags": ["stl", "upper_bound"]
+            url: "https://leetcode.com/problems/find-smallest-letter-greater-than-target/",
+            platform: "LeetCode",
+            difficulty: "Easy",
+            tags: ["stl", "upper_bound"],
           },
           {
             id: "kth-missing",
             title: "Kth Missing Positive Number",
-            "url": "https://leetcode.com/problems/kth-missing-positive-number/",
-            "platform": "LeetCode",
-            "difficulty": "Easy",
-            "tags": ["stl", "upper_bound"]
-          }
-        ]
-      }
-    ]
+            url: "https://leetcode.com/problems/kth-missing-positive-number/",
+            platform: "LeetCode",
+            difficulty: "Easy",
+            tags: ["stl", "upper_bound"],
+          },
+        ],
+      },
+    ],
   },
   {
     id: "cses",
@@ -674,7 +884,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1068",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "cses-missing-number",
@@ -682,7 +892,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1083",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "cses-repetitions",
@@ -690,7 +900,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1069",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "cses-increasing-array",
@@ -698,7 +908,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1094",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "cses-permutations",
@@ -706,7 +916,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1070",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["constructive"]
+            tags: ["constructive"],
           },
           {
             id: "cses-number-spiral",
@@ -714,7 +924,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1071",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["math", "pattern"]
+            tags: ["math", "pattern"],
           },
           {
             id: "cses-two-knights",
@@ -722,7 +932,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1072",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["math", "combinatorics"]
+            tags: ["math", "combinatorics"],
           },
           {
             id: "cses-two-sets",
@@ -730,7 +940,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1092",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["constructive"]
+            tags: ["constructive"],
           },
           {
             id: "cses-bit-strings",
@@ -738,7 +948,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1617",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["math", "modular-arithmetic"]
+            tags: ["math", "modular-arithmetic"],
           },
           {
             id: "cses-trailing-zeros",
@@ -746,7 +956,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1618",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "cses-coin-piles",
@@ -754,7 +964,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1754",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "cses-palindrome-reorder",
@@ -762,7 +972,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1755",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["string", "constructive"]
+            tags: ["string", "constructive"],
           },
           {
             id: "cses-gray-code",
@@ -770,7 +980,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/2205",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["recursion", "bit-manipulation"]
+            tags: ["recursion", "bit-manipulation"],
           },
           {
             id: "cses-tower-hanoi",
@@ -778,7 +988,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/2165",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["recursion"]
+            tags: ["recursion"],
           },
           {
             id: "cses-creating-strings",
@@ -786,7 +996,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1622",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["recursion", "backtracking"]
+            tags: ["recursion", "backtracking"],
           },
           {
             id: "cses-apple-division",
@@ -794,7 +1004,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1623",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["recursion", "backtracking"]
+            tags: ["recursion", "backtracking"],
           },
           {
             id: "cses-chessboard-queens",
@@ -802,7 +1012,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1624",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["backtracking"]
+            tags: ["backtracking"],
           },
           {
             id: "cses-digit-queries",
@@ -810,7 +1020,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/2431",
             platform: "CSES",
             difficulty: "Hard",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "cses-grid-paths",
@@ -818,9 +1028,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1625",
             platform: "CSES",
             difficulty: "Hard",
-            tags: ["backtracking", "optimization"]
-          }
-        ]
+            tags: ["backtracking", "optimization"],
+          },
+        ],
       },
       {
         id: "cses-sorting-searching",
@@ -834,7 +1044,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1621",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["sorting", "data-structures"]
+            tags: ["sorting", "data-structures"],
           },
           {
             id: "cses-apartments",
@@ -842,7 +1052,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1084",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["sorting", "two-pointers"]
+            tags: ["sorting", "two-pointers"],
           },
           {
             id: "cses-ferris-wheel",
@@ -850,7 +1060,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1090",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["sorting", "two-pointers"]
+            tags: ["sorting", "two-pointers"],
           },
           {
             id: "cses-concert-tickets",
@@ -858,7 +1068,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1091",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["data-structures", "binary-search"]
+            tags: ["data-structures", "binary-search"],
           },
           {
             id: "cses-restaurant-customers",
@@ -866,7 +1076,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1619",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["sorting", "sweep-line"]
+            tags: ["sorting", "sweep-line"],
           },
           {
             id: "cses-movie-festival",
@@ -874,7 +1084,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1629",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["greedy", "sorting"]
+            tags: ["greedy", "sorting"],
           },
           {
             id: "cses-sum-two-values",
@@ -882,7 +1092,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1640",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["two-pointers", "hashing"]
+            tags: ["two-pointers", "hashing"],
           },
           {
             id: "cses-maximum-subarray-sum",
@@ -890,7 +1100,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1643",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "cses-stick-lengths",
@@ -898,7 +1108,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1074",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["sorting", "median"]
+            tags: ["sorting", "median"],
           },
           {
             id: "cses-missing-coin-sum",
@@ -906,9 +1116,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/2183",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["greedy", "sorting"]
-          }
-        ]
+            tags: ["greedy", "sorting"],
+          },
+        ],
       },
       {
         id: "cses-dynamic-programming",
@@ -922,7 +1132,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1633",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "cses-minimizing-coins",
@@ -930,7 +1140,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1634",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "cses-coin-combinations-i",
@@ -938,7 +1148,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1635",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "cses-coin-combinations-ii",
@@ -946,7 +1156,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1636",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "cses-removing-digits",
@@ -954,7 +1164,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1637",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "cses-grid-paths-dp",
@@ -962,7 +1172,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1638",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["dynamic-programming", "grid"]
+            tags: ["dynamic-programming", "grid"],
           },
           {
             id: "cses-book-shop",
@@ -970,7 +1180,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1158",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["dynamic-programming", "knapsack"]
+            tags: ["dynamic-programming", "knapsack"],
           },
           {
             id: "cses-array-description",
@@ -978,7 +1188,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1746",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "cses-counting-towers",
@@ -986,7 +1196,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/2413",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "cses-edit-distance",
@@ -994,9 +1204,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1639",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["dynamic-programming", "string"]
-          }
-        ]
+            tags: ["dynamic-programming", "string"],
+          },
+        ],
       },
       {
         id: "cses-graph-algorithms",
@@ -1010,7 +1220,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1192",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["graph", "dfs", "bfs"]
+            tags: ["graph", "dfs", "bfs"],
           },
           {
             id: "cses-labyrinth",
@@ -1018,7 +1228,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1193",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["graph", "bfs"]
+            tags: ["graph", "bfs"],
           },
           {
             id: "cses-building-roads",
@@ -1026,7 +1236,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1666",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["graph", "dfs"]
+            tags: ["graph", "dfs"],
           },
           {
             id: "cses-message-route",
@@ -1034,7 +1244,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1667",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["graph", "bfs"]
+            tags: ["graph", "bfs"],
           },
           {
             id: "cses-building-teams",
@@ -1042,7 +1252,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1668",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["graph", "bipartite"]
+            tags: ["graph", "bipartite"],
           },
           {
             id: "cses-round-trip",
@@ -1050,7 +1260,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1669",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["graph", "cycle-detection"]
+            tags: ["graph", "cycle-detection"],
           },
           {
             id: "cses-shortest-routes-i",
@@ -1058,7 +1268,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1671",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["graph", "dijkstra"]
+            tags: ["graph", "dijkstra"],
           },
           {
             id: "cses-shortest-routes-ii",
@@ -1066,7 +1276,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1672",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["graph", "floyd-warshall"]
+            tags: ["graph", "floyd-warshall"],
           },
           {
             id: "cses-high-score",
@@ -1074,7 +1284,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1673",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["graph", "bellman-ford"]
+            tags: ["graph", "bellman-ford"],
           },
           {
             id: "cses-course-schedule",
@@ -1082,9 +1292,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1679",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["graph", "topological-sort"]
-          }
-        ]
+            tags: ["graph", "topological-sort"],
+          },
+        ],
       },
       {
         id: "cses-mathematics",
@@ -1098,7 +1308,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/2164",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["math", "recursion"]
+            tags: ["math", "recursion"],
           },
           {
             id: "cses-exponentiation",
@@ -1106,7 +1316,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1095",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["math", "modular-arithmetic"]
+            tags: ["math", "modular-arithmetic"],
           },
           {
             id: "cses-exponentiation-ii",
@@ -1114,7 +1324,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1712",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["math", "modular-arithmetic"]
+            tags: ["math", "modular-arithmetic"],
           },
           {
             id: "cses-counting-divisors",
@@ -1122,7 +1332,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1713",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["math", "number-theory"]
+            tags: ["math", "number-theory"],
           },
           {
             id: "cses-common-divisors",
@@ -1130,7 +1340,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1081",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["math", "gcd"]
+            tags: ["math", "gcd"],
           },
           {
             id: "cses-sum-divisors",
@@ -1138,7 +1348,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1082",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["math", "number-theory"]
+            tags: ["math", "number-theory"],
           },
           {
             id: "cses-divisor-analysis",
@@ -1146,7 +1356,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/2182",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["math", "prime-factorization"]
+            tags: ["math", "prime-factorization"],
           },
           {
             id: "cses-prime-multiples",
@@ -1154,7 +1364,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/2185",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["math", "inclusion-exclusion"]
+            tags: ["math", "inclusion-exclusion"],
           },
           {
             id: "cses-binomial-coefficients",
@@ -1162,7 +1372,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1079",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["math", "combinatorics"]
+            tags: ["math", "combinatorics"],
           },
           {
             id: "cses-creating-strings-ii",
@@ -1170,7 +1380,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1715",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["math", "combinatorics"]
+            tags: ["math", "combinatorics"],
           },
           {
             id: "cses-fibonacci-numbers",
@@ -1178,7 +1388,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1722",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["math", "matrix-exponentiation"]
+            tags: ["math", "matrix-exponentiation"],
           },
           {
             id: "cses-nim-game-i",
@@ -1186,9 +1396,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1730",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["game-theory"]
-          }
-        ]
+            tags: ["game-theory"],
+          },
+        ],
       },
       {
         id: "cses-range-queries",
@@ -1202,7 +1412,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1646",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["prefix-sum"]
+            tags: ["prefix-sum"],
           },
           {
             id: "cses-static-range-min",
@@ -1210,7 +1420,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1647",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["sparse-table"]
+            tags: ["sparse-table"],
           },
           {
             id: "cses-dynamic-range-sum",
@@ -1218,7 +1428,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1648",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["segment-tree", "fenwick-tree"]
+            tags: ["segment-tree", "fenwick-tree"],
           },
           {
             id: "cses-dynamic-range-min",
@@ -1226,7 +1436,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1649",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["segment-tree"]
+            tags: ["segment-tree"],
           },
           {
             id: "cses-range-update",
@@ -1234,9 +1444,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1651",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["segment-tree", "lazy-propagation"]
-          }
-        ]
+            tags: ["segment-tree", "lazy-propagation"],
+          },
+        ],
       },
       {
         id: "cses-tree-algorithms",
@@ -1250,7 +1460,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1674",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["tree", "dfs"]
+            tags: ["tree", "dfs"],
           },
           {
             id: "cses-tree-diameter",
@@ -1258,7 +1468,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1131",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["tree", "dfs"]
+            tags: ["tree", "dfs"],
           },
           {
             id: "cses-tree-distances-i",
@@ -1266,7 +1476,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1132",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["tree", "rerooting"]
+            tags: ["tree", "rerooting"],
           },
           {
             id: "cses-company-queries-i",
@@ -1274,9 +1484,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1687",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["tree", "binary-lifting"]
-          }
-        ]
+            tags: ["tree", "binary-lifting"],
+          },
+        ],
       },
       {
         id: "cses-string-algorithms",
@@ -1290,7 +1500,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1753",
             platform: "CSES",
             difficulty: "Easy",
-            tags: ["string", "kmp"]
+            tags: ["string", "kmp"],
           },
           {
             id: "cses-finding-borders",
@@ -1298,7 +1508,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1733",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["string", "z-algorithm"]
+            tags: ["string", "z-algorithm"],
           },
           {
             id: "cses-longest-palindrome",
@@ -1306,11 +1516,11 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://cses.fi/problemset/task/1111",
             platform: "CSES",
             difficulty: "Medium",
-            tags: ["string", "manacher"]
-          }
-        ]
-      }
-    ]
+            tags: ["string", "manacher"],
+          },
+        ],
+      },
+    ],
   },
   {
     id: "learn-dsa",
@@ -1332,7 +1542,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/range-sum-query-immutable/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["prefix-sum"]
+            tags: ["prefix-sum"],
           },
           {
             id: "leetcode-range-sum-2d",
@@ -1340,7 +1550,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/range-sum-query-2d-immutable/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum", "matrix"]
+            tags: ["prefix-sum", "matrix"],
           },
           {
             id: "leetcode-subarray-sum-equals-k",
@@ -1348,7 +1558,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/subarray-sum-equals-k/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum", "hashmap"]
+            tags: ["prefix-sum", "hashmap"],
           },
           {
             id: "leetcode-maximum-sum-circular-subarray",
@@ -1356,7 +1566,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/maximum-sum-circular-subarray/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum", "kadane"]
+            tags: ["prefix-sum", "kadane"],
           },
           {
             id: "leetcode-product-except-self",
@@ -1364,7 +1574,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/product-of-array-except-self/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum"]
+            tags: ["prefix-sum"],
           },
           {
             id: "leetcode-continuous-subarray-sum",
@@ -1372,7 +1582,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/continuous-subarray-sum/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum", "modular"]
+            tags: ["prefix-sum", "modular"],
           },
           {
             id: "leetcode-path-sum-iii",
@@ -1380,7 +1590,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/path-sum-iii/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum", "tree"]
+            tags: ["prefix-sum", "tree"],
           },
           {
             id: "leetcode-maximum-size-subarray",
@@ -1388,7 +1598,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/maximum-size-subarray-sum-equals-k/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum", "hashmap"]
+            tags: ["prefix-sum", "hashmap"],
           },
           {
             id: "leetcode-find-pivot-index",
@@ -1396,7 +1606,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/find-pivot-index/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["prefix-sum"]
+            tags: ["prefix-sum"],
           },
           {
             id: "leetcode-minimum-value-positive-step",
@@ -1404,7 +1614,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/minimum-value-to-get-positive-step-by-step-sum/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["prefix-sum"]
+            tags: ["prefix-sum"],
           },
           {
             id: "leetcode-running-sum-1d",
@@ -1412,7 +1622,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/running-sum-of-1d-array/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["prefix-sum"]
+            tags: ["prefix-sum"],
           },
           {
             id: "leetcode-corporate-flight-bookings",
@@ -1420,7 +1630,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/corporate-flight-bookings/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum", "difference-array"]
+            tags: ["prefix-sum", "difference-array"],
           },
           {
             id: "leetcode-car-pooling",
@@ -1428,7 +1638,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/car-pooling/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum", "difference-array"]
+            tags: ["prefix-sum", "difference-array"],
           },
           {
             id: "leetcode-contiguous-array",
@@ -1436,7 +1646,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/contiguous-array/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum", "hashmap"]
+            tags: ["prefix-sum", "hashmap"],
           },
           {
             id: "leetcode-sum-of-all-odd-length-subarrays",
@@ -1444,7 +1654,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/sum-of-all-odd-length-subarrays/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["prefix-sum", "math"]
+            tags: ["prefix-sum", "math"],
           },
           {
             id: "leetcode-queries-on-number-of-points",
@@ -1452,7 +1662,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/queries-on-number-of-points-inside-a-circle/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum", "geometry"]
+            tags: ["prefix-sum", "geometry"],
           },
           {
             id: "leetcode-maximum-points-from-cards",
@@ -1460,7 +1670,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/maximum-points-you-can-obtain-from-cards/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum", "sliding-window"]
+            tags: ["prefix-sum", "sliding-window"],
           },
           {
             id: "leetcode-binary-subarrays-with-sum",
@@ -1468,7 +1678,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/binary-subarrays-with-sum/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum", "sliding-window"]
+            tags: ["prefix-sum", "sliding-window"],
           },
           {
             id: "leetcode-maximum-average-subarray",
@@ -1476,7 +1686,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/maximum-average-subarray-i/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["prefix-sum", "sliding-window"]
+            tags: ["prefix-sum", "sliding-window"],
           },
           {
             id: "leetcode-make-sum-divisible-by-p",
@@ -1484,9 +1694,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/make-sum-divisible-by-p/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["prefix-sum", "hashmap"]
-          }
-        ]
+            tags: ["prefix-sum", "hashmap"],
+          },
+        ],
       },
       {
         id: "binary-search",
@@ -1500,7 +1710,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/binary-search/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["binary-search"]
+            tags: ["binary-search"],
           },
           {
             id: "leetcode-search-insert-position",
@@ -1508,7 +1718,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/search-insert-position/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["binary-search"]
+            tags: ["binary-search"],
           },
           {
             id: "leetcode-first-bad-version",
@@ -1516,7 +1726,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/first-bad-version/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["binary-search"]
+            tags: ["binary-search"],
           },
           {
             id: "leetcode-sqrt-x",
@@ -1524,7 +1734,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/sqrtx/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["binary-search", "math"]
+            tags: ["binary-search", "math"],
           },
           {
             id: "leetcode-search-2d-matrix",
@@ -1532,7 +1742,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/search-a-2d-matrix/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["binary-search", "matrix"]
+            tags: ["binary-search", "matrix"],
           },
           {
             id: "leetcode-find-minimum-rotated",
@@ -1540,7 +1750,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["binary-search"]
+            tags: ["binary-search"],
           },
           {
             id: "leetcode-search-rotated-array",
@@ -1548,7 +1758,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/search-in-rotated-sorted-array/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["binary-search"]
+            tags: ["binary-search"],
           },
           {
             id: "leetcode-find-peak-element",
@@ -1556,7 +1766,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/find-peak-element/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["binary-search"]
+            tags: ["binary-search"],
           },
           {
             id: "leetcode-koko-eating-bananas",
@@ -1564,7 +1774,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/koko-eating-bananas/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["binary-search"]
+            tags: ["binary-search"],
           },
           {
             id: "leetcode-capacity-ship-packages",
@@ -1572,7 +1782,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["binary-search"]
+            tags: ["binary-search"],
           },
           {
             id: "leetcode-find-first-last-position",
@@ -1580,7 +1790,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["binary-search"]
+            tags: ["binary-search"],
           },
           {
             id: "leetcode-median-two-sorted-arrays",
@@ -1588,7 +1798,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/median-of-two-sorted-arrays/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["binary-search"]
+            tags: ["binary-search"],
           },
           {
             id: "leetcode-split-array-largest-sum",
@@ -1596,7 +1806,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/split-array-largest-sum/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["binary-search", "dynamic-programming"]
+            tags: ["binary-search", "dynamic-programming"],
           },
           {
             id: "leetcode-magnetic-force-between-balls",
@@ -1604,7 +1814,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/magnetic-force-between-two-balls/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["binary-search"]
+            tags: ["binary-search"],
           },
           {
             id: "leetcode-minimum-speed-arrive-time",
@@ -1612,7 +1822,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/minimum-speed-to-arrive-on-time/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["binary-search"]
+            tags: ["binary-search"],
           },
           {
             id: "leetcode-search-suggestions-system",
@@ -1620,7 +1830,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/search-suggestions-system/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["binary-search", "trie"]
+            tags: ["binary-search", "trie"],
           },
           {
             id: "leetcode-valid-perfect-square",
@@ -1628,7 +1838,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/valid-perfect-square/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["binary-search", "math"]
+            tags: ["binary-search", "math"],
           },
           {
             id: "leetcode-find-k-closest-elements",
@@ -1636,7 +1846,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/find-k-closest-elements/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["binary-search", "two-pointer"]
+            tags: ["binary-search", "two-pointer"],
           },
           {
             id: "leetcode-search-rotated-array-ii",
@@ -1644,7 +1854,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/search-in-rotated-sorted-array-ii/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["binary-search"]
+            tags: ["binary-search"],
           },
           {
             id: "leetcode-time-based-key-value-store",
@@ -1652,9 +1862,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/time-based-key-value-store/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["binary-search", "design"]
-          }
-        ]
+            tags: ["binary-search", "design"],
+          },
+        ],
       },
       {
         id: "sliding-window",
@@ -1668,7 +1878,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/maximum-average-subarray-i/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["sliding-window"]
+            tags: ["sliding-window"],
           },
           {
             id: "leetcode-longest-substring-without-repeating",
@@ -1676,7 +1886,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/longest-substring-without-repeating-characters/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["sliding-window", "hashmap"]
+            tags: ["sliding-window", "hashmap"],
           },
           {
             id: "leetcode-best-time-buy-sell-stock",
@@ -1684,7 +1894,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/best-time-to-buy-and-sell-stock/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["sliding-window", "dynamic-programming"]
+            tags: ["sliding-window", "dynamic-programming"],
           },
           {
             id: "leetcode-sliding-window-maximum",
@@ -1692,7 +1902,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/sliding-window-maximum/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["sliding-window", "deque"]
+            tags: ["sliding-window", "deque"],
           },
           {
             id: "leetcode-minimum-window-substring",
@@ -1700,7 +1910,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/minimum-window-substring/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["sliding-window", "hashmap"]
+            tags: ["sliding-window", "hashmap"],
           },
           {
             id: "leetcode-longest-repeating-character-replacement",
@@ -1708,7 +1918,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/longest-repeating-character-replacement/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["sliding-window"]
+            tags: ["sliding-window"],
           },
           {
             id: "leetcode-permutation-in-string",
@@ -1716,7 +1926,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/permutation-in-string/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["sliding-window"]
+            tags: ["sliding-window"],
           },
           {
             id: "leetcode-find-all-anagrams",
@@ -1724,7 +1934,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/find-all-anagrams-in-a-string/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["sliding-window"]
+            tags: ["sliding-window"],
           },
           {
             id: "leetcode-fruit-into-baskets",
@@ -1732,7 +1942,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/fruit-into-baskets/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["sliding-window"]
+            tags: ["sliding-window"],
           },
           {
             id: "leetcode-max-consecutive-ones-iii",
@@ -1740,7 +1950,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/max-consecutive-ones-iii/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["sliding-window"]
+            tags: ["sliding-window"],
           },
           {
             id: "leetcode-get-equal-substrings-within-budget",
@@ -1748,7 +1958,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/get-equal-substrings-within-budget/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["sliding-window"]
+            tags: ["sliding-window"],
           },
           {
             id: "leetcode-maximum-sum-distinct-subarrays",
@@ -1756,7 +1966,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/maximum-sum-of-distinct-subarrays-with-length-k/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["sliding-window", "hashset"]
+            tags: ["sliding-window", "hashset"],
           },
           {
             id: "leetcode-maximize-confusion-exam",
@@ -1764,7 +1974,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/maximize-the-confusion-of-an-exam/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["sliding-window"]
+            tags: ["sliding-window"],
           },
           {
             id: "leetcode-length-longest-valid-substring",
@@ -1772,7 +1982,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/length-of-the-longest-valid-substring/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["sliding-window"]
+            tags: ["sliding-window"],
           },
           {
             id: "leetcode-subarrays-k-different-integers",
@@ -1780,7 +1990,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/subarrays-with-k-different-integers/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["sliding-window"]
+            tags: ["sliding-window"],
           },
           {
             id: "leetcode-minimum-operations-reduce-x",
@@ -1788,7 +1998,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/minimum-operations-to-reduce-x-to-zero/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["sliding-window"]
+            tags: ["sliding-window"],
           },
           {
             id: "leetcode-frequency-most-frequent-element",
@@ -1796,7 +2006,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/frequency-of-the-most-frequent-element/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["sliding-window", "greedy"]
+            tags: ["sliding-window", "greedy"],
           },
           {
             id: "leetcode-number-subarrays-bounded-maximum",
@@ -1804,7 +2014,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/number-of-subarrays-with-bounded-maximum/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["sliding-window"]
+            tags: ["sliding-window"],
           },
           {
             id: "leetcode-grumpy-bookstore-owner",
@@ -1812,7 +2022,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/grumpy-bookstore-owner/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["sliding-window"]
+            tags: ["sliding-window"],
           },
           {
             id: "leetcode-contains-duplicate-iii",
@@ -1820,9 +2030,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/contains-duplicate-iii/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["sliding-window", "bucket-sort"]
-          }
-        ]
+            tags: ["sliding-window", "bucket-sort"],
+          },
+        ],
       },
       {
         id: "two-pointer",
@@ -1836,7 +2046,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["two-pointer"]
+            tags: ["two-pointer"],
           },
           {
             id: "leetcode-3sum",
@@ -1844,7 +2054,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/3sum/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["two-pointer", "sorting"]
+            tags: ["two-pointer", "sorting"],
           },
           {
             id: "leetcode-container-most-water",
@@ -1852,7 +2062,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/container-with-most-water/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["two-pointer"]
+            tags: ["two-pointer"],
           },
           {
             id: "leetcode-remove-duplicates-sorted-array",
@@ -1860,7 +2070,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/remove-duplicates-from-sorted-array/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["two-pointer"]
+            tags: ["two-pointer"],
           },
           {
             id: "leetcode-valid-palindrome",
@@ -1868,7 +2078,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/valid-palindrome/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["two-pointer", "string"]
+            tags: ["two-pointer", "string"],
           },
           {
             id: "leetcode-trapping-rain-water",
@@ -1876,7 +2086,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/trapping-rain-water/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["two-pointer", "dynamic-programming"]
+            tags: ["two-pointer", "dynamic-programming"],
           },
           {
             id: "leetcode-4sum",
@@ -1884,7 +2094,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/4sum/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["two-pointer", "sorting"]
+            tags: ["two-pointer", "sorting"],
           },
           {
             id: "leetcode-move-zeroes",
@@ -1892,7 +2102,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/move-zeroes/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["two-pointer"]
+            tags: ["two-pointer"],
           },
           {
             id: "leetcode-squares-sorted-array",
@@ -1900,7 +2110,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/squares-of-a-sorted-array/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["two-pointer"]
+            tags: ["two-pointer"],
           },
           {
             id: "leetcode-sort-colors",
@@ -1908,7 +2118,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/sort-colors/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["two-pointer", "sorting"]
+            tags: ["two-pointer", "sorting"],
           },
           {
             id: "leetcode-reverse-string",
@@ -1916,7 +2126,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/reverse-string/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["two-pointer", "string"]
+            tags: ["two-pointer", "string"],
           },
           {
             id: "leetcode-3sum-closest",
@@ -1924,7 +2134,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/3sum-closest/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["two-pointer", "sorting"]
+            tags: ["two-pointer", "sorting"],
           },
           {
             id: "leetcode-remove-element",
@@ -1932,7 +2142,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/remove-element/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["two-pointer"]
+            tags: ["two-pointer"],
           },
           {
             id: "leetcode-palindrome-linked-list",
@@ -1940,7 +2150,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/palindrome-linked-list/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["two-pointer", "linked-list"]
+            tags: ["two-pointer", "linked-list"],
           },
           {
             id: "leetcode-linked-list-cycle",
@@ -1948,7 +2158,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/linked-list-cycle/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["two-pointer", "linked-list"]
+            tags: ["two-pointer", "linked-list"],
           },
           {
             id: "leetcode-happy-number",
@@ -1956,7 +2166,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/happy-number/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["two-pointer", "math"]
+            tags: ["two-pointer", "math"],
           },
           {
             id: "leetcode-middle-linked-list",
@@ -1964,7 +2174,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/middle-of-the-linked-list/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["two-pointer", "linked-list"]
+            tags: ["two-pointer", "linked-list"],
           },
           {
             id: "leetcode-remove-nth-node",
@@ -1972,7 +2182,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/remove-nth-node-from-end-of-list/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["two-pointer", "linked-list"]
+            tags: ["two-pointer", "linked-list"],
           },
           {
             id: "leetcode-intersection-two-arrays-ii",
@@ -1980,7 +2190,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/intersection-of-two-arrays-ii/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["two-pointer", "sorting"]
+            tags: ["two-pointer", "sorting"],
           },
           {
             id: "leetcode-merge-sorted-array",
@@ -1988,9 +2198,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/merge-sorted-array/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["two-pointer"]
-          }
-        ]
+            tags: ["two-pointer"],
+          },
+        ],
       },
       {
         id: "recursion",
@@ -2004,7 +2214,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/climbing-stairs/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["recursion", "dynamic-programming"]
+            tags: ["recursion", "dynamic-programming"],
           },
           {
             id: "leetcode-fibonacci-number",
@@ -2012,7 +2222,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/fibonacci-number/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["recursion", "dynamic-programming"]
+            tags: ["recursion", "dynamic-programming"],
           },
           {
             id: "leetcode-reverse-linked-list",
@@ -2020,7 +2230,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/reverse-linked-list/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["recursion", "linked-list"]
+            tags: ["recursion", "linked-list"],
           },
           {
             id: "leetcode-merge-two-sorted-lists",
@@ -2028,7 +2238,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/merge-two-sorted-lists/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["recursion", "linked-list"]
+            tags: ["recursion", "linked-list"],
           },
           {
             id: "leetcode-pow-x-n",
@@ -2036,7 +2246,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/powx-n/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["recursion", "math"]
+            tags: ["recursion", "math"],
           },
           {
             id: "leetcode-same-tree",
@@ -2044,7 +2254,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/same-tree/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["recursion", "tree"]
+            tags: ["recursion", "tree"],
           },
           {
             id: "leetcode-maximum-depth-binary-tree",
@@ -2052,7 +2262,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/maximum-depth-of-binary-tree/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["recursion", "tree"]
+            tags: ["recursion", "tree"],
           },
           {
             id: "leetcode-invert-binary-tree",
@@ -2060,7 +2270,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/invert-binary-tree/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["recursion", "tree"]
+            tags: ["recursion", "tree"],
           },
           {
             id: "leetcode-symmetric-tree",
@@ -2068,7 +2278,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/symmetric-tree/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["recursion", "tree"]
+            tags: ["recursion", "tree"],
           },
           {
             id: "leetcode-diameter-binary-tree",
@@ -2076,7 +2286,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/diameter-of-binary-tree/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["recursion", "tree"]
+            tags: ["recursion", "tree"],
           },
           {
             id: "leetcode-balanced-binary-tree",
@@ -2084,7 +2294,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/balanced-binary-tree/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["recursion", "tree"]
+            tags: ["recursion", "tree"],
           },
           {
             id: "leetcode-sum-root-leaf-numbers",
@@ -2092,7 +2302,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/sum-root-to-leaf-numbers/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["recursion", "tree"]
+            tags: ["recursion", "tree"],
           },
           {
             id: "leetcode-factorial-trailing-zeroes",
@@ -2100,7 +2310,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/factorial-trailing-zeroes/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["recursion", "math"]
+            tags: ["recursion", "math"],
           },
           {
             id: "leetcode-kth-grammar",
@@ -2108,7 +2318,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/k-th-symbol-in-grammar/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["recursion", "bit-manipulation"]
+            tags: ["recursion", "bit-manipulation"],
           },
           {
             id: "leetcode-unique-paths",
@@ -2116,7 +2326,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/unique-paths/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["recursion", "dynamic-programming"]
+            tags: ["recursion", "dynamic-programming"],
           },
           {
             id: "leetcode-generate-parentheses",
@@ -2124,7 +2334,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/generate-parentheses/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["recursion", "backtracking"]
+            tags: ["recursion", "backtracking"],
           },
           {
             id: "leetcode-sort-array-merge-sort",
@@ -2132,7 +2342,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/sort-an-array/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["recursion", "divide-conquer"]
+            tags: ["recursion", "divide-conquer"],
           },
           {
             id: "leetcode-different-ways-add-parentheses",
@@ -2140,7 +2350,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/different-ways-to-add-parentheses/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["recursion", "divide-conquer"]
+            tags: ["recursion", "divide-conquer"],
           },
           {
             id: "leetcode-swap-nodes-pairs",
@@ -2148,7 +2358,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/swap-nodes-in-pairs/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["recursion", "linked-list"]
+            tags: ["recursion", "linked-list"],
           },
           {
             id: "leetcode-n-th-tribonacci-number",
@@ -2156,9 +2366,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/n-th-tribonacci-number/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["recursion", "dynamic-programming"]
-          }
-        ]
+            tags: ["recursion", "dynamic-programming"],
+          },
+        ],
       },
       {
         id: "backtracking",
@@ -2172,7 +2382,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/permutations/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["backtracking"]
+            tags: ["backtracking"],
           },
           {
             id: "leetcode-subsets",
@@ -2180,7 +2390,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/subsets/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["backtracking"]
+            tags: ["backtracking"],
           },
           {
             id: "leetcode-combinations",
@@ -2188,7 +2398,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/combinations/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["backtracking"]
+            tags: ["backtracking"],
           },
           {
             id: "leetcode-combination-sum",
@@ -2196,7 +2406,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/combination-sum/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["backtracking"]
+            tags: ["backtracking"],
           },
           {
             id: "leetcode-letter-combinations-phone",
@@ -2204,7 +2414,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/letter-combinations-of-a-phone-number/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["backtracking"]
+            tags: ["backtracking"],
           },
           {
             id: "leetcode-palindrome-partitioning",
@@ -2212,7 +2422,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/palindrome-partitioning/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["backtracking", "string"]
+            tags: ["backtracking", "string"],
           },
           {
             id: "leetcode-word-search",
@@ -2220,7 +2430,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/word-search/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["backtracking", "matrix"]
+            tags: ["backtracking", "matrix"],
           },
           {
             id: "leetcode-n-queens",
@@ -2228,7 +2438,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/n-queens/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["backtracking"]
+            tags: ["backtracking"],
           },
           {
             id: "leetcode-sudoku-solver",
@@ -2236,7 +2446,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/sudoku-solver/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["backtracking"]
+            tags: ["backtracking"],
           },
           {
             id: "leetcode-permutations-ii",
@@ -2244,7 +2454,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/permutations-ii/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["backtracking"]
+            tags: ["backtracking"],
           },
           {
             id: "leetcode-subsets-ii",
@@ -2252,7 +2462,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/subsets-ii/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["backtracking"]
+            tags: ["backtracking"],
           },
           {
             id: "leetcode-combination-sum-ii",
@@ -2260,7 +2470,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/combination-sum-ii/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["backtracking"]
+            tags: ["backtracking"],
           },
           {
             id: "leetcode-restore-ip-addresses",
@@ -2268,7 +2478,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/restore-ip-addresses/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["backtracking", "string"]
+            tags: ["backtracking", "string"],
           },
           {
             id: "leetcode-beautiful-arrangement",
@@ -2276,7 +2486,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/beautiful-arrangement/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["backtracking"]
+            tags: ["backtracking"],
           },
           {
             id: "leetcode-partition-k-equal-sum",
@@ -2284,9 +2494,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/partition-to-k-equal-sum-subsets/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["backtracking"]
-          }
-        ]
+            tags: ["backtracking"],
+          },
+        ],
       },
       {
         id: "graph",
@@ -2300,7 +2510,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/number-of-islands/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "dfs", "bfs"]
+            tags: ["graph", "dfs", "bfs"],
           },
           {
             id: "leetcode-clone-graph",
@@ -2308,7 +2518,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/clone-graph/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "dfs", "bfs"]
+            tags: ["graph", "dfs", "bfs"],
           },
           {
             id: "leetcode-course-schedule",
@@ -2316,7 +2526,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/course-schedule/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "topological-sort"]
+            tags: ["graph", "topological-sort"],
           },
           {
             id: "leetcode-course-schedule-ii",
@@ -2324,7 +2534,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/course-schedule-ii/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "topological-sort"]
+            tags: ["graph", "topological-sort"],
           },
           {
             id: "leetcode-pacific-atlantic-water-flow",
@@ -2332,7 +2542,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/pacific-atlantic-water-flow/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "dfs"]
+            tags: ["graph", "dfs"],
           },
           {
             id: "leetcode-surrounded-regions",
@@ -2340,7 +2550,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/surrounded-regions/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "dfs"]
+            tags: ["graph", "dfs"],
           },
           {
             id: "leetcode-rotting-oranges",
@@ -2348,7 +2558,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/rotting-oranges/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "bfs"]
+            tags: ["graph", "bfs"],
           },
           {
             id: "leetcode-walls-and-gates",
@@ -2356,7 +2566,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/walls-and-gates/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "bfs"]
+            tags: ["graph", "bfs"],
           },
           {
             id: "leetcode-word-ladder",
@@ -2364,7 +2574,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/word-ladder/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["graph", "bfs"]
+            tags: ["graph", "bfs"],
           },
           {
             id: "leetcode-alien-dictionary",
@@ -2372,7 +2582,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/alien-dictionary/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["graph", "topological-sort"]
+            tags: ["graph", "topological-sort"],
           },
           {
             id: "leetcode-graph-valid-tree",
@@ -2380,7 +2590,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/graph-valid-tree/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "union-find"]
+            tags: ["graph", "union-find"],
           },
           {
             id: "leetcode-number-connected-components",
@@ -2388,7 +2598,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/number-of-connected-components-in-an-undirected-graph/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "dfs", "union-find"]
+            tags: ["graph", "dfs", "union-find"],
           },
           {
             id: "leetcode-redundant-connection",
@@ -2396,7 +2606,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/redundant-connection/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "union-find"]
+            tags: ["graph", "union-find"],
           },
           {
             id: "leetcode-accounts-merge",
@@ -2404,7 +2614,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/accounts-merge/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "union-find"]
+            tags: ["graph", "union-find"],
           },
           {
             id: "leetcode-network-delay-time",
@@ -2412,7 +2622,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/network-delay-time/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "dijkstra"]
+            tags: ["graph", "dijkstra"],
           },
           {
             id: "leetcode-shortest-path-binary-matrix",
@@ -2420,7 +2630,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/shortest-path-in-binary-matrix/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "bfs"]
+            tags: ["graph", "bfs"],
           },
           {
             id: "leetcode-reconstruct-itinerary",
@@ -2428,7 +2638,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/reconstruct-itinerary/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["graph", "dfs"]
+            tags: ["graph", "dfs"],
           },
           {
             id: "leetcode-minimum-genetic-mutation",
@@ -2436,7 +2646,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/minimum-genetic-mutation/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "bfs"]
+            tags: ["graph", "bfs"],
           },
           {
             id: "leetcode-snakes-and-ladders",
@@ -2444,7 +2654,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/snakes-and-ladders/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "bfs"]
+            tags: ["graph", "bfs"],
           },
           {
             id: "leetcode-cheapest-flights-k-stops",
@@ -2452,9 +2662,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/cheapest-flights-within-k-stops/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["graph", "bellman-ford"]
-          }
-        ]
+            tags: ["graph", "bellman-ford"],
+          },
+        ],
       },
       {
         id: "dp",
@@ -2468,7 +2678,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/house-robber/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-coin-change",
@@ -2476,7 +2686,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/coin-change/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-longest-increasing-subsequence",
@@ -2484,7 +2694,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/longest-increasing-subsequence/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-longest-common-subsequence",
@@ -2492,7 +2702,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/longest-common-subsequence/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-word-break",
@@ -2500,7 +2710,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/word-break/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-combination-sum-iv",
@@ -2508,7 +2718,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/combination-sum-iv/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-house-robber-ii",
@@ -2516,7 +2726,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/house-robber-ii/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-decode-ways",
@@ -2524,7 +2734,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/decode-ways/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-unique-paths-ii",
@@ -2532,7 +2742,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/unique-paths-ii/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-jump-game",
@@ -2540,7 +2750,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/jump-game/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming", "greedy"]
+            tags: ["dynamic-programming", "greedy"],
           },
           {
             id: "leetcode-jump-game-ii",
@@ -2548,7 +2758,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/jump-game-ii/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming", "greedy"]
+            tags: ["dynamic-programming", "greedy"],
           },
           {
             id: "leetcode-min-cost-climbing-stairs",
@@ -2556,7 +2766,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/min-cost-climbing-stairs/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-maximum-product-subarray",
@@ -2564,7 +2774,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/maximum-product-subarray/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-palindromic-substrings",
@@ -2572,7 +2782,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/palindromic-substrings/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-longest-palindromic-subsequence",
@@ -2580,7 +2790,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/longest-palindromic-subsequence/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-edit-distance",
@@ -2588,7 +2798,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/edit-distance/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-target-sum",
@@ -2596,7 +2806,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/target-sum/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-interleaving-string",
@@ -2604,7 +2814,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/interleaving-string/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-longest-valid-parentheses",
@@ -2612,7 +2822,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/longest-valid-parentheses/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["dynamic-programming"]
+            tags: ["dynamic-programming"],
           },
           {
             id: "leetcode-distinct-subsequences",
@@ -2620,9 +2830,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/distinct-subsequences/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["dynamic-programming"]
-          }
-        ]
+            tags: ["dynamic-programming"],
+          },
+        ],
       },
       {
         id: "trees",
@@ -2636,7 +2846,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/binary-tree-inorder-traversal/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["tree", "dfs"]
+            tags: ["tree", "dfs"],
           },
           {
             id: "leetcode-binary-tree-preorder-traversal",
@@ -2644,7 +2854,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/binary-tree-preorder-traversal/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["tree", "dfs"]
+            tags: ["tree", "dfs"],
           },
           {
             id: "leetcode-binary-tree-postorder-traversal",
@@ -2652,7 +2862,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/binary-tree-postorder-traversal/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["tree", "dfs"]
+            tags: ["tree", "dfs"],
           },
           {
             id: "leetcode-binary-tree-level-order-traversal",
@@ -2660,7 +2870,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/binary-tree-level-order-traversal/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["tree", "bfs"]
+            tags: ["tree", "bfs"],
           },
           {
             id: "leetcode-validate-binary-search-tree",
@@ -2668,7 +2878,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/validate-binary-search-tree/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["tree", "dfs"]
+            tags: ["tree", "dfs"],
           },
           {
             id: "leetcode-lowest-common-ancestor-bst",
@@ -2676,7 +2886,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["tree"]
+            tags: ["tree"],
           },
           {
             id: "leetcode-binary-tree-right-side-view",
@@ -2684,7 +2894,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/binary-tree-right-side-view/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["tree", "bfs"]
+            tags: ["tree", "bfs"],
           },
           {
             id: "leetcode-count-good-nodes-binary-tree",
@@ -2692,7 +2902,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/count-good-nodes-in-binary-tree/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["tree", "dfs"]
+            tags: ["tree", "dfs"],
           },
           {
             id: "leetcode-kth-smallest-element-bst",
@@ -2700,7 +2910,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/kth-smallest-element-in-a-bst/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["tree", "dfs"]
+            tags: ["tree", "dfs"],
           },
           {
             id: "leetcode-construct-binary-tree-preorder-inorder",
@@ -2708,7 +2918,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["tree", "divide-conquer"]
+            tags: ["tree", "divide-conquer"],
           },
           {
             id: "leetcode-binary-tree-maximum-path-sum",
@@ -2716,7 +2926,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/binary-tree-maximum-path-sum/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["tree", "dfs"]
+            tags: ["tree", "dfs"],
           },
           {
             id: "leetcode-serialize-deserialize-binary-tree",
@@ -2724,7 +2934,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/serialize-and-deserialize-binary-tree/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["tree", "design"]
+            tags: ["tree", "design"],
           },
           {
             id: "leetcode-subtree-another-tree",
@@ -2732,7 +2942,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/subtree-of-another-tree/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["tree", "dfs"]
+            tags: ["tree", "dfs"],
           },
           {
             id: "leetcode-lowest-common-ancestor-binary-tree",
@@ -2740,7 +2950,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["tree", "dfs"]
+            tags: ["tree", "dfs"],
           },
           {
             id: "leetcode-binary-tree-level-order-traversal-ii",
@@ -2748,7 +2958,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/binary-tree-level-order-traversal-ii/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["tree", "bfs"]
+            tags: ["tree", "bfs"],
           },
           {
             id: "leetcode-minimum-depth-binary-tree",
@@ -2756,7 +2966,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/minimum-depth-of-binary-tree/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["tree", "bfs"]
+            tags: ["tree", "bfs"],
           },
           {
             id: "leetcode-path-sum",
@@ -2764,7 +2974,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/path-sum/",
             platform: "LeetCode",
             difficulty: "Easy",
-            tags: ["tree", "dfs"]
+            tags: ["tree", "dfs"],
           },
           {
             id: "leetcode-path-sum-ii",
@@ -2772,7 +2982,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/path-sum-ii/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["tree", "dfs", "backtracking"]
+            tags: ["tree", "dfs", "backtracking"],
           },
           {
             id: "leetcode-flatten-binary-tree-linked-list",
@@ -2780,7 +2990,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/flatten-binary-tree-to-linked-list/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["tree", "dfs"]
+            tags: ["tree", "dfs"],
           },
           {
             id: "leetcode-populating-next-right-pointers",
@@ -2788,9 +2998,9 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/populating-next-right-pointers-in-each-node/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["tree", "bfs"]
-          }
-        ]
+            tags: ["tree", "bfs"],
+          },
+        ],
       },
       {
         id: "segment-trees",
@@ -2804,7 +3014,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/range-sum-query-mutable/",
             platform: "LeetCode",
             difficulty: "Medium",
-            tags: ["segment-tree"]
+            tags: ["segment-tree"],
           },
           {
             id: "leetcode-count-smaller-numbers-after-self",
@@ -2812,7 +3022,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/count-of-smaller-numbers-after-self/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["segment-tree"]
+            tags: ["segment-tree"],
           },
           {
             id: "leetcode-range-sum-query-2d-mutable",
@@ -2820,7 +3030,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/range-sum-query-2d-mutable/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["segment-tree", "binary-indexed-tree"]
+            tags: ["segment-tree", "binary-indexed-tree"],
           },
           {
             id: "leetcode-count-of-range-sum",
@@ -2828,7 +3038,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/count-of-range-sum/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["segment-tree", "divide-conquer"]
+            tags: ["segment-tree", "divide-conquer"],
           },
           {
             id: "leetcode-reverse-pairs",
@@ -2836,7 +3046,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/reverse-pairs/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["segment-tree", "merge-sort"]
+            tags: ["segment-tree", "merge-sort"],
           },
           {
             id: "leetcode-my-calendar-iii",
@@ -2844,7 +3054,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/my-calendar-iii/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["segment-tree", "ordered-map"]
+            tags: ["segment-tree", "ordered-map"],
           },
           {
             id: "leetcode-range-module",
@@ -2852,7 +3062,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/range-module/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["segment-tree"]
+            tags: ["segment-tree"],
           },
           {
             id: "leetcode-the-skyline-problem",
@@ -2860,7 +3070,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/the-skyline-problem/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["segment-tree", "sweep-line"]
+            tags: ["segment-tree", "sweep-line"],
           },
           {
             id: "leetcode-falling-squares",
@@ -2868,7 +3078,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/falling-squares/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["segment-tree", "coordinate-compression"]
+            tags: ["segment-tree", "coordinate-compression"],
           },
           {
             id: "leetcode-rectangle-area-ii",
@@ -2876,11 +3086,11 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://leetcode.com/problems/rectangle-area-ii/",
             platform: "LeetCode",
             difficulty: "Hard",
-            tags: ["segment-tree", "coordinate-compression"]
-          }
-        ]
-      }
-    ]
+            tags: ["segment-tree", "coordinate-compression"],
+          },
+        ],
+      },
+    ],
   },
   {
     id: "cf-practice",
@@ -2899,254 +3109,253 @@ export const LEARNING_PATH_DATA: Section[] = [
           {
             id: "codeforces-1054a",
             title: "Special Forces",
-            "url": "https://codeforces.com/contest/1054/problem/A",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math", "implementation"]
+            url: "https://codeforces.com/contest/1054/problem/A",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-1054b",
             title: "Chips on the Board",
-            "url": "https://codeforces.com/contest/1054/problem/B",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["greedy", "implementation"]
+            url: "https://codeforces.com/contest/1054/problem/B",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-1054c",
             title: "Orac and LCM",
-            "url": "https://codeforces.com/contest/1054/problem/C",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["greedy", "sorting"]
+            url: "https://codeforces.com/contest/1054/problem/C",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["greedy", "sorting"],
           },
           {
             id: "codeforces-977a",
             title: "Wrong Subtraction",
-            "url": "https://codeforces.com/contest/977/problem/A",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math", "implementation"]
+            url: "https://codeforces.com/contest/977/problem/A",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-977b",
             title: "Two-gram",
-            "url": "https://codeforces.com/contest/977/problem/B",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["strings", "implementation"]
+            url: "https://codeforces.com/contest/977/problem/B",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["strings", "implementation"],
           },
           {
             id: "codeforces-977c",
             title: "Less or Equal",
-            "url": "https://codeforces.com/contest/977/problem/C",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["sorting", "binary search"]
+            url: "https://codeforces.com/contest/977/problem/C",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["sorting", "binary search"],
           },
           {
             id: "codeforces-977d",
             title: "Divide by three, multiply by two",
-            "url": "https://codeforces.com/contest/977/problem/D",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math", "greedy"]
+            url: "https://codeforces.com/contest/977/problem/D",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math", "greedy"],
           },
           {
             id: "codeforces-791a",
             title: "Bear and Big Brother",
-            "url": "https://codeforces.com/contest/791/problem/A",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math", "implementation"]
+            url: "https://codeforces.com/contest/791/problem/A",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-71a",
             title: "Way Too Long Words",
-            "url": "https://codeforces.com/contest/71/problem/A",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["strings", "implementation"]
+            url: "https://codeforces.com/contest/71/problem/A",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["strings", "implementation"],
           },
           {
             id: "codeforces-263a",
             title: "Beautiful Matrix",
-            "url": "https://codeforces.com/contest/263/problem/A",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["implementation", "math"]
+            url: "https://codeforces.com/contest/263/problem/A",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["implementation", "math"],
           },
           {
             id: "codeforces-263b",
             title: "Sweets Eating",
-            "url": "https://codeforces.com/contest/263/problem/B",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["greedy"]
+            url: "https://codeforces.com/contest/263/problem/B",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["greedy"],
           },
           {
             id: "codeforces-439a",
             title: "Devu, the Dumb Guy",
-            "url": "https://codeforces.com/contest/439/problem/A",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["greedy"]
+            url: "https://codeforces.com/contest/439/problem/A",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["greedy"],
           },
           {
             id: "codeforces-571a",
             title: "Singers' Tour",
-            "url": "https://codeforces.com/contest/571/problem/A",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math", "implementation"]
+            url: "https://codeforces.com/contest/571/problem/A",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-977e",
             title: "Neko's Maze Game",
-            "url": "https://codeforces.com/contest/977/problem/E",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["greedy", "math"]
+            url: "https://codeforces.com/contest/977/problem/E",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["greedy", "math"],
           },
           {
             id: "codeforces-1005a",
             title: "Tanya and Stairways",
-            "url": "https://codeforces.com/contest/1005/problem/A",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math", "implementation"]
+            url: "https://codeforces.com/contest/1005/problem/A",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-1005b",
             title: "Delete from the Left",
-            "url": "https://codeforces.com/contest/1005/problem/B",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["greedy"]
+            url: "https://codeforces.com/contest/1005/problem/B",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["greedy"],
           },
           {
             id: "codeforces-1005c",
             title: "Sum of Cubes",
-            "url": "https://codeforces.com/contest/1005/problem/C",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math"]
+            url: "https://codeforces.com/contest/1005/problem/C",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math"],
           },
           {
             id: "codeforces-1005d",
             title: "Polycarp's Practice",
-            "url": "https://codeforces.com/contest/1005/problem/D",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["greedy", "implementation"]
+            url: "https://codeforces.com/contest/1005/problem/D",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-1279a",
             title: "New Year Garland",
-            "url": "https://codeforces.com/contest/1279/problem/A",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math", "implementation"]
+            url: "https://codeforces.com/contest/1279/problem/A",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-1279b",
             title: "Snow Walking Robot",
-            "url": "https://codeforces.com/contest/1279/problem/B",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["implementation"]
+            url: "https://codeforces.com/contest/1279/problem/B",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["implementation"],
           },
           {
             id: "codeforces-1279c",
             title: "Stack of Presents",
-            "url": "https://codeforces.com/contest/1279/problem/C",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["greedy"]
+            url: "https://codeforces.com/contest/1279/problem/C",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["greedy"],
           },
           {
             id: "codeforces-1279d",
             title: "Segmentation",
-            "url": "https://codeforces.com/contest/1279/problem/D",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math", "implementation", "greedy"]
+            url: "https://codeforces.com/contest/1279/problem/D",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math", "implementation", "greedy"],
           },
           {
             id: "codeforces-1352a",
             title: "Sum of Round Numbers",
-            "url": "https://codeforces.com/contest/1352/problem/A",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math"]
+            url: "https://codeforces.com/contest/1352/problem/A",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math"],
           },
           {
             id: "codeforces-1352b",
             title: "Same Parity Summands",
-            "url": "https://codeforces.com/contest/1352/problem/B",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math", "greedy"]
+            url: "https://codeforces.com/contest/1352/problem/B",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math", "greedy"],
           },
           {
             id: "codeforces-1352c",
             title: "K-th Not Divisible by n",
-            "url": "https://codeforces.com/contest/1352/problem/C",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math", "binary search"]
+            url: "https://codeforces.com/contest/1352/problem/C",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math", "binary search"],
           },
           {
             id: "codeforces-1352d",
             title: "Alice, Bob and Candies",
-            "url": "https://codeforces.com/contest/1352/problem/D",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["greedy"]
+            url: "https://codeforces.com/contest/1352/problem/D",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["greedy"],
           },
           {
             id: "codeforces-1360a",
             title: "Minimal Square",
-            "url": "https://codeforces.com/contest/1360/problem/A",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math"]
+            url: "https://codeforces.com/contest/1360/problem/A",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math"],
           },
           {
             id: "codeforces-1360b",
             title: "Prime Subtraction",
-            "url": "https://codeforces.com/contest/1360/problem/B",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math", "greedy"]
+            url: "https://codeforces.com/contest/1360/problem/B",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math", "greedy"],
           },
           {
             id: "codeforces-1360c",
             title: "Similar Pairs",
-            "url": "https://codeforces.com/contest/1360/problem/C",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["data structures", "greedy"]
+            url: "https://codeforces.com/contest/1360/problem/C",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["data structures", "greedy"],
           },
           {
             id: "codeforces-1360d",
             title: "Johnny and Contribution",
-            "url": "https://codeforces.com/contest/1360/problem/D",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math", "implementation"]
+            url: "https://codeforces.com/contest/1360/problem/D",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-1360e",
             title: "Polygon",
-            "url": "https://codeforces.com/contest/1360/problem/E",
-            "platform": "Codeforces",
-            "difficulty": "Div3",
-            "tags": ["math", "greedy"]
-          }
-        ]
-      }
-      ,
+            url: "https://codeforces.com/contest/1360/problem/E",
+            platform: "Codeforces",
+            difficulty: "Div3",
+            tags: ["math", "greedy"],
+          },
+        ],
+      },
       {
         id: "div2-a",
         title: "Div2 A",
@@ -3159,7 +3368,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/4/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["math", "implementation"]
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-71a",
@@ -3167,7 +3376,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/71/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["math", "implementation", "strings"]
+            tags: ["math", "implementation", "strings"],
           },
           {
             id: "codeforces-231a",
@@ -3175,7 +3384,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/231/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["math", "implementation"]
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-158a",
@@ -3183,7 +3392,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/158/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-59a",
@@ -3191,7 +3400,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/59/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["strings"]
+            tags: ["strings"],
           },
           {
             id: "codeforces-141a",
@@ -3199,7 +3408,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/141/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["strings"]
+            tags: ["strings"],
           },
           {
             id: "codeforces-112a",
@@ -3207,7 +3416,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/112/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["strings", "implementation"]
+            tags: ["strings", "implementation"],
           },
           {
             id: "codeforces-339a",
@@ -3215,7 +3424,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/339/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["math", "implementation"]
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-71b",
@@ -3223,7 +3432,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/71/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["sorting", "implementation"]
+            tags: ["sorting", "implementation"],
           },
           {
             id: "codeforces-158b",
@@ -3231,7 +3440,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/158/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["greedy", "implementation"]
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-546a",
@@ -3239,7 +3448,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/546/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["math", "implementation"]
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-232a",
@@ -3247,7 +3456,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/232/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "codeforces-266a",
@@ -3255,7 +3464,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/266/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-158c",
@@ -3263,7 +3472,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/158/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-282a",
@@ -3271,7 +3480,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/282/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-50a",
@@ -3279,7 +3488,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/50/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "codeforces-158d",
@@ -3287,7 +3496,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/158/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-339b",
@@ -3295,7 +3504,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/339/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["math", "implementation"]
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-69a",
@@ -3303,7 +3512,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/69/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["implementation", "math"]
+            tags: ["implementation", "math"],
           },
           {
             id: "codeforces-112b",
@@ -3311,7 +3520,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/112/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-158e",
@@ -3319,7 +3528,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/158/problem/E",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-158f",
@@ -3327,7 +3536,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/158/problem/F",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-200a",
@@ -3335,7 +3544,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/200/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "codeforces-231b",
@@ -3343,7 +3552,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/231/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["greedy", "implementation"]
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-158g",
@@ -3351,7 +3560,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/158/problem/G",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-276a",
@@ -3359,7 +3568,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/276/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-486a",
@@ -3367,11 +3576,10 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/486/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-A",
-            tags: ["math"]
-          }
-        ]
-      }
-      ,
+            tags: ["math"],
+          },
+        ],
+      },
       {
         id: "div2-b",
         title: "Div2 B",
@@ -3384,7 +3592,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["greedy", "sorting"]
+            tags: ["greedy", "sorting"],
           },
           {
             id: "codeforces-47b",
@@ -3392,7 +3600,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/47/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["greedy", "sorting"]
+            tags: ["greedy", "sorting"],
           },
           {
             id: "codeforces-32b",
@@ -3400,7 +3608,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/32/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["math", "implementation"]
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-245b",
@@ -3408,7 +3616,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/245/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["greedy", "implementation"]
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-546b",
@@ -3416,7 +3624,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/546/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-263b",
@@ -3424,7 +3632,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/263/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["greedy"]
+            tags: ["greedy"],
           },
           {
             id: "codeforces-581b",
@@ -3432,7 +3640,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/581/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["greedy", "implementation"]
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-688b",
@@ -3440,7 +3648,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/688/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["math", "implementation"]
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-617b",
@@ -3448,7 +3656,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/617/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["greedy"]
+            tags: ["greedy"],
           },
           {
             id: "codeforces-281b",
@@ -3456,7 +3664,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/281/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["implementation", "strings"]
+            tags: ["implementation", "strings"],
           },
           {
             id: "codeforces-474b",
@@ -3464,7 +3672,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/474/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["binary search", "implementation"]
+            tags: ["binary search", "implementation"],
           },
           {
             id: "codeforces-137b",
@@ -3472,7 +3680,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/137/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-405b",
@@ -3480,7 +3688,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/405/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["implementation", "greedy"]
+            tags: ["implementation", "greedy"],
           },
           {
             id: "codeforces-546c",
@@ -3488,7 +3696,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/546/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-606b",
@@ -3496,7 +3704,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/606/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["greedy"]
+            tags: ["greedy"],
           },
           {
             id: "codeforces-263c",
@@ -3504,7 +3712,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/263/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-609b",
@@ -3512,7 +3720,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/609/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["implementation", "greedy"]
+            tags: ["implementation", "greedy"],
           },
           {
             id: "codeforces-580b",
@@ -3520,7 +3728,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/580/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["two pointers", "sorting"]
+            tags: ["two pointers", "sorting"],
           },
           {
             id: "codeforces-555b",
@@ -3528,7 +3736,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/555/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["implementation", "strings"]
+            tags: ["implementation", "strings"],
           },
           {
             id: "codeforces-312b",
@@ -3536,7 +3744,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/312/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["greedy"]
+            tags: ["greedy"],
           },
           {
             id: "codeforces-489b",
@@ -3544,7 +3752,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/489/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["greedy", "implementation"]
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-363b",
@@ -3552,7 +3760,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/363/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-48b",
@@ -3560,7 +3768,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/48/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-352b",
@@ -3568,7 +3776,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/352/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["constructive algorithms"]
+            tags: ["constructive algorithms"],
           },
           {
             id: "codeforces-84b",
@@ -3576,7 +3784,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/84/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["brute force", "implementation"]
+            tags: ["brute force", "implementation"],
           },
           {
             id: "codeforces-25b",
@@ -3584,7 +3792,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/25/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["implementation", "strings"]
+            tags: ["implementation", "strings"],
           },
           {
             id: "codeforces-588b",
@@ -3592,7 +3800,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/588/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["dp"]
+            tags: ["dp"],
           },
           {
             id: "codeforces-760b",
@@ -3600,7 +3808,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/760/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "codeforces-467b",
@@ -3608,7 +3816,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/467/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["bitmasks"]
+            tags: ["bitmasks"],
           },
           {
             id: "codeforces-676b",
@@ -3616,7 +3824,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/676/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-676a",
@@ -3624,7 +3832,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/676/problem/A",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-479b",
@@ -3632,7 +3840,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/479/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["greedy", "implementation"]
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-455b",
@@ -3640,7 +3848,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/455/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "codeforces-69b",
@@ -3648,7 +3856,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/69/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "codeforces-96b",
@@ -3656,11 +3864,10 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/96/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-B",
-            tags: ["strings", "simulation"]
-          }
-        ]
-      }
-      ,
+            tags: ["strings", "simulation"],
+          },
+        ],
+      },
       {
         id: "div2-c",
         title: "Div2 C",
@@ -3673,7 +3880,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/4/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["math", "greedy", "dp"]
+            tags: ["math", "greedy", "dp"],
           },
           {
             id: "codeforces-20c",
@@ -3681,7 +3888,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/20/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["mathematics", "advanced-algorithms"]
+            tags: ["mathematics", "advanced-algorithms"],
           },
           {
             id: "codeforces-151c",
@@ -3689,7 +3896,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/151/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["math", "greedy", "dp"]
+            tags: ["math", "greedy", "dp"],
           },
           {
             id: "codeforces-279c",
@@ -3697,7 +3904,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/279/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["greedy", "dp"]
+            tags: ["greedy", "dp"],
           },
           {
             id: "codeforces-281c",
@@ -3705,7 +3912,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/281/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["dp", "greedy"]
+            tags: ["dp", "greedy"],
           },
           {
             id: "codeforces-156c",
@@ -3713,7 +3920,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/156/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["math", "greedy"]
+            tags: ["math", "greedy"],
           },
           {
             id: "codeforces-156b",
@@ -3721,7 +3928,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/156/problem/B",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["greedy"]
+            tags: ["greedy"],
           },
           {
             id: "codeforces-244c",
@@ -3729,7 +3936,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/244/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["geometry"]
+            tags: ["geometry"],
           },
           {
             id: "codeforces-622c",
@@ -3737,7 +3944,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/622/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["greedy", "implementation"]
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-760c",
@@ -3745,7 +3952,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/760/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["strings", "implementation"]
+            tags: ["strings", "implementation"],
           },
           {
             id: "codeforces-118c",
@@ -3753,7 +3960,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/118/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["dp"]
+            tags: ["dp"],
           },
           {
             id: "codeforces-339c",
@@ -3761,7 +3968,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/339/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["bitmasks", "dp"]
+            tags: ["bitmasks", "dp"],
           },
           {
             id: "codeforces-217c",
@@ -3769,7 +3976,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/217/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["greedy", "implementation"]
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-618c",
@@ -3777,7 +3984,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/618/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["geometry"]
+            tags: ["geometry"],
           },
           {
             id: "codeforces-337c",
@@ -3785,7 +3992,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/337/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["greedy", "implementation"]
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-617c",
@@ -3793,7 +4000,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/617/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["greedy"]
+            tags: ["greedy"],
           },
           {
             id: "codeforces-145c",
@@ -3801,7 +4008,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/145/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["math", "implementation"]
+            tags: ["math", "implementation"],
           },
           {
             id: "codeforces-91c",
@@ -3809,7 +4016,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/91/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["strings", "implementation"]
+            tags: ["strings", "implementation"],
           },
           {
             id: "codeforces-1027c",
@@ -3817,7 +4024,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1027/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["greedy", "geometry"]
+            tags: ["greedy", "geometry"],
           },
           {
             id: "codeforces-581c",
@@ -3825,7 +4032,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/581/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "codeforces-155c",
@@ -3833,7 +4040,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/155/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["math", "dp"]
+            tags: ["math", "dp"],
           },
           {
             id: "codeforces-176c",
@@ -3841,7 +4048,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/176/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["dp", "greedy"]
+            tags: ["dp", "greedy"],
           },
           {
             id: "codeforces-24c",
@@ -3849,7 +4056,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/24/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["math", "greedy"]
+            tags: ["math", "greedy"],
           },
           {
             id: "codeforces-636c",
@@ -3857,7 +4064,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/636/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["dp"]
+            tags: ["dp"],
           },
           {
             id: "codeforces-460c",
@@ -3865,7 +4072,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/460/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["greedy"]
+            tags: ["greedy"],
           },
           {
             id: "codeforces-987c",
@@ -3873,7 +4080,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/987/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["greedy"]
+            tags: ["greedy"],
           },
           {
             id: "codeforces-1076c",
@@ -3881,7 +4088,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1076/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["greedy", "implementation"]
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-546c",
@@ -3889,7 +4096,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/546/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-621c",
@@ -3897,7 +4104,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/621/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["math", "dp"]
+            tags: ["math", "dp"],
           },
           {
             id: "codeforces-666c",
@@ -3905,7 +4112,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/666/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["greedy", "implementation"]
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-822c",
@@ -3913,7 +4120,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/822/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["sorting", "greedy"]
+            tags: ["sorting", "greedy"],
           },
           {
             id: "codeforces-954c",
@@ -3921,7 +4128,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/954/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["dp"]
+            tags: ["dp"],
           },
           {
             id: "codeforces-87c",
@@ -3929,7 +4136,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/87/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["dp"]
+            tags: ["dp"],
           },
           {
             id: "codeforces-25c",
@@ -3937,7 +4144,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/25/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["graphs"]
+            tags: ["graphs"],
           },
           {
             id: "codeforces-96c",
@@ -3945,7 +4152,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/96/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "codeforces-174c",
@@ -3953,7 +4160,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/174/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["strings", "implementation"]
+            tags: ["strings", "implementation"],
           },
           {
             id: "codeforces-131c",
@@ -3961,7 +4168,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/131/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["greedy"]
+            tags: ["greedy"],
           },
           {
             id: "codeforces-580c",
@@ -3969,7 +4176,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/580/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["dfs", "trees"]
+            tags: ["dfs", "trees"],
           },
           {
             id: "codeforces-277c",
@@ -3977,7 +4184,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/277/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["dp"]
+            tags: ["dp"],
           },
           {
             id: "codeforces-422c",
@@ -3985,7 +4192,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/422/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["strings"]
+            tags: ["strings"],
           },
           {
             id: "codeforces-151c",
@@ -3993,11 +4200,10 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/151/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-C",
-            tags: ["greedy", "implementation"]
-          }
-        ]
-      }
-      ,
+            tags: ["greedy", "implementation"],
+          },
+        ],
+      },
       {
         id: "div2-d",
         title: "Div2 D",
@@ -4010,7 +4216,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/2/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["mathematics", "advanced-algorithms"]
+            tags: ["mathematics", "advanced-algorithms"],
           },
           {
             id: "codeforces-6d",
@@ -4018,7 +4224,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/6/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["mathematics", "advanced-algorithms"]
+            tags: ["mathematics", "advanced-algorithms"],
           },
           {
             id: "codeforces-12d",
@@ -4026,7 +4232,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/12/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["mathematics", "advanced-algorithms"]
+            tags: ["mathematics", "advanced-algorithms"],
           },
           {
             id: "codeforces-337d",
@@ -4034,7 +4240,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/337/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["dp", "trees", "graphs"]
+            tags: ["dp", "trees", "graphs"],
           },
           {
             id: "codeforces-337c",
@@ -4042,7 +4248,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/337/problem/C",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["greedy", "implementation"]
+            tags: ["greedy", "implementation"],
           },
           {
             id: "codeforces-191d",
@@ -4050,7 +4256,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/191/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["binary search", "sortings"]
+            tags: ["binary search", "sortings"],
           },
           {
             id: "codeforces-276d",
@@ -4058,7 +4264,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/276/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["greedy", "data structures"]
+            tags: ["greedy", "data structures"],
           },
           {
             id: "codeforces-339d",
@@ -4066,7 +4272,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/339/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["data structures", "segment trees"]
+            tags: ["data structures", "segment trees"],
           },
           {
             id: "codeforces-405d",
@@ -4074,7 +4280,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/405/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["sorting", "greedy"]
+            tags: ["sorting", "greedy"],
           },
           {
             id: "codeforces-464d",
@@ -4082,7 +4288,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/464/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["geometry"]
+            tags: ["geometry"],
           },
           {
             id: "codeforces-507d",
@@ -4090,7 +4296,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/507/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["dfs", "graphs"]
+            tags: ["dfs", "graphs"],
           },
           {
             id: "codeforces-510d",
@@ -4098,7 +4304,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/510/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["greedy", "data structures"]
+            tags: ["greedy", "data structures"],
           },
           {
             id: "codeforces-519d",
@@ -4106,7 +4312,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/519/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["strings", "hashing"]
+            tags: ["strings", "hashing"],
           },
           {
             id: "codeforces-570d",
@@ -4114,7 +4320,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/570/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["trees", "dfs"]
+            tags: ["trees", "dfs"],
           },
           {
             id: "codeforces-704d",
@@ -4122,7 +4328,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/704/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "codeforces-710d",
@@ -4130,7 +4336,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/710/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["graphs", "shortest paths"]
+            tags: ["graphs", "shortest paths"],
           },
           {
             id: "codeforces-792d",
@@ -4138,7 +4344,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/792/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["dynamic programming", "hashing"]
+            tags: ["dynamic programming", "hashing"],
           },
           {
             id: "codeforces-817d",
@@ -4146,7 +4352,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/817/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["dp", "graphs"]
+            tags: ["dp", "graphs"],
           },
           {
             id: "codeforces-838d",
@@ -4154,7 +4360,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/838/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["dp", "greedy"]
+            tags: ["dp", "greedy"],
           },
           {
             id: "codeforces-685d",
@@ -4162,7 +4368,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/685/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["sorting", "greedy"]
+            tags: ["sorting", "greedy"],
           },
           {
             id: "codeforces-746d",
@@ -4170,7 +4376,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/746/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["strings", "hashing"]
+            tags: ["strings", "hashing"],
           },
           {
             id: "codeforces-1109d",
@@ -4178,7 +4384,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1109/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["implementation"]
+            tags: ["implementation"],
           },
           {
             id: "codeforces-707d",
@@ -4186,7 +4392,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/707/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["math", "greedy"]
+            tags: ["math", "greedy"],
           },
           {
             id: "codeforces-917d",
@@ -4194,7 +4400,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/917/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["dp"]
+            tags: ["dp"],
           },
           {
             id: "codeforces-961d",
@@ -4202,7 +4408,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/961/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["math", "bitmasks"]
+            tags: ["math", "bitmasks"],
           },
           {
             id: "codeforces-999d",
@@ -4210,7 +4416,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/999/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["greedy"]
+            tags: ["greedy"],
           },
           {
             id: "codeforces-1065d",
@@ -4218,7 +4424,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1065/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["greedy", "data structures"]
+            tags: ["greedy", "data structures"],
           },
           {
             id: "codeforces-1082d",
@@ -4226,7 +4432,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1082/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["graphs"]
+            tags: ["graphs"],
           },
           {
             id: "codeforces-807d",
@@ -4234,7 +4440,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/807/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["dfs", "graphs"]
+            tags: ["dfs", "graphs"],
           },
           {
             id: "codeforces-922d",
@@ -4242,7 +4448,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/922/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["greedy"]
+            tags: ["greedy"],
           },
           {
             id: "codeforces-957d",
@@ -4250,7 +4456,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/957/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["dp", "graphs"]
+            tags: ["dp", "graphs"],
           },
           {
             id: "codeforces-1167d",
@@ -4258,7 +4464,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1167/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "codeforces-1178d",
@@ -4266,7 +4472,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1178/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["graphs", "math"]
+            tags: ["graphs", "math"],
           },
           {
             id: "codeforces-1208d",
@@ -4274,7 +4480,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1208/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["greedy"]
+            tags: ["greedy"],
           },
           {
             id: "codeforces-1244d",
@@ -4282,7 +4488,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1244/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["trees", "dfs"]
+            tags: ["trees", "dfs"],
           },
           {
             id: "codeforces-1288d",
@@ -4290,7 +4496,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1288/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["math"]
+            tags: ["math"],
           },
           {
             id: "codeforces-1304d",
@@ -4298,7 +4504,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1304/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["dp"]
+            tags: ["dp"],
           },
           {
             id: "codeforces-1313d",
@@ -4306,7 +4512,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1313/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["dp"]
+            tags: ["dp"],
           },
           {
             id: "codeforces-1327d",
@@ -4314,7 +4520,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1327/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["graphs"]
+            tags: ["graphs"],
           },
           {
             id: "codeforces-1375d",
@@ -4322,7 +4528,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1375/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["greedy"]
+            tags: ["greedy"],
           },
           {
             id: "codeforces-1400d",
@@ -4330,7 +4536,7 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1400/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["greedy", "strings"]
+            tags: ["greedy", "strings"],
           },
           {
             id: "codeforces-1466d",
@@ -4338,20 +4544,22 @@ export const LEARNING_PATH_DATA: Section[] = [
             url: "https://codeforces.com/contest/1466/problem/D",
             platform: "Codeforces",
             difficulty: "Div2-D",
-            tags: ["dp"]
-          }
-        ]
-      }
-
-    ]
-  }
-]
+            tags: ["dp"],
+          },
+        ],
+      },
+    ],
+  },
+];
 
 export function getTotalProblems(): number {
-  return LEARNING_PATH_DATA.reduce((total, section) => total + section.totalProblems, 0)
+  return LEARNING_PATH_DATA.reduce(
+    (total, section) => total + section.totalProblems,
+    0
+  );
 }
 
 export function getSectionProgress(sectionId: string): number {
   // TODO: Calculate progress from user's solved problems
-  return 0
+  return 0;
 }

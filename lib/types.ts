@@ -1,38 +1,59 @@
+// Enums for safer values
+export enum Platform {
+  Codeforces = "codeforces",
+  LeetCode = "leetcode",
+  AtCoder = "atcoder",
+}
+
+export enum Outcome {
+  Solved = "solved",
+  Failed = "failed",
+  Skipped = "skipped",
+}
+
+export enum DueGroup {
+  DueNow = "dueNow",
+  DueSoon = "dueSoon",
+  Later = "later",
+}
+
+// Problem definition
 export type Problem = {
-  id: string
-  platform: "codeforces"
-  problemId: string
-  rating: number
-  tags: string[]
-  title: string
-  url: string
-}
+  id: string;
+  platform: Platform;
+  problemId: string;
+  rating?: number; // optional in case unknown
+  tags: string[];
+  title: string;
+  url: string;
+  difficulty?: "easy" | "medium" | "hard";
+};
 
-export type Outcome = "solved" | "failed" | "skipped"
-
+// Sheet item for spaced repetition
 export type SheetItem = {
-  id: string
-  problem: Problem
-  repetitions: number
-  ease: number
-  intervalDays: number
-  nextDueAt: string // ISO date
-  lastOutcome?: Outcome
-}
+  id: string;
+  problem: Problem;
+  repetitions: number;
+  ease: 1 | 2 | 3 | 4 | 5; // controlled ease values
+  intervalDays: number;
+  nextDueAt: Date; // use Date instead of string
+  lastOutcome?: Outcome;
+};
 
-export type WeakTagStats = Record<string, { attempts: number; fails: number }>
+// Weak tag statistics
+export type WeakTagStats = Record<
+  string,
+  { attempts: number; fails: number; successRate?: number }
+>;
 
+// Adaptive sheet response
 export type AdaptiveSheetResponse = {
-  baseRating: number
-  groups: {
-    dueNow: SheetItem[]
-    dueSoon: SheetItem[]
-    later: SheetItem[]
-  }
+  baseRating: number;
+  groups: Record<DueGroup, SheetItem[]>;
   stats: {
-    solvedRate: number
-    streak: number
-    lastInteractionAt?: string
-    weakTags: WeakTagStats
-  }
-}
+    solvedRate: number; // 0-1
+    streak: number;
+    lastInteractionAt?: Date;
+    weakTags: WeakTagStats;
+  };
+};

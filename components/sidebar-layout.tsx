@@ -221,6 +221,13 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
+      {/* Overlay
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50  z-40 transition-opacity duration-300"
+          onClick={() => setIsOpen(false)}
+        />
+      )} */}
 
       {/* Main Content */}
       <div

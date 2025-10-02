@@ -163,6 +163,7 @@ export function CFVerificationProvider({
       // Save to cf_snapshots table (rating data) - always create new snapshot
       const { error: snapshotError } = await supabase
         .from("cf_snapshots")
+
         .insert({
           user_id: user?.id,
           handle: data.handle,
@@ -226,6 +227,7 @@ export function CFVerificationProvider({
       } else {
         // No verified data in Supabase, check localStorage
         refreshVerificationStatus();
+
       }
 
       // Fetch live CF data

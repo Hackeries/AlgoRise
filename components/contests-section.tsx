@@ -125,19 +125,29 @@ export default function ContestSection() {
     return `https://codeforces.com/contestRegistration/${contestId}`;
   };
 
+// <<<<<<< HEAD
   const handleCodeforcesContestClick = (
     contestId: number,
     startSeconds: number,
     contestName: string
   ) => {
+// =======
+//   const handleCodeforcesContestClick = (contestId: number, startSeconds: number, contestName: string) => {
+// >>>>>>> 0c88a0aff73832c10eedb3a4b728cef1d20ef662
     const url = getCodeforcesContestUrl(contestId);
     const timeLeftMs = (startSeconds || 0) * 1000 - Date.now();
     const daysLeft = Math.floor(timeLeftMs / (1000 * 60 * 60 * 24));
     const lowername = contestName.toLowerCase();
+// <<<<<<< HEAD
 
     if (lowername.includes("div. 1") && !lowername.includes("div. 2")) {
       if (userRating < 1900) {
         // Rating check should be < 1900 as per issue
+// =======
+    
+//     if (lowername.includes("div. 1") && !lowername.includes("div. 2")) {
+//       if (userRating < 1900) { // Rating check should be < 1900 as per issue
+// >>>>>>> 0c88a0aff73832c10eedb3a4b728cef1d20ef662
         toast({
           title: "Not Eligible",
           description:
@@ -149,6 +159,7 @@ export default function ContestSection() {
       }
     }
 
+// <<<<<<< HEAD
     if (daysLeft < 2) {
       // Logic should be less than 2 days
       window.open(url, "_blank", "noopener,noreferrer");
@@ -159,6 +170,17 @@ export default function ContestSection() {
         variant: "destructive",
         className: "text-white",
       });
+// =======
+//     if (daysLeft < 2) { // Logic should be less than 2 days
+//         window.open(url, "_blank", "noopener,noreferrer");
+//     } else {
+//         toast({
+//           title: "Registration Not Started",
+//           description: `Registration isn't opened yet, please wait ~${daysLeft} days to register!`,
+//           variant: "destructive",
+//           className: "text-white",
+//         });
+// >>>>>>> 0c88a0aff73832c10eedb3a4b728cef1d20ef662
     }
   };
 
@@ -212,6 +234,7 @@ export default function ContestSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: i * 0.15 }}
                   viewport={{ once: true, amount: 0.2 }}
+// <<<<<<< HEAD
                   onClick={() =>
                     handleCodeforcesContestClick(
                       contest.id,
@@ -219,6 +242,9 @@ export default function ContestSection() {
                       contest.name
                     )
                   }
+// =======
+//                   onClick={() => handleCodeforcesContestClick(contest.id, contest.startTimeSeconds || 0, contest.name)}
+// >>>>>>> 0c88a0aff73832c10eedb3a4b728cef1d20ef662
                   role="link"
                   tabIndex={0}
                 >

@@ -89,6 +89,7 @@ export default function ContestsPage() {
     durationHours: "2", // ✅ add
     durationMinutes: "0", // ✅ add
   });
+// <<<<<<< HEAD
   const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
   const [userRating, setUserRating] = useState<number>(0);
   useEffect(() => {
@@ -116,6 +117,34 @@ export default function ContestsPage() {
 
     fetchUserRating();
   }, []);
+// =======
+//   const [userRating, setUserRating] = useState<number>(0);
+//   useEffect(() => {
+//   const fetchUserRating = async () => {
+//     const { data: userData } = await supabase.auth.getUser();
+//     const userId = userData?.user?.id;
+
+//     const { data, error } = await supabase
+//       .from("cf_snapshots")
+//       .select("rating")
+//       .eq("user_id", userId)
+//       .order("captured_at", { ascending: false })
+//       .limit(1)
+//       .single();
+
+//     if (error) {
+//       console.error("Error fetching rating:", error);
+//       return;
+//     }
+
+//     if (data?.rating) {
+//       setUserRating(data.rating);
+//     }
+//   };
+
+//   fetchUserRating();
+// }, []);
+// >>>>>>> 0c88a0aff73832c10eedb3a4b728cef1d20ef662
 
   useEffect(() => {
     fetchContests();
@@ -361,6 +390,7 @@ const createContest = async () => {
     return `https://codeforces.com/contestRegistration/${contestId}`;
   };
 
+// <<<<<<< HEAD
   const handleCodeforcesContestClick = (
     contestId: number,
     startSeconds: number,
@@ -391,6 +421,29 @@ const createContest = async () => {
       window.open(url, "_blank", "noopener,noreferrer");
     } else {
       toast({
+// =======
+//   const handleCodeforcesContestClick = (contestId: number, startSeconds: number, contestName: string) => {
+//     const url = getCodeforcesContestUrl(contestId);
+//     const timeLeftMs = startSeconds * 1000 - Date.now();
+//     const daysLeft = Math.floor(timeLeftMs / (1000 * 60 * 60 * 24));
+//     const lowername = contestName.toLowerCase();
+//     if(lowername.includes("div. 1") && !lowername.includes("div. 2")){
+//       if(userRating < 1999){
+//          toast({
+//         title: "Not Eligible",
+//         description:
+//           "Register for Div2 because your current rating is <1900.",
+//         variant: "destructive",
+//         className: "text-white",
+//       });
+//       return ;
+//       }
+//     }
+//     if(daysLeft <=2 ){
+//       window.open(url, "_blank", "noopener,noreferrer");
+//     }else{
+//        toast({
+// >>>>>>> 0c88a0aff73832c10eedb3a4b728cef1d20ef662
         title: "Registration Not Started",
         description: `Registration isn't opened yet, please wait ~${daysLeft} days to register!`,
         variant: "destructive", // red alert
@@ -786,6 +839,7 @@ const createContest = async () => {
                   <Card
                     key={contest.id}
                     className="hover:bg-white/5 transition-colors cursor-pointer"
+// <<<<<<< HEAD
                     onClick={() =>
                       handleCodeforcesContestClick(
                         contest.id,
@@ -794,6 +848,9 @@ const createContest = async () => {
                       )
                     }
                   >
+=======
+                    {/* onClick={() => handleCodeforcesContestClick(contest.id, contest.startTimeSeconds || 0, contest.name)}> */}
+{/* >>>>>>> 0c88a0aff73832c10eedb3a4b728cef1d20ef662 */}
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <CardTitle className="text-sm font-medium leading-tight">

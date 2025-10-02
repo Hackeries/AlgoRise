@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { cfGetUserInfo } from "@/lib/codeforces-api";
+
 async function fetchCfUser(handle: string) {
   const response = await cfGetUserInfo(handle);
   if (
@@ -19,6 +20,7 @@ async function fetchCfUser(handle: string) {
     maxRating?: number;
   };
 }
+
 export async function POST() {
   try {
     const supabase = await createClient();
@@ -26,29 +28,36 @@ export async function POST() {
       data: { user },
       error: userErr,
     } = await supabase.auth.getUser();
+
     if (userErr || !user)
       return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+
     const { data: row, error: selErr } = await supabase
       .from("cf_handles")
       .select("handle, verification_token, verified")
       .eq("user_id", user.id)
       .single();
+
     if (selErr || !row)
       return NextResponse.json(
         { error: "no handle to verify" },
         { status: 400 }
       );
+
     if (row.verified) return NextResponse.json({ verified: true });
+
     const cf = await fetchCfUser(row.handle);
     const org = (cf.organization || "").toString().toLowerCase();
     const token = (row.verification_token || "").toLowerCase();
     const matched = !!token && org.includes(token);
+
     if (!matched) {
       return NextResponse.json(
         { verified: false, reason: "token not found in organization" },
         { status: 200 }
       );
     }
+
     const { error: upErr } = await supabase
       .from("cf_handles")
       .update({
@@ -57,9 +66,11 @@ export async function POST() {
         last_sync_at: new Date().toISOString(),
       })
       .eq("user_id", user.id);
+
     if (upErr)
       return NextResponse.json({ error: upErr.message }, { status: 500 });
 
+    // Insert snapshot
     const { error: snapErr } = await supabase.from("cf_snapshots").insert({
       user_id: user.id,
       handle: cf.handle,
@@ -70,7 +81,7 @@ export async function POST() {
 
     if (snapErr) {
       console.error("Snapshot insert error:", snapErr);
-      return NextResponse.json({ error: snapErr }, { status: 500 });
+      return NextResponse.json({ error: snapErr.message }, { status: 500 });
     }
 
     return NextResponse.json({

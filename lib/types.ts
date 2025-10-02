@@ -1,90 +1,59 @@
-// Visualizer types
-export type Visualizer = {
-  slug: string
-  title: string
-  summary: string
-  tags: string[]
-  resources: { label: string; href: string }[]
+// Enums for safer values
+export enum Platform {
+  Codeforces = "codeforces",
+  LeetCode = "leetcode",
+  AtCoder = "atcoder",
 }
 
-// Learning Path types
-export type LearningPathSection = {
-  id: string
-  title: string
-  description: string
-  subsections: LearningPathSubSection[]
-  totalProblems: number
-  estimatedTime: string
-  icon: string
+export enum Outcome {
+  Solved = "solved",
+  Failed = "failed",
+  Skipped = "skipped",
 }
 
-export type LearningPathSubSection = {
-  id: string
-  title: string
-  description: string
-  problems: Problem[]
-  estimatedTime: string
+export enum DueGroup {
+  DueNow = "dueNow",
+  DueSoon = "dueSoon",
+  Later = "later",
 }
 
-// User Profile types
-export type UserProfile = {
-  id: string
-  username: string
-  avatarUrl?: string
-  bio?: string
-  solvedProblems: string[]
-  streak: number
-  joinedAt: string // ISO date
-}
-
-// Contest Metadata types
-export type Contest = {
-  id: string
-  name: string
-  platform: string
-  startTime: string // ISO date
-  durationMinutes: number
-  problems: Problem[]
-  participants: number
-}
+// Problem definition
 export type Problem = {
-  id: string
-  platform: "codeforces" | "cses" | "atcoder" | "gfg" | "usaco"
-  problemId: string
-  rating: number
-  tags: string[]
-  title: string
-  url: string
-  description?: string // Short summary for UI
-  color?: string // Hex or theme color for UI
-  icon?: string // Emoji or icon name for UI
-}
+  id: string;
+  platform: Platform;
+  problemId: string;
+  rating?: number; // optional in case unknown
+  tags: string[];
+  title: string;
+  url: string;
+  difficulty?: "easy" | "medium" | "hard";
+};
 
-export type Outcome = "solved" | "failed" | "skipped"
-
+// Sheet item for spaced repetition
 export type SheetItem = {
-  id: string
-  problem: Problem
-  repetitions: number
-  ease: number
-  intervalDays: number
-  nextDueAt: string // ISO date
-  lastOutcome?: Outcome
-}
+  id: string;
+  problem: Problem;
+  repetitions: number;
+  ease: 1 | 2 | 3 | 4 | 5; // controlled ease values
+  intervalDays: number;
+  nextDueAt: Date; // use Date instead of string
+  lastOutcome?: Outcome;
+};
 
-export type WeakTagStats = Record<string, { attempts: number; fails: number }>
+// Weak tag statistics
+export type WeakTagStats = Record<
+  string,
+  { attempts: number; fails: number; successRate?: number }
+>;
 
+// Adaptive sheet response
 export type AdaptiveSheetResponse = {
-  baseRating: number
-  groups: {
-    dueNow: SheetItem[]
-    dueSoon: SheetItem[]
-    later: SheetItem[]
-  }
+  baseRating: number;
+  groups: Record<DueGroup, SheetItem[]>;
   stats: {
-    solvedRate: number
-    streak: number
-    lastInteractionAt?: string
-    weakTags: WeakTagStats
-  }
-}
+    solvedRate: number; // 0-1
+    streak: number;
+    lastInteractionAt?: Date;
+    weakTags: WeakTagStats;
+  };
+};

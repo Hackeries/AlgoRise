@@ -85,15 +85,6 @@ export function Header() {
 
       {/* Right: Notifications + Profile / Auth Buttons */}
       <div className="flex items-center gap-3">
-        {/* Search Button */}
-        <Button variant="ghost" size="sm" className="text-white/70 hover:text-white">
-          <Search className="h-4 w-4" />
-        </Button>
-
-        {/* Command Palette */}
-        <Button variant="ghost" size="sm" className="text-white/70 hover:text-white">
-          <Command className="h-4 w-4" />
-        </Button>
 
         {/* Notifications */}
         <DropdownMenu>

@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation"
 import { useRealtimeUpdates } from "@/lib/hooks/use-real-time"
+import { motion, AnimatePresence } from "framer-motion"
+import { Loader2, Clock, CheckSquare, Calendar, Zap } from "lucide-react"
 
 type Outcome = "solved" | "failed" | "skipped"
 
@@ -72,6 +74,24 @@ function fmtDue(dueIso: string) {
   if (hrs < 24) return `Due in ${hrs}h`
   const days = Math.round(hrs / 24)
   return `Due in ${days}d`
+}
+
+function getSectionIcon(key: string) {
+  switch (key) {
+    case "dueNow": return <Zap className="h-4 w-4 text-red-500" />
+    case "dueSoon": return <Clock className="h-4 w-4 text-orange-500" />
+    case "later": return <Calendar className="h-4 w-4 text-blue-500" />
+    default: return null
+  }
+}
+
+function getSectionColor(key: string) {
+  switch (key) {
+    case "dueNow": return "border-red-200 bg-red-50/50"
+    case "dueSoon": return "border-orange-200 bg-orange-50/50"
+    case "later": return "border-blue-200 bg-blue-50/50"
+    default: return "border-muted bg-muted/20"
+  }
 }
 
 export function AdaptiveSheetContent({
@@ -249,84 +269,196 @@ export function AdaptiveSheetContent({
   }, [data])
 
   return (
-    <div className="space-y-4">
-      <AdaptiveFilterBar
-        initialRatingBase={filters.ratingBase}
-        initialTags={filters.tags}
-        onChange={(s) => setFilters(s)}
-      />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-6"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <AdaptiveFilterBar
+          initialRatingBase={filters.ratingBase}
+          initialTags={filters.tags}
+          onChange={(s) => setFilters(s)}
+        />
+      </motion.div>
 
-      {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading adaptive sheet…</p>
-      ) : error ? (
-        <p className="text-sm text-red-400">Failed to load adaptive sheet.</p>
-      ) : sections.every((s) => s.items.length === 0) ? (
-        <p className="text-sm text-muted-foreground">
-          No problems match your filters. Try widening the window or clearing tags.
-        </p>
-      ) : (
-        sections.map((section) =>
-          section.items.length ? (
-            <section key={section.key} className="space-y-3">
-              <div className="flex items-center gap-2">
-                <h2 className="text-sm font-medium text-muted-foreground">{section.title}</h2>
-                <Badge variant="outline">{section.items.length}</Badge>
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {section.items.map((item) => (
-                  <AdaptiveProblemCard
-                    key={item.id}
-                    problem={{
-                      id: item.id,
-                      title: item.problem.title,
-                      url: item.problem.url,
-                      rating: item.problem.rating,
-                      tags: item.problem.tags,
-                    }}
-                    subtitle={fmtDue(item.nextDueAt)}
-                    onCompleted={() => handleCompleted(item)}
-                    onNotes={() => handleNotes(item)}
-                  />
-                ))}
-              </div>
-            </section>
-          ) : null,
-        )
-      )}
+      <AnimatePresence mode="wait">
+        {isLoading ? (
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="flex items-center justify-center py-12"
+          >
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              <span>Loading your adaptive practice sheet...</span>
+            </div>
+          </motion.div>
+        ) : error ? (
+          <motion.div
+            key="error"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="flex items-center justify-center py-12"
+          >
+            <div className="text-center space-y-3">
+              <div className="text-red-500 text-lg">⚠️</div>
+              <p className="text-red-600 font-medium">Failed to load adaptive sheet</p>
+              <p className="text-sm text-muted-foreground">Please try refreshing the page</p>
+            </div>
+          </motion.div>
+        ) : sections.every((s) => s.items.length === 0) ? (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="flex items-center justify-center py-16"
+          >
+            <div className="text-center space-y-4 max-w-md">
+              <div className="text-6xl">🎯</div>
+              <h3 className="text-lg font-semibold text-muted-foreground">No problems found</h3>
+              <p className="text-sm text-muted-foreground">
+                Try adjusting your filters or rating range to find more problems.
+              </p>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="content"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-8"
+          >
+            {sections.map((section, sectionIndex) =>
+              section.items.length ? (
+                <motion.section
+                  key={section.key}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: sectionIndex * 0.1 }}
+                  className={`space-y-4 p-4 sm:p-6 rounded-xl border-2 ${getSectionColor(section.key)}`}
+                >
+                  <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: sectionIndex * 0.1 + 0.2 }}
+                    className="flex items-center gap-3"
+                  >
+                    {getSectionIcon(section.key)}
+                    <h2 className="text-lg sm:text-xl font-semibold">{section.title}</h2>
+                    <Badge
+                      variant="secondary"
+                      className="px-3 py-1 text-sm font-medium"
+                    >
+                      {section.items.length} problem{section.items.length !== 1 ? 's' : ''}
+                    </Badge>
+                  </motion.div>
 
-      {/* Notes Dialog */}
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.5, delay: sectionIndex * 0.1 + 0.3 }}
+                    className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"
+                  >
+                    <AnimatePresence>
+                      {section.items.map((item, itemIndex) => (
+                        <motion.div
+                          key={item.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                          transition={{
+                            duration: 0.3,
+                            delay: sectionIndex * 0.1 + itemIndex * 0.05 + 0.4
+                          }}
+                          layout
+                        >
+                          <AdaptiveProblemCard
+                            problem={{
+                              id: item.id,
+                              title: item.problem.title,
+                              url: item.problem.url,
+                              rating: item.problem.rating,
+                              tags: item.problem.tags,
+                            }}
+                            subtitle={fmtDue(item.nextDueAt)}
+                            onCompleted={() => handleCompleted(item)}
+                            onNotes={() => handleNotes(item)}
+                          />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </motion.div>
+                </motion.section>
+              ) : null,
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Enhanced Notes Dialog */}
       <Dialog open={notesDialogOpen} onOpenChange={setNotesDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>
-              Notes for: {currentProblem?.problem.title}
+            <DialogTitle className="text-xl">
+              📝 Notes for: {currentProblem?.problem.title}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
+          >
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline">Rating {currentProblem?.problem.rating}</Badge>
+              <Badge variant="outline" className="font-medium">
+                ⭐ Rating {currentProblem?.problem.rating}
+              </Badge>
               {currentProblem?.problem.tags.map((tag) => (
-                <Badge key={tag} variant="secondary">{tag}</Badge>
+                <Badge key={tag} variant="secondary" className="text-xs">
+                  {tag}
+                </Badge>
               ))}
             </div>
-            <Textarea
-              placeholder="Write your learning notes here... What did you learn? What approach did you use? Any key insights?"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={8}
-              className="resize-none"
-            />
-            <div className="flex justify-end gap-2">
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">
+                Your learning notes
+              </label>
+              <Textarea
+                placeholder="📖 What did you learn from this problem?
+💡 What approach or algorithm did you use?
+🔍 Any key insights or tricks to remember?
+⚠️ Common pitfalls to avoid?
+🎯 Similar problems to practice..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={10}
+                className="resize-none text-sm leading-relaxed"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
               <Button variant="outline" onClick={() => setNotesDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={saveNotes}>
-                Save Notes
+              <Button onClick={saveNotes} className="bg-primary hover:bg-primary/90">
+                💾 Save Notes
               </Button>
             </div>
-          </div>
+          </motion.div>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   )
 }

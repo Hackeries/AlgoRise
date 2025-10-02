@@ -49,7 +49,7 @@ export default function RootLayout({
             <SidebarLayout>
               <Suspense fallback={null}>{children}</Suspense>
             </SidebarLayout>
-                <ToastContainer position="top-center" autoClose={3000} />
+                <ToastContainer position="bottom-right" autoClose={3000} />
             <PWARegister />
             <Analytics />
           </CFVerificationProvider>

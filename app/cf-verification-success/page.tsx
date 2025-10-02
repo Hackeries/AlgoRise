@@ -42,6 +42,17 @@ export default function VerificationSuccessPage() {
         verifiedAt: new Date().toISOString()
       }
       setVerificationData(verificationData)
+
+       toast.success(`Verification successful for ${handle}! 🎉`, {
+      position: "bottom-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark"
+    })
       
       // Get additional user statistics
       fetchUserStats(handle, {

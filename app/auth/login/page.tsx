@@ -12,6 +12,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/auth/context"
+import { toast } from "react-toastify";
 
 export default function Page() {
   const [email, setEmail] = useState("")
@@ -46,13 +47,18 @@ export default function Page() {
         email,
         password,
       })
-      if (error) throw error
+      if (error) {
+
+        toast.error(`${error.message}`);
+        return;
+      }
       
       // Refresh the auth context
       await refreshUser()
       
       // Show success message and redirect
       console.log('Login successful! Redirecting to dashboard...')
+      toast.success("Login successful!");
       router.push("/train") // Redirect to main dashboard/train page
     } catch (error: unknown) {
       if (error instanceof Error && error.message.includes("Supabase configuration missing")) {
@@ -109,7 +115,7 @@ export default function Page() {
                       onChange={(e) => setPassword(e.target.value)}
                     />
                   </div>
-                  {error && <p className="text-sm text-red-500">{error}</p>}
+                  
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Logging in..." : "Login"}
                   </Button>

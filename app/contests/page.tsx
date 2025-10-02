@@ -846,9 +846,7 @@ const createContest = async () => {
                       )
                     }
                   >
-=======
-                    {/* onClick={() => handleCodeforcesContestClick(contest.id, contest.startTimeSeconds || 0, contest.name)}> */}
-{/* >>>>>>> 0c88a0aff73832c10eedb3a4b728cef1d20ef662 */}
+
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <CardTitle className="text-sm font-medium leading-tight">

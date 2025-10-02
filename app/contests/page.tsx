@@ -39,6 +39,9 @@ import {
   ExternalLinkIcon,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
 
 type CodeforcesContest = {
   id: number;
@@ -83,6 +86,32 @@ export default function ContestsPage() {
     maxParticipants: "",
     allowLateJoin: true,
   });
+  const [userRating, setUserRating] = useState<number>(0);
+  useEffect(() => {
+  const fetchUserRating = async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData?.user?.id;
+
+    const { data, error } = await supabase
+      .from("cf_snapshots")
+      .select("rating")
+      .eq("user_id", userId)
+      .order("captured_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) {
+      console.error("Error fetching rating:", error);
+      return;
+    }
+
+    if (data?.rating) {
+      setUserRating(data.rating);
+    }
+  };
+
+  fetchUserRating();
+}, []);
 
   useEffect(() => {
     fetchContests();
@@ -256,9 +285,33 @@ export default function ContestsPage() {
     return `https://codeforces.com/contestRegistration/${contestId}`;
   };
 
-  const handleCodeforcesContestClick = (contestId: number) => {
+  const handleCodeforcesContestClick = (contestId: number, startSeconds: number, contestName: string) => {
     const url = getCodeforcesContestUrl(contestId);
-    window.open(url, "_blank", "noopener,noreferrer");
+    const timeLeftMs = startSeconds * 1000 - Date.now();
+    const daysLeft = Math.floor(timeLeftMs / (1000 * 60 * 60 * 24));
+    const lowername = contestName.toLowerCase();
+    if(lowername.includes("div. 1") && !lowername.includes("div. 2")){
+      if(userRating < 1999){
+         toast({
+        title: "Not Eligible",
+        description:
+          "Register for Div2 because your current rating is <1900.",
+        variant: "destructive",
+        className: "text-white",
+      });
+      return ;
+      }
+    }
+    if(daysLeft <=2 ){
+      window.open(url, "_blank", "noopener,noreferrer");
+    }else{
+       toast({
+        title: "Registration Not Started",
+        description: `Registration isn't opened yet, please wait ~${daysLeft} days to register!`,
+        variant: "destructive", // red alert
+        className: "text-white",
+      });
+    }
   };
 
   const getTimeUntilStart = (startSeconds: number) => {
@@ -592,7 +645,7 @@ export default function ContestsPage() {
                   <Card
                     key={contest.id}
                     className="hover:bg-white/5 transition-colors cursor-pointer"
-                    onClick={() => handleCodeforcesContestClick(contest.id)}>
+                    onClick={() => handleCodeforcesContestClick(contest.id, contest.startTimeSeconds || 0, contest.name)}>
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <CardTitle className="text-sm font-medium leading-tight">

@@ -108,16 +108,19 @@ export function CFVerificationProvider({
     async (data: CFVerificationData) => {
       if (!user || !supabase) return;
 
-      try {
-        const { error: handleError } = await supabase
-          .from("cf_handles")
-          .upsert({
-            user_id: user.id,
-            handle: data.handle,
-            verified: true,
-            created_at: data.verifiedAt,
-            updated_at: new Date().toISOString(),
-          });
+    try {
+      console.log('Saving CF verification to Supabase:', data.handle)
+      
+      // Save to cf_handles table (handle and verification status)
+      const { error: handleError } = await supabase
+        .from('cf_handles')
+        .upsert({
+          user_id: user.id,
+          handle: data.handle,
+          verified: true,
+          created_at: data.verifiedAt,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' })
 
         if (handleError)
           logSupabaseError("Supabase handle save error", handleError);
@@ -131,7 +134,7 @@ export function CFVerificationProvider({
             max_rating: data.maxRating,
             rank: data.rank,
             problems_solved: 0,
-            snapshot_at: new Date().toISOString(),
+            captured_at: new Date().toISOString(),
           });
 
         if (snapshotError)
@@ -153,9 +156,18 @@ export function CFVerificationProvider({
         return;
       }
 
-      localStorage.setItem("cf_verification", JSON.stringify(data));
-      setVerificationDataState(data);
-      setIsVerified(true);
+      // Save to cf_snapshots table (rating data) - always create new snapshot
+      const { error: snapshotError } = await supabase
+        .from('cf_snapshots')
+        .insert({
+          user_id: user?.id,
+          handle: data.handle,
+          rating: data.rating,
+          max_rating: data.maxRating,
+          rank: data.rank,
+          problems_solved: 0, // Default value, will be updated later
+          captured_at: new Date().toISOString()
+        })
 
       if (user) await saveToSupabase(data);
     },
@@ -182,9 +194,28 @@ export function CFVerificationProvider({
         return;
       }
 
-      if (!handleData?.verified) {
-        refreshVerificationStatus();
-        return;
+      if (handleData && handleData.verified) {
+        // Get latest CF snapshot for rating data
+        const { data: snapshotData } = await supabase
+          .from('cf_snapshots')
+          .select('rating, max_rating, rank')
+          .eq('user_id', user.id)
+          .order('captured_at', { ascending: false })
+          .limit(1)
+          .single()
+
+        console.log('CF verification data loaded from Supabase:', handleData.handle)
+        const verificationData: CFVerificationData = {
+          handle: handleData.handle,
+          rating: snapshotData?.rating || 0,
+          maxRating: snapshotData?.max_rating || 0,
+          rank: snapshotData?.rank || 'unrated',
+          verifiedAt: handleData.created_at
+        }
+        setVerificationData(verificationData)
+      } else {
+        // No verified data in Supabase, check localStorage
+        refreshVerificationStatus()
       }
 
       // Fetch live CF data

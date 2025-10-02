@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { CheckCircle, TrendingUp, Target, BookOpen, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { useCFVerification } from '@/lib/context/cf-verification'
+import { toast } from 'react-toastify'
 
 interface UserStats {
   handle: string
@@ -85,6 +86,7 @@ export default function VerificationSuccessPage() {
       })
     } catch (error) {
       console.error('Error fetching user stats:', error)
+    
       setUserStats(basicStats as UserStats)
     } finally {
       setLoading(false)

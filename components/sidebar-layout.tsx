@@ -112,11 +112,11 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => setMounted(true), []);
 
   return (
-    <div className="flex min-h-screen bg-[#0B1020] text-white">
+    <div className="flex min-h-screen bg-[#0B1020] text-white overflow-hidden">
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed top-0 left-0 z-50 h-full flex flex-col bg-[#0B1020] border-r border-white/10 shadow-lg transition-all duration-300",
+          "fixed top-0 left-0 z-50 h-full flex flex-col bg-[#0B1020] border-r border-white/10 shadow-lg transition-all duration-300 overflow-x-hidden overflow-y-auto",
           isOpen ? "w-64" : "w-16"
         )}
       >
@@ -140,7 +140,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Main Menu */}
-        <div className="flex-1 mt-4 overflow-y-auto px-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30">
+        <div className="flex-1 mt-4 px-1">
           <nav className="space-y-2">
             {menuItems.map((item, idx) => {
               const Icon = item.icon;
@@ -173,7 +173,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                   )}
 
                   {!isOpen && (
-                    <span className="absolute left-16 md:left-20 bg-[#1F2330] text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50">
+                    <span className="absolute left-full ml-2 bg-[#1F2330] text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50">
                       {item.label}
                     </span>
                   )}
@@ -196,9 +196,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
             >
               {isOpen ? (
                 <div
-                  className={`p-3 rounded-xl border ${
-                    getCFTier(cfData.rating).bg
-                  } ${getCFTier(cfData.rating).color}`}
+                  className={`p-3 rounded-xl border ${getCFTier(cfData.rating).bg} ${getCFTier(cfData.rating).color}`}
                 >
                   <p className="text-sm font-bold">{cfData.handle}</p>
                   <p className="text-xs">
@@ -207,11 +205,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                 </div>
               ) : (
                 <div
-                  className={`w-12 h-12 flex items-center justify-center rounded-full border ${
-                    getCFTier(cfData.rating).bg
-                  } ${
-                    getCFTier(cfData.rating).color
-                  } text-[10px] font-bold text-center px-1`}
+                  className={`w-12 h-12 flex items-center justify-center rounded-full border ${getCFTier(cfData.rating).bg} ${getCFTier(cfData.rating).color} text-[10px] font-bold text-center px-1`}
                 >
                   {getCFTier(cfData.rating).label.split(" ")[0]}
                 </div>
@@ -221,18 +215,12 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {/* Overlay
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50  z-40 transition-opacity duration-300"
-          onClick={() => setIsOpen(false)}
-        />
-      )} */}
-
       {/* Main Content */}
       <div
-        className="flex-1 flex flex-col h-screen transition-all duration-300"
-        style={{ marginLeft: isOpen ? "16rem" : "4rem" }}
+        className={cn(
+          "flex-1 flex flex-col h-screen transition-all duration-300",
+          isOpen ? "ml-64" : "ml-16"
+        )}
       >
         <Header />
         <main className="flex-1 overflow-y-auto p-4">{children}</main>

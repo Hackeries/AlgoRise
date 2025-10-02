@@ -11,6 +11,7 @@ import { AuthConfigurationAlert } from "@/components/auth/auth-configuration-ale
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
+import { toast } from "react-toastify";
 
 export default function Page() {
   const [email, setEmail] = useState("")
@@ -40,7 +41,7 @@ export default function Page() {
     setError(null)
 
     if (password !== repeatPassword) {
-      setError("Passwords do not match")
+        toast.error(`${"Passwords do not match"}`);
       setIsLoading(false)
       return
     }
@@ -54,7 +55,11 @@ export default function Page() {
           emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL || `${window.location.origin}/protected`,
         },
       })
-      if (error) throw error
+      if (error) {
+             toast.error(`${error.message}`);
+             return;
+      }
+      
       router.push("/auth/sign-up-success")
     } catch (error: unknown) {
       if (error instanceof Error && error.message.includes("Supabase configuration missing")) {

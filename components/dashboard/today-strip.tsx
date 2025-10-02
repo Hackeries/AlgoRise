@@ -1,130 +1,144 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { useEffect, useState } from "react"
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { useCFVerification } from "@/lib/context/cf-verification";
 
 type Problem = {
-  id: string
-  title: string
-  rating: number
-  tags: string[]
-  url: string
-}
+  id: string;
+  title: string;
+  rating: number;
+  tags: string[];
+  url: string;
+  solved?: boolean;
+};
 
 export function TodayStrip() {
-  const [problems, setProblems] = useState<Problem[]>([])
-  const [loading, setLoading] = useState(true)
+  const { isVerified, verificationData } = useCFVerification();
+  const [problems, setProblems] = useState<Problem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
+    if (!isVerified || !verificationData) return;
+
+    const storedStreak = localStorage.getItem("cf_daily_streak");
+    setStreak(storedStreak ? parseInt(storedStreak) : 0);
+
     const fetchProblems = async () => {
       try {
-        const response = await fetch("/api/today-problems")
-        const data = await response.json()
-        setProblems(data.problems || [])
+        const res = await fetch(
+          "https://codeforces.com/api/problemset.problems"
+        );
+        const data = await res.json();
+        if (data.status === "OK") {
+          const userRating = verificationData.rating || 0;
+          const recommended = data.result.problems
+            .filter(
+              (p: any) =>
+                p.rating &&
+                p.rating >= userRating - 200 &&
+                p.rating <= userRating + 200
+            )
+            .slice(0, 6)
+            .map((p: any) => ({
+              id: `${p.contestId}${p.index}`,
+              title: p.name,
+              rating: p.rating,
+              tags: p.tags,
+              url: `https://codeforces.com/contest/${p.contestId}/problem/${p.index}`,
+              solved: false,
+            }));
+          setProblems(recommended);
+        }
       } catch (error) {
-        console.error("Failed to fetch today problems:", error)
+        console.error("Failed to fetch today problems:", error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchProblems()
-  }, [])
+    fetchProblems();
+  }, [isVerified, verificationData]);
+
+  const markSolved = (id: string) => {
+    setProblems((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, solved: true } : p))
+    );
+  };
 
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-pretty text-2xl font-semibold tracking-tight md:text-3xl">Today</h1>
-            <p className="text-sm text-muted-foreground">Loading your personalized problems...</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="border-muted-foreground/10 animate-pulse">
-              <CardHeader className="pb-2">
-                <div className="h-4 bg-muted rounded w-3/4"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="h-8 bg-muted rounded w-full"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <h1 className="text-2xl font-semibold md:text-3xl">
+          Today's Challenge
+        </h1>
+        <p className="text-sm text-muted-foreground">Loading problems…</p>
       </div>
-    )
+    );
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-pretty text-2xl font-semibold tracking-tight md:text-3xl">Today</h1>
-          <p className="text-sm text-muted-foreground">
-            Your daily set adapts to your rating and weak tags. Complete at least one item to extend your streak.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge className="bg-amber-500 text-black hover:bg-amber-500">Streak: 7 days</Badge>
-          <Badge variant="outline">Next due: 3</Badge>
-        </div>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold md:text-3xl">
+          Today's Challenge
+        </h1>
+        <Badge className="bg-amber-500 text-black">
+          🔥 Streak: {streak} day{streak === 1 ? "" : "s"}
+        </Badge>
       </div>
 
-      {/* Recommended problems */}
+      {/* Problems */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {problems.map((p) => (
-          <Card key={p.id} className="border-muted-foreground/10">
+          <Card
+            key={p.id}
+            className={`border ${
+              p.solved
+                ? "border-green-400 bg-green-50"
+                : "border-muted-foreground/10"
+            }`}
+          >
             <CardHeader className="pb-2">
               <CardTitle className="text-base">{p.title}</CardTitle>
-              <CardDescription className="flex flex-wrap items-center gap-2">
-                <span className="text-xs text-muted-foreground">Rating {p.rating}</span>
-                <span className="mx-1 text-muted-foreground/40" aria-hidden>
-                  •
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  {p.tags.map((t) => (
-                    <Badge key={t} variant="secondary" className="text-xs">
-                      {t}
-                    </Badge>
-                  ))}
-                </div>
+              <CardDescription className="flex items-center gap-2">
+                ⭐ {p.rating}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex items-center justify-end gap-2">
-              <Button variant="ghost" className="text-muted-foreground" aria-label="Skip problem">
-                Skip
-              </Button>
-              <Button variant="outline" asChild aria-label="Open learning resource">
-                <Link href="/visualizers">Learn</Link>
-              </Button>
-              <Button asChild aria-label="Open problem to solve">
-                <Link href={p.url} target="_blank" rel="noopener noreferrer">
-                  Solve
-                </Link>
-              </Button>
+              {p.solved ? (
+                <Badge className="bg-green-500 text-white">Solved ✅</Badge>
+              ) : (
+                <>
+                  <Button asChild>
+                    <Link
+                      href={p.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Solve
+                    </Link>
+                  </Button>
+                  <Button variant="outline" onClick={() => markSolved(p.id)}>
+                    Mark Solved
+                  </Button>
+                </>
+              )}
             </CardContent>
           </Card>
         ))}
       </div>
-
-      {/* Recovery mode callout */}
-      <Card className="border-primary/20">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base">Recovery mode suggestion</CardTitle>
-          <CardDescription>
-            After a contest or a slump, we’ll queue confidence-boosters at −300 to −150 rating in your favorite tags.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex items-center justify-end">
-          <Button variant="outline">Preview recovery set</Button>
-        </CardContent>
-      </Card>
     </div>
-  )
+  );
 }

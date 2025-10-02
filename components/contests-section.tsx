@@ -15,6 +15,25 @@ interface Contest {
   type: string;
 }
 
+// 🎨 Badge colors by type
+const getBadgeClass = (type: string) => {
+  switch (true) {
+    case type.includes("Div. 2"):
+      return "bg-blue-500/20 text-blue-400";
+    case type.includes("Div. 3"):
+      return "bg-green-500/20 text-green-400";
+    case type.includes("Div. 4"):
+      return "bg-teal-500/20 text-teal-400";
+    case type.includes("Global"):
+      return "bg-yellow-500/20 text-yellow-400";
+    case type.includes("Educational"):
+      return "bg-purple-500/20 text-purple-400";
+    default:
+      return "bg-gray-500/20 text-gray-400";
+  }
+};
+
+// ⏱ Countdown formatter
 const formatTimeRemaining = (startTime: number) => {
   const now = Math.floor(Date.now() / 1000);
   const diff = startTime - now;
@@ -24,18 +43,32 @@ const formatTimeRemaining = (startTime: number) => {
   const days = Math.floor(diff / 86400);
   const hours = Math.floor((diff % 86400) / 3600);
   const minutes = Math.floor((diff % 3600) / 60);
+  const seconds = diff % 60;
 
-  if (days > 0) return `${days}d ${hours}h`;
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
+  if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+  if (minutes > 0) return `${minutes}m ${seconds}s`;
+  return `${seconds}s`;
 };
 
 export default function ContestSection() {
   const [upcomingContests, setUpcomingContests] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [tick, setTick] = useState(0); // force rerender for countdown
 
   useEffect(() => {
     fetchUpcomingContests();
+
+    // ⏱ Update countdown every second
+    const timer = setInterval(() => setTick((t) => t + 1), 1000);
+
+    // 🔄 Refetch contests every 5 minutes
+    const refresher = setInterval(fetchUpcomingContests, 5 * 60 * 1000);
+
+    return () => {
+      clearInterval(timer);
+      clearInterval(refresher);
+    };
   }, []);
 
   const fetchUpcomingContests = async () => {
@@ -58,15 +91,24 @@ export default function ContestSection() {
   return (
     <section className="py-16 px-4 mb-8 mt-5">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4 text-[#EDEB99]">
+        {/* Heading */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl font-bold mb-4 text-[#EDEB99] drop-shadow-md">
             Upcoming Contests
           </h2>
           <p className="text-gray-600 dark:text-gray-400">
-            Stay updated with the latest Codeforces contests
+            Stay updated with the latest Codeforces contests —{" "}
+            <span className="font-semibold text-sky-500">live countdowns</span>{" "}
+            refresh in real-time.
           </p>
-        </div>
+        </motion.div>
 
+        {/* Contest Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {loading ? (
             Array.from({ length: 3 }).map((_, i) => (
@@ -84,69 +126,91 @@ export default function ContestSection() {
               </Card>
             ))
           ) : upcomingContests.length > 0 ? (
-            upcomingContests.map((contest) => (
-              <motion.div
-                key={contest.id}
-                className="block h-full cursor-pointer"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                viewport={{ once: true, amount: 0.2 }}
-                onClick={() =>
-                  window.open(
-                    `https://codeforces.com/contest/${contest.id}`,
-                    "_blank"
-                  )
-                }
-                role="link"
-                tabIndex={0}
-              >
-                <Card className="bg-white/20 dark:bg-gray-800/20 backdrop-blur-md border border-white/30 dark:border-gray-700/30 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 h-full cursor-pointer">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg line-clamp-2">
-                        {contest.name}
-                      </CardTitle>
-                      <Badge variant="secondary">{contest.type}</Badge>
-                    </div>
-                  </CardHeader>
+            upcomingContests.map((contest, i) => {
+              const now = Math.floor(Date.now() / 1000);
+              const timeDiff = contest.startTimeSeconds - now;
+              const urgent = timeDiff < 3600; // less than 1 hour
 
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <Timer className="h-4 w-4" />
-                        <span>
-                          {formatTimeRemaining(contest.startTimeSeconds)}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                          {new Date(
-                            contest.startTimeSeconds * 1000
-                          ).toLocaleDateString()}
-                        </span>
-                      </div>
+              return (
+                <motion.div
+                  key={contest.id}
+                  className="block h-full cursor-pointer"
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: i * 0.15 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  onClick={() =>
+                    window.open(
+                      `https://codeforces.com/contest/${contest.id}`,
+                      "_blank"
+                    )
+                  }
+                  role="link"
+                  tabIndex={0}
+                >
+                  <motion.div
+                    whileHover={{ scale: 1.05, rotateX: 3, rotateY: -3 }}
+                    transition={{ type: "spring", stiffness: 250, damping: 15 }}
+                    className={`rounded-2xl shadow-lg h-full cursor-pointer border border-white/30 dark:border-gray-700/30 backdrop-blur-md 
+                      ${
+                        urgent
+                          ? "animate-pulse border-red-500/40"
+                          : "hover:shadow-[0_0_25px_rgba(56,189,248,0.5)]"
+                      }`}
+                  >
+                    <Card className="bg-white/20 dark:bg-gray-800/20 rounded-2xl h-full">
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
+                          <CardTitle className="text-lg line-clamp-2">
+                            {contest.name}
+                          </CardTitle>
+                          <Badge
+                            className={getBadgeClass(contest.type)}
+                            variant="secondary"
+                          >
+                            {contest.type}
+                          </Badge>
+                        </div>
+                      </CardHeader>
 
-                      <Button
-                        asChild
-                        className="w-full mt-4 text-white bg-sky-500/50 hover:bg-sky-900"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <a
-                          href={`https://codeforces.com/contest/${contest.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View Contest
-                          <ArrowRight className="ml-2 h-4 w-4" />
-                        </a>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <Timer className="h-4 w-4" />
+                            <span>
+                              {formatTimeRemaining(contest.startTimeSeconds)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                            <Calendar className="h-4 w-4" />
+                            <span>
+                              {new Date(
+                                contest.startTimeSeconds * 1000
+                              ).toLocaleString()}
+                            </span>
+                          </div>
+
+                          <Button
+                            asChild
+                            className="w-full mt-4 text-white bg-sky-500/50 hover:bg-sky-900"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <a
+                              href={`https://codeforces.com/contest/${contest.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              View Contest
+                              <ArrowRight className="ml-2 h-4 w-4" />
+                            </a>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </motion.div>
+              );
+            })
           ) : (
             <div className="col-span-full text-center py-12">
               <p className="text-gray-600 dark:text-gray-400">
@@ -156,7 +220,7 @@ export default function ContestSection() {
           )}
         </div>
       </div>
-      <hr className="border-gray-800 dark:border-white-800 m-10"></hr>
+      <hr className="border-gray-800 dark:border-white-800 m-10" />
     </section>
   );
 }

@@ -95,7 +95,7 @@ export function Header() {
             >
               <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
-                <Badge className="absolute -top-1 -right-1 h-4 w-4 bg-red-600 text-xs p-0 border-0">
+                <Badge className="absolute -top-1 -right-1 h-4 w-4 bg-white text-xs p-0 border-0">
                   {unreadCount}
                 </Badge>
               )}

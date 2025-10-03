@@ -1,20 +1,20 @@
 // Enums for safer values
 export enum Platform {
-  Codeforces = "codeforces",
-  LeetCode = "leetcode",
-  AtCoder = "atcoder",
+  Codeforces = 'codeforces',
+  LeetCode = 'leetcode',
+  AtCoder = 'atcoder',
 }
 
 export enum Outcome {
-  Solved = "solved",
-  Failed = "failed",
-  Skipped = "skipped",
+  Solved = 'solved',
+  Failed = 'failed',
+  Skipped = 'skipped',
 }
 
 export enum DueGroup {
-  DueNow = "dueNow",
-  DueSoon = "dueSoon",
-  Later = "later",
+  DueNow = 'dueNow',
+  DueSoon = 'dueSoon',
+  Later = 'later',
 }
 
 // Problem definition
@@ -26,7 +26,7 @@ export type Problem = {
   tags: string[];
   title: string;
   url: string;
-  difficulty?: "easy" | "medium" | "hard";
+  difficulty?: 'easy' | 'medium' | 'hard';
 };
 
 // Sheet item for spaced repetition

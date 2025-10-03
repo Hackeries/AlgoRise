@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
 // Helper function to fetch CF user info
 const fetchCFUserInfo = async (handle: string) => {
@@ -6,7 +6,7 @@ const fetchCFUserInfo = async (handle: string) => {
     `https://codeforces.com/api/user.info?handles=${handle}`
   );
   const json = await res.json();
-  if (json.status !== "OK") throw new Error("Failed to fetch user info");
+  if (json.status !== 'OK') throw new Error('Failed to fetch user info');
   return json.result[0];
 };
 
@@ -16,7 +16,7 @@ const fetchCFRating = async (handle: string) => {
     `https://codeforces.com/api/user.rating?handle=${handle}`
   );
   const json = await res.json();
-  if (json.status !== "OK") return [];
+  if (json.status !== 'OK') return [];
   return json.result;
 };
 
@@ -24,19 +24,19 @@ const fetchCFRating = async (handle: string) => {
 const fetchUpcomingContest = async () => {
   const res = await fetch(`https://codeforces.com/api/contest.list`);
   const json = await res.json();
-  if (json.status !== "OK") return null;
+  if (json.status !== 'OK') return null;
   const upcoming = json.result
-    .filter((c: any) => c.phase === "BEFORE")
+    .filter((c: any) => c.phase === 'BEFORE')
     .sort((a: any, b: any) => a.startTimeSeconds - b.startTimeSeconds)[0];
   return upcoming;
 };
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const handle = searchParams.get("handle");
+  const handle = searchParams.get('handle');
   if (!handle)
     return NextResponse.json(
-      { error: "No CF handle provided" },
+      { error: 'No CF handle provided' },
       { status: 400 }
     );
 
@@ -67,7 +67,7 @@ export async function GET(req: Request) {
       handle: userInfo.handle,
       rating: userInfo.rating ?? 0,
       maxRating: userInfo.maxRating ?? 0,
-      rank: userInfo.rank ?? "unrated",
+      rank: userInfo.rank ?? 'unrated',
       ratingDelta,
       lastContestAt,
       nextContestAt,
@@ -76,9 +76,9 @@ export async function GET(req: Request) {
 
     return NextResponse.json(data);
   } catch (err) {
-    console.error("Error fetching CF profile:", err);
+    console.error('Error fetching CF profile:', err);
     return NextResponse.json(
-      { error: "Failed to fetch CF profile" },
+      { error: 'Failed to fetch CF profile' },
       { status: 500 }
     );
   }

@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { GraduationCap, Plus } from "lucide-react";
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { GraduationCap, Plus } from 'lucide-react';
 
 interface College {
   id: string;
@@ -33,8 +33,8 @@ interface CollegeStepProps {
 
 export function CollegeStep({ onComplete }: CollegeStepProps) {
   const [colleges, setColleges] = useState<College[]>([]);
-  const [selectedCollege, setSelectedCollege] = useState<string>("");
-  const [customCollege, setCustomCollege] = useState("");
+  const [selectedCollege, setSelectedCollege] = useState<string>('');
+  const [customCollege, setCustomCollege] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showCustom, setShowCustom] = useState(false);
   const { toast } = useToast();
@@ -45,11 +45,11 @@ export function CollegeStep({ onComplete }: CollegeStepProps) {
 
   async function fetchColleges() {
     try {
-      const res = await fetch("/api/colleges");
+      const res = await fetch('/api/colleges');
       const data = await res.json();
       if (res.ok) setColleges(data.colleges || []);
     } catch (error) {
-      console.error("Failed to fetch colleges:", error);
+      console.error('Failed to fetch colleges:', error);
     }
   }
 
@@ -63,9 +63,9 @@ export function CollegeStep({ onComplete }: CollegeStepProps) {
 
       if (showCustom) {
         // Create new college
-        const res = await fetch("/api/colleges", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const res = await fetch('/api/colleges', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name: collegeName }),
         });
         const data = await res.json();
@@ -74,24 +74,24 @@ export function CollegeStep({ onComplete }: CollegeStepProps) {
       }
 
       // Join college group
-      const res = await fetch("/api/groups/join-college", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('/api/groups/join-college', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ collegeId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
       toast({
-        title: "College Set!",
+        title: 'College Set!',
         description: `Joined ${collegeName} group`,
       });
       onComplete();
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: 'Error',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -99,38 +99,38 @@ export function CollegeStep({ onComplete }: CollegeStepProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20">
-          <GraduationCap className="h-6 w-6 text-blue-400" />
+    <div className='space-y-6'>
+      <div className='text-center'>
+        <div className='mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/20'>
+          <GraduationCap className='h-6 w-6 text-blue-400' />
         </div>
-        <h2 className="text-2xl font-bold">Which college are you from? 🎓</h2>
-        <p className="text-muted-foreground mt-2">
+        <h2 className='text-2xl font-bold'>Which college are you from? 🎓</h2>
+        <p className='text-muted-foreground mt-2'>
           Join your college community to compete with classmates
         </p>
       </div>
 
-      <Card className="border-blue-500/20 bg-card/50 backdrop-blur">
+      <Card className='border-blue-500/20 bg-card/50 backdrop-blur'>
         <CardHeader>
           <CardTitle>Select Your College</CardTitle>
           <CardDescription>
             Choose from the list or add your college if it's not there
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className='space-y-4'>
           {!showCustom ? (
             <>
-              <div className="space-y-2">
-                <Label htmlFor="college">College</Label>
+              <div className='space-y-2'>
+                <Label htmlFor='college'>College</Label>
                 <Select
                   value={selectedCollege}
                   onValueChange={setSelectedCollege}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select your college" />
+                    <SelectValue placeholder='Select your college' />
                   </SelectTrigger>
                   <SelectContent>
-                    {colleges.map((college) => (
+                    {colleges.map(college => (
                       <SelectItem key={college.id} value={college.id}>
                         {college.name}
                       </SelectItem>
@@ -139,34 +139,34 @@ export function CollegeStep({ onComplete }: CollegeStepProps) {
                 </Select>
               </div>
 
-              <div className="text-center">
+              <div className='text-center'>
                 <Button
-                  variant="ghost"
+                  variant='ghost'
                   onClick={() => setShowCustom(true)}
-                  className="text-sm"
+                  className='text-sm'
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className='h-4 w-4 mr-2' />
                   My college isn't listed
                 </Button>
               </div>
             </>
           ) : (
             <>
-              <div className="space-y-2">
-                <Label htmlFor="custom-college">College Name</Label>
+              <div className='space-y-2'>
+                <Label htmlFor='custom-college'>College Name</Label>
                 <Input
-                  id="custom-college"
-                  placeholder="Enter your college name"
+                  id='custom-college'
+                  placeholder='Enter your college name'
                   value={customCollege}
-                  onChange={(e) => setCustomCollege(e.target.value)}
+                  onChange={e => setCustomCollege(e.target.value)}
                 />
               </div>
 
-              <div className="text-center">
+              <div className='text-center'>
                 <Button
-                  variant="ghost"
+                  variant='ghost'
                   onClick={() => setShowCustom(false)}
-                  className="text-sm"
+                  className='text-sm'
                 >
                   ← Back to list
                 </Button>
@@ -177,9 +177,9 @@ export function CollegeStep({ onComplete }: CollegeStepProps) {
           <Button
             onClick={handleCollegeSubmit}
             disabled={isLoading || (!selectedCollege && !customCollege.trim())}
-            className="w-full"
+            className='w-full'
           >
-            {isLoading ? "Setting up..." : "Continue"}
+            {isLoading ? 'Setting up...' : 'Continue'}
           </Button>
         </CardContent>
       </Card>

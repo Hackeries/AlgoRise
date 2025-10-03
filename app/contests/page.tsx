@@ -73,15 +73,17 @@ export default function ContestsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [formData, setFormData] = useState({
+    mode: "practice", // "practice" or "icpc"
     name: "",
     description: "",
     startDate: "",
     startTime: "",
-    problemCount: "5", // New: number of problems (5-7)
-    ratingMin: "1200", // New: minimum rating
-    ratingMax: "1400", // New: maximum rating
+    problemCount: "5",
+    ratingMin: "1200",
+    ratingMax: "1400",
     maxParticipants: "",
     allowLateJoin: true,
+    teamSize: "1", // For ICPC Arena
   });
 
   useEffect(() => {
@@ -108,6 +110,7 @@ export default function ContestsPage() {
         const privateResponse = await fetch("/api/contests");
         if (privateResponse.ok) {
           const privateData = await privateResponse.json();
+          console.log(privateData.contests);
           setPrivateContests(privateData.contests || []);
         } else {
           console.error(
@@ -132,6 +135,7 @@ export default function ContestsPage() {
 
   const resetForm = () => {
     setFormData({
+      mode: "practice",
       name: "",
       description: "",
       startDate: "",
@@ -141,6 +145,7 @@ export default function ContestsPage() {
       ratingMax: "1400",
       maxParticipants: "",
       allowLateJoin: true,
+      teamSize: "1",
     });
   };
 
@@ -222,10 +227,19 @@ export default function ContestsPage() {
         setCreateDialogOpen(false);
         fetchContests(); // Refresh the list
       } else {
-        const error = await response.json();
+        let errorMsg = "Failed to create contest";
+        try {
+          const text = await response.text();
+          if (text) {
+            const error = JSON.parse(text);
+            errorMsg = error.error || errorMsg;
+          }
+        } catch (e) {
+          // Ignore JSON parse errors
+        }
         toast({
           title: "Error",
-          description: error.error || "Failed to create contest",
+          description: errorMsg,
           variant: "destructive",
         });
       }
@@ -302,6 +316,24 @@ export default function ContestsPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-6 py-4 max-h-[60vh] overflow-y-auto">
+              {/* Contest Mode */}
+              <div className="space-y-2">
+                <Label htmlFor="contest-mode">Contest Mode *</Label>
+                <Select
+                  value={formData.mode}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, mode: value }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select mode" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="practice">Practice Arena (Private)</SelectItem>
+                    <SelectItem value="icpc">ICPC Arena (ICPC-style)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               {/* Contest Name */}
               <div className="space-y-2">
                 <Label htmlFor="contest-name">Contest Name *</Label>
@@ -369,12 +401,22 @@ export default function ContestsPage() {
                   </div>
                 </div>
 
-                {/* Duration - Fixed */}
+                {/* Duration - Dynamic */}
                 <div className="space-y-2">
                   <Label>Duration</Label>
                   <div className="flex items-center px-3 py-2 bg-white/5 rounded-md border">
                     <ClockIcon className="w-4 h-4 mr-2 text-white/60" />
-                    <span className="text-sm font-medium">2 hours (Fixed)</span>
+                    {formData.mode === "practice" ? (
+                      <span className="text-sm font-medium">
+                        {formData.problemCount === "5" || formData.problemCount === "6"
+                          ? "2 hours"
+                          : formData.problemCount === "7"
+                            ? "3 hours"
+                            : "2-3 hours"}
+                      </span>
+                    ) : (
+                      <span className="text-sm font-medium">5 hours (ICPC)</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -392,17 +434,56 @@ export default function ContestsPage() {
                     value={formData.problemCount}
                     onValueChange={(value) =>
                       setFormData((prev) => ({ ...prev, problemCount: value }))
-                    }>
+                    }
+                    disabled={formData.mode === "icpc"}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select number of problems" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="5">5 Problems</SelectItem>
-                      <SelectItem value="6">6 Problems</SelectItem>
-                      <SelectItem value="7">7 Problems</SelectItem>
+                      {formData.mode === "practice" ? (
+                        <>
+                          <SelectItem value="5">5 Problems</SelectItem>
+                          <SelectItem value="6">6 Problems</SelectItem>
+                          <SelectItem value="7">7 Problems</SelectItem>
+                          <SelectItem value="8">8 Problems</SelectItem>
+                          <SelectItem value="9">9 Problems</SelectItem>
+                          <SelectItem value="10">10 Problems</SelectItem>
+                          <SelectItem value="11">11 Problems</SelectItem>
+                          <SelectItem value="12">12 Problems</SelectItem>
+                        </>
+                      ) : (
+                        <>
+                          <SelectItem value="10">10 Problems</SelectItem>
+                          <SelectItem value="11">11 Problems</SelectItem>
+                          <SelectItem value="12">12 Problems</SelectItem>
+                          <SelectItem value="13">13 Problems</SelectItem>
+                        </>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
+                {/* Team Size for ICPC Arena */}
+                {formData.mode === "icpc" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="team-size">Team Size</Label>
+                    <Select
+                      value={formData.teamSize}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, teamSize: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select team size" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Solo</SelectItem>
+                        <SelectItem value="2">2 Members</SelectItem>
+                        <SelectItem value="3">3 Members (ICPC Standard)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {/* Rating Range */}
                 <div className="space-y-2">
@@ -535,8 +616,14 @@ export default function ContestsPage() {
                         </p>
                       )}
                       <p>
-                        <strong>Duration:</strong> {formData.durationHours}h{" "}
-                        {formData.durationMinutes}m
+                        <strong>Duration:</strong>{" "}
+                        {formData.mode === "practice"
+                          ? (formData.problemCount === "5" || formData.problemCount === "6"
+                            ? "2 hours"
+                            : formData.problemCount === "7" || formData.problemCount === "8" || formData.problemCount === "9"
+                              ? "3 hours"
+                              : "2-3 hours")
+                          : "5 hours (ICPC)"}
                       </p>
                     </div>
                   </div>
@@ -638,6 +725,7 @@ export default function ContestsPage() {
           </section>
 
           {/* Private Contests */}
+
           <section>
             <div className="flex items-center gap-2 mb-4">
               <h2 className="text-xl font-semibold">Private Contests</h2>
@@ -646,17 +734,13 @@ export default function ContestsPage() {
 
             {privateContests.length === 0 ? (
               <Card>
-                <CardContent className="p-6">
-                  <div className="text-center">
-                    <UsersIcon className="w-12 h-12 text-white/20 mx-auto mb-4" />
-                    <p className="text-white/60 mb-4">
-                      No private contests yet.
-                    </p>
-                    <Button onClick={() => setCreateDialogOpen(true)}>
-                      <PlusIcon className="w-4 h-4 mr-2" />
-                      Create Your First Contest
-                    </Button>
-                  </div>
+                <CardContent className="p-6 text-center">
+                  <UsersIcon className="w-12 h-12 text-white/20 mx-auto mb-4" />
+                  <p className="text-white/60 mb-4">No private contests yet.</p>
+                  <Button onClick={() => setCreateDialogOpen(true)}>
+                    <PlusIcon className="w-4 h-4 mr-2" />
+                    Create Your First Contest
+                  </Button>
                 </CardContent>
               </Card>
             ) : (
@@ -664,80 +748,67 @@ export default function ContestsPage() {
                 {privateContests.map((contest) => (
                   <Card
                     key={contest.id}
-                    className="hover:bg-white/5 transition-colors cursor-pointer">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-sm font-medium">
-                        {contest.name}
-                      </CardTitle>
-                      <CardDescription className="text-xs">
-                        Created{" "}
-                        {new Date(contest.created_at).toLocaleDateString()}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="flex items-center justify-between">
+                    className="hover:bg-white/5 transition-colors cursor-pointer"
+                  >
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-sm font-medium">
+                          {contest.name}
+                        </CardTitle>
                         <Badge
-                          variant={
-                            contest.status === "active"
-                              ? "default"
-                              : "secondary"
-                          }
-                          className="text-xs">
+                          variant={contest.status === "active" ? "default" : "secondary"}
+                          className="text-xs"
+                        >
                           {contest.status}
                         </Badge>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 px-2 text-xs"
-                            onClick={() =>
-                              window.open(`/contests/${contest.id}`, "_blank")
-                            }>
-                            View Details
-                          </Button>
-                          {(contest.status === "upcoming" ||
-                            contest.status === "active") && (
-                            <Button
-                              size="sm"
-                              className="h-8 px-2 text-xs bg-green-600 hover:bg-green-700"
-                              onClick={() =>
-                                window.open(
-                                  `/contests/${contest.id}/participate`,
-                                  "_blank"
-                                )
-                              }>
-                              Participate
-                            </Button>
-                          )}
-                        </div>
                       </div>
+                      <CardDescription className="text-xs text-white/60">
+                        Created: {contest.created_at
+                          ? new Date(contest.created_at).toLocaleDateString()
+                          : contest.date || "N/A"}
+                      </CardDescription>
+                    </CardHeader>
+
+                    <CardContent className="pt-2 space-y-2 text-sm">
                       {contest.start_time && (
-                        <div className="mt-3 text-xs text-white/60">
-                          <div className="flex items-center gap-2">
-                            <CalendarIcon className="w-3 h-3" />
-                            <span>
-                              {new Date(contest.start_time).toLocaleString()}
-                            </span>
-                          </div>
-                          {contest.description && (
-                            <div className="mt-2 text-xs text-white/50">
-                              {contest.description}
-                            </div>
-                          )}
-                          {(contest as any).problem_count && (
-                            <div className="mt-2 flex items-center gap-4 text-xs text-white/50">
-                              <span>
-                                {(contest as any).problem_count} Problems
-                              </span>
-                              <span>
-                                Rating: {(contest as any).rating_min}-
-                                {(contest as any).rating_max}
-                              </span>
-                              <span>2h Duration</span>
-                            </div>
-                          )}
+                        <div className="flex items-center gap-2 text-white/70">
+                          <CalendarIcon className="w-3 h-3" />
+                          <span>{new Date(contest.start_time).toLocaleString()}</span>
                         </div>
                       )}
+                      {contest.description && (
+                        <p className="text-white/50">{contest.description}</p>
+                      )}
+                      <div className="flex flex-wrap gap-2 text-xs text-white/50">
+                        {contest.problem_count && <span>{contest.problem_count} Problems</span>}
+                        {contest.rating_min && contest.rating_max && (
+                          <span>Rating: {contest.rating_min}-{contest.rating_max}</span>
+                        )}
+                        {contest.duration_minutes && <span>{contest.duration_minutes} min</span>}
+                        {contest.max_participants && (
+                          <span>Max: {contest.max_participants}</span>
+                        )}
+                        <span>{contest.allow_late_join ? "Late Join Allowed" : "No Late Join"}</span>
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 px-2 text-xs"
+                          onClick={() => window.open(`/contests/${contest.id}`, "_blank")}
+                        >
+                          View Details
+                        </Button>
+                        {(contest.status === "upcoming" || contest.status === "active") && (
+                          <Button
+                            size="sm"
+                            className="h-8 px-2 text-xs bg-green-600 hover:bg-green-700"
+                            onClick={() => window.open(`/contests/${contest.id}/participate`, "_blank")}
+                          >
+                            Participate
+                          </Button>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
                 ))}

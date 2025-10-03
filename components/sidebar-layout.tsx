@@ -1,275 +1,239 @@
-"use client"
+'use client';
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { AuthButton } from "@/components/auth/auth-button"
-import { Header } from "@/components/header"
-import { useCFVerification } from "@/lib/context/cf-verification"
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { Header } from '@/components/header';
+import { useCFVerification } from '@/lib/context/cf-verification';
+import { useState, useEffect } from 'react';
 import {
-  BarChart3,
+  Calendar,
   Target,
-  BookOpen,
   Trophy,
+  BookOpen,
   Users,
   PieChart,
-  Settings,
+  BarChart3,
   Code2,
-  Calendar
-} from "lucide-react"
-import { motion } from "framer-motion"
-// Responsive sidebar toggle
-import { useState } from "react"
+  Menu,
+} from 'lucide-react';
 
+// ------------------ CF Rating System ------------------
+const getCFTier = (rating: number) => {
+  if (rating < 1200)
+    return { label: 'Newbie', color: 'text-gray-400', bg: 'bg-gray-800' };
+  if (rating < 1400)
+    return { label: 'Pupil', color: 'text-green-400', bg: 'bg-green-900/40' };
+  if (rating < 1600)
+    return {
+      label: 'Specialist',
+      color: 'text-cyan-400',
+      bg: 'bg-cyan-900/40',
+    };
+  if (rating < 1900)
+    return { label: 'Expert', color: 'text-blue-400', bg: 'bg-blue-900/40' };
+  if (rating < 2100)
+    return {
+      label: 'Candidate Master',
+      color: 'text-purple-400',
+      bg: 'bg-purple-900/40',
+    };
+  if (rating < 2300)
+    return {
+      label: 'Master',
+      color: 'text-orange-400',
+      bg: 'bg-orange-900/40',
+    };
+  if (rating < 2400)
+    return {
+      label: 'International Master',
+      color: 'text-red-400',
+      bg: 'bg-red-900/40',
+    };
+  if (rating < 2600)
+    return { label: 'Grandmaster', color: 'text-red-500', bg: 'bg-red-900/40' };
+  if (rating < 3000)
+    return {
+      label: 'International GM',
+      color: 'text-red-600',
+      bg: 'bg-red-950/40',
+    };
+  return {
+    label: 'Legendary GM',
+    color: 'text-yellow-400',
+    bg: 'bg-yellow-900/40',
+  };
+};
+
+// ------------------ Menu Items ------------------
 const menuItems = [
-  { href: "/", label: "Today", icon: Calendar },
-  { href: "/adaptive-sheet", label: "Adaptive Sheet", icon: Target },
-  { href: "/paths", label: "Learning Path", icon: BookOpen },
-  { href: "/contests", label: "Contests", icon: Trophy },
-  { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/visualizers", label: "Visualizers", icon: PieChart },
-  { href: "/groups", label: "Groups", icon: Users },
-]
-
-const bottomMenuItems = [
-  { href: "/settings", label: "Profile & Settings", icon: Settings },
-]
+  { href: '/', label: 'Dashboard', icon: Calendar },
+  { href: '/adaptive-sheet', label: 'Practice Problems', icon: Target },
+  { href: '/contests', label: 'Contests', icon: Trophy },
+  { href: '/paths', label: 'Learning Paths', icon: BookOpen },
+  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/visualizers', label: 'Visualizers', icon: PieChart },
+  { href: '/groups', label: 'Groups', icon: Users },
+];
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const { isVerified, verificationData } = useCFVerification()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const pathname = usePathname();
+  const { isVerified, verificationData } = useCFVerification();
+  const [isOpen, setIsOpen] = useState(true);
+  const [mounted, setMounted] = useState(false);
+  const [cfData, setCfData] = useState(verificationData);
 
-  // Responsive sidebar toggle button
-  const SidebarToggle = () => (
-    <button
-      className="md:hidden p-2 rounded-lg text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-      aria-label="Open sidebar"
-      onClick={() => setSidebarOpen(true)}
-    >
-      <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
-    </button>
-  )
+  // Fetch latest CF rating
+  useEffect(() => {
+    const fetchLatestCFData = async () => {
+      if (verificationData?.handle) {
+        try {
+          const res = await fetch(
+            `https://codeforces.com/api/user.info?handles=${verificationData.handle}`
+          );
+          const data = await res.json();
+          if (data.status === 'OK') {
+            const user = data.result[0];
+            setCfData({
+              ...verificationData,
+              rating: user.rating || 0,
+              maxRating: user.maxRating || 0,
+              rank: user.rank,
+            });
+          }
+        } catch (err) {
+          console.error('Failed to fetch CF data:', err);
+        }
+      }
+    };
+    fetchLatestCFData();
+  }, [verificationData?.handle]);
 
-  // Overlay for mobile sidebar
-  const SidebarOverlay = () => (
-    <div
-      className={cn(
-        "fixed inset-0 z-40 bg-black/40 transition-opacity md:hidden",
-        sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-      )}
-      onClick={() => setSidebarOpen(false)}
-    />
-  )
+  useEffect(() => setMounted(true), []);
 
-  // Sidebar content
-  // Sidebar content for both desktop and mobile
-  const sidebarVariants = {
-    open: { x: 0, opacity: 1, transition: { type: "spring" as const, stiffness: 300, damping: 30 } },
-    closed: { x: "-100%", opacity: 0, transition: { type: "spring" as const, stiffness: 300, damping: 35 } },
-  }
-  // Desktop: always visible, no animation. Mobile: animate in/out.
-  const SidebarContent = (
-    <div className="w-64 border-r border-white/10 bg-[#0B1020] flex flex-col h-full shadow-xl">
-      {/* Header */}
-      <div className="p-6 border-b border-white/10 flex-shrink-0 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <Code2 className="h-6 w-6 text-[#2563EB] group-hover:scale-110 transition-transform" />
-          <span className="font-semibold text-lg tracking-tight text-white group-hover:text-[#2563EB] transition-colors">AlgoRise</span>
-        </Link>
-        {/* Close button for mobile */}
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          className="md:hidden p-2 rounded-lg text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition"
-          aria-label="Close sidebar"
-          onClick={() => setSidebarOpen(false)}
-        >
-          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-        </motion.button>
-      </div>
-      {/* Menu - Scrollable */}
-      <nav className="flex-1 p-4 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30">
-        <div className="mb-6">
-          <p className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-3">MENU</p>
-          <ul className="space-y-1">
-            {menuItems.map((item) => {
-              const Icon = item.icon
-              const isActive = pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href))
-              return (
-                <motion.li
-                  key={item.href}
-                  initial={false}
-                  animate={isActive ? { scale: 1.04 } : { scale: 1 }}
-                  whileHover={{ scale: 1.03 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className="relative"
-                  style={{ zIndex: 1 }}
-                >
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group border border-transparent relative overflow-hidden",
-                      isActive
-                        ? "text-[#2563EB] border-[#2563EB]/50 shadow"
-                        : "text-white/80 hover:text-white hover:bg-white/10 hover:border-white/20"
-                    )}
-                    style={{ zIndex: 2 }}
-                  >
-                    {isActive && (
-                      <motion.div
-                        layoutId="sidebar-active-bg"
-                        className="absolute inset-0 rounded-lg bg-[#2563EB]/15"
-                        style={{ zIndex: 0 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                      />
-                    )}
-                    <Icon className={cn("h-4 w-4 transition-colors z-10", isActive ? "text-[#2563EB]" : "text-white/60 group-hover:text-white")} />
-                    <span className="transition-colors z-10">{item.label}</span>
-                  </Link>
-                </motion.li>
-              )
-            })}
-          </ul>
+  return (
+    <div className='flex min-h-screen bg-[#0B1020] text-white'>
+      {/* Sidebar */}
+      <div
+        className={cn(
+          'fixed top-0 left-0 z-50 h-full flex flex-col bg-[#0B1020] border-r border-white/10 shadow-lg transition-all duration-300',
+          isOpen ? 'w-64' : 'w-16'
+        )}
+      >
+        {/* Top: Hamburger + Logo */}
+        <div className='flex items-center justify-start p-4 border-b border-white/10 gap-3'>
+          <button
+            className='p-2 rounded-md hover:bg-white/10 transition'
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <Menu className='h-5 w-5' />
+          </button>
+
+          {isOpen && (
+            <Link href='/' className='flex items-center gap-2'>
+              <Code2 className='h-6 w-6 text-[#2563EB]' />
+              <span className='font-bold text-lg tracking-tight text-white'>
+                AlgoRise
+              </span>
+            </Link>
+          )}
         </div>
       </nav>
 
-      {/* Bottom Section */}
-      <div className="p-4 border-t border-white/10 flex-shrink-0">
-        {/* CF Verification Status */}
-        {isVerified && verificationData && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20"
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-              <span className="text-xs font-medium text-green-400">CF-verified</span>
-            </div>
-            <p className="text-sm text-white/90">{verificationData.handle}</p>
-            <p className="text-xs text-white/60">Rating: {verificationData.rating}</p>
-          </motion.div>
-        )}
-
-        {/* Bottom Menu Items */}
-        <nav className="space-y-1 mb-4">
-          {bottomMenuItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname?.startsWith(item.href)
+      {/* Main Menu */}
+      <div className='flex-1 mt-4 overflow-y-auto px-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30'>
+        <nav className='space-y-2'>
+          {menuItems.map((item, idx) => {
+            const Icon = item.icon;
+            const isActive =
+              pathname === item.href ||
+              (item.href !== '/' && pathname?.startsWith(item.href));
             return (
-              <motion.div
-                key={item.href}
-                initial={false}
-                animate={isActive ? { scale: 1.04 } : { scale: 1 }}
-                whileHover={{ scale: 1.03 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className="relative"
-                style={{ zIndex: 1 }}
+              <Link
+                href={item.href}
+                title={!isOpen ? item.label : undefined}
+                className={cn(
+                  'relative flex items-center gap-3 p-2 rounded-xl transition-all duration-300 cursor-pointer group',
+                  isActive
+                    ? 'bg-[#2563EB]/40 text-[#2563EB] shadow-glow'
+                    : 'text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105',
+                  mounted
+                    ? `delay-[${idx * 50}ms] translate-x-0 opacity-100`
+                    : 'translate-x-[-20px] opacity-0'
+                )}
+                style={{
+                  transitionProperty: 'all',
+                  transitionDuration: '300ms',
+                  transitionDelay: `${idx * 50}ms`,
+                }}
               >
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all group border border-transparent relative overflow-hidden",
-                    isActive
-                      ? "text-[#2563EB] border-[#2563EB]/20 shadow"
-                      : "text-white/80 hover:text-white hover:bg-white/10 hover:border-white/20"
-                  )}
-                  style={{ zIndex: 2 }}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="sidebar-active-bg"
-                      className="absolute inset-0 rounded-lg bg-[#2563EB]/15"
-                      style={{ zIndex: 0 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                    />
-                  )}
-                  <Icon className={cn("h-4 w-4 transition-colors z-10", isActive ? "text-[#2563EB]" : "text-white/60 group-hover:text-white")} />
-                  <span className="transition-colors z-10">{item.label}</span>
-                </Link>
-              </motion.div>
-            )
+                <Icon className='h-5 w-5' />
+                {isOpen && (
+                  <span className='text-sm font-medium'>{item.label}</span>
+                )}
+
+                {!isOpen && (
+                  <span className='absolute left-16 md:left-20 bg-[#1F2330] text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50'>
+                    {item.label}
+                  </span>
+                )}
+              </Link>
+            );
           })}
         </nav>
-
-        {/* User Status */}
-        <motion.div
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="flex items-center gap-3 p-3 rounded-lg bg-white/5"
-        >
-          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-          <span className="text-sm text-white/90">Ready to solve problems</span>
-        </motion.div>
-
-        {/* Auth Button */}
-        <div className="mt-4">
-          <AuthButton />
-        </div>
       </div>
-    </div>
-  )
 
-  return (
-    <div className="flex min-h-screen bg-[#0B1020]">
-      {/* Sidebar for desktop & mobile */}
-      {/* Mobile sidebar overlay */}
-      {/* Only show overlay and animation for mobile */}
-      <motion.div
-        className={cn(
-          "fixed inset-0 z-40 bg-black/40 transition-opacity md:hidden",
-          sidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        )}
-        initial={false}
-        animate={sidebarOpen ? { opacity: 1, pointerEvents: "auto" } : { opacity: 0, pointerEvents: "none" }}
-        transition={{ duration: 0.2 }}
-        onClick={() => setSidebarOpen(false)}
-      />
-      {/* Sidebar drawer for mobile, static for desktop */}
-      <aside
-        className={cn(
-          "h-full",
-          "fixed z-50 inset-y-0 left-0 md:static md:translate-x-0 transition-transform duration-200 ease-in-out"
-        )}
-        aria-label="Sidebar"
-      >
-        {/* Mobile: animate sidebar, Desktop: static */}
-        <div className="hidden md:block h-full">
-          {SidebarContent}
-        </div>
-        <motion.div
-          className="block md:hidden h-full"
-          initial={false}
-          animate={sidebarOpen ? "open" : "closed"}
-          variants={sidebarVariants}
-          style={{ position: "absolute", top: 0, left: 0, height: "100%", width: "16rem" }}
-        >
-          {SidebarContent}
-        </motion.div>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col h-screen">
-        {/* Enhanced Header */}
-        <div className="flex items-center h-14 px-4 border-b border-white/10 bg-[#0B1020]/80 backdrop-blur supports-[backdrop-filter]:bg-[#0B1020]/60 md:hidden">
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            className="md:hidden p-2 rounded-lg text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition"
-            aria-label="Open sidebar"
-            onClick={() => setSidebarOpen(true)}
+      {/* Bottom Section */}
+      <div className='p-4 border-t border-white/10 flex flex-col items-center'>
+        {/* CF Verified Badge */}
+        {isVerified && cfData && (
+          <div
+            className={cn(
+              'cursor-pointer transition-transform duration-300 hover:scale-105',
+              !isOpen ? 'flex justify-center' : ''
+            )}
+            title={`${cfData.handle} (${cfData.rating})`}
           >
-            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
-          </motion.button>
-          <span className="ml-3 font-semibold text-lg tracking-tight text-white">AlgoRise</span>
-        </div>
-        <Header />
-
-        {/* Page Content - Scrollable */}
-        <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30">
-          {children}
-        </main>
+            {isOpen ? (
+              <div
+                className={`p-3 rounded-xl border ${getCFTier(cfData.rating).bg
+                  } ${getCFTier(cfData.rating).color}`}
+              >
+                <p className='text-sm font-bold'>{cfData.handle}</p>
+                <p className='text-xs'>
+                  {getCFTier(cfData.rating).label} · {cfData.rating}
+                </p>
+              </div>
+            ) : (
+              <div
+                className={`w-12 h-12 flex items-center justify-center rounded-full border ${getCFTier(cfData.rating).bg
+                  } ${getCFTier(cfData.rating).color
+                  } text-[10px] font-bold text-center px-1`}
+              >
+                {getCFTier(cfData.rating).label.split(' ')[0]}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
-  )
+
+      {/* Overlay
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50  z-40 transition-opacity duration-300"
+          onClick={() => setIsOpen(false)}
+        />
+      )} */}
+
+  {/* Main Content */ }
+  <div
+    className='flex-1 flex flex-col h-screen transition-all duration-300'
+    style={{ marginLeft: isOpen ? '16rem' : '4rem' }}
+  >
+    <Header />
+    <main className='flex-1 overflow-y-auto p-4'>{children}</main>
+  </div>
+    </div >
+  );
 }

@@ -121,9 +121,13 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         )}
       >
         {/* Top: Hamburger + Logo */}
-        <div className='flex items-center justify-start p-4 border-b border-white/10 gap-3'>
+        <div
+          className={cn(
+            `flex items-center justify-start p-4 border-b border-white/10 ${isOpen ? 'gap-3' : ''}`
+          )}
+        >
           <button
-            className='p-2 rounded-md hover:bg-white/10 transition'
+            className='flex items-center justify-center w-7 h-7 rounded-md hover:bg-white/10 transition'
             onClick={() => setIsOpen(!isOpen)}
           >
             <Menu className='h-5 w-5' />
@@ -140,7 +144,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Main Menu */}
-        <div className='flex-1 mt-4 overflow-y-auto px-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30'>
+        <div className='flex-1 p-3 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30'>
           <nav className='space-y-2'>
             {menuItems.map((item, idx) => {
               const Icon = item.icon;
@@ -153,7 +157,8 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                   href={item.href}
                   title={!isOpen ? item.label : undefined}
                   className={cn(
-                    'relative flex items-center gap-3 p-2 rounded-xl transition-all duration-300 cursor-pointer group',
+                    'relative flex items-center gap-3 p-2 rounded-lg transition-all duration-300 cursor-pointer group',
+                    isOpen ? '' : 'justify-center',
                     isActive
                       ? 'bg-[#2563EB]/40 text-[#2563EB] shadow-glow'
                       : 'text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105',
@@ -171,12 +176,6 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                   {isOpen && (
                     <span className='text-sm font-medium'>{item.label}</span>
                   )}
-
-                  {!isOpen && (
-                    <span className='absolute left-16 md:left-20 bg-[#1F2330] text-white text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap z-50'>
-                      {item.label}
-                    </span>
-                  )}
                 </Link>
               );
             })}
@@ -184,9 +183,9 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Bottom Section */}
-        <div className='p-4 border-t border-white/10 flex flex-col items-center'>
-          {/* CF Verified Badge */}
-          {isVerified && cfData && (
+        {isVerified && cfData && (
+          <div className='p-4 border-t border-white/10 flex flex-col items-center'>
+            {/* CF Verified Badge */}
             <div
               className={cn(
                 'cursor-pointer transition-transform duration-300 hover:scale-105',
@@ -217,8 +216,8 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                 </div>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Overlay
@@ -235,7 +234,9 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         style={{ marginLeft: isOpen ? '16rem' : '4rem' }}
       >
         <Header />
-        <main className='flex-1 overflow-y-auto p-4'>{children}</main>
+        <main className='flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30'>
+          {children}
+        </main>
       </div>
     </div>
   );

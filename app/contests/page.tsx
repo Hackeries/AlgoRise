@@ -39,6 +39,9 @@ import {
   ExternalLinkIcon,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { createClient } from "@/lib/supabase/client";
+
+const supabase = createClient();
 
 type CodeforcesContest = {
   id: number;
@@ -62,6 +65,7 @@ type PrivateContest = {
   allow_late_join?: boolean;
   created_by?: string;
   created_at: string;
+  registered_users?: string[];
 };
 
 export default function ContestsPage() {
@@ -79,12 +83,69 @@ export default function ContestsPage() {
     startDate: "",
     startTime: "",
     problemCount: "5",
-    ratingMin: "1200",
-    ratingMax: "1400",
+    ratingMin: "800", // ✅ lowest default
+    ratingMax: "3500", // ✅ highest default
     maxParticipants: "",
     allowLateJoin: true,
-    teamSize: "1", // For ICPC Arena
+    durationHours: "2", // ✅ add
+    durationMinutes: "0", // ✅ add
   });
+// <<<<<<< HEAD
+  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
+  const [userRating, setUserRating] = useState<number>(0);
+  useEffect(() => {
+    const fetchUserRating = async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id;
+
+      const { data, error } = await supabase
+        .from("cf_snapshots")
+        .select("rating")
+        .eq("user_id", userId)
+        .order("captured_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error("Error fetching rating:", error);
+        return;
+      }
+
+      if (data?.rating) {
+        setUserRating(data.rating);
+      }
+    };
+
+    fetchUserRating();
+  }, []);
+// =======
+//   const [userRating, setUserRating] = useState<number>(0);
+//   useEffect(() => {
+//   const fetchUserRating = async () => {
+//     const { data: userData } = await supabase.auth.getUser();
+//     const userId = userData?.user?.id;
+
+//     const { data, error } = await supabase
+//       .from("cf_snapshots")
+//       .select("rating")
+//       .eq("user_id", userId)
+//       .order("captured_at", { ascending: false })
+//       .limit(1)
+//       .single();
+
+//     if (error) {
+//       console.error("Error fetching rating:", error);
+//       return;
+//     }
+
+//     if (data?.rating) {
+//       setUserRating(data.rating);
+//     }
+//   };
+
+//   fetchUserRating();
+// }, []);
+// >>>>>>> 0c88a0aff73832c10eedb3a4b728cef1d20ef662
 
   useEffect(() => {
     fetchContests();
@@ -141,13 +202,15 @@ export default function ContestsPage() {
       startDate: "",
       startTime: "",
       problemCount: "5",
-      ratingMin: "1200",
-      ratingMax: "1400",
+      ratingMin: "800",
+      ratingMax: "3500",
       maxParticipants: "",
       allowLateJoin: true,
-      teamSize: "1",
+      durationHours: "2",
+      durationMinutes: "0",
     });
   };
+
 
   const calculateEndTime = () => {
     if (!formData.startDate || !formData.startTime) return null;
@@ -155,105 +218,165 @@ export default function ContestsPage() {
     const startDateTime = new Date(
       `${formData.startDate}T${formData.startTime}`
     );
-    const durationMs = 2 * 60 * 60 * 1000; // Fixed 2 hours duration
-    const endDateTime = new Date(startDateTime.getTime() + durationMs);
+    const durationMinutes =
+      parseInt(formData.durationHours) * 60 +
+      parseInt(formData.durationMinutes);
 
+    if (isNaN(durationMinutes) || durationMinutes <= 0) return null;
+
+    const durationMs = durationMinutes * 60 * 1000;
+    const endDateTime = new Date(startDateTime.getTime() + durationMs);
     return endDateTime.toISOString();
   };
 
-  const createContest = async () => {
-    if (!formData.name.trim()) {
-      toast({
-        title: "Error",
-        description: "Contest name is required",
-        variant: "destructive",
-      });
-      return;
+  const [createdContestLink, setCreatedContestLink] = useState<string | null>(
+    null
+  );
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+
+const createContest = async () => {
+  // Validate name
+  if (!formData.name.trim()) {
+    toast({
+      title: "Error",
+      description: "Contest name is required",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  // Validate start date & time
+  if (!formData.startDate || !formData.startTime) {
+    toast({
+      title: "Error",
+      description: "Start date and time are required",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  // Validate rating range
+  const minRating = parseInt(formData.ratingMin);
+  const maxRating = parseInt(formData.ratingMax);
+  if (isNaN(minRating) || isNaN(maxRating) || minRating >= maxRating) {
+    toast({
+      title: "Error",
+      description: "Maximum rating must be higher than minimum rating",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  // Check start time ≥ 1 hour from now
+  const selectedStart = new Date(`${formData.startDate}T${formData.startTime}`);
+  if (selectedStart.getTime() - new Date().getTime() < 60 * 60 * 1000) {
+    toast({
+      title: "Error",
+      description: "Start time must be at least 1 hour from now",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  // Calculate duration
+  const durationMinutes =
+    parseInt(formData.durationHours) * 60 + parseInt(formData.durationMinutes);
+  if (isNaN(durationMinutes) || durationMinutes <= 0) {
+    toast({
+      title: "Error",
+      description: "Duration must be greater than 0",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  const endDateTime = calculateEndTime();
+  if (!endDateTime) {
+    toast({
+      title: "Error",
+      description: "Invalid end time",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  setCreating(true);
+
+  try {
+    const startDateTime = selectedStart.toISOString();
+
+    const bodyData: any = {
+      name: formData.name.trim(),
+      description: formData.description.trim() || "",
+      start_time: startDateTime,
+      end_time: endDateTime,
+      duration_minutes: durationMinutes,
+      problem_count: parseInt(formData.problemCount) || 5,
+      rating_min: minRating,
+      rating_max: maxRating,
+      allow_late_join: formData.allowLateJoin ? 1 : 0,
+    };
+
+    if (formData.maxParticipants) {
+      const maxPart = parseInt(formData.maxParticipants);
+      if (!isNaN(maxPart) && maxPart > 0) {
+        bodyData.max_participants = maxPart;
+      }
     }
 
-    if (!formData.startDate || !formData.startTime) {
-      toast({
-        title: "Error",
-        description: "Start date and time are required",
-        variant: "destructive",
-      });
-      return;
+    const response = await fetch("/api/contests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData),
+    });
+
+    // Safely parse response
+    const text = await response.text();
+    let data: any = null;
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        console.warn("Failed to parse JSON response:", err);
+      }
     }
 
-    // Validate rating range
-    const minRating = parseInt(formData.ratingMin);
-    const maxRating = parseInt(formData.ratingMax);
-    if (minRating >= maxRating) {
-      toast({
-        title: "Error",
-        description: "Maximum rating must be higher than minimum rating",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setCreating(true);
-    try {
-      const startDateTime = new Date(
-        `${formData.startDate}T${formData.startTime}`
-      ).toISOString();
-      const endDateTime = calculateEndTime();
-
-      const response = await fetch("/api/contests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          description: formData.description.trim() || null,
-          start_time: startDateTime,
-          end_time: endDateTime,
-          duration_minutes: 120, // Fixed 2 hours
-          problem_count: parseInt(formData.problemCount),
-          rating_min: parseInt(formData.ratingMin),
-          rating_max: parseInt(formData.ratingMax),
-          max_participants: formData.maxParticipants
-            ? parseInt(formData.maxParticipants)
-            : null,
-          allow_late_join: formData.allowLateJoin,
-        }),
-      });
-
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: "Contest created successfully!",
-        });
-        resetForm();
-        setCreateDialogOpen(false);
-        fetchContests(); // Refresh the list
-      } else {
-        let errorMsg = "Failed to create contest";
-        try {
-          const text = await response.text();
-          if (text) {
-            const error = JSON.parse(text);
-            errorMsg = error.error || errorMsg;
-          }
-        } catch (e) {
-          // Ignore JSON parse errors
-        }
+    if (response.ok) {
+      if (!data || !data.id) {
         toast({
           title: "Error",
-          description: errorMsg,
+          description: "Contest created but no ID returned",
           variant: "destructive",
         });
+        return;
       }
-    } catch (error) {
-      console.error("Contest creation error:", error);
+
+      setCreatedContestLink(
+        `${window.location.origin}/contests/${data.id}/participate`
+      );
+      setShareDialogOpen(true);
+
+      resetForm();
+      setCreateDialogOpen(false);
+      fetchContests();
+    } else {
       toast({
         title: "Error",
-        description: "Failed to create contest",
+        description: (data && data.error) || text || "Failed to create contest",
         variant: "destructive",
       });
-    } finally {
-      setCreating(false);
     }
-  };
+  } catch (error) {
+    console.error("Contest creation error:", error);
+    toast({
+      title: "Error",
+      description: "Failed to create contest",
+      variant: "destructive",
+    });
+  } finally {
+    setCreating(false);
+  }
+};
 
   const formatTime = (seconds: number) => {
     const date = new Date(seconds * 1000);
@@ -270,10 +393,106 @@ export default function ContestsPage() {
     return `https://codeforces.com/contestRegistration/${contestId}`;
   };
 
-  const handleCodeforcesContestClick = (contestId: number) => {
+// <<<<<<< HEAD
+  const handleCodeforcesContestClick = (
+    contestId: number,
+    startSeconds: number,
+    contestName: string
+  ) => {
     const url = getCodeforcesContestUrl(contestId);
-    window.open(url, "_blank", "noopener,noreferrer");
+
+    const now = Math.floor(Date.now() / 1000); // current time in seconds
+    const timeLeftSeconds = startSeconds - now;
+    const daysLeft = Math.floor(timeLeftSeconds / (60 * 60 * 24));
+
+    const lowername = contestName.toLowerCase();
+
+    if (lowername.includes("div. 1") && !lowername.includes("div. 2")) {
+      if (userRating < 1999) {
+        toast({
+          title: "Not Eligible",
+          description:
+            "Register for Div2 because your current rating is <1900.",
+          variant: "destructive",
+          className: "text-white",
+        });
+        return;
+      }
+    }
+
+    if (daysLeft <= 2) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    } else {
+      toast({
+// =======
+//   const handleCodeforcesContestClick = (contestId: number, startSeconds: number, contestName: string) => {
+//     const url = getCodeforcesContestUrl(contestId);
+//     const timeLeftMs = startSeconds * 1000 - Date.now();
+//     const daysLeft = Math.floor(timeLeftMs / (1000 * 60 * 60 * 24));
+//     const lowername = contestName.toLowerCase();
+//     if(lowername.includes("div. 1") && !lowername.includes("div. 2")){
+//       if(userRating < 1999){
+//          toast({
+//         title: "Not Eligible",
+//         description:
+//           "Register for Div2 because your current rating is <1900.",
+//         variant: "destructive",
+//         className: "text-white",
+//       });
+//       return ;
+//       }
+//     }
+//     if(daysLeft <=2 ){
+//       window.open(url, "_blank", "noopener,noreferrer");
+//     }else{
+//        toast({
+// >>>>>>> 0c88a0aff73832c10eedb3a4b728cef1d20ef662
+        title: "Registration Not Started",
+        description: `Registration isn't opened yet, please wait ~${daysLeft} days to register!`,
+        variant: "destructive", // red alert
+        className: "text-white",
+      });
+    }
   };
+
+  const handleJoinPrivateContest = (contest: PrivateContest) => {
+    if (!contest.start_time) {
+      toast({
+        title: "Invalid Contest",
+        description: "Start time is not set for this contest.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const now = new Date();
+    const start = new Date(contest.start_time);
+    const registrationClose = new Date(start.getTime() + 10 * 60 * 1000); // 10 minutes after start
+
+    if (now < start) {
+      toast({
+        title: "Too Early!",
+        description:
+          "Registration hasn't started yet! Wait for the contest to begin.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (now > registrationClose) {
+      toast({
+        title: "Too Late!",
+        description:
+          "You missed the registration window! This is CP, not a casual meet 😎",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Registration allowed
+    window.open(`/contests/${contest.id}/participate`, "_blank");
+  };
+
 
   const getTimeUntilStart = (startSeconds: number) => {
     const now = Math.floor(Date.now() / 1000);
@@ -308,32 +527,17 @@ export default function ContestsPage() {
               Create Contest
             </Button>
           </DialogTrigger>
-          <DialogContent>
+
+          <DialogContent className="max-w-3xl w-full max-h-[80vh] overflow-hidden">
             <DialogHeader>
               <DialogTitle>Create New Contest</DialogTitle>
               <DialogDescription>
                 Create a private training contest for your group or friends.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-6 py-4 max-h-[60vh] overflow-y-auto">
-              {/* Contest Mode */}
-              <div className="space-y-2">
-                <Label htmlFor="contest-mode">Contest Mode *</Label>
-                <Select
-                  value={formData.mode}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, mode: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select mode" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="practice">Practice Arena (Private)</SelectItem>
-                    <SelectItem value="icpc">ICPC Arena (ICPC-style)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
+            {/* Scrollable content */}
+            <div className="overflow-y-auto max-h-[60vh] space-y-6 py-4 px-2 sm:px-4">
               {/* Contest Name */}
               <div className="space-y-2">
                 <Label htmlFor="contest-name">Contest Name *</Label>
@@ -366,10 +570,10 @@ export default function ContestsPage() {
 
               <Separator />
 
-              {/* Start Date & Time */}
+              {/* Contest Schedule */}
               <div className="space-y-4">
-                <h4 className="font-medium">Contest Schedule</h4>
-                <div className="grid grid-cols-2 gap-4">
+                <h4 className="font-medium text-lg">Contest Schedule</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="start-date">Start Date *</Label>
                     <Input
@@ -401,22 +605,37 @@ export default function ContestsPage() {
                   </div>
                 </div>
 
-                {/* Duration - Dynamic */}
+                {/* Duration */}
                 <div className="space-y-2">
-                  <Label>Duration</Label>
-                  <div className="flex items-center px-3 py-2 bg-white/5 rounded-md border">
-                    <ClockIcon className="w-4 h-4 mr-2 text-white/60" />
-                    {formData.mode === "practice" ? (
-                      <span className="text-sm font-medium">
-                        {formData.problemCount === "5" || formData.problemCount === "6"
-                          ? "2 hours"
-                          : formData.problemCount === "7"
-                            ? "3 hours"
-                            : "2-3 hours"}
-                      </span>
-                    ) : (
-                      <span className="text-sm font-medium">5 hours (ICPC)</span>
-                    )}
+                  <Label>Duration *</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      value={formData.durationHours}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          durationHours: e.target.value,
+                        }))
+                      }
+                      className="w-24"
+                      placeholder="Hours"
+                    />
+                    <Input
+                      type="number"
+                      min="0"
+                      max="59"
+                      value={formData.durationMinutes}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          durationMinutes: e.target.value,
+                        }))
+                      }
+                      className="w-24"
+                      placeholder="Minutes"
+                    />
                   </div>
                 </div>
               </div>
@@ -425,8 +644,7 @@ export default function ContestsPage() {
 
               {/* Problem Configuration */}
               <div className="space-y-4">
-                <h4 className="font-medium">Problem Configuration</h4>
-
+                <h4 className="font-medium text-lg">Problem Configuration</h4>
                 {/* Number of Problems */}
                 <div className="space-y-2">
                   <Label htmlFor="problem-count">Number of Problems *</Label>
@@ -435,31 +653,16 @@ export default function ContestsPage() {
                     onValueChange={(value) =>
                       setFormData((prev) => ({ ...prev, problemCount: value }))
                     }
-                    disabled={formData.mode === "icpc"}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select number of problems" />
                     </SelectTrigger>
                     <SelectContent>
-                      {formData.mode === "practice" ? (
-                        <>
-                          <SelectItem value="5">5 Problems</SelectItem>
-                          <SelectItem value="6">6 Problems</SelectItem>
-                          <SelectItem value="7">7 Problems</SelectItem>
-                          <SelectItem value="8">8 Problems</SelectItem>
-                          <SelectItem value="9">9 Problems</SelectItem>
-                          <SelectItem value="10">10 Problems</SelectItem>
-                          <SelectItem value="11">11 Problems</SelectItem>
-                          <SelectItem value="12">12 Problems</SelectItem>
-                        </>
-                      ) : (
-                        <>
-                          <SelectItem value="10">10 Problems</SelectItem>
-                          <SelectItem value="11">11 Problems</SelectItem>
-                          <SelectItem value="12">12 Problems</SelectItem>
-                          <SelectItem value="13">13 Problems</SelectItem>
-                        </>
-                      )}
+                      {[5, 6, 7].map((num) => (
+                        <SelectItem key={num} value={`${num}`}>
+                          {num} Problems
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -489,66 +692,50 @@ export default function ContestsPage() {
                 <div className="space-y-2">
                   <Label>Problem Rating Range *</Label>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="rating-min"
-                        className="text-sm text-white/70">
-                        Minimum Rating
-                      </Label>
-                      <Select
-                        value={formData.ratingMin}
-                        onValueChange={(value) =>
-                          setFormData((prev) => ({ ...prev, ratingMin: value }))
-                        }>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Min" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="800">800</SelectItem>
-                          <SelectItem value="900">900</SelectItem>
-                          <SelectItem value="1000">1000</SelectItem>
-                          <SelectItem value="1100">1100</SelectItem>
-                          <SelectItem value="1200">1200</SelectItem>
-                          <SelectItem value="1300">1300</SelectItem>
-                          <SelectItem value="1400">1400</SelectItem>
-                          <SelectItem value="1500">1500</SelectItem>
-                          <SelectItem value="1600">1600</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="rating-max"
-                        className="text-sm text-white/70">
-                        Maximum Rating
-                      </Label>
-                      <Select
-                        value={formData.ratingMax}
-                        onValueChange={(value) =>
-                          setFormData((prev) => ({ ...prev, ratingMax: value }))
-                        }>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Max" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1000">1000</SelectItem>
-                          <SelectItem value="1100">1100</SelectItem>
-                          <SelectItem value="1200">1200</SelectItem>
-                          <SelectItem value="1300">1300</SelectItem>
-                          <SelectItem value="1400">1400</SelectItem>
-                          <SelectItem value="1500">1500</SelectItem>
-                          <SelectItem value="1600">1600</SelectItem>
-                          <SelectItem value="1700">1700</SelectItem>
-                          <SelectItem value="1800">1800</SelectItem>
-                          <SelectItem value="1900">1900</SelectItem>
-                          <SelectItem value="2000">2000</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <Select
+                      value={formData.ratingMin}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, ratingMin: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Min" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 9 }, (_, i) => 800 + i * 100).map(
+                          (val) => (
+                            <SelectItem key={val} value={`${val}`}>
+                              {val}
+                            </SelectItem>
+                          )
+                        )}
+                      </SelectContent>
+                    </Select>
+
+                    <Select
+                      value={formData.ratingMax}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, ratingMax: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Max" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from(
+                          { length: 13 },
+                          (_, i) => 1000 + i * 100
+                        ).map((val) => (
+                          <SelectItem key={val} value={`${val}`}>
+                            {val}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <p className="text-xs text-white/50">
+                  <p className="text-xs text-muted-foreground">
                     Problems will be selected from Codeforces within this rating
-                    range. Difficulty and topics will be hidden.
+                    range.
                   </p>
                 </div>
               </div>
@@ -557,7 +744,7 @@ export default function ContestsPage() {
 
               {/* Contest Settings */}
               <div className="space-y-4">
-                <h4 className="font-medium">Contest Settings</h4>
+                <h4 className="font-medium text-lg">Contest Settings</h4>
 
                 <div className="space-y-2">
                   <Label htmlFor="max-participants">Max Participants</Label>
@@ -572,8 +759,8 @@ export default function ContestsPage() {
                         maxParticipants: e.target.value,
                       }))
                     }
-                    min="1"
-                    max="1000"
+                    min={1}
+                    max={1000}
                   />
                 </div>
 
@@ -630,18 +817,21 @@ export default function ContestsPage() {
                 </>
               )}
             </div>
-            <DialogFooter>
+
+            <DialogFooter className="flex justify-end gap-2">
               <Button
                 variant="outline"
                 onClick={() => {
                   setCreateDialogOpen(false);
                   resetForm();
-                }}>
+                }}
+              >
                 Cancel
               </Button>
               <Button
                 onClick={createContest}
-                disabled={creating || !formData.name.trim()}>
+                disabled={creating || !formData.name.trim()}
+              >
                 {creating ? "Creating..." : "Create Contest"}
               </Button>
             </DialogFooter>
@@ -679,7 +869,16 @@ export default function ContestsPage() {
                   <Card
                     key={contest.id}
                     className="hover:bg-white/5 transition-colors cursor-pointer"
-                    onClick={() => handleCodeforcesContestClick(contest.id)}>
+// <<<<<<< HEAD
+                    onClick={() =>
+                      handleCodeforcesContestClick(
+                        contest.id,
+                        contest.startTimeSeconds || 0,
+                        contest.name
+                      )
+                    }
+                  >
+
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <CardTitle className="text-sm font-medium leading-tight">
@@ -745,78 +944,199 @@ export default function ContestsPage() {
               </Card>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {privateContests.map((contest) => (
-                  <Card
-                    key={contest.id}
-                    className="hover:bg-white/5 transition-colors cursor-pointer"
-                  >
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-start">
+                {privateContests.map((contest: PrivateContest) => {
+                  const now = new Date();
+                  const start = contest.start_time
+                    ? new Date(contest.start_time)
+                    : null;
+                  const registrationClose = start
+                    ? new Date(start.getTime() + 10 * 60 * 1000)
+                    : null;
+                  const isRegistered = currentUser
+                    ? contest.registered_users?.includes(currentUser.id)
+                    : false; // make sure your API provides this
+
+                  const handlePrivateContestClick = async () => {
+                    if (!isRegistered) {
+                      // Register the user
+                      try {
+                        const res = await fetch(
+                          `/api/contests/${contest.id}/register`,
+                          { method: "POST" }
+                        );
+                        if (res.ok) {
+                          toast({
+                            title: "Registered!",
+                            description: "You can now join the contest.",
+                            variant: "default",
+                          });
+                          fetchContests(); // refresh private contests to update registered users
+                        } else {
+                          const err = await res.json();
+                          toast({
+                            title: "Error",
+                            description: err.error || "Failed to register",
+                            variant: "destructive",
+                          });
+                        }
+                      } catch (error) {
+                        console.error(error);
+                        toast({
+                          title: "Error",
+                          description: "Failed to register",
+                          variant: "destructive",
+                        });
+                      }
+                    } else if (start && now < start) {
+                      // Too early
+                      const diff = start.getTime() - now.getTime();
+                      const hours = Math.floor(diff / (1000 * 60 * 60));
+                      const minutes = Math.floor(
+                        (diff % (1000 * 60 * 60)) / (1000 * 60)
+                      );
+                      toast({
+                        title: "Too Early!",
+                        description: `Contest starts in ${hours}h ${minutes}m. Wait a bit!`,
+                        variant: "destructive",
+                      });
+                    } else if (
+                      start &&
+                      registrationClose &&
+                      now > registrationClose
+                    ) {
+                      // Registration closed
+                      toast({
+                        title: "Registration Closed",
+                        description: "You missed the registration window! 😎",
+                        variant: "destructive",
+                      });
+                    } else {
+                      // Join now
+                      window.open(
+                        `/contests/${contest.id}/participate`,
+                        "_blank"
+                      );
+                    }
+                  };
+
+                  return (
+                    <Card
+                      key={contest.id}
+                      className="hover:bg-white/5 transition-colors cursor-pointer"
+                    >
+                      <CardHeader className="pb-3">
                         <CardTitle className="text-sm font-medium">
                           {contest.name}
                         </CardTitle>
-                        <Badge
-                          variant={contest.status === "active" ? "default" : "secondary"}
-                          className="text-xs"
-                        >
-                          {contest.status}
-                        </Badge>
-                      </div>
-                      <CardDescription className="text-xs text-white/60">
-                        Created: {contest.created_at
-                          ? new Date(contest.created_at).toLocaleDateString()
-                          : contest.date || "N/A"}
-                      </CardDescription>
-                    </CardHeader>
-
-                    <CardContent className="pt-2 space-y-2 text-sm">
-                      {contest.start_time && (
-                        <div className="flex items-center gap-2 text-white/70">
-                          <CalendarIcon className="w-3 h-3" />
-                          <span>{new Date(contest.start_time).toLocaleString()}</span>
-                        </div>
-                      )}
-                      {contest.description && (
-                        <p className="text-white/50">{contest.description}</p>
-                      )}
-                      <div className="flex flex-wrap gap-2 text-xs text-white/50">
-                        {contest.problem_count && <span>{contest.problem_count} Problems</span>}
-                        {contest.rating_min && contest.rating_max && (
-                          <span>Rating: {contest.rating_min}-{contest.rating_max}</span>
-                        )}
-                        {contest.duration_minutes && <span>{contest.duration_minutes} min</span>}
-                        {contest.max_participants && (
-                          <span>Max: {contest.max_participants}</span>
-                        )}
-                        <span>{contest.allow_late_join ? "Late Join Allowed" : "No Late Join"}</span>
-                      </div>
-                      <div className="flex gap-2 mt-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 px-2 text-xs"
-                          onClick={() => window.open(`/contests/${contest.id}`, "_blank")}
-                        >
-                          View Details
-                        </Button>
-                        {(contest.status === "upcoming" || contest.status === "active") && (
-                          <Button
-                            size="sm"
-                            className="h-8 px-2 text-xs bg-green-600 hover:bg-green-700"
-                            onClick={() => window.open(`/contests/${contest.id}/participate`, "_blank")}
+                        <CardDescription className="text-xs">
+                          Created{" "}
+                          {new Date(contest.created_at).toLocaleDateString()}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="flex items-center justify-between">
+                          <Badge
+                            variant={
+                              contest.status === "active"
+                                ? "default"
+                                : "secondary"
+                            }
+                            className="text-xs"
                           >
-                            Participate
-                          </Button>
+                            {contest.status}
+                          </Badge>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 px-2 text-xs"
+                              onClick={() =>
+                                window.open(`/contests/${contest.id}`, "_blank")
+                              }
+                            >
+                              View Details
+                            </Button>
+                            {(contest.status === "upcoming" ||
+                              contest.status === "active") && (
+                              <Button
+                                size="sm"
+                                className="h-8 px-2 text-xs bg-green-600 hover:bg-green-700"
+                                onClick={handlePrivateContestClick}
+                              >
+                                {!isRegistered ? "Register" : "Join Now"}
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+
+                        {contest.start_time && (
+                          <div className="mt-3 text-xs text-white/60">
+                            <div className="flex items-center gap-2">
+                              <CalendarIcon className="w-3 h-3" />
+                              <span>
+                                {new Date(contest.start_time).toLocaleString()}
+                              </span>
+                            </div>
+                            {contest.description && (
+                              <div className="mt-2 text-xs text-white/50">
+                                {contest.description}
+                              </div>
+                            )}
+                            {(contest as any).problem_count && (
+                              <div className="mt-2 flex items-center gap-4 text-xs text-white/50">
+                                <span>
+                                  {(contest as any).problem_count} Problems
+                                </span>
+                                <span>
+                                  Rating: {(contest as any).rating_min}-
+                                  {(contest as any).rating_max}
+                                </span>
+                                <span>2h Duration</span>
+                              </div>
+                            )}
+                          </div>
                         )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </section>
         </div>
       )}
+
+      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Contest Created!</DialogTitle>
+            <DialogDescription>
+              Share this contest link with your friends. Users can register up
+              to 10 minutes before start.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-2 mt-4">
+            <Input value={createdContestLink || ""} readOnly />
+            <Button
+              onClick={() => {
+                if (createdContestLink)
+                  navigator.clipboard.writeText(createdContestLink);
+                toast({
+                  title: "Copied!",
+                  description: "Link copied to clipboard.",
+                });
+              }}
+            >
+              Copy
+            </Button>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setShareDialogOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
     </main>
   );
 }

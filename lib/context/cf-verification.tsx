@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, {
   createContext,
@@ -7,9 +7,9 @@ import React, {
   useEffect,
   ReactNode,
   useCallback,
-} from "react";
-import { useAuth } from "../auth/context";
-import { createClient } from "../supabase/client";
+} from 'react';
+import { useAuth } from '../auth/context';
+import { createClient } from '../supabase/client';
 
 export interface CFVerificationData {
   handle: string;
@@ -39,10 +39,10 @@ interface CFVerificationProviderProps {
 // ---------------- Safe logging ----------------
 const logSupabaseError = (context: string, error: any) => {
   console.error(`${context}:`, {
-    code: error?.code ?? "Unknown",
-    message: error?.message ?? JSON.stringify(error) ?? "No message",
-    details: error?.details ?? "No details",
-    hint: error?.hint ?? "No hint",
+    code: error?.code ?? 'Unknown',
+    message: error?.message ?? JSON.stringify(error) ?? 'No message',
+    details: error?.details ?? 'No details',
+    hint: error?.hint ?? 'No hint',
   });
 };
 
@@ -53,17 +53,17 @@ const fetchCFData = async (handle: string) => {
       `https://codeforces.com/api/user.info?handles=${handle}`
     );
     const json = await res.json();
-    if (json.status !== "OK") throw new Error(json.comment || "API error");
+    if (json.status !== 'OK') throw new Error(json.comment || 'API error');
     const user = json.result[0];
     return {
       handle: user.handle,
       rating: user.rating ?? 0,
       maxRating: user.maxRating ?? 0,
-      rank: user.rank ?? "unrated",
+      rank: user.rank ?? 'unrated',
       verifiedAt: new Date().toISOString(),
     } as CFVerificationData;
   } catch (err) {
-    console.error("Error fetching Codeforces data:", err);
+    console.error('Error fetching Codeforces data:', err);
     return null;
   }
 };
@@ -81,13 +81,13 @@ export function CFVerificationProvider({
   try {
     supabase = createClient();
   } catch (error) {
-    console.warn("Supabase client creation failed:", error);
+    console.warn('Supabase client creation failed:', error);
   }
 
   // ---------------- LocalStorage Fallback ----------------
   const refreshVerificationStatus = () => {
     try {
-      const storedData = localStorage.getItem("cf_verification");
+      const storedData = localStorage.getItem('cf_verification');
       if (storedData) {
         const data = JSON.parse(storedData) as CFVerificationData;
         setVerificationDataState(data);
@@ -97,7 +97,7 @@ export function CFVerificationProvider({
       setVerificationDataState(null);
       setIsVerified(false);
     } catch (error) {
-      console.error("Error reading CF verification status:", error);
+      console.error('Error reading CF verification status:', error);
       setVerificationDataState(null);
       setIsVerified(false);
     }
@@ -109,10 +109,10 @@ export function CFVerificationProvider({
       if (!user || !supabase) return;
 
       try {
-        console.log("Saving CF verification to Supabase:", data.handle);
+        console.log('Saving CF verification to Supabase:', data.handle);
 
         // Save to cf_handles table (handle and verification status)
-        const { error: handleError } = await supabase.from("cf_handles").upsert(
+        const { error: handleError } = await supabase.from('cf_handles').upsert(
           {
             user_id: user.id,
             handle: data.handle,
@@ -120,14 +120,14 @@ export function CFVerificationProvider({
             created_at: data.verifiedAt,
             updated_at: new Date().toISOString(),
           },
-          { onConflict: "user_id" }
+          { onConflict: 'user_id' }
         );
 
         if (handleError)
-          logSupabaseError("Supabase handle save error", handleError);
+          logSupabaseError('Supabase handle save error', handleError);
 
         const { error: snapshotError } = await supabase
-          .from("cf_snapshots")
+          .from('cf_snapshots')
           .insert({
             user_id: user.id,
             handle: data.handle,
@@ -139,9 +139,9 @@ export function CFVerificationProvider({
           });
 
         if (snapshotError)
-          logSupabaseError("Supabase snapshot save error", snapshotError);
+          logSupabaseError('Supabase snapshot save error', snapshotError);
       } catch (error) {
-        console.error("Exception saving CF verification to Supabase:", error);
+        console.error('Exception saving CF verification to Supabase:', error);
       }
     },
     [user, supabase]
@@ -151,7 +151,7 @@ export function CFVerificationProvider({
   const setVerificationData = useCallback(
     async (data: CFVerificationData | null) => {
       if (!data) {
-        localStorage.removeItem("cf_verification");
+        localStorage.removeItem('cf_verification');
         setVerificationDataState(null);
         setIsVerified(false);
         return;
@@ -162,7 +162,7 @@ export function CFVerificationProvider({
       // setIsVerified(true);
       // Save to cf_snapshots table (rating data) - always create new snapshot
       const { error: snapshotError } = await supabase
-        .from("cf_snapshots")
+        .from('cf_snapshots')
 
         .insert({
           user_id: user?.id,
@@ -188,13 +188,13 @@ export function CFVerificationProvider({
 
     try {
       const { data: handleData, error: handleError } = await supabase
-        .from("cf_handles")
-        .select("handle, verified, created_at")
-        .eq("user_id", user.id)
+        .from('cf_handles')
+        .select('handle, verified, created_at')
+        .eq('user_id', user.id)
         .single();
 
       if (handleError) {
-        logSupabaseError("Supabase load handle error", handleError);
+        logSupabaseError('Supabase load handle error', handleError);
         refreshVerificationStatus();
         return;
       }
@@ -205,29 +205,28 @@ export function CFVerificationProvider({
       if (handleData && handleData.verified) {
         // Get latest CF snapshot for rating data
         const { data: snapshotData } = await supabase
-          .from("cf_snapshots")
-          .select("rating, max_rating, rank")
-          .eq("user_id", user.id)
-          .order("captured_at", { ascending: false })
+          .from('cf_snapshots')
+          .select('rating, max_rating, rank')
+          .eq('user_id', user.id)
+          .order('captured_at', { ascending: false })
           .limit(1)
           .single();
 
         console.log(
-          "CF verification data loaded from Supabase:",
+          'CF verification data loaded from Supabase:',
           handleData.handle
         );
         const verificationData: CFVerificationData = {
           handle: handleData.handle,
           rating: snapshotData?.rating || 0,
           maxRating: snapshotData?.max_rating || 0,
-          rank: snapshotData?.rank || "unrated",
+          rank: snapshotData?.rank || 'unrated',
           verifiedAt: handleData.created_at,
         };
         setVerificationData(verificationData);
       } else {
         // No verified data in Supabase, check localStorage
         refreshVerificationStatus();
-
       }
 
       // Fetch live CF data
@@ -235,28 +234,28 @@ export function CFVerificationProvider({
       if (cfData) setVerificationData(cfData);
       else refreshVerificationStatus();
     } catch (error) {
-      console.error("Exception loading CF verification from Supabase:", error);
+      console.error('Exception loading CF verification from Supabase:', error);
       refreshVerificationStatus();
     }
   }, [user, supabase, setVerificationData]);
 
   // ---------------- Clear Verification ----------------
   const clearVerification = useCallback(async () => {
-    localStorage.removeItem("cf_verification");
+    localStorage.removeItem('cf_verification');
     setVerificationDataState(null);
     setIsVerified(false);
 
     if (user && supabase) {
       try {
         const { error } = await supabase
-          .from("cf_handles")
+          .from('cf_handles')
           .delete()
-          .eq("user_id", user.id);
+          .eq('user_id', user.id);
 
-        if (error) logSupabaseError("Supabase clear verification error", error);
+        if (error) logSupabaseError('Supabase clear verification error', error);
       } catch (error) {
         console.error(
-          "Exception clearing CF verification from Supabase:",
+          'Exception clearing CF verification from Supabase:',
           error
         );
       }
@@ -264,7 +263,7 @@ export function CFVerificationProvider({
   }, [user, supabase]);
 
   const resetVerificationUI = useCallback(() => {
-    localStorage.removeItem("cf_verification");
+    localStorage.removeItem('cf_verification');
     setVerificationDataState(null);
     setIsVerified(false);
   }, []);
@@ -295,7 +294,7 @@ export function useCFVerification() {
   const context = useContext(CFVerificationContext);
   if (!context)
     throw new Error(
-      "useCFVerification must be used within a CFVerificationProvider"
+      'useCFVerification must be used within a CFVerificationProvider'
     );
   return context;
 }

@@ -4,31 +4,55 @@
 /* Modern UI Enhancements */
 body {
   font-family: var(--font-sans), Arial, sans-serif;
-  background: linear-gradient(120deg, var(--background) 60%, var(--chart-1) 100%);
+  background: linear-gradient(
+    120deg,
+    var(--background) 60%,
+    var(--chart-1) 100%
+  );
   transition: background 0.5s;
 }
 
-.card, .Card, .card-ui {
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08), 0 1.5px 6px rgba(0,0,0,0.04);
+.card,
+.Card,
+.card-ui {
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    0 1.5px 6px rgba(0, 0, 0, 0.04);
   border-radius: var(--radius);
-  transition: box-shadow 0.3s, transform 0.3s;
+  transition:
+    box-shadow 0.3s,
+    transform 0.3s;
 }
-.card:hover, .Card:hover, .card-ui:hover {
-  box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 3px 12px rgba(0,0,0,0.08);
+.card:hover,
+.Card:hover,
+.card-ui:hover {
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 3px 12px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px) scale(1.02);
 }
 
-a, button {
-  transition: color 0.2s, background 0.2s, box-shadow 0.2s;
+a,
+button {
+  transition:
+    color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
 }
-a:hover, button:hover {
+a:hover,
+button:hover {
   color: var(--color-primary);
   background: var(--color-accent);
   box-shadow: 0 2px 8px var(--color-ring);
 }
 
 .gradient-text {
-  background: linear-gradient(90deg, var(--chart-1), var(--chart-2), var(--chart-3));
+  background: linear-gradient(
+    90deg,
+    var(--chart-1),
+    var(--chart-2),
+    var(--chart-3)
+  );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -40,7 +64,9 @@ a:hover, button:hover {
   color: var(--color-primary-foreground);
   border-radius: 999px;
   box-shadow: 0 2px 8px var(--color-ring);
-  transition: background 0.3s, box-shadow 0.3s;
+  transition:
+    background 0.3s,
+    box-shadow 0.3s;
 }
 .btn-attractive:hover {
   background: linear-gradient(90deg, var(--chart-2), var(--chart-5));

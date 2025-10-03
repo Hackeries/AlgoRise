@@ -1,7 +1,7 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,9 +9,9 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 
-export type SRMode = "standard" | "aggressive"
+export type SRMode = 'standard' | 'aggressive';
 
 export function SheetSettings({
   snoozeMinutes,
@@ -19,38 +19,37 @@ export function SheetSettings({
   srMode,
   onSrModeChange,
 }: {
-  snoozeMinutes?: number
-  onSnoozeMinutesChange?: (m: number) => void
-  srMode: SRMode
-  onSrModeChange: (m: SRMode) => void
+  snoozeMinutes?: number;
+  onSnoozeMinutesChange?: (m: number) => void;
+  srMode: SRMode;
+  onSrModeChange: (m: SRMode) => void;
 }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" aria-label="Sheet settings">
+        <Button variant='outline' size='sm' aria-label='Sheet settings'>
           Settings
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-56">
+      <DropdownMenuContent align='end' className='min-w-56'>
         <DropdownMenuLabel>Spaced repetition</DropdownMenuLabel>
         <DropdownMenuItem
-          onClick={() => onSrModeChange("standard")}
-          aria-checked={srMode === "standard"}
-          role="menuitemradio"
+          onClick={() => onSrModeChange('standard')}
+          aria-checked={srMode === 'standard'}
+          role='menuitemradio'
         >
-          {srMode === "standard" ? "• " : ""} Standard
+          {srMode === 'standard' ? '• ' : ''} Standard
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => onSrModeChange("aggressive")}
-          aria-checked={srMode === "aggressive"}
-          role="menuitemradio"
+          onClick={() => onSrModeChange('aggressive')}
+          aria-checked={srMode === 'aggressive'}
+          role='menuitemradio'
         >
-          {srMode === "aggressive" ? "• " : ""} Aggressive
+          {srMode === 'aggressive' ? '• ' : ''} Aggressive
         </DropdownMenuItem>
-
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

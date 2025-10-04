@@ -34,47 +34,61 @@ const fetchUpcomingContest = async () => {
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const handle = searchParams.get('handle');
-  if (!handle)
+  const compareHandle = searchParams.get('compareHandle');
+
+  if (!handle) {
     return NextResponse.json(
       { error: 'No CF handle provided' },
       { status: 400 }
     );
+  }
 
   try {
-    const userInfo = await fetchCFUserInfo(handle);
-    const ratingHistory = await fetchCFRating(handle);
-    const lastRatingChange = ratingHistory.length
-      ? ratingHistory[ratingHistory.length - 1]
-      : null;
-    const nextContest = await fetchUpcomingContest();
+    const fetchDataForHandle = async (h: string) => {
+      const userInfo = await fetchCFUserInfo(h);
+      const ratingHistory = await fetchCFRating(h);
+      const lastRatingChange = ratingHistory.length
+        ? ratingHistory[ratingHistory.length - 1]
+        : null;
+      const nextContest = await fetchUpcomingContest();
 
-    // Compute rating delta from last contest
-    const ratingDelta = lastRatingChange
-      ? lastRatingChange.newRating - lastRatingChange.oldRating
-      : 0;
+      const ratingDelta = lastRatingChange
+        ? lastRatingChange.newRating - lastRatingChange.oldRating
+        : 0;
 
-    // Compute last contest date
-    const lastContestAt = lastRatingChange
-      ? new Date(lastRatingChange.ratingUpdateTimeSeconds * 1000).toISOString()
-      : null;
+      const lastContestAt = lastRatingChange
+        ? new Date(
+            lastRatingChange.ratingUpdateTimeSeconds * 1000
+          ).toISOString()
+        : null;
 
-    // Compute next contest date
-    const nextContestAt = nextContest
-      ? new Date(nextContest.startTimeSeconds * 1000).toISOString()
-      : null;
+      const nextContestAt = nextContest
+        ? new Date(nextContest.startTimeSeconds * 1000).toISOString()
+        : null;
 
-    const data = {
-      handle: userInfo.handle,
-      rating: userInfo.rating ?? 0,
-      maxRating: userInfo.maxRating ?? 0,
-      rank: userInfo.rank ?? 'unrated',
-      ratingDelta,
-      lastContestAt,
-      nextContestAt,
-      nextContestName: nextContest?.name ?? null,
+      return {
+        handle: userInfo.handle,
+        rating: userInfo.rating ?? 0,
+        maxRating: userInfo.maxRating ?? 0,
+        rank: userInfo.rank ?? 'unrated',
+        ratingDelta,
+        lastContestAt,
+        nextContestAt,
+        nextContestName: nextContest?.name ?? null,
+      };
     };
 
-    return NextResponse.json(data);
+    const mainHandleData = await fetchDataForHandle(handle);
+    let comparisonHandleData = null;
+
+    if (compareHandle) {
+      comparisonHandleData = await fetchDataForHandle(compareHandle);
+    }
+
+    return NextResponse.json({
+      mainHandle: mainHandleData,
+      comparisonHandle: comparisonHandleData,
+    });
   } catch (err) {
     console.error('Error fetching CF profile:', err);
     return NextResponse.json(

@@ -96,22 +96,20 @@ const SidebarItem = ({
       href={href}
       title={!isOpen ? label : undefined}
       className={cn(
-        'relative flex items-center p-2 rounded-xl transition-all duration-150 cursor-pointer group justify-start gap-3',
+        'relative flex items-center p-2 rounded-lg transition-all duration-150 cursor-pointer group',
         isActive
-          ? 'bg-[#2563EB]/40 text-[#2563EB] shadow-glow border-l-4 border-[#2563EB]'
-          : 'text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105'
+          ? 'bg-[#2563EB]/40 text-[#2563EB] shadow-glow'
+          : 'text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105',
+        isOpen ? 'justify-start gap-3' : 'justify-center'
       )}
       style={{ transitionDelay: `${delay}ms` }}
     >
       <Icon className='h-5 w-5 flex-shrink-0' />
-      <span
-        className={cn(
-          'text-sm font-medium transition-opacity duration-150',
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        )}
-      >
-        {label}
-      </span>
+      {isOpen && (
+        <span className='text-sm font-medium transition-opacity duration-150 opacity-100'>
+          {label}
+        </span>
+      )}
     </Link>
   );
 };
@@ -198,7 +196,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         {/* Top: Hamburger always left */}
         <div className='flex items-center justify-start p-4 border-b border-white/10'>
           <button
-            className='flex items-center justify-center w-7 h-7 rounded-md hover:bg-white/10 transition'
+            className='flex items-center justify-center w-8 h-8 rounded-md hover:bg-white/10 transition'
             onClick={() => setIsOpen(!isOpen)}
           >
             <Menu className='h-5 w-5' />
@@ -206,7 +204,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Main Menu */}
-        <div className='flex-1 mt-4 overflow-y-auto px-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30'>
+        <div className='flex-1 mt-4 overflow-y-auto px-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30'>
           <nav className='space-y-2'>
             {menuItems.map((item, idx) => (
               <SidebarItem
@@ -224,9 +222,11 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Footer */}
-        <div className='p-4 border-t border-white/10 flex flex-col items-start'>
-          {isVerified && <SidebarFooter cfData={cfData} isOpen={isOpen} />}
-        </div>
+        {isVerified && (
+          <div className='p-4 border-t border-white/10 flex flex-col items-start'>
+            <SidebarFooter cfData={cfData} isOpen={isOpen} />
+          </div>
+        )}
       </div>
 
       {/* Main Content */}

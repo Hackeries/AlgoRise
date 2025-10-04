@@ -14,7 +14,6 @@ import {
   Users,
   PieChart,
   BarChart3,
-  Code2,
   Menu,
 } from 'lucide-react';
 
@@ -76,11 +75,89 @@ const menuItems = [
   { href: '/groups', label: 'Groups', icon: Users },
 ];
 
+// ------------------ Sidebar Item ------------------
+const SidebarItem = ({
+  href,
+  label,
+  icon: Icon,
+  isActive,
+  isOpen,
+  delay,
+}: {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  isActive: boolean;
+  isOpen: boolean;
+  delay: number;
+}) => {
+  return (
+    <Link
+      href={href}
+      title={!isOpen ? label : undefined}
+      className={cn(
+        'relative flex items-center p-2 rounded-xl transition-all duration-150 cursor-pointer group justify-start gap-3',
+        isActive
+          ? 'bg-[#2563EB]/40 text-[#2563EB] shadow-glow border-l-4 border-[#2563EB]'
+          : 'text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105'
+      )}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      <Icon className='h-5 w-5 flex-shrink-0' />
+      <span
+        className={cn(
+          'text-sm font-medium transition-opacity duration-150',
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        )}
+      >
+        {label}
+      </span>
+    </Link>
+  );
+};
+
+// ------------------ Sidebar Footer ------------------
+const SidebarFooter = ({
+  cfData,
+  isOpen,
+}: {
+  cfData: any;
+  isOpen: boolean;
+}) => {
+  if (!cfData) return null;
+  const tier = getCFTier(cfData.rating);
+
+  return (
+    <div
+      className={cn(
+        'cursor-pointer transition-transform duration-150 hover:scale-105 flex items-center',
+        !isOpen && 'justify-center'
+      )}
+      title={`${cfData.handle} (${cfData.rating})`}
+    >
+      {isOpen ? (
+        <div className={`p-3 rounded-xl border ${tier.bg} ${tier.color}`}>
+          <p className='text-sm font-bold'>{cfData.handle}</p>
+          <p className='text-xs'>
+            {tier.label} · {cfData.rating}
+          </p>
+        </div>
+      ) : (
+        <div
+          className={`w-12 h-12 flex items-center justify-center rounded-full border ${tier.bg} ${tier.color} text-[10px] font-bold`}
+        >
+          {tier.label.split(' ')[0]}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ------------------ Sidebar Layout ------------------
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isVerified, verificationData } = useCFVerification();
   const [isOpen, setIsOpen] = useState(true);
-  const [mounted, setMounted] = useState(false);
   const [cfData, setCfData] = useState(verificationData);
 
   // Fetch latest CF rating
@@ -109,128 +186,52 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     fetchLatestCFData();
   }, [verificationData?.handle]);
 
-  useEffect(() => setMounted(true), []);
-
   return (
     <div className='flex min-h-screen bg-[#0B1020] text-white'>
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed top-0 left-0 z-50 h-full flex flex-col bg-[#0B1020] border-r border-white/10 shadow-lg transition-all duration-300',
+          'fixed top-0 left-0 z-50 h-full flex flex-col bg-[#0B1020] border-r border-white/10 shadow-lg transition-width duration-150 overflow-hidden',
           isOpen ? 'w-64' : 'w-16'
         )}
       >
-        {/* Top: Hamburger + Logo */}
-        <div
-          className={cn(
-            `flex items-center justify-start p-4 border-b border-white/10 ${isOpen ? 'gap-3' : ''}`
-          )}
-        >
+        {/* Top: Hamburger always left */}
+        <div className='flex items-center justify-start p-4 border-b border-white/10'>
           <button
             className='flex items-center justify-center w-7 h-7 rounded-md hover:bg-white/10 transition'
             onClick={() => setIsOpen(!isOpen)}
           >
             <Menu className='h-5 w-5' />
           </button>
-
-          {isOpen && (
-            <Link href='/' className='flex items-center gap-2'>
-              <Code2 className='h-6 w-6 text-[#2563EB]' />
-              <span className='font-bold text-lg tracking-tight text-white'>
-                AlgoRise
-              </span>
-            </Link>
-          )}
         </div>
 
         {/* Main Menu */}
-        <div className='flex-1 p-3 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30'>
+        <div className='flex-1 mt-4 overflow-y-auto px-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30'>
           <nav className='space-y-2'>
-            {menuItems.map((item, idx) => {
-              const Icon = item.icon;
-              const isActive =
-                pathname === item.href ||
-                (item.href !== '/' && pathname?.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  title={!isOpen ? item.label : undefined}
-                  className={cn(
-                    'relative flex items-center gap-3 p-2 rounded-lg transition-all duration-300 cursor-pointer group',
-                    isOpen ? '' : 'justify-center',
-                    isActive
-                      ? 'bg-[#2563EB]/40 text-[#2563EB] shadow-glow'
-                      : 'text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105',
-                    mounted
-                      ? `delay-[${idx * 50}ms] translate-x-0 opacity-100`
-                      : 'translate-x-[-20px] opacity-0'
-                  )}
-                  style={{
-                    transitionProperty: 'all',
-                    transitionDuration: '300ms',
-                    transitionDelay: `${idx * 50}ms`,
-                  }}
-                >
-                  <Icon className='h-5 w-5' />
-                  {isOpen && (
-                    <span className='text-sm font-medium'>{item.label}</span>
-                  )}
-                </Link>
-              );
-            })}
+            {menuItems.map((item, idx) => (
+              <SidebarItem
+                key={item.href}
+                {...item}
+                isActive={
+                  pathname === item.href ||
+                  (item.href !== '/' && pathname?.startsWith(item.href))
+                }
+                isOpen={isOpen}
+                delay={idx * 30}
+              />
+            ))}
           </nav>
         </div>
 
-        {/* Bottom Section */}
-        {isVerified && cfData && (
-          <div className='p-4 border-t border-white/10 flex flex-col items-center'>
-            {/* CF Verified Badge */}
-            <div
-              className={cn(
-                'cursor-pointer transition-transform duration-300 hover:scale-105',
-                !isOpen ? 'flex justify-center' : ''
-              )}
-              title={`${cfData.handle} (${cfData.rating})`}
-            >
-              {isOpen ? (
-                <div
-                  className={`p-3 rounded-xl border ${
-                    getCFTier(cfData.rating).bg
-                  } ${getCFTier(cfData.rating).color}`}
-                >
-                  <p className='text-sm font-bold'>{cfData.handle}</p>
-                  <p className='text-xs'>
-                    {getCFTier(cfData.rating).label} · {cfData.rating}
-                  </p>
-                </div>
-              ) : (
-                <div
-                  className={`w-12 h-12 flex items-center justify-center rounded-full border ${
-                    getCFTier(cfData.rating).bg
-                  } ${
-                    getCFTier(cfData.rating).color
-                  } text-[10px] font-bold text-center px-1`}
-                >
-                  {getCFTier(cfData.rating).label.split(' ')[0]}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Footer */}
+        <div className='p-4 border-t border-white/10 flex flex-col items-start'>
+          {isVerified && <SidebarFooter cfData={cfData} isOpen={isOpen} />}
+        </div>
       </div>
-
-      {/* Overlay
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50  z-40 transition-opacity duration-300"
-          onClick={() => setIsOpen(false)}
-        />
-      )} */}
 
       {/* Main Content */}
       <div
-        className='flex-1 flex flex-col h-screen transition-all duration-300'
+        className='flex-1 flex flex-col h-screen transition-all duration-150'
         style={{ marginLeft: isOpen ? '16rem' : '4rem' }}
       >
         <Header />

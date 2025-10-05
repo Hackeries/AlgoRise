@@ -16,12 +16,12 @@ export default function BannerLanding() {
 
       {/* Floating particles */}
       <motion.div
-        className="absolute top-20 left-10 w-6 h-6 rounded-full bg-sky-200/20 blur-xl"
+        className='absolute top-20 left-10 w-6 h-6 rounded-full bg-sky-200/20 blur-xl'
         animate={{ y: [0, 20, 0], opacity: [0.5, 1, 0.5] }}
         transition={{ repeat: Infinity, duration: 6 }}
       />
       <motion.div
-        className="absolute bottom-24 right-16 w-10 h-10 rounded-full bg-indigo-200/20 blur-2xl"
+        className='absolute bottom-24 right-16 w-10 h-10 rounded-full bg-indigo-200/20 blur-2xl'
         animate={{ y: [0, -20, 0], opacity: [0.5, 1, 0.5] }}
         transition={{ repeat: Infinity, duration: 8 }}
       />
@@ -31,9 +31,9 @@ export default function BannerLanding() {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="text-5xl md:text-7xl font-extrabold leading-tight font-[Bricolage_Grotesque] mb-6 
+        className='text-5xl md:text-7xl font-extrabold leading-tight font-[Bricolage_Grotesque] mb-6 
           bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 
-          bg-clip-text text-transparent animate-gradient-x"
+          bg-clip-text text-transparent animate-gradient-x'
       >
         AlgoRise
       </motion.h1>
@@ -65,24 +65,23 @@ export default function BannerLanding() {
         transition={{ duration: 1, delay: 0.4 }}
         className='flex flex-col sm:flex-row gap-4 justify-center'
       >
-        <Link href="/adaptive-sheet">
-          <Button className="px-6 py-3 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition">
-            <Target className="mr-2 h-5 w-5" />
+        <Link href='/adaptive-sheet'>
+          <Button className='px-6 py-3 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition'>
+            <Target className='mr-2 h-5 w-5' />
             Start Adaptive Practice
           </Button>
         </Link>
 
-        <Link href="/contests">
-          <Button className="px-6 py-3 bg-gray-200 text-gray-900 font-medium rounded hover:bg-gray-300 transition">
-            <Calendar className="mr-2 h-5 w-5" />
+        <Link href='/contests'>
+          <Button className='px-6 py-3 bg-gray-200 text-gray-900 font-medium rounded hover:bg-gray-300 transition'>
+            <Calendar className='mr-2 h-5 w-5' />
             View Contests
           </Button>
         </Link>
 
-
-        <Link href="/paths">
-          <Button className="px-6 py-3 bg-green-500 text-white font-medium rounded hover:bg-green-600 transition">
-            <BookOpen className="mr-2 h-5 w-5" />
+        <Link href='/paths'>
+          <Button className='px-6 py-3 bg-green-500 text-white font-medium rounded hover:bg-green-600 transition'>
+            <BookOpen className='mr-2 h-5 w-5' />
             Explore Learning Paths
           </Button>
         </Link>

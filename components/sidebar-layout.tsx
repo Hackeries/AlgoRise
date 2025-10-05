@@ -96,18 +96,18 @@ const SidebarItem = ({
       href={href}
       title={!isOpen ? label : undefined}
       className={cn(
-        "relative flex items-center p-2 rounded-xl transition-all duration-150 cursor-pointer group justify-start gap-3",
+        'relative flex items-center p-2 rounded-xl transition-all duration-150 cursor-pointer group justify-start gap-3',
         isActive
-          ? "bg-[#2563EB]/40 text-[#2563EB] shadow-glow border-l-4 border-[#2563EB]"
-          : "text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105"
+          ? 'bg-[#2563EB]/40 text-[#2563EB] shadow-glow border-l-4 border-[#2563EB]'
+          : 'text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105'
       )}
       style={{ transitionDelay: `${delay}ms` }}
     >
-      <Icon className="h-5 w-5 flex-shrink-0" />
+      <Icon className='h-5 w-5 flex-shrink-0' />
       <span
         className={cn(
-          "text-sm font-medium transition-opacity duration-150",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+          'text-sm font-medium transition-opacity duration-150',
+          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         )}
       >
         {label}
@@ -130,15 +130,15 @@ const SidebarFooter = ({
   return (
     <div
       className={cn(
-        "cursor-pointer transition-transform duration-150 hover:scale-105 flex items-center",
-        !isOpen && "justify-center"
+        'cursor-pointer transition-transform duration-150 hover:scale-105 flex items-center',
+        !isOpen && 'justify-center'
       )}
       title={`${cfData.handle} (${cfData.rating})`}
     >
       {isOpen ? (
         <div className={`p-3 rounded-xl border ${tier.bg} ${tier.color}`}>
-          <p className="text-sm font-bold">{cfData.handle}</p>
-          <p className="text-xs">
+          <p className='text-sm font-bold'>{cfData.handle}</p>
+          <p className='text-xs'>
             {tier.label} · {cfData.rating}
           </p>
         </div>
@@ -146,7 +146,7 @@ const SidebarFooter = ({
         <div
           className={`w-12 h-12 flex items-center justify-center rounded-full border ${tier.bg} ${tier.color} text-[10px] font-bold`}
         >
-          {tier.label.split(" ")[0]}
+          {tier.label.split(' ')[0]}
         </div>
       )}
     </div>
@@ -191,12 +191,12 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed top-0 left-0 z-50 h-full flex flex-col bg-[#0B1020] border-r border-white/10 shadow-lg transition-width duration-150 overflow-hidden",
-          isOpen ? "w-64" : "w-16"
+          'fixed top-0 left-0 z-50 h-full flex flex-col bg-[#0B1020] border-r border-white/10 shadow-lg transition-width duration-150 overflow-hidden',
+          isOpen ? 'w-64' : 'w-16'
         )}
       >
         {/* Top: Hamburger always left */}
-        <div className="flex items-center justify-start p-4 border-b border-white/10">
+        <div className='flex items-center justify-start p-4 border-b border-white/10'>
           <button
             className='p-2 rounded-md hover:bg-white/10 transition'
             onClick={() => setIsOpen(!isOpen)}
@@ -206,15 +206,15 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Main Menu */}
-        <div className="flex-1 mt-4 overflow-y-auto px-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30">
-          <nav className="space-y-2">
+        <div className='flex-1 mt-4 overflow-y-auto px-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30'>
+          <nav className='space-y-2'>
             {menuItems.map((item, idx) => (
               <SidebarItem
                 key={item.href}
                 {...item}
                 isActive={
                   pathname === item.href ||
-                  (item.href !== "/" && pathname?.startsWith(item.href))
+                  (item.href !== '/' && pathname?.startsWith(item.href))
                 }
                 isOpen={isOpen}
                 delay={idx * 30}
@@ -224,15 +224,15 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-white/10 flex flex-col items-start">
+        <div className='p-4 border-t border-white/10 flex flex-col items-start'>
           {isVerified && <SidebarFooter cfData={cfData} isOpen={isOpen} />}
         </div>
       </div>
 
       {/* Main Content */}
       <div
-        className="flex-1 flex flex-col h-screen transition-all duration-150"
-        style={{ marginLeft: isOpen ? "16rem" : "4rem" }}
+        className='flex-1 flex flex-col h-screen transition-all duration-150'
+        style={{ marginLeft: isOpen ? '16rem' : '4rem' }}
       >
         <Header />
         <main className='flex-1 overflow-y-auto p-4'>{children}</main>

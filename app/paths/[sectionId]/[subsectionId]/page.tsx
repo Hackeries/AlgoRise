@@ -251,9 +251,7 @@ export default function SubsectionPage() {
                       </button>
                       <div>
                         <div
-                          className={`font-medium ${
-                            isSolved ? 'line-through text-muted-foreground' : ''
-                          }`}
+                          className={`font-medium ${isSolved ? 'line-through text-muted-foreground' : ''}`}
                         >
                           Problem {index + 1}: {problem.title}
                         </div>

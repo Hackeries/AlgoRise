@@ -13,21 +13,19 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Play, Pause, Square, RotateCcw } from 'lucide-react';
 
-type GraphAlgorithm = 'bfs' | 'dfs' | 'dijkstra' | 'bellman-ford' | 'topo' | 'prims';
-
+type GraphAlgorithm = 'bfs' | 'dfs' | 'dijkstra';
 
 interface Node {
   id: number;
   x: number;
   y: number;
   visited: boolean;
-  distance?: number;   // ✅ make optional
-  parent?: number;     // ✅ already optional
+  distance: number;
+  parent?: number;
   inQueue: boolean;
   isStart: boolean;
   isEnd: boolean;
 }
-
 
 interface Edge {
   from: number;
@@ -42,7 +40,6 @@ interface AnimationStep {
   currentNode?: number;
   queue?: number[];
   stack?: number[];
-  topoStack?: number[];   // ✅ add this line
   message: string;
 }
 
@@ -63,95 +60,94 @@ export function GraphVisualizer() {
 
   // Initialize sample graph
   const initializeGraph = () => {
-  const sampleNodes: Node[] = [
-    {
-      id: 0,
-      x: 100,
-      y: 100,
-      visited: false,
-      distance: 0, // Start node distance = 0
-      parent: undefined,
-      inQueue: false,
-      isStart: true,
-      isEnd: false,
-    },
-    {
-      id: 1,
-      x: 250,
-      y: 50,
-      visited: false,
-      distance: Infinity,
-      parent: undefined,
-      inQueue: false,
-      isStart: false,
-      isEnd: false,
-    },
-    {
-      id: 2,
-      x: 400,
-      y: 100,
-      visited: false,
-      distance: Infinity,
-      parent: undefined,
-      inQueue: false,
-      isStart: false,
-      isEnd: false,
-    },
-    {
-      id: 3,
-      x: 150,
-      y: 200,
-      visited: false,
-      distance: Infinity,
-      parent: undefined,
-      inQueue: false,
-      isStart: false,
-      isEnd: false,
-    },
-    {
-      id: 4,
-      x: 350,
-      y: 200,
-      visited: false,
-      distance: Infinity,
-      parent: undefined,
-      inQueue: false,
-      isStart: false,
-      isEnd: true,
-    },
-    {
-      id: 5,
-      x: 250,
-      y: 280,
-      visited: false,
-      distance: Infinity,
-      parent: undefined,
-      inQueue: false,
-      isStart: false,
-      isEnd: false,
-    },
-  ];
+    const sampleNodes: Node[] = [
+      {
+        id: 0,
+        x: 100,
+        y: 100,
+        visited: false,
+        distance: Infinity,
+        parent: undefined,
+        inQueue: false,
+        isStart: true,
+        isEnd: false,
+      },
+      {
+        id: 1,
+        x: 250,
+        y: 50,
+        visited: false,
+        distance: Infinity,
+        parent: undefined,
+        inQueue: false,
+        isStart: false,
+        isEnd: false,
+      },
+      {
+        id: 2,
+        x: 400,
+        y: 100,
+        visited: false,
+        distance: Infinity,
+        parent: undefined,
+        inQueue: false,
+        isStart: false,
+        isEnd: false,
+      },
+      {
+        id: 3,
+        x: 150,
+        y: 200,
+        visited: false,
+        distance: Infinity,
+        parent: undefined,
+        inQueue: false,
+        isStart: false,
+        isEnd: false,
+      },
+      {
+        id: 4,
+        x: 350,
+        y: 200,
+        visited: false,
+        distance: Infinity,
+        parent: undefined,
+        inQueue: false,
+        isStart: false,
+        isEnd: true,
+      },
+      {
+        id: 5,
+        x: 250,
+        y: 280,
+        visited: false,
+        distance: Infinity,
+        parent: undefined,
+        inQueue: false,
+        isStart: false,
+        isEnd: false,
+      },
+    ];
 
-  const sampleEdges: Edge[] = [
-    { from: 0, to: 1, weight: 4, highlighted: false },
-    { from: 0, to: 3, weight: 2, highlighted: false },
-    { from: 1, to: 2, weight: 3, highlighted: false },
-    { from: 1, to: 3, weight: 1, highlighted: false },
-    { from: 1, to: 4, weight: 6, highlighted: false },
-    { from: 2, to: 4, weight: 2, highlighted: false },
-    { from: 3, to: 4, weight: 3, highlighted: false },
-    { from: 3, to: 5, weight: 5, highlighted: false },
-    { from: 4, to: 5, weight: 1, highlighted: false },
-  ];
+    const sampleEdges: Edge[] = [
+      { from: 0, to: 1, weight: 4, highlighted: false },
+      { from: 0, to: 3, weight: 2, highlighted: false },
+      { from: 1, to: 2, weight: 3, highlighted: false },
+      { from: 1, to: 3, weight: 1, highlighted: false },
+      { from: 1, to: 4, weight: 6, highlighted: false },
+      { from: 2, to: 4, weight: 2, highlighted: false },
+      { from: 3, to: 4, weight: 3, highlighted: false },
+      { from: 3, to: 5, weight: 5, highlighted: false },
+      { from: 4, to: 5, weight: 1, highlighted: false },
+    ];
 
-  // TS-safe assignment
-  setNodes(sampleNodes.map(n => ({ ...n, distance: n.distance ?? Infinity })));
-  setEdges(sampleEdges);
-  setSteps([]);
-  setCurrentStep(0);
-  setIsPlaying(false);
-  setIsPaused(false);
-};
+    setNodes(sampleNodes);
+    setEdges(sampleEdges);
+    setSteps([]);
+    setCurrentStep(0);
+    setIsPlaying(false);
+    setIsPaused(false);
+  };
 
   useEffect(() => {
     initializeGraph();
@@ -329,220 +325,85 @@ export function GraphVisualizer() {
     });
 
     while (true) {
-  const unvisited = nodesCopy.filter(n => !n.visited && n.inQueue);
-  if (unvisited.length === 0) break;
+      // Find unvisited node with minimum distance
+      const unvisited = nodesCopy.filter(n => !n.visited && n.inQueue);
+      if (unvisited.length === 0) break;
 
-  const currentNode = unvisited.reduce((min, node) =>
-    (node.distance ?? Infinity) < (min.distance ?? Infinity) ? node : min
-  );
+      const currentNode = unvisited.reduce((min, node) =>
+        node.distance < min.distance ? node : min
+      );
 
-  currentNode.visited = true;
-  currentNode.inQueue = false;
-
-  steps.push({
-    nodes: nodesCopy.map(n => ({ ...n })),
-    edges: edges.map(e => ({ ...e, highlighted: false })),
-    currentNode: currentNode.id,
-    message: `Selected node ${currentNode.id} with distance ${(currentNode.distance ?? Infinity) === Infinity ? '∞' : currentNode.distance}`,
-  });
-
-  if (currentNode.id === endNode) break;
-
-  const neighborEdges = edges.filter(
-    e => e.from === currentNode.id || e.to === currentNode.id
-  );
-
-  for (const edge of neighborEdges) {
-    const neighborId = edge.from === currentNode.id ? edge.to : edge.from;
-    const neighbor = nodesCopy.find(n => n.id === neighborId);
-    if (!neighbor) continue;
-
-    if (!neighbor.visited) {
-      const newDistance = (currentNode.distance ?? Infinity) + edge.weight;
-
-      if (newDistance < (neighbor.distance ?? Infinity)) {
-        neighbor.distance = newDistance;
-        neighbor.parent = currentNode.id;
-      }
-    }
-  }
-}
-
-
-    return steps;
-  };
-
-
-  const bellmanFord = (): AnimationStep[] => {
-  const steps: AnimationStep[] = [];
-  const nodesCopy = nodes.map(n => ({
-  ...n,
-  distance: n.id === startNode ? 0 : Infinity,
-  parent: undefined as number | undefined,
-}));
-
-  steps.push({
-    nodes: nodesCopy.map(n => ({ ...n })),
-    edges: edges.map(e => ({ ...e, highlighted: false })),
-    message: `Starting Bellman-Ford from node ${startNode}.`,
-  });
-
-  for (let i = 0; i < nodes.length - 1; i++) {
-  for (const edge of edges) {
-    const u = nodesCopy.find(n => n.id === edge.from);
-    const v = nodesCopy.find(n => n.id === edge.to);
-    if (!u || !v) continue;
-
-    if ((u.distance ?? Infinity) + edge.weight < (v.distance ?? Infinity)) {
-      v.distance = (u.distance ?? Infinity) + edge.weight;
-      v.parent = u.id;
-    }
-
-    if ((v.distance ?? Infinity) + edge.weight < (u.distance ?? Infinity)) {
-      u.distance = (v.distance ?? Infinity) + edge.weight;
-      u.parent = v.id;
-    }
-  }
-}
-
-  steps.push({
-    nodes: nodesCopy.map(n => ({ ...n })),
-    edges: edges.map(e => ({ ...e, highlighted: false })),
-    message: `Bellman-Ford complete.`,
-  });
-
-  return steps;
-};
-
-const topoSort = (): AnimationStep[] => {
-  const steps: AnimationStep[] = [];
-  const nodesCopy = nodes.map(n => ({ ...n, visited: false }));
-  const inDegree: number[] = Array(nodes.length).fill(0);
-
-  edges.forEach(e => inDegree[e.to]++);
-
-  const queue: number[] = [];
-  inDegree.forEach((deg, i) => { if (deg === 0) queue.push(i); });
-
-  const topoStack: number[] = [];
-
-  steps.push({
-    nodes: nodesCopy.map(n => ({ ...n })),
-    edges: edges.map(e => ({ ...e, highlighted: false })),
-    queue: [...queue],
-    topoStack: [...topoStack],
-    message: `Starting Topological Sort.`,
-  });
-
-  while (queue.length > 0) {
-    const u = queue.shift()!;
-    topoStack.push(u);
-    nodesCopy[u].visited = true;
-
-    steps.push({
-      nodes: nodesCopy.map(n => ({ ...n })),
-      edges: edges.map(e => ({ ...e, highlighted: false })),
-      queue: [...queue],
-      topoStack: [...topoStack],
-      message: `Node ${u} added to topological order.`,
-    });
-
-    edges.filter(e => e.from === u).forEach(e => {
-      inDegree[e.to]--;
-      if (inDegree[e.to] === 0) queue.push(e.to);
+      currentNode.visited = true;
+      currentNode.inQueue = false;
 
       steps.push({
         nodes: nodesCopy.map(n => ({ ...n })),
-        edges: edges.map(ed => ({ ...ed, highlighted: ed === e })),
-        queue: [...queue],
-        topoStack: [...topoStack],
-        message: `Decreased in-degree of node ${e.to}.`,
+        edges: edges.map(e => ({ ...e, highlighted: false })),
+        currentNode: currentNode.id,
+        message: `Selected node ${currentNode.id} with distance ${currentNode.distance === Infinity ? '∞' : currentNode.distance}`,
       });
-    });
-  }
 
-  steps.push({
-    nodes: nodesCopy.map(n => ({ ...n })),
-    edges: edges.map(e => ({ ...e, highlighted: false })),
-    message: `Topological Sort complete.`,
-  });
+      if (currentNode.id === endNode) {
+        steps.push({
+          nodes: nodesCopy.map(n => ({ ...n })),
+          edges: edges.map(e => ({ ...e, highlighted: false })),
+          message: `Reached target node ${endNode}! Shortest distance: ${currentNode.distance}`,
+        });
+        break;
+      }
 
-  return steps;
-};
+      // Update distances to neighbors
+      const neighborEdges = edges.filter(
+        e => e.from === currentNode.id || e.to === currentNode.id
+      );
 
+      for (const edge of neighborEdges) {
+        const neighborId = edge.from === currentNode.id ? edge.to : edge.from;
+        const neighbor = nodesCopy[neighborId];
 
-const prims = (): AnimationStep[] => {
-  const steps: AnimationStep[] = [];
-  const nodesCopy = nodes.map(n => ({ ...n, visited: false }));
-  const visited: Set<number> = new Set();
-  visited.add(startNode);
-  nodesCopy[startNode].visited = true;
+        if (!neighbor.visited) {
+          const newDistance = currentNode.distance + edge.weight;
 
-  steps.push({
-    nodes: nodesCopy.map(n => ({ ...n })),
-    edges: edges.map(e => ({ ...e, highlighted: false })),
-    message: `Starting Prim's algorithm from node ${startNode}.`,
-  });
+          if (newDistance < neighbor.distance) {
+            neighbor.distance = newDistance;
+            neighbor.parent = currentNode.id;
 
-  while (visited.size < nodes.length) {
-    let minEdge: Edge | null = null;
-
-    for (const edge of edges) {
-      if (
-        (visited.has(edge.from) && !visited.has(edge.to)) ||
-        (visited.has(edge.to) && !visited.has(edge.from))
-      ) {
-        if (!minEdge || edge.weight < minEdge.weight) minEdge = edge;
+            steps.push({
+              nodes: nodesCopy.map(n => ({ ...n })),
+              edges: edges.map(e => ({ ...e, highlighted: e === edge })),
+              currentNode: currentNode.id,
+              message: `Updated distance to node ${neighborId}: ${newDistance} (via node ${currentNode.id})`,
+            });
+          } else {
+            steps.push({
+              nodes: nodesCopy.map(n => ({ ...n })),
+              edges: edges.map(e => ({ ...e, highlighted: e === edge })),
+              currentNode: currentNode.id,
+              message: `Distance to node ${neighborId} not improved: ${neighbor.distance} ≤ ${newDistance}`,
+            });
+          }
+        }
       }
     }
 
-    if (!minEdge) break;
-
-    visited.add(visited.has(minEdge.from) ? minEdge.to : minEdge.from);
-    nodesCopy[visited.has(minEdge.from) ? minEdge.to : minEdge.from].visited = true;
-
-    steps.push({
-      nodes: nodesCopy.map(n => ({ ...n })),
-      edges: edges.map(e => ({ ...e, highlighted: e === minEdge })),
-      message: `Edge ${minEdge.from} → ${minEdge.to} added to MST.`,
-    });
-  }
-
-  steps.push({
-    nodes: nodesCopy.map(n => ({ ...n })),
-    edges: edges.map(e => ({ ...e, highlighted: false })),
-    message: `Prim's algorithm complete.`,
-  });
-
-  return steps;
-};
-
+    return steps;
+  };
 
   // Start algorithm
   const startAlgorithm = () => {
     let algorithmSteps: AnimationStep[] = [];
 
     switch (algorithm) {
-  case 'bfs':
-    algorithmSteps = bfs();
-    break;
-  case 'dfs':
-    algorithmSteps = dfs();
-    break;
-  case 'dijkstra':
-    algorithmSteps = dijkstra();
-    break;
-  case 'bellman-ford':
-    algorithmSteps = bellmanFord();
-    break;
-  case 'topo':
-    algorithmSteps = topoSort();
-    break;
-  case 'prims':
-    algorithmSteps = prims();
-    break;
-}
-
+      case 'bfs':
+        algorithmSteps = bfs();
+        break;
+      case 'dfs':
+        algorithmSteps = dfs();
+        break;
+      case 'dijkstra':
+        algorithmSteps = dijkstra();
+        break;
+    }
 
     setSteps(algorithmSteps);
     setCurrentStep(0);

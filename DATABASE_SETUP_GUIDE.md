@@ -11,7 +11,7 @@ The error "Could not find the table 'public.cf_handles' in the schema cache" occ
    - Navigate to the "SQL Editor" section
 
 2. **Run the Setup Script**
-   - Copy the entire contents of `SUPABASE_SETUP.sql`
+   - Copy the entire contents of `SUPABASE_SETUP.sql` 
    - Paste it into the Supabase SQL Editor
    - Click "Run" to execute the script
 
@@ -22,7 +22,6 @@ The error "Could not find the table 'public.cf_handles' in the schema cache" occ
 ## What was Fixed
 
 The OAuth endpoints were failing because:
-
 1. ❌ The `cf_handles` table didn't exist in the database
 2. ✅ **Fixed**: Created the `cf_handles` table with proper schema
 3. ✅ **Fixed**: Removed the non-existent `verification_method` column from the insert queries
@@ -30,7 +29,7 @@ The OAuth endpoints were failing because:
 
 ## Required Tables Created
 
-- `public.streaks` - User streak tracking
+- `public.streaks` - User streak tracking  
 - `public.cf_handles` - Codeforces handle verification (CRITICAL for OAuth)
 - `public.cf_snapshots` - Codeforces user data snapshots
 

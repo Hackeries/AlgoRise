@@ -1,4 +1,4 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 /* Removed tw-animate-css import that was causing CSS parsing errors */
 
 @custom-variant dark (&:is(.dark *));
@@ -37,8 +37,8 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --font-sans: 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 }
 
 .dark {
@@ -74,8 +74,8 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.269 0 0);
   --sidebar-ring: oklch(0.439 0 0);
-  --font-sans: 'Inter', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
 }
 
 @theme inline {
@@ -137,11 +137,11 @@
   .scrollbar-track-transparent {
     scrollbar-color: transparent transparent;
   }
-
+  
   .scrollbar-thumb-white\/20 {
     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
   }
-
+  
   .hover\:scrollbar-thumb-white\/30:hover {
     scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
   }
@@ -150,24 +150,17 @@
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
   }
-
+  
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
-
+  
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background-color: rgba(255, 255, 255, 0.2);
     border-radius: 3px;
   }
-
+  
   .scrollbar-thin:hover::-webkit-scrollbar-thumb {
     background-color: rgba(255, 255, 255, 0.3);
-  }
-}
-
-@layer base {
-  button:not([disabled]),
-  [role='button']:not([disabled]) {
-    cursor: pointer;
   }
 }

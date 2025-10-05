@@ -16,7 +16,7 @@ A comprehensive platform for competitive programming practice, analytics, and co
 # Install dependencies
 npm install
 
-# Start development server
+# Start development server  
 npm run dev
 
 # Build for production

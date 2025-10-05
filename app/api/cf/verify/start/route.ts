@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+interface CFHandleRow {
+  user_id: string;
+  handle: string;
+  verified: boolean;
+  verification_token: string;
+  last_sync_at?: string | null;
+}
+
 export async function POST(req: Request) {
   try {
     const { handle } = await req.json();
@@ -9,34 +17,26 @@ export async function POST(req: Request) {
     }
 
     const supabase = await createClient();
+    const { data: { user }, error: userErr } = await supabase.auth.getUser();
 
-    const {
-      data: { user },
-      error: userErr,
-    } = await supabase.auth.getUser();
     if (userErr || !user)
       return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
     const token = `RG-${Math.random().toString(36).slice(2, 8)}-${Date.now().toString(36)}`;
 
-    // upsert row
-    const { error: upErr } = await supabase.from('cf_handles').upsert(
-      {
+    const { error: upErr } = await supabase
+      .from('cf_handles')
+      .upsert({
         user_id: user.id,
         handle,
         verified: false,
         verification_token: token,
-      },
-      { onConflict: 'user_id' }
-    );
-    if (upErr)
-      return NextResponse.json({ error: upErr.message }, { status: 500 });
+      }, { onConflict: 'user_id' });
 
-    return NextResponse.json({ handle, token });
+    if (upErr) return NextResponse.json({ error: upErr.message }, { status: 500 });
+
+    return NextResponse.json({ handle, token, verified: false });
   } catch (e: any) {
-    return NextResponse.json(
-      { error: e?.message || 'unknown error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: e?.message || 'unknown error' }, { status: 500 });
   }
 }

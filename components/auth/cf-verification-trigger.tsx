@@ -11,46 +11,31 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Shield, Plus } from 'lucide-react';
-import CFVerificationDialog from './cf-verification-dialog';
+import { CFVerificationV2 } from './cf-verification-v2';
+import { useCFVerification } from './cf-verification';
 
 interface CFVerificationTriggerProps {
-  onVerificationComplete?: (data: {
-    handle: string;
-    rating: number;
-    method: string;
-  }) => void;
   showTitle?: boolean;
   compact?: boolean;
 }
 
 export default function CFVerificationTrigger({
-  onVerificationComplete,
   showTitle = true,
   compact = false,
 }: CFVerificationTriggerProps) {
+  const { cfHandle, cfRating } = useCFVerification();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
-  const [verifiedHandle, setVerifiedHandle] = useState<string>('');
 
-  const handleVerificationSuccess = (handle: string) => {
-    setIsVerified(true);
-    setVerifiedHandle(handle);
-    setDialogOpen(false);
+  const isVerified = !!cfHandle;
 
-    if (onVerificationComplete) {
-      onVerificationComplete({
-        handle,
-        rating: 1200, // Default rating, will be updated from API
-        method: 'oauth',
-      });
-    }
-  };
-
+  // Compact UI
   if (compact && isVerified) {
     return (
       <div className='flex items-center justify-center gap-2 text-sm bg-green-900/20 border border-green-700 rounded-lg p-3'>
         <CheckCircle className='w-4 h-4 text-green-500' />
-        <span className='text-green-400'>Verified: {verifiedHandle}</span>
+        <span className='text-green-400'>
+          Verified: {cfHandle} ({cfRating})
+        </span>
       </div>
     );
   }
@@ -67,15 +52,12 @@ export default function CFVerificationTrigger({
           Verify Codeforces Account
         </Button>
 
-        <CFVerificationDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          onSuccess={handleVerificationSuccess}
-        />
+        {dialogOpen && <CFVerificationV2 showTitle compact />}
       </>
     );
   }
 
+  // Full card UI
   if (isVerified) {
     return (
       <Card className='border-green-700 bg-green-900/20'>
@@ -83,10 +65,10 @@ export default function CFVerificationTrigger({
           <div className='flex items-center gap-3'>
             <CheckCircle className='w-6 h-6 text-green-500' />
             <div>
-              <h3 className='font-semibold text-white'>
-                Codeforces Account Verified
-              </h3>
-              <p className='text-sm text-green-300'>Handle: {verifiedHandle}</p>
+              <h3 className='font-semibold text-white'>Codeforces Account Verified</h3>
+              <p className='text-sm text-green-300'>
+                Handle: {cfHandle} • Rating: {cfRating}
+              </p>
             </div>
             <Badge
               variant='secondary'
@@ -139,11 +121,7 @@ export default function CFVerificationTrigger({
         </CardContent>
       </Card>
 
-      <CFVerificationDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        onSuccess={handleVerificationSuccess}
-      />
+      {dialogOpen && <CFVerificationV2 showTitle compact={false} />}
     </>
   );
 }

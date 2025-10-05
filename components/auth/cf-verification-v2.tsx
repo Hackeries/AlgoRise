@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,11 +23,20 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+interface Problem {
+  contestId: number;
+  index: string;
+  name: string;
+  rating: number;
+  tags: string[];
+}
+
 interface CFVerificationV2Props {
   onVerificationComplete?: (data: {
     handle: string;
     rating: number;
-    method: string;
+    method: 'oauth' | 'manual';
+    problems: Problem[];
   }) => void;
   showTitle?: boolean;
   compact?: boolean;
@@ -56,40 +65,79 @@ export function CFVerificationV2({
   const [progress, setProgress] = useState(0);
   const { toast } = useToast();
 
-  // Check if user is eligible for OAuth (≥3 contests)
+  // ✅ Auto-check if user is already verified
+  useEffect(() => {
+    const checkAlreadyVerified = async () => {
+      try {
+        const res = await fetch('/api/cf/verify/status');
+        const data = await res.json();
+        if (res.ok && data.verified) {
+          setHandle(data.handle);
+          setUserInfo({ rating: data.rating });
+          setStep('complete');
+
+          const problems = await fetchAdaptiveSheet(data.handle, data.rating);
+          onVerificationComplete?.({
+            handle: data.handle,
+            rating: data.rating,
+            method: data.method || 'oauth',
+            problems,
+          });
+        }
+      } catch {
+        // normal flow will appear if error
+      }
+    };
+    checkAlreadyVerified();
+  }, []);
+
+  useEffect(() => {
+    if (handle.trim()) setError(null);
+  }, [handle]);
+
+  // Check OAuth eligibility (≥3 contests)
   const checkOAuthEligibility = async (cfHandle: string) => {
     try {
       const response = await fetch(
         `/api/cf/eligibility?handle=${encodeURIComponent(cfHandle)}`
       );
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to check eligibility');
-      }
-
+      if (!response.ok) throw new Error(data.error || 'Eligibility check failed');
       return {
         eligible: data.eligible,
         contestCount: data.contestCount,
         rating: data.rating,
-        maxRating: data.maxRating,
       };
     } catch {
-      return {
-        eligible: false,
-        contestCount: 0,
-        rating: 1200,
-        maxRating: 1200,
-      };
+      return { eligible: false, contestCount: 0, rating: 1200 };
     }
   };
 
+  // Fetch adaptive sheet
+  const fetchAdaptiveSheet = async (cfHandle: string, cfRating: number) => {
+    try {
+      const floor = Math.floor(cfRating / 100) * 100;
+      const minRating = Math.max(800, floor - 100);
+      const maxRating = Math.min(3500, floor + 200);
+
+      const res = await fetch(
+        `/api/adaptive-sheet/auto-generate?handle=${cfHandle}&minRating=${minRating}&maxRating=${maxRating}&count=70`
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to fetch adaptive sheet');
+      return data.problems || [];
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
+  // Step 1: method selection
   const handleMethodSelection = async () => {
     if (!handle.trim()) {
       setError('Please enter your Codeforces handle');
       return;
     }
-
     setLoading(true);
     setError(null);
     setProgress(25);
@@ -100,40 +148,43 @@ export function CFVerificationV2({
       setProgress(50);
 
       if (eligibility.eligible && method === 'oauth') {
-        // Proceed with OAuth
         setStep('oauth-flow');
-        initiateOAuth();
+        await initiateOAuth();
       } else {
-        // Use manual verification
         setMethod('manual');
         setStep('manual-token');
         await generateManualToken();
       }
-    } catch (err) {
+    } catch {
       setError('Failed to check handle eligibility');
     } finally {
       setLoading(false);
     }
   };
 
+  // OAuth flow simulation
   const initiateOAuth = async () => {
     setProgress(75);
-    // Simulate OAuth flow - in real implementation, redirect to CF OAuth
-    setTimeout(() => {
+    setTimeout(async () => {
       setProgress(100);
       setStep('complete');
+
+      const problems = await fetchAdaptiveSheet(handle.trim(), userInfo.rating);
       onVerificationComplete?.({
         handle: handle.trim(),
-        rating: userInfo?.rating || 1200,
+        rating: userInfo.rating,
         method: 'oauth',
+        problems,
       });
+
       toast({
         title: '🎉 Verification Complete!',
-        description: `Connected ${handle} via Codeforces OAuth`,
+        description: `Connected ${handle} via OAuth`,
       });
     }, 2000);
   };
 
+  // Manual token generation
   const generateManualToken = async () => {
     try {
       const response = await fetch('/api/cf/verify/start', {
@@ -141,17 +192,16 @@ export function CFVerificationV2({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ handle: handle.trim() }),
       });
-
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
-
       setVerificationToken(data.token);
       setProgress(75);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate token');
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate token');
     }
   };
 
+  // Manual verification check
   const checkManualVerification = async () => {
     setLoading(true);
     setStep('checking');
@@ -163,29 +213,34 @@ export function CFVerificationV2({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ handle }),
       });
-
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
 
       if (data.verified) {
         setProgress(100);
         setStep('complete');
+
+        const rating = data.rating || userInfo?.rating || 1200;
+        const problems = await fetchAdaptiveSheet(handle.trim(), rating);
+
         onVerificationComplete?.({
           handle: handle.trim(),
-          rating: data.rating || userInfo?.rating || 1200,
+          rating,
           method: 'manual',
+          problems,
         });
+
         toast({
           title: '🎉 Verification Complete!',
           description: `${handle} verified successfully`,
         });
       } else {
-        setError('Token not found in your About section. Please try again.');
+        setError('Token not found in About section. Try again.');
         setStep('manual-token');
         setProgress(75);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Verification failed');
+    } catch (err: any) {
+      setError(err.message || 'Verification failed');
       setStep('manual-token');
       setProgress(75);
     } finally {
@@ -201,6 +256,7 @@ export function CFVerificationV2({
     });
   };
 
+  // ✅ UI
   if (step === 'complete') {
     return (
       <Card className='border-green-500/20 bg-green-500/5'>
@@ -227,7 +283,7 @@ export function CFVerificationV2({
             Connect Your Codeforces
           </CardTitle>
           <CardDescription>
-            Link your CF handle to unlock personalized training and analytics
+            Link your CF handle to unlock personalized training & analytics
           </CardDescription>
         </CardHeader>
       )}
@@ -252,8 +308,8 @@ export function CFVerificationV2({
                 id='cf-handle'
                 placeholder='e.g. tourist, jiangly'
                 value={handle}
-                onChange={e => setHandle(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleMethodSelection()}
+                onChange={(e) => setHandle(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleMethodSelection()}
                 className='text-center'
               />
             </div>
@@ -292,10 +348,10 @@ export function CFVerificationV2({
           <div className='text-center space-y-4'>
             <div className='flex items-center justify-center gap-2 text-blue-400'>
               <Zap className='h-5 w-5 animate-pulse' />
-              <span>Connecting via Codeforces OAuth...</span>
+              <span>Connecting via OAuth...</span>
             </div>
             <div className='text-sm text-muted-foreground'>
-              You'll be redirected to Codeforces to authorize AlgoRise
+              You will be redirected to Codeforces to authorize AlgoRise
             </div>
           </div>
         )}
@@ -310,7 +366,7 @@ export function CFVerificationV2({
                   <div className='text-sm space-y-1'>
                     <div>1. Copy the token below</div>
                     <div>2. Paste it in your CF About section</div>
-                    <div>3. Click "Verify" - we'll check instantly!</div>
+                    <div>3. Click "Verify" - we will check instantly!</div>
                   </div>
                 </div>
               </AlertDescription>
@@ -359,7 +415,7 @@ export function CFVerificationV2({
               <span>Checking verification...</span>
             </div>
             <div className='text-sm text-muted-foreground'>
-              Looking for your token in the About section
+              Looking for your token in About section
             </div>
           </div>
         )}
@@ -369,16 +425,6 @@ export function CFVerificationV2({
             <AlertCircle className='h-4 w-4' />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
-        )}
-
-        {/* Benefits */}
-        {step === 'method-selection' && (
-          <div className='text-xs text-muted-foreground space-y-1'>
-            <div className='font-medium'>Why verify?</div>
-            <div>• Unlock personalized training based on your rating</div>
-            <div>• Track progress & maintain streaks</div>
-            <div>• Compare with friends on leaderboards</div>
-          </div>
         )}
       </CardContent>
     </Card>

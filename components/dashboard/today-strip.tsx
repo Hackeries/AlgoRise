@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { useCFVerification } from "@/lib/context/cf-verification";
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useCFVerification } from '@/lib/context/cf-verification';
 
 type Problem = {
   id: string;
@@ -31,16 +31,16 @@ export function TodayStrip() {
   useEffect(() => {
     if (!isVerified || !verificationData) return;
 
-    const storedStreak = localStorage.getItem("cf_daily_streak");
+    const storedStreak = localStorage.getItem('cf_daily_streak');
     setStreak(storedStreak ? parseInt(storedStreak) : 0);
 
     const fetchProblems = async () => {
       try {
         const res = await fetch(
-          "https://codeforces.com/api/problemset.problems"
+          'https://codeforces.com/api/problemset.problems'
         );
         const data = await res.json();
-        if (data.status === "OK") {
+        if (data.status === 'OK') {
           const userRating = verificationData.rating || 0;
           const recommended = data.result.problems
             .filter(
@@ -61,7 +61,7 @@ export function TodayStrip() {
           setProblems(recommended);
         }
       } catch (error) {
-        console.error("Failed to fetch today problems:", error);
+        console.error('Failed to fetch today problems:', error);
       } finally {
         setLoading(false);
       }
@@ -71,66 +71,66 @@ export function TodayStrip() {
   }, [isVerified, verificationData]);
 
   const markSolved = (id: string) => {
-    setProblems((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, solved: true } : p))
+    setProblems(prev =>
+      prev.map(p => (p.id === id ? { ...p, solved: true } : p))
     );
   };
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-semibold md:text-3xl">
+      <div className='space-y-6'>
+        <h1 className='text-2xl font-semibold md:text-3xl'>
           Today's Challenge
         </h1>
-        <p className="text-sm text-muted-foreground">Loading problems…</p>
+        <p className='text-sm text-muted-foreground'>Loading problems…</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className='space-y-6'>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold md:text-3xl">
+      <div className='flex items-center justify-between'>
+        <h1 className='text-2xl font-semibold md:text-3xl'>
           Today's Challenge
         </h1>
-        <Badge className="bg-amber-500 text-black">
-          🔥 Streak: {streak} day{streak === 1 ? "" : "s"}
+        <Badge className='bg-amber-500 text-black'>
+          🔥 Streak: {streak} day{streak === 1 ? '' : 's'}
         </Badge>
       </div>
 
       {/* Problems */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {problems.map((p) => (
+      <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+        {problems.map(p => (
           <Card
             key={p.id}
             className={`border ${
               p.solved
-                ? "border-green-400 bg-green-50"
-                : "border-muted-foreground/10"
+                ? 'border-green-400 bg-green-50'
+                : 'border-muted-foreground/10'
             }`}
           >
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">{p.title}</CardTitle>
-              <CardDescription className="flex items-center gap-2">
+            <CardHeader className='pb-2'>
+              <CardTitle className='text-base'>{p.title}</CardTitle>
+              <CardDescription className='flex items-center gap-2'>
                 ⭐ {p.rating}
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex items-center justify-end gap-2">
+            <CardContent className='flex items-center justify-end gap-2'>
               {p.solved ? (
-                <Badge className="bg-green-500 text-white">Solved ✅</Badge>
+                <Badge className='bg-green-500 text-white'>Solved ✅</Badge>
               ) : (
                 <>
                   <Button asChild>
                     <Link
                       href={p.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      target='_blank'
+                      rel='noopener noreferrer'
                     >
                       Solve
                     </Link>
                   </Button>
-                  <Button variant="outline" onClick={() => markSolved(p.id)}>
+                  <Button variant='outline' onClick={() => markSolved(p.id)}>
                     Mark Solved
                   </Button>
                 </>

@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import {
   ChevronRight,
   Clock,
@@ -17,24 +18,25 @@ import {
   CheckCircle,
   PlayCircle,
   Loader2,
-} from "lucide-react";
-import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { LEARNING_PATH_DATA, getTotalProblems } from "@/lib/learning-path-data";
-import clsx from "clsx";
-
-type ProgressMap = Record<string, number>;
+} from 'lucide-react';
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+import { LEARNING_PATH_DATA, getTotalProblems } from '@/lib/learning-path-data';
 
 export default function LearningPathsPage() {
   const supabase = createClient();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const [sectionProgress, setSectionProgress] = useState<ProgressMap>({});
-  const [subsectionProgress, setSubsectionProgress] = useState<ProgressMap>({});
+  const [sectionProgress, setSectionProgress] = useState<
+    Record<string, number>
+  >({});
+  const [subsectionProgress, setSubsectionProgress] = useState<
+    Record<string, number>
+  >({});
   const [loading, setLoading] = useState(true);
 
   const totalProblems = getTotalProblems();
 
-  // Fetch progress
+  // Load all progress data on mount
   useEffect(() => {
     loadAllProgress();
   }, []);
@@ -45,92 +47,120 @@ export default function LearningPathsPage() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return setLoading(false);
 
-      const allProblemIds = LEARNING_PATH_DATA.flatMap((section) =>
-        section.subsections.flatMap((subsection) =>
-          subsection.problems.map((p) => p.id)
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      // Get all problem IDs from all sections
+      const allProblemIds = LEARNING_PATH_DATA.flatMap(section =>
+        section.subsections.flatMap(subsection =>
+          subsection.problems.map(problem => problem.id)
         )
       );
 
+      // Fetch all solved problems at once
       const { data: solvedProblems, error } = await supabase
-        .from("user_problems")
-        .select("problem_id")
-        .eq("user_id", user.id)
-        .in("problem_id", allProblemIds)
-        .eq("solved", true);
+        .from('user_problems')
+        .select('problem_id')
+        .eq('user_id', user.id)
+        .in('problem_id', allProblemIds)
+        .eq('solved', true);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading progress:', error);
+        setLoading(false);
+        return;
+      }
 
-      const solvedIds = new Set(solvedProblems?.map((p) => p.problem_id) || []);
+      const solvedProblemIds = new Set(
+        solvedProblems?.map(p => p.problem_id) || []
+      );
 
-      const newSectionProgress: ProgressMap = {};
-      const newSubsectionProgress: ProgressMap = {};
+      // Calculate section and subsection progress
+      const newSectionProgress: Record<string, number> = {};
+      const newSubsectionProgress: Record<string, number> = {};
 
-      LEARNING_PATH_DATA.forEach((section) => {
+      LEARNING_PATH_DATA.forEach(section => {
         let sectionSolved = 0;
         let sectionTotal = 0;
 
-        section.subsections.forEach((sub) => {
-          const solvedCount = sub.problems.filter((p) =>
-            solvedIds.has(p.id)
+        section.subsections.forEach(subsection => {
+          const subsectionSolved = subsection.problems.filter(problem =>
+            solvedProblemIds.has(problem.id)
           ).length;
-          const percentage = sub.problems.length
-            ? Math.round((solvedCount / sub.problems.length) * 100)
-            : 0;
+          const subsectionTotal = subsection.problems.length;
 
-          newSubsectionProgress[`${section.id}-${sub.id}`] = percentage;
-          sectionSolved += solvedCount;
-          sectionTotal += sub.problems.length;
+          // Calculate subsection progress
+          const subsectionPercentage =
+            subsectionTotal > 0
+              ? Math.round((subsectionSolved / subsectionTotal) * 100)
+              : 0;
+
+          newSubsectionProgress[`${section.id}-${subsection.id}`] =
+            subsectionPercentage;
+
+          sectionSolved += subsectionSolved;
+          sectionTotal += subsectionTotal;
         });
 
-        newSectionProgress[section.id] = sectionTotal
-          ? Math.round((sectionSolved / sectionTotal) * 100)
-          : 0;
+        // Calculate section progress
+        const sectionPercentage =
+          sectionTotal > 0
+            ? Math.round((sectionSolved / sectionTotal) * 100)
+            : 0;
+
+        newSectionProgress[section.id] = sectionPercentage;
       });
 
       setSectionProgress(newSectionProgress);
       setSubsectionProgress(newSubsectionProgress);
     } catch (error) {
-      console.error(error);
+      console.error('Error in loadAllProgress:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleSection = useCallback((id: string) => {
-    setExpandedSection((prev) => (prev === id ? null : id));
-  }, []);
+  const getSectionProgress = (sectionId: string): number => {
+    return sectionProgress[sectionId] || 0;
+  };
 
-  const overallProgress = useMemo(() => {
-    const totalSolved = LEARNING_PATH_DATA.reduce((sum, section) => {
-      const progress = sectionProgress[section.id] || 0;
-      return sum + Math.round((progress * section.totalProblems) / 100);
-    }, 0);
-    return totalProblems ? Math.round((totalSolved / totalProblems) * 100) : 0;
-  }, [sectionProgress, totalProblems]);
+  const getSubsectionProgress = (
+    sectionId: string,
+    subsectionId: string
+  ): number => {
+    return subsectionProgress[`${sectionId}-${subsectionId}`] || 0;
+  };
 
-  if (loading) return <Loader />;
+  // Calculate overall progress
+  const calculateOverallProgress = (): number => {
+    const totalSolved = Object.values(sectionProgress).reduce(
+      (sum, progress, index) => {
+        const section = LEARNING_PATH_DATA[index];
+        return sum + Math.round((progress * section.totalProblems) / 100);
+      },
+      0
+    );
 
-  return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
-      <Header totalProblems={totalProblems} overallProgress={overallProgress} />
-      <div className="space-y-4">
-        {LEARNING_PATH_DATA.map((section) => (
-          <SectionCard
-            key={section.id}
-            section={section}
-            expanded={expandedSection === section.id}
-            toggle={() => toggleSection(section.id)}
-            progress={sectionProgress[section.id] || 0}
-            subsectionProgress={subsectionProgress}
-          />
-        ))}
-      </div>
-      <GettingStarted />
-    </main>
-  );
-}
+    return totalProblems > 0
+      ? Math.round((totalSolved / totalProblems) * 100)
+      : 0;
+  };
+
+  if (loading) {
+    return (
+      <main className='mx-auto max-w-6xl px-4 py-10'>
+        <div className='flex items-center justify-center min-h-[400px]'>
+          <div className='flex items-center gap-3'>
+            <Loader2 className='h-6 w-6 animate-spin' />
+            <span>Loading your progress...</span>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
 // --- Components ---
 
@@ -291,23 +321,7 @@ const SubsectionCard = ({
             {progress > 0 ? "Continue" : "Start"}
           </Link>
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </main>
   );
-};
-
-const GettingStarted = () => (
-  <div className="mt-12 p-6 rounded-lg border border-green-500/20 bg-green-500/5">
-    <div className="flex items-center gap-3 mb-4">
-      <PlayCircle className="h-6 w-6 text-green-400" />
-      <h2 className="text-xl font-semibold">Ready to Start?</h2>
-    </div>
-    <p className="text-muted-foreground mb-4">
-      Begin your competitive programming journey with our structured learning
-      path. Start with Basic C++ and progress through each section.
-    </p>
-    <Button asChild size="lg">
-      <Link href="/paths/basic-cpp/cpp-basics">Start Learning Journey</Link>
-    </Button>
-  </div>
-);
+}

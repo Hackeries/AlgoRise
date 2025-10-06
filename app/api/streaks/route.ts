@@ -1,6 +1,6 @@
-import type { NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { applyMeaningfulAction, getStreak } from "@/lib/streaks";
+import type { NextRequest } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { applyMeaningfulAction, getStreak } from '@/lib/streaks';
 
 interface StreakResponse {
   currentStreak: number;
@@ -18,7 +18,7 @@ async function getSupabaseUser() {
     error,
   } = await supabase.auth.getUser();
   if (error) throw new Error(`Supabase auth error: ${error.message}`);
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new Error('Unauthorized');
   return { supabase, user };
 }
 
@@ -44,9 +44,9 @@ export async function GET(): Promise<Response> {
 
     return Response.json(response);
   } catch (error) {
-    console.error("GET /api/streaks error:", error);
+    console.error('GET /api/streaks error:', error);
     const message =
-      error instanceof Error ? error.message : "Internal server error";
+      error instanceof Error ? error.message : 'Internal server error';
     return Response.json({ error: message }, { status: 500 });
   }
 }
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest): Promise<Response> {
   try {
     const { supabase, user } = await getSupabaseUser();
 
-    const body = await req.json().catch(() => ({} as any));
+    const body = await req.json().catch(() => ({}) as any);
     const now = body?.now ? new Date(body.now) : new Date();
 
     const prev = await getStreak(supabase, user.id);
@@ -72,9 +72,9 @@ export async function POST(req: NextRequest): Promise<Response> {
 
     return Response.json(response);
   } catch (error) {
-    console.error("POST /api/streaks error:", error);
+    console.error('POST /api/streaks error:', error);
     const message =
-      error instanceof Error ? error.message : "Internal server error";
+      error instanceof Error ? error.message : 'Internal server error';
     return Response.json({ error: message }, { status: 500 });
   }
 }

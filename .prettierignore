@@ -1,0 +1,10 @@
+/.vscode
+/node_modules
+/components/ui
+./dist
+/public
+/.next
+
+*.env
+.env
+.env.*

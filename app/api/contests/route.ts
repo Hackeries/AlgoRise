@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
@@ -10,7 +9,7 @@ export async function POST(req: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
+  
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -18,6 +17,7 @@ export async function POST(req: Request) {
   let body;
   try {
     body = await req.json();
+    console.log("Request body:", body);
   } catch (e) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
@@ -28,6 +28,7 @@ export async function POST(req: Request) {
     description,
     start_time,
     end_time,
+  // created_by, // Do not take from body
     duration_minutes,
     problem_count,
     rating_min,
@@ -39,6 +40,8 @@ export async function POST(req: Request) {
   if (!name || !start_time || !duration_minutes || !problem_count) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
+
+  console.log("user.id:", user.id);
 
   // Insert contest into database
   const { data, error } = await supabase.from("contests").insert([
@@ -57,11 +60,15 @@ export async function POST(req: Request) {
       created_at: new Date().toISOString(),
       status: "upcoming",
     },
-  ]).select();
+  ]).select('id, name, description, start_time, end_time, duration_minutes, rating_min, rating_max, max_participants, allow_late_join, problem_count, created_by, created_at, status');
+
+  console.log("Supabase insert error:", error);
+  console.log("Supabase insert data:", data);
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error.message, details: error }, { status: 500 });
   }
+  
 
   return NextResponse.json({ contest: data?.[0] || null });
 }

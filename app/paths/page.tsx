@@ -245,7 +245,7 @@ const SectionCard = ({
             return (
               <SubsectionCard
                 key={sub.id}
-                sectionId={section.id}
+                pathId={section.id}
                 subsection={sub}
                 progress={subProgress}
               />
@@ -258,11 +258,11 @@ const SectionCard = ({
 };
 
 const SubsectionCard = ({
-  sectionId,
+  pathId,
   subsection,
   progress,
 }: {
-  sectionId: string;
+  pathId: string;
   subsection: any;
   progress: number;
 }) => {
@@ -286,7 +286,7 @@ const SubsectionCard = ({
           <Progress value={progress} className="h-1.5 mb-2" />
         </div>
         <Button size="sm" asChild>
-          <Link href={`/paths/${sectionId}/${subsection.id}`}>
+          <Link href={`/paths/${pathId}/${subsection.id}`}>
             <PlayCircle className="h-4 w-4 mr-1" />
             {progress > 0 ? "Continue" : "Start"}
           </Link>

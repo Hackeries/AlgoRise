@@ -19,7 +19,7 @@ import { createClient } from "@/lib/supabase/client";
 export default function SubsectionPage() {
   const supabase = createClient();
   const params = useParams();
-  const sectionId = params.sectionId as string;
+  const pathId = params.pathId as string;
   const subsectionId = params.subsectionId as string;
 
   // State management
@@ -28,7 +28,7 @@ export default function SubsectionPage() {
   const [updatingProblem, setUpdatingProblem] = useState<string | null>(null);
 
   // Find the section and subsection
-  const section = LEARNING_PATH_DATA.find((s) => s.id === sectionId);
+  const section = LEARNING_PATH_DATA.find((s) => s.id === pathId);
   const subsection = section?.subsections.find(
     (sub) => sub.id === subsectionId
   );

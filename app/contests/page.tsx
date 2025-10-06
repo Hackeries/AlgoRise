@@ -102,7 +102,7 @@ export default function ContestsPage() {
         .from("cf_snapshots")
         .select("rating")
         .eq("user_id", userId)
-        .order("captured_at", { ascending: false })
+  .order("snapshot_at", { ascending: false })
         .limit(1)
         .single();
 
@@ -342,7 +342,7 @@ const createContest = async () => {
     }
 
     if (response.ok) {
-      if (!data || !data.id) {
+      if (!data || !data.contest || !data.contest.id) {
         toast({
           title: "Error",
           description: "Contest created but no ID returned",
@@ -352,7 +352,7 @@ const createContest = async () => {
       }
 
       setCreatedContestLink(
-        `${window.location.origin}/contests/${data.id}/participate`
+        `${window.location.origin}/contests/${data.contest.id}/participate`
       );
       setShareDialogOpen(true);
 

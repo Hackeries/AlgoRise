@@ -1,10 +1,17 @@
-/.vscode
-/node_modules
-/components/ui
-./dist
-/public
-/.next
+# IDE
+.vscode/
 
-*.env
-.env
-.env.*
+# Node dependencies
+/node_modules/
+
+# Build outputs
+/.next/
+/dist/
+/out/
+
+# Public static assets
+/public
+
+# Environment files (optional)
+/*.env
+.env*

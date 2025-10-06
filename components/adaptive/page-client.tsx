@@ -13,7 +13,7 @@ import { useCFVerification } from '@/lib/context/cf-verification';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { BarChart3 } from 'lucide-react';
+import { Menu, BarChart3 } from 'lucide-react';
 
 export function AdaptiveSheetPageClient() {
   const { isVerified, verificationData } = useCFVerification();
@@ -26,7 +26,6 @@ export function AdaptiveSheetPageClient() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
     const sp = new URLSearchParams(window.location.search);
     const mode = sp.get('mode');
     const urlTags = sp.get('tags');
@@ -47,16 +46,16 @@ export function AdaptiveSheetPageClient() {
 
     // Set rating base from verified CF data if available
     if (isVerified && verificationData?.rating) {
-      const floored = Math.floor(verificationData.rating / 100) * 100;
+      const currentRating = Math.floor(verificationData.rating); // Floor the current rating
       setFilters(prev => ({
         ...prev,
-        ratingBase: floored,
+        ratingBase: currentRating,
       }));
     }
   }, [isVerified, verificationData]);
 
   return (
-    <div className='min-h-screen'>
+    <div className='min-h-screen '>
       <main className='flex flex-col lg:flex-row min-h-screen'>
         {/* Main Content */}
         <motion.div
@@ -79,13 +78,16 @@ export function AdaptiveSheetPageClient() {
                 </h1>
                 <p className='mt-2 sm:mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed max-w-3xl'>
                   Automatically adjusts problem difficulty based on your
-                  Codeforces rating and contest performance. Syncs with your CF
-                  handle so you never get already-solved problems.
+                  Codeforces rating and contest performance. Won't show problems
+                  you've already solved since it syncs with your CF handle.
                 </p>
               </div>
 
+              {/* Desktop Controls */}
               <div className='hidden sm:flex items-center gap-3'>
                 <SheetSettings srMode={srMode} onSrModeChange={setSrMode} />
+
+                {/* Mobile Rail Trigger - Only show on smaller screens */}
                 <div className='lg:hidden'>
                   <Sheet
                     open={isMobileRailOpen}
@@ -112,9 +114,39 @@ export function AdaptiveSheetPageClient() {
                   </Sheet>
                 </div>
               </div>
+
+              {/* Mobile Controls */}
+              <div className='sm:hidden w-full flex items-center justify-between gap-3'>
+                <SheetSettings srMode={srMode} onSrModeChange={setSrMode} />
+
+                <Sheet
+                  open={isMobileRailOpen}
+                  onOpenChange={setIsMobileRailOpen}
+                >
+                  <SheetTrigger asChild>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      className='flex items-center gap-2'
+                    >
+                      <BarChart3 className='h-4 w-4' />
+                      Stats
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side='right' className='w-full p-0'>
+                    <div className='p-6 h-full overflow-y-auto'>
+                      <AdaptiveRightRailData
+                        baseRating={filters.ratingBase}
+                        tags={filters.tags}
+                      />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+              </div>
             </motion.header>
 
             {/* Content */}
+
             <AnimatePresence mode='wait'>
               {!isVerified ? (
                 <motion.div

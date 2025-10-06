@@ -36,7 +36,7 @@ export async function POST(req: Request) {
               intervalDays: row.interval_days ?? 0,
               nextDueAt: row.next_due_at,
             },
-            'solved'
+            'skipped'
           );
           return {
             ...row,
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
             ease: next.ease,
             interval_days: next.intervalDays,
             next_due_at: next.nextDueAt,
-            last_outcome: 'solved',
+            last_outcome: 'skipped',
           };
         }
       );
@@ -54,10 +54,8 @@ export async function POST(req: Request) {
         { status: 200 }
       );
     }
-  } catch {
-    // fall through to in-memory fallback
-  }
+  } catch {}
 
-  const data = updateOutcome('demo', problemId, 'solved');
+  const data = updateOutcome('demo', problemId, 'skipped');
   return NextResponse.json(data, { status: 200 });
 }

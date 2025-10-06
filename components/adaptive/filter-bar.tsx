@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
@@ -33,16 +33,7 @@ export function AdaptiveFilterBar({
   const [ratingBase, setRatingBase] = useState(initialRatingBase);
   const [tags, setTags] = useState<string[]>(initialTags);
 
-  // Sync props if initialRatingBase or initialTags change
-  useEffect(() => {
-    setRatingBase(initialRatingBase);
-  }, [initialRatingBase]);
-
-  useEffect(() => {
-    setTags(initialTags);
-  }, [initialTags]);
-
-  const windowMin = Math.max(800, ratingBase - 100);
+  const windowMin = Math.max(800, ratingBase - 100); // Match API logic: minimum 800
   const windowMax = ratingBase + 200;
 
   function toggleTag(tag: string) {
@@ -55,40 +46,36 @@ export function AdaptiveFilterBar({
     });
   }
 
-  function clearTags() {
-    setTags([]);
-    onChange?.({ ratingBase, tags: [] });
-  }
-
-  function updateRatingBase(val: number) {
-    setRatingBase(val);
-    onChange?.({ ratingBase: val, tags });
-  }
-
   return (
-    <div className="rounded-md border border-border p-3">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className='rounded-md border border-border p-3'>
+      <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
         <div>
-          <p className="text-sm text-muted-foreground">Rating window</p>
-          <p className="text-sm">
+          <p className='text-sm text-muted-foreground'>Rating window</p>
+          <p className='text-sm'>
             {windowMin} to {windowMax}{' '}
-            <span className="text-muted-foreground">(base {ratingBase} +200/-100)</span>
+            <span className='text-muted-foreground'>
+              (base {ratingBase} +200/-100)
+            </span>
           </p>
-          <div className="mt-2 max-w-sm">
+          <div className='mt-2 max-w-sm'>
             <Slider
               value={[ratingBase]}
               min={800}
               max={2600}
               step={50}
-              onValueChange={v => updateRatingBase(v[0])}
-              aria-label="Rating base"
+              onValueChange={v => {
+                const val = v[0];
+                setRatingBase(val);
+                onChange?.({ ratingBase: val, tags });
+              }}
+              aria-label='Rating base'
             />
           </div>
         </div>
 
-        <div className="max-w-xl">
-          <p className="mb-2 text-sm text-muted-foreground">Tags</p>
-          <div className="flex flex-wrap gap-2">
+        <div className='max-w-xl'>
+          <p className='mb-2 text-sm text-muted-foreground'>Tags</p>
+          <div className='flex flex-wrap gap-2'>
             {DEFAULT_TAGS.map(tag => {
               const active = tags.includes(tag);
               return (
@@ -97,14 +84,21 @@ export function AdaptiveFilterBar({
                   variant={active ? 'default' : 'outline'}
                   className={active ? 'bg-blue-600 hover:bg-blue-600/90' : ''}
                   onClick={() => toggleTag(tag)}
-                  role="button"
+                  role='button'
                   aria-pressed={active}
                 >
                   {tag}
                 </Badge>
               );
             })}
-            <Button variant="ghost" size="sm" onClick={clearTags}>
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={() => {
+                setTags([]);
+                onChange?.({ ratingBase, tags: [] });
+              }}
+            >
               Clear
             </Button>
           </div>

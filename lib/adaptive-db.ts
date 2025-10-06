@@ -1,8 +1,4 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import type { SheetItem, Outcome } from '@/lib/types';
-
-// === Types ===
-export type Limits = { now?: number; soon?: number; later?: number };
 
 export type DbItem = {
   problem_id: string;
@@ -12,157 +8,147 @@ export type DbItem = {
   ease: number;
   interval_days: number;
   next_due_at: string;
-  last_outcome: Outcome | null;
+  last_outcome: 'solved' | 'failed' | 'skipped' | null;
   problem_title: string | null;
   problem_url: string | null;
-  platform?: string;
 };
 
-// Default limits
-export const DEFAULT_LIMITS: Required<Limits> = { now: 8, soon: 8, later: 8 };
+export type Limits = { now?: number; soon?: number; later?: number };
+const DEFAULT_LIMITS: Required<Limits> = { now: 8, soon: 8, later: 8 };
 
-// === Helpers ===
-export function clampEase(e: number): 1 | 2 | 3 | 4 | 5 {
-  if (e <= 1) return 1;
-  if (e >= 5) return 5;
-  return Math.round(e) as 1 | 2 | 3 | 4 | 5;
-}
-
-export function toSheetItem(r: DbItem): SheetItem {
+function toSheetItem(r: DbItem) {
   return {
     id: r.problem_id,
     problem: {
       id: r.problem_id,
       title: r.problem_title ?? r.problem_id,
-      url: r.problem_url ?? '',
-      rating: r.rating ?? 1200,
+      url: r.problem_url ?? undefined,
+      rating: r.rating,
       tags: r.tags ?? [],
-      platform: (r.platform as any) ?? 'Unknown',
-      problemId: r.problem_id,
     },
     repetitions: r.repetitions ?? 0,
-    ease: clampEase(r.ease ?? 3),
+    ease: Number(r.ease ?? 2.5),
     intervalDays: r.interval_days ?? 0,
-    nextDueAt: new Date(r.next_due_at),
+    nextDueAt: r.next_due_at,
     lastOutcome: r.last_outcome ?? undefined,
   };
 }
 
-// === Fetch adaptive sheet ===
-export async function getAdaptiveSheet(
+export async function fetchAdaptiveSheetDb(
   supabase: SupabaseClient,
   userId: string,
   baseRating: number,
-  tags: string[] = [],
+  tags: string[],
   limits?: Limits
 ) {
   const lim = { ...DEFAULT_LIMITS, ...(limits || {}) };
   const nowIso = new Date().toISOString();
   const soonIso = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
+  const ratingMin = baseRating - 200;
+  const ratingMax = baseRating + 200;
 
-  const ratingMin = Math.max(800, baseRating - 200);
-  const ratingMax = Math.min(3500, baseRating + 200);
+  const base = supabase
+    .from('adaptive_items')
+    .select(
+      'problem_id,rating,tags,repetitions,ease,interval_days,next_due_at,last_outcome,problem_title,problem_url'
+    )
+    .eq('user_id', userId)
+    .gte('rating', ratingMin)
+    .lte('rating', ratingMax);
 
-  const buildQuery = (gt?: string, lte?: string, limit?: number) => {
-    let q = supabase
-      .from('adaptive_items')
-      .select(
-        'problem_id,rating,tags,repetitions,ease,interval_days,next_due_at,last_outcome,problem_title,problem_url,platform'
-      )
-      .eq('user_id', userId)
-      .gte('rating', ratingMin)
-      .lte('rating', ratingMax)
-      .order('next_due_at', { ascending: true });
+  // due now
+  let qNow = base
+    .clone()
+    .lte('next_due_at', nowIso)
+    .order('next_due_at', { ascending: true })
+    .limit(lim.now);
+  if (tags.length) qNow = qNow.overlaps('tags', tags);
+  const nowRes = await qNow;
 
-    if (gt) q = q.gt('next_due_at', gt);
-    if (lte) q = q.lte('next_due_at', lte);
-    if (limit) q = q.limit(limit);
-    if (tags.length) q = q.overlaps('tags', tags);
+  // due soon (within 2 days, but after now)
+  let qSoon = base
+    .clone()
+    .gt('next_due_at', nowIso)
+    .lte('next_due_at', soonIso)
+    .order('next_due_at', { ascending: true })
+    .limit(lim.soon);
+  if (tags.length) qSoon = qSoon.overlaps('tags', tags);
+  const soonRes = await qSoon;
 
-    return q;
-  };
+  // later (>2 days)
+  let qLater = base
+    .clone()
+    .gt('next_due_at', soonIso)
+    .order('next_due_at', { ascending: true })
+    .limit(lim.later);
+  if (tags.length) qLater = qLater.overlaps('tags', tags);
+  const laterRes = await qLater;
 
-  const [nowRes, soonRes, laterRes] = await Promise.all([
-    buildQuery(undefined, nowIso, lim.now),
-    buildQuery(nowIso, soonIso, lim.soon),
-    buildQuery(soonIso, undefined, lim.later),
-  ]);
-
-  if (nowRes.error || soonRes.error || laterRes.error)
+  if (nowRes.error || soonRes.error || laterRes.error) {
     throw nowRes.error || soonRes.error || laterRes.error;
+  }
 
   return {
-    baseRating,
     groups: {
       dueNow: (nowRes.data || []).map(toSheetItem),
       dueSoon: (soonRes.data || []).map(toSheetItem),
       later: (laterRes.data || []).map(toSheetItem),
     },
-    stats: {
-      solvedRate: 0,
-      streak: 0,
-      lastInteractionAt: undefined,
-      weakTags: {},
-    },
   };
 }
 
-// === Update outcome ===
-export async function updateOutcome(
+export async function updateOutcomeDb(
   supabase: SupabaseClient,
   userId: string,
   problemId: string,
-  outcome: Outcome,
-  computeNext: (item: SheetItem, outcome: Outcome) => SheetItem
+  updater: (row: DbItem) => DbItem
 ) {
-  const { data, error: selError } = await supabase
+  const sel = await supabase
     .from('adaptive_items')
-    .select('*')
+    .select(
+      'problem_id,rating,tags,repetitions,ease,interval_days,next_due_at,last_outcome,problem_title,problem_url'
+    )
     .eq('user_id', userId)
     .eq('problem_id', problemId)
     .single();
 
-  if (selError || !data) return { error: selError || new Error('Problem not found') };
+  if (sel.error) return { error: sel.error };
 
-  const row: DbItem = data as DbItem;
-  const sheetItem = toSheetItem(row);
-  const next = computeNext(sheetItem, outcome);
-
+  const nextRow = updater(sel.data as DbItem);
   const { error } = await supabase
     .from('adaptive_items')
     .update({
-      repetitions: next.repetitions,
-      ease: next.ease,
-      interval_days: next.intervalDays,
-      next_due_at: next.nextDueAt.toISOString(),
-      last_outcome: outcome,
+      repetitions: nextRow.repetitions,
+      ease: nextRow.ease,
+      interval_days: nextRow.interval_days,
+      next_due_at: nextRow.next_due_at,
+      last_outcome: nextRow.last_outcome,
     })
     .eq('user_id', userId)
     .eq('problem_id', problemId);
 
   if (error) return { error };
-
-  return { ok: true, nextDueAt: next.nextDueAt };
+  return { ok: true, nextDueAt: nextRow.next_due_at };
 }
 
-// === Snooze ===
-export async function snooze(
+export async function snoozeDb(
   supabase: SupabaseClient,
   userId: string,
   problemId: string,
   minutes: number
 ) {
-  const { data, error: selError } = await supabase
+  const sel = await supabase
     .from('adaptive_items')
     .select('next_due_at')
     .eq('user_id', userId)
     .eq('problem_id', problemId)
     .single();
+  if (sel.error) return { error: sel.error };
 
-  if (selError || !data) return { error: selError || new Error('Problem not found') };
-
-  const current = new Date(data.next_due_at).getTime();
-  const next = new Date(Math.max(Date.now(), current) + minutes * 60 * 1000).toISOString();
+  const current = new Date(sel.data.next_due_at).getTime();
+  const next = new Date(
+    Math.max(Date.now(), current) + minutes * 60 * 1000
+  ).toISOString();
 
   const { error } = await supabase
     .from('adaptive_items')
@@ -171,6 +157,5 @@ export async function snooze(
     .eq('problem_id', problemId);
 
   if (error) return { error };
-
   return { ok: true, nextDueAt: next };
 }

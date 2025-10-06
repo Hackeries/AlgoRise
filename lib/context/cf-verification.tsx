@@ -147,6 +147,7 @@ export function CFVerificationProvider({
             rank: data.rank,
             problems_solved: 0,
             snapshot_at: new Date().toISOString(),
+            snapshot_at: new Date().toISOString(),
           });
 
         if (snapshotError) {

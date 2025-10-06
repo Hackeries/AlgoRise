@@ -162,191 +162,164 @@ export default function LearningPathsPage() {
     );
   }
 
+// --- Components ---
+
+const Loader = () => (
+  <div className="flex items-center justify-center min-h-[400px]">
+    <Loader2 className="h-6 w-6 animate-spin" />
+    <span className="ml-2">Loading your progress...</span>
+  </div>
+);
+
+const Header = ({
+  totalProblems,
+  overallProgress,
+}: {
+  totalProblems: number;
+  overallProgress: number;
+}) => (
+  <div className="mb-8">
+    <h1 className="text-3xl font-bold mb-4">Learning Path</h1>
+    <p className="text-muted-foreground text-lg mb-4">
+      Complete structured journey from C++ basics to advanced competitive
+      programming.
+    </p>
+    <div className="flex items-center gap-4 text-sm text-muted-foreground mb-4">
+      <div className="flex items-center gap-2">
+        <Target className="h-4 w-4" />
+        <span>{totalProblems} Total Problems</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <Clock className="h-4 w-4" />
+        <span>30+ weeks estimated</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <CheckCircle className="h-4 w-4" />
+        <span>{overallProgress}% Complete</span>
+      </div>
+    </div>
+    <Progress value={overallProgress} className="h-3" />
+  </div>
+);
+
+const SectionCard = ({
+  section,
+  expanded,
+  toggle,
+  progress,
+  subsectionProgress,
+}: {
+  section: any;
+  expanded: boolean;
+  toggle: () => void;
+  progress: number;
+  subsectionProgress: ProgressMap;
+}) => {
+  const isCompleted = progress === 100;
   return (
-    <main className='mx-auto max-w-6xl px-4 py-10'>
-      <div className='mb-8'>
-        <h1 className='text-3xl font-bold mb-4'>Learning Path</h1>
-        <p className='text-muted-foreground text-lg mb-4'>
-          Complete structured journey from C++ basics to advanced competitive
-          programming.
-        </p>
-        <div className='flex items-center gap-4 text-sm text-muted-foreground mb-4'>
-          <div className='flex items-center gap-2'>
-            <Target className='h-4 w-4' />
-            <span>{totalProblems} Total Problems</span>
-          </div>
-          <div className='flex items-center gap-2'>
-            <Clock className='h-4 w-4' />
-            <span>30+ weeks estimated</span>
-          </div>
-          <div className='flex items-center gap-2'>
-            <CheckCircle className='h-4 w-4' />
-            <span>{calculateOverallProgress()}% Complete</span>
-          </div>
-        </div>
-
-        {/* Overall Progress Bar */}
-        <div className='mb-6'>
-          <div className='flex justify-between text-sm mb-2'>
-            <span className='font-medium'>Overall Progress</span>
-            <span>{calculateOverallProgress()}%</span>
-          </div>
-          <Progress value={calculateOverallProgress()} className='h-3' />
-        </div>
-      </div>
-
-      {/* Learning Path Sections */}
-      <div className='space-y-4'>
-        {LEARNING_PATH_DATA.map((section, index) => {
-          const progress = getSectionProgress(section.id);
-          const isExpanded = expandedSection === section.id;
-          const isCompleted = progress === 100;
-          // const isLocked = index > 0 && getSectionProgress(LEARNING_PATH_DATA[index - 1].id) < 50
-
-          return (
-            <Card
-              key={section.id}
-              className={`border-2 transition-all ${
-                isCompleted
-                  ? 'border-green-500/50 bg-green-500/5'
-                  : // isLocked ? "border-muted/30 bg-muted/5" :
-                    'border-blue-500/30 hover:border-blue-500/50'
-              }`}
-            >
-              <CardHeader>
-                <div className='flex items-center justify-between'>
-                  <div className='flex items-center gap-4'>
-                    <div
-                      className={`p-3 rounded-lg text-2xl ${
-                        isCompleted
-                          ? 'bg-green-500/20'
-                          : // isLocked ? "bg-muted/20" :
-                            'bg-blue-500/20'
-                      }`}
-                    >
-                      {section.icon}
-                    </div>
-                    <div>
-                      <div className='flex items-center gap-3'>
-                        <CardTitle className='text-xl'>
-                          {section.title}
-                        </CardTitle>
-                        {isCompleted && (
-                          <CheckCircle className='h-5 w-5 text-green-500' />
-                        )}
-                        {/* {isLocked && <div className="text-xs px-2 py-1 bg-muted rounded text-muted-foreground">Locked</div>} */}
-                      </div>
-                      <CardDescription className='mt-1'>
-                        {section.description}
-                      </CardDescription>
-                      <div className='flex items-center gap-4 mt-2 text-sm text-muted-foreground'>
-                        <span>{section.totalProblems} problems</span>
-                        <span>{section.estimatedTime}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <Button
-                    variant='ghost'
-                    size='sm'
-                    onClick={() =>
-                      setExpandedSection(isExpanded ? null : section.id)
-                    }
-                    // disabled={isLocked}
-                  >
-                    <ChevronRight
-                      className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-90' : ''}`}
-                    />
-                  </Button>
-                </div>
-
-                {/* Progress Bar */}
-                <div className='mt-4'>
-                  <div className='flex justify-between text-sm mb-2'>
-                    <span>Progress</span>
-                    <span>{progress}%</span>
-                  </div>
-                  <Progress value={progress} className='h-2' />
-                </div>
-              </CardHeader>
-
-              {/* Expanded Subsections */}
-              {isExpanded && (
-                <CardContent className='pt-0'>
-                  <div className='space-y-3'>
-                    {section.subsections.map(subsection => {
-                      const subProgress = getSubsectionProgress(
-                        section.id,
-                        subsection.id
-                      );
-                      const subCompleted = subProgress === 100;
-
-                      return (
-                        <Card key={subsection.id} className='border-muted/30'>
-                          <CardContent className='p-4'>
-                            <div className='flex items-center justify-between'>
-                              <div className='flex-1'>
-                                <div className='flex items-center gap-2 mb-1'>
-                                  <h4 className='font-medium'>
-                                    {subsection.title}
-                                  </h4>
-                                  {subCompleted && (
-                                    <CheckCircle className='h-4 w-4 text-green-500' />
-                                  )}
-                                </div>
-                                <p className='text-sm text-muted-foreground mb-2'>
-                                  {subsection.description}
-                                </p>
-                                <div className='flex items-center gap-4 mb-2 text-xs text-muted-foreground'>
-                                  <span>
-                                    {subsection.problems.length} problems
-                                  </span>
-                                  <span>{subsection.estimatedTime}</span>
-                                  <span>{subProgress}% complete</span>
-                                </div>
-
-                                {/* Subsection Progress Bar */}
-                                <div className='mb-2'>
-                                  <Progress
-                                    value={subProgress}
-                                    className='h-1.5'
-                                  />
-                                </div>
-                              </div>
-                              <div className='flex items-center gap-2 ml-4'>
-                                <Button size='sm' asChild>
-                                  <Link
-                                    href={`/paths/${section.id}/${subsection.id}`}
-                                  >
-                                    <PlayCircle className='h-4 w-4 mr-1' />
-                                    {subProgress > 0 ? 'Continue' : 'Start'}
-                                  </Link>
-                                </Button>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </CardContent>
+    <Card
+      className={clsx(
+        "border-2 transition-all",
+        isCompleted
+          ? "border-green-500/50 bg-green-500/5"
+          : "border-blue-500/30 hover:border-blue-500/50"
+      )}
+    >
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div
+              className={clsx(
+                "p-3 rounded-lg text-2xl",
+                isCompleted ? "bg-green-500/20" : "bg-blue-500/20"
               )}
-            </Card>
-          );
-        })}
-      </div>
-
-      {/* Getting Started Section */}
-      <div className='mt-12 p-6 rounded-lg border border-green-500/20 bg-green-500/5'>
-        <div className='flex items-center gap-3 mb-4'>
-          <PlayCircle className='h-6 w-6 text-green-400' />
-          <h2 className='text-xl font-semibold'>Ready to Start?</h2>
+            >
+              {section.icon}
+            </div>
+            <div>
+              <div className="flex items-center gap-3">
+                <CardTitle className="text-xl">{section.title}</CardTitle>
+                {isCompleted && (
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                )}
+              </div>
+              <CardDescription className="mt-1">
+                {section.description}
+              </CardDescription>
+              <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                <span>{section.totalProblems} problems</span>
+                <span>{section.estimatedTime}</span>
+              </div>
+            </div>
+          </div>
+          <Button variant="ghost" size="sm" onClick={toggle}>
+            <ChevronRight
+              className={clsx(
+                "h-4 w-4 transition-transform",
+                expanded && "rotate-90"
+              )}
+            />
+          </Button>
         </div>
-        <p className='text-muted-foreground mb-4'>
-          Begin your competitive programming journey with our structured
-          learning path. Start with Basic C++ and progress through each section.
-        </p>
-        <Button asChild size='lg'>
-          <Link href='/paths/basic-cpp/cpp-basics'>Start Learning Journey</Link>
+        <div className="mt-4 flex justify-between text-sm mb-2">
+          <span>Progress</span>
+          <span>{progress}%</span>
+        </div>
+        <Progress value={progress} className="h-2" />
+      </CardHeader>
+      {expanded && (
+        <CardContent className="pt-0 space-y-3">
+          {section.subsections.map((sub: any) => {
+            const subProgress =
+              subsectionProgress[`${section.id}-${sub.id}`] || 0;
+            return (
+              <SubsectionCard
+                key={sub.id}
+                pathId={section.id}
+                subsection={sub}
+                progress={subProgress}
+              />
+            );
+          })}
+        </CardContent>
+      )}
+    </Card>
+  );
+};
+
+const SubsectionCard = ({
+  pathId,
+  subsection,
+  progress,
+}: {
+  pathId: string;
+  subsection: any;
+  progress: number;
+}) => {
+  const completed = progress === 100;
+  return (
+    <Card className="border-muted/30">
+      <CardContent className="p-4 flex items-center justify-between">
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <h4 className="font-medium">{subsection.title}</h4>
+            {completed && <CheckCircle className="h-4 w-4 text-green-500" />}
+          </div>
+          <p className="text-sm text-muted-foreground mb-2">
+            {subsection.description}
+          </p>
+          <div className="flex items-center gap-4 mb-2 text-xs text-muted-foreground">
+            <span>{subsection.problems.length} problems</span>
+            <span>{subsection.estimatedTime}</span>
+            <span>{progress}% complete</span>
+          </div>
+          <Progress value={progress} className="h-1.5 mb-2" />
+        </div>
+        <Button size="sm" asChild>
+          <Link href={`/paths/${pathId}/${subsection.id}`}>
+            <PlayCircle className="h-4 w-4 mr-1" />
+            {progress > 0 ? "Continue" : "Start"}
+          </Link>
         </Button>
       </div>
     </main>

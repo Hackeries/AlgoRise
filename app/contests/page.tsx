@@ -170,6 +170,7 @@ export default function ContestsPage() {
         const privateResponse = await fetch('/api/contests');
         if (privateResponse.ok) {
           const privateData = await privateResponse.json();
+          console.log(privateData.contests);
           setPrivateContests(privateData.contests || []);
         } else {
           console.error(
@@ -194,14 +195,15 @@ export default function ContestsPage() {
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      description: '',
-      startDate: '',
-      startTime: '',
-      problemCount: '5',
-      ratingMin: '800',
-      ratingMax: '3500',
-      maxParticipants: '',
+      mode: "practice",
+      name: "",
+      description: "",
+      startDate: "",
+      startTime: "",
+      problemCount: "5",
+      ratingMin: "800",
+      ratingMax: "3500",
+      maxParticipants: "",
       allowLateJoin: true,
       durationHours: '2',
       durationMinutes: '0',
@@ -340,20 +342,20 @@ export default function ContestsPage() {
         }
       }
 
-      if (response.ok) {
-        if (!data || !data.id) {
-          toast({
-            title: 'Error',
-            description: 'Contest created but no ID returned',
-            variant: 'destructive',
-          });
-          return;
-        }
+    if (response.ok) {
+      if (!data || !data.contest || !data.contest.id) {
+        toast({
+          title: "Error",
+          description: "Contest created but no ID returned",
+          variant: "destructive",
+        });
+        return;
+      }
 
-        setCreatedContestLink(
-          `${window.location.origin}/contests/${data.id}/participate`
-        );
-        setShareDialogOpen(true);
+      setCreatedContestLink(
+        `${window.location.origin}/contests/${data.contest.id}/participate`
+      );
+      setShareDialogOpen(true);
 
         resetForm();
         setCreateDialogOpen(false);
@@ -665,6 +667,27 @@ export default function ContestsPage() {
                     </SelectContent>
                   </Select>
                 </div>
+                {/* Team Size for ICPC Arena */}
+                {formData.mode === "icpc" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="team-size">Team Size</Label>
+                    <Select
+                      value={formData.teamSize}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, teamSize: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select team size" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Solo</SelectItem>
+                        <SelectItem value="2">2 Members</SelectItem>
+                        <SelectItem value="3">3 Members (ICPC Standard)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {/* Rating Range */}
                 <div className='space-y-2'>
@@ -781,8 +804,14 @@ export default function ContestsPage() {
                         </p>
                       )}
                       <p>
-                        <strong>Duration:</strong> {formData.durationHours}h{' '}
-                        {formData.durationMinutes}m
+                        <strong>Duration:</strong>{" "}
+                        {formData.mode === "practice"
+                          ? (formData.problemCount === "5" || formData.problemCount === "6"
+                            ? "2 hours"
+                            : formData.problemCount === "7" || formData.problemCount === "8" || formData.problemCount === "9"
+                              ? "3 hours"
+                              : "2-3 hours")
+                          : "5 hours (ICPC)"}
                       </p>
                     </div>
                   </div>
@@ -895,6 +924,7 @@ export default function ContestsPage() {
           </section>
 
           {/* Private Contests */}
+
           <section>
             <div className='flex items-center gap-2 mb-4'>
               <h2 className='text-xl font-semibold'>Private Contests</h2>

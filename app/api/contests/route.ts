@@ -1,63 +1,65 @@
-import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
-import { cfGetProblems, type CodeforcesProblem } from "@/lib/codeforces-api"
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { cfGetProblems, type CodeforcesProblem } from '@/lib/codeforces-api';
 
-export const dynamic = "force-dynamic"
+export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ contests: [] })
+    return NextResponse.json({ contests: [] });
   }
 
   // Get all contests (public and private where user is host or participant)
   const { data: contests, error } = await supabase
-    .from("contests")
-    .select("*")
+    .from('contests')
+    .select('*')
     .or(`host_user_id.eq.${user.id},visibility.eq.public`)
-    .order("starts_at", { ascending: false })
-    .limit(50)
+    .order('starts_at', { ascending: false })
+    .limit(50);
 
   if (error) {
-    console.error("Error fetching contests:", error)
-    return NextResponse.json({ contests: [] })
+    console.error('Error fetching contests:', error);
+    return NextResponse.json({ contests: [] });
   }
 
   // Check which contests the user is registered for
   const { data: participations } = await supabase
-    .from("contest_participants")
-    .select("contest_id")
-    .eq("user_id", user.id)
+    .from('contest_participants')
+    .select('contest_id')
+    .eq('user_id', user.id);
 
-  const registeredContestIds = new Set(participations?.map((p) => p.contest_id) || [])
+  const registeredContestIds = new Set(
+    participations?.map(p => p.contest_id) || []
+  );
 
   const formattedContests =
-    contests?.map((contest) => ({
+    contests?.map(contest => ({
       ...contest,
       isRegistered: registeredContestIds.has(contest.id),
-    })) || []
+    })) || [];
 
-  return NextResponse.json({ contests: formattedContests })
+  return NextResponse.json({ contests: formattedContests });
 }
 
 export async function POST(req: Request) {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const body = await req.json()
+    const body = await req.json();
     const {
       name,
       description,
@@ -70,73 +72,97 @@ export async function POST(req: Request) {
       max_participants,
       allow_late_join,
       contest_mode, // 'practice' or 'icpc'
-    } = body
+    } = body;
 
     // Validation
     if (!name || !start_time || !duration_minutes || !problem_count) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
     }
 
-    console.log("Fetching problems from Codeforces API...")
-    const problemsResponse = await cfGetProblems()
+    console.log('Fetching problems from Codeforces API...');
 
-    if (problemsResponse.status !== "OK" || !problemsResponse.result) {
-      return NextResponse.json({ error: "Failed to fetch problems from Codeforces" }, { status: 500 })
+    const problemsResponse = await cfGetProblems();
+
+    // ✅ Define expected type from Codeforces API
+    type CFProblemResponse = {
+      status: string;
+      comment?: string;
+      result?: {
+        problems: CodeforcesProblem[];
+      };
+    };
+
+    const cfData = problemsResponse as CFProblemResponse;
+
+    if (cfData.status !== 'OK' || !cfData.result) {
+      return NextResponse.json(
+        { error: 'Failed to fetch problems from Codeforces' },
+        { status: 500 }
+      );
     }
 
-    const allProblems = problemsResponse.result.problems as CodeforcesProblem[]
+    const allProblems = cfData.result.problems;
 
     // Filter problems by rating range
     const filteredProblems = allProblems.filter(
-      (problem) => problem.rating && problem.rating >= rating_min && problem.rating <= rating_max,
-    )
+      problem =>
+        problem.rating &&
+        problem.rating >= rating_min &&
+        problem.rating <= rating_max
+    );
 
     if (filteredProblems.length < problem_count) {
       return NextResponse.json(
         {
           error: `Not enough problems in rating range ${rating_min}-${rating_max}. Found ${filteredProblems.length}, need ${problem_count}`,
         },
-        { status: 400 },
-      )
+        { status: 400 }
+      );
     }
 
     // Randomly select problems
-    const shuffled = filteredProblems.sort(() => Math.random() - 0.5)
-    const selectedProblems = shuffled.slice(0, problem_count)
+    const shuffled = filteredProblems.sort(() => Math.random() - 0.5);
+    const selectedProblems = shuffled.slice(0, problem_count);
 
-    console.log(`Selected ${selectedProblems.length} problems for contest`)
+    console.log(`Selected ${selectedProblems.length} problems for contest`);
 
     // Create contest
     const { data: contest, error: contestError } = await supabase
-      .from("contests")
+      .from('contests')
       .insert({
         name,
-        description: description || "",
-        visibility: "private",
-        status: "draft",
+        description: description || '',
+        visibility: 'private',
+        status: 'draft',
         host_user_id: user.id,
         starts_at: start_time,
         ends_at: end_time,
         max_participants: max_participants || null,
-        allow_late_join: allow_late_join || true,
-        contest_mode: contest_mode || "practice",
+        allow_late_join: allow_late_join ?? true,
+        contest_mode: contest_mode || 'practice',
         duration_minutes,
         problem_count,
         rating_min,
         rating_max,
       })
       .select()
-      .single()
+      .single();
 
     if (contestError) {
-      console.error("Failed to create contest:", contestError)
-      return NextResponse.json({ error: `Database error: ${contestError.message}` }, { status: 500 })
+      console.error('Failed to create contest:', contestError);
+      return NextResponse.json(
+        { error: `Database error: ${contestError.message}` },
+        { status: 500 }
+      );
     }
 
-    console.log(`Contest created successfully: ${contest.id}`)
+    console.log(`Contest created successfully: ${contest.id}`);
 
     // Insert problems
-    const problemsToInsert = selectedProblems.map((problem, index) => ({
+    const problemsToInsert = selectedProblems.map(problem => ({
       contest_id: contest.id,
       problem_id: `${problem.contestId}${problem.index}`,
       title: problem.name,
@@ -144,22 +170,30 @@ export async function POST(req: Request) {
       contest_id_cf: problem.contestId,
       index_cf: problem.index,
       rating: problem.rating || 0,
-    }))
+    }));
 
-    const { error: problemsError } = await supabase.from("contest_problems").insert(problemsToInsert)
+    const { error: problemsError } = await supabase
+      .from('contest_problems')
+      .insert(problemsToInsert);
 
     if (problemsError) {
-      console.error("Failed to insert contest problems:", problemsError)
+      console.error('Failed to insert contest problems:', problemsError);
       // Rollback: delete the contest
-      await supabase.from("contests").delete().eq("id", contest.id)
-      return NextResponse.json({ error: "Failed to add problems to contest" }, { status: 500 })
+      await supabase.from('contests').delete().eq('id', contest.id);
+      return NextResponse.json(
+        { error: 'Failed to add problems to contest' },
+        { status: 500 }
+      );
     }
 
-    console.log(`Successfully inserted ${problemsToInsert.length} problems`)
+    console.log(`Successfully inserted ${problemsToInsert.length} problems`);
 
-    return NextResponse.json({ id: contest.id, contest })
+    return NextResponse.json({ id: contest.id, contest });
   } catch (error) {
-    console.error("Contest creation failed:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error('Contest creation failed:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

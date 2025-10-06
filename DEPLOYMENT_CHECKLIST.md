@@ -37,23 +37,23 @@ Test these endpoints in order:
 
 1. **Basic Health Check**
 
-   ```
+   \`\`\`
    GET http://localhost:3000/api/test
    Expected: {"status": "OK", "message": "Test endpoint working"}
-   ```
+   \`\`\`
 
 2. **Codeforces OAuth (Main Fix)**
 
-   ```
+   \`\`\`
    GET http://localhost:3000/api/cf/oauth/start?handle=jiangly
    Expected: Success response with handle verification
-   ```
+   \`\`\`
 
 3. **Authentication Flow**
-   ```
+   \`\`\`
    Navigate to: http://localhost:3000/auth/login
    Expected: Login page loads without errors
-   ```
+   \`\`\`
 
 ## 📈 Success Criteria
 

@@ -1,94 +1,88 @@
-import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
+import { createServerClient } from "@supabase/ssr"
+import { NextResponse, type NextRequest } from "next/server"
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
-  });
+  })
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   // If Supabase is not configured properly, skip auth middleware
   if (
     !supabaseUrl ||
     !supabaseAnonKey ||
-    supabaseUrl === 'https://your-project.supabase.co' ||
-    supabaseUrl === 'https://your-project-ref.supabase.co' ||
-    supabaseAnonKey === 'your-anon-key-here' ||
-    supabaseAnonKey === '[YOUR-ANON-KEY-HERE]'
+    supabaseUrl === "https://your-project.supabase.co" ||
+    supabaseUrl === "https://your-project-ref.supabase.co" ||
+    supabaseAnonKey === "your-anon-key-here" ||
+    supabaseAnonKey === "[YOUR-ANON-KEY-HERE]"
   ) {
-    console.warn(
-      '[v0] Supabase environment variables not found, skipping auth middleware'
-    );
-    return supabaseResponse;
+    console.warn("Supabase environment variables not configured, skipping auth middleware")
+    return supabaseResponse
   }
 
-  // With Fluid compute, don't put this client in a global environment
-  // variable. Always create a new one on each request.
   const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
-        return request.cookies.getAll();
+        return request.cookies.getAll()
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value)
-        );
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
         supabaseResponse = NextResponse.next({
           request,
-        });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
-        );
+        })
+        cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
       },
     },
-  });
+  })
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
-  // IMPORTANT: If you remove getUser() and you use server-side rendering
-  // with the Supabase client, your users may be randomly logged out.
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getUser()
 
-  if (
-    request.nextUrl.pathname !== '/' &&
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/auth') &&
-    !request.nextUrl.pathname.startsWith('/api/') && // Don't redirect API routes
-    !request.nextUrl.pathname.startsWith('/cf-verification-success') && // Allow CF verification success page
-    !request.nextUrl.pathname.startsWith('/analytics') && // Allow analytics page for demo
-    !request.nextUrl.pathname.startsWith('/train') && // Allow train page for demo
-    !request.nextUrl.pathname.startsWith('/contests') && // Allow contests page for demo
-    !request.nextUrl.pathname.startsWith('/adaptive-sheet') && // Allow adaptive sheet for demo
-    !request.nextUrl.pathname.startsWith('/groups') && // Allow groups page for demo
-    !request.nextUrl.pathname.startsWith('/visualizers') && // Allow visualizers page for demo
-    !request.nextUrl.pathname.startsWith('/paths') && // Allow paths page for demo
-    !request.nextUrl.pathname.startsWith('/settings') // Allow settings page for demo
-  ) {
-    // no user, potentially respond by redirecting the user to the login page
-    const url = request.nextUrl.clone();
-    url.pathname = '/auth/login';
-    return NextResponse.redirect(url);
+  const publicPaths = [
+    "/",
+    "/login",
+    "/auth",
+    "/cf-verification-success",
+    "/analytics",
+    "/train",
+    "/contests",
+    "/adaptive-sheet",
+    "/groups",
+    "/visualizers",
+    "/paths",
+    "/settings",
+  ]
+
+  const isPublicPath = publicPaths.some(
+    (path) => request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(path),
+  )
+
+  const isApiRoute = request.nextUrl.pathname.startsWith("/api/")
+
+  if (!user && !isPublicPath && !isApiRoute) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/auth/login"
+    return NextResponse.redirect(url)
   }
 
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
-  // If you're creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
+  if (user && !isApiRoute && !isPublicPath) {
+    // Allow access to profile page without CF verification
+    if (request.nextUrl.pathname === "/profile" || request.nextUrl.pathname === "/settings") {
+      return supabaseResponse
+    }
 
-  return supabaseResponse;
+    // Check if user has verified CF handle
+    const { data: cfHandle } = await supabase.from("cf_handles").select("verified").eq("user_id", user.id).single()
+
+    if (!cfHandle?.verified) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/profile"
+      return NextResponse.redirect(url)
+    }
+  }
+
+  return supabaseResponse
 }

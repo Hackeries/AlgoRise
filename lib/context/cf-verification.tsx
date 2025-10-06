@@ -38,11 +38,21 @@ interface CFVerificationProviderProps {
 
 // ---------------- Safe logging ----------------
 const logSupabaseError = (context: string, error: any) => {
+  if (!error) {
+    console.error(`${context}: No error object provided`);
+    return;
+  }
+
   console.error(`${context}:`, {
     code: error?.code ?? 'Unknown',
-    message: error?.message ?? JSON.stringify(error) ?? 'No message',
+    message:
+      error?.message ??
+      error?.toString?.() ??
+      JSON.stringify(error) ??
+      'No message',
     details: error?.details ?? 'No details',
     hint: error?.hint ?? 'No hint',
+    timestamp: new Date().toISOString(),
   });
 };
 
@@ -123,8 +133,9 @@ export function CFVerificationProvider({
           { onConflict: 'user_id' }
         );
 
-        if (handleError)
+        if (handleError) {
           logSupabaseError('Supabase handle save error', handleError);
+        }
 
         const { error: snapshotError } = await supabase
           .from('cf_snapshots')
@@ -135,11 +146,12 @@ export function CFVerificationProvider({
             max_rating: data.maxRating,
             rank: data.rank,
             problems_solved: 0,
-            captured_at: new Date().toISOString(),
+            snapshot_at: new Date().toISOString(),
           });
 
-        if (snapshotError)
+        if (snapshotError) {
           logSupabaseError('Supabase snapshot save error', snapshotError);
+        }
       } catch (error) {
         console.error('Exception saving CF verification to Supabase:', error);
       }
@@ -171,7 +183,7 @@ export function CFVerificationProvider({
           max_rating: data.maxRating,
           rank: data.rank,
           problems_solved: 0, // Default value, will be updated later
-          captured_at: new Date().toISOString(),
+          snapshot_at: new Date().toISOString(),
         });
 
       if (user) await saveToSupabase(data);
@@ -208,7 +220,7 @@ export function CFVerificationProvider({
           .from('cf_snapshots')
           .select('rating, max_rating, rank')
           .eq('user_id', user.id)
-          .order('captured_at', { ascending: false })
+          .order('snapshot_at', { ascending: false })
           .limit(1)
           .single();
 

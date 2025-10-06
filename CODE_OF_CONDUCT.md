@@ -2,7 +2,7 @@
 
 ## 2. `CODE_OF_CONDUCT.md`
 
-```markdown
+\`\`\`markdown
 # Code of Conduct
 
 We want AlgoRise to be a welcoming community 🌍
@@ -15,4 +15,4 @@ We want AlgoRise to be a welcoming community 🌍
 Anyone who violates this may be removed from the community.
 
 Let’s build AlgoRise together ❤️
-```
+\`\`\`

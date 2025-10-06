@@ -1,497 +1,390 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import useSWR from 'swr';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import {
-  Clock,
-  ExternalLink,
-  Trophy,
-  User,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  Maximize2,
-} from 'lucide-react';
+import { useEffect, useState } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { useToast } from "@/hooks/use-toast"
+import { Clock, Calendar, Trophy, Share2 } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
 
-const fetcher = (url: string) => fetch(url).then(r => r.json());
-
-interface Problem {
-  id: string;
-  contestId: number;
-  index: string;
-  name: string;
-  rating: number;
-}
+const supabase = createClient()
 
 interface Contest {
-  id: string;
-  name: string;
-  description: string;
-  start_time: string;
-  duration_minutes: number;
-  problems: Problem[];
-  status: 'upcoming' | 'live' | 'ended';
-  timeRemaining: number;
-  max_participants?: number;
-  shareUrl: string;
+  id: string
+  name: string
+  description: string
+  contest_mode: "practice" | "icpc"
+  starts_at: string
+  ends_at: string
+  duration_minutes: number
+  problem_count: number
+  rating_min: number
+  rating_max: number
+  max_participants?: number
+  status: string
+  host_user_id: string
 }
 
-interface Submission {
-  problemId: string;
-  status: 'AC' | 'WA' | 'TLE' | 'RE' | 'CE' | 'PE' | 'MLE';
-  timestamp: string;
-  penalty: number;
+interface LeaderboardEntry {
+  rank: number
+  user_id: string
+  solved: number
+  penalty: number
 }
 
-export default function ContestParticipationPage() {
-  const params = useParams<{ id: string }>();
-  const router = useRouter();
-  const { toast } = useToast();
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
-  const [submissionStatus, setSubmissionStatus] = useState<string>('');
-  const [contestEnded, setContestEnded] = useState(false);
+export default function ContestDetailPage() {
+  const params = useParams<{ id: string }>()
+  const router = useRouter()
+  const { toast } = useToast()
+  const [contest, setContest] = useState<Contest | null>(null)
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
+  const [loading, setLoading] = useState(true)
+  const [timeUntilStart, setTimeUntilStart] = useState<string>("")
+  const [isRegistered, setIsRegistered] = useState(false)
+  const [registering, setRegistering] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
-  const { data, error, mutate } = useSWR<{ contest: Contest }>(
-    params.id ? `/api/contests/${params.id}` : null,
-    fetcher,
-    { refreshInterval: 30000 }
-  );
-
-  const contest = data?.contest;
-
-  // Enter fullscreen on mount
   useEffect(() => {
-    const enterFullscreen = async () => {
-      try {
-        await document.documentElement.requestFullscreen();
-        setIsFullscreen(true);
-      } catch (err) {
-        console.log('Fullscreen not supported or denied');
-      }
-    };
+    fetchContestData()
+    checkRegistration()
+  }, [params.id])
 
-    enterFullscreen();
-
-    // Listen for fullscreen changes
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    };
-  }, []);
-
-  // Timer countdown
   useEffect(() => {
-    if (!contest || contest.status !== 'live') return;
+    if (!contest) return
 
     const interval = setInterval(() => {
-      mutate(); // Refresh contest data to get updated time
-    }, 1000);
+      const now = new Date()
+      const start = new Date(contest.starts_at)
+      const diff = start.getTime() - now.getTime()
 
-    return () => clearInterval(interval);
-  }, [contest, mutate]);
+      if (diff <= 0) {
+        setTimeUntilStart("Contest has started!")
+        clearInterval(interval)
+      } else {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000)
 
-  // Auto-end contest when time is up
-  useEffect(() => {
-    if (contest && contest.status === 'live' && contest.timeRemaining <= 0) {
-      setContestEnded(true);
-    }
-  }, [contest]);
+        if (days > 0) {
+          setTimeUntilStart(`${days}d ${hours}h ${minutes}m ${seconds}s`)
+        } else if (hours > 0) {
+          setTimeUntilStart(`${hours}h ${minutes}m ${seconds}s`)
+        } else {
+          setTimeUntilStart(`${minutes}m ${seconds}s`)
+        }
+      }
+    }, 1000)
 
-  const formatTime = (ms: number) => {
-    const hours = Math.floor(ms / (1000 * 60 * 60));
-    const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((ms % (1000 * 60)) / 1000);
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  };
+    return () => clearInterval(interval)
+  }, [contest])
 
-  const handleSubmission = async (status: string) => {
-    if (!selectedProblem) return;
-
-    const submission: Submission = {
-      problemId: selectedProblem.id,
-      status: status as any,
-      timestamp: new Date().toISOString(),
-      penalty: status === 'AC' ? 0 : 1200, // 20 minutes penalty for wrong submission
-    };
-
-    // Add to local submissions
-    setSubmissions(prev => [...prev, submission]);
-
+  const fetchContestData = async () => {
     try {
-      // Submit to backend
-      await fetch(`/api/contests/${params.id}/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          problemId: selectedProblem.id,
-          status: status === 'AC' ? 'solved' : 'failed',
-          penalty: submission.penalty,
-        }),
-      });
+      const response = await fetch(`/api/contests/${params.id}`)
+      if (response.ok) {
+        const data = await response.json()
+        setContest(data.contest)
+      }
 
-      toast({
-        title: status === 'AC' ? 'Accepted!' : 'Wrong Answer',
-        description: `Submission for ${selectedProblem.index}: ${selectedProblem.name}`,
-        variant: status === 'AC' ? 'default' : 'destructive',
-      });
+      const leaderboardResponse = await fetch(`/api/contests/${params.id}/leaderboard`)
+      if (leaderboardResponse.ok) {
+        const data = await leaderboardResponse.json()
+        setLeaderboard(data.leaderboard || [])
+      }
+    } catch (error) {
+      console.error("Error fetching contest:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const checkRegistration = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return
+
+    setCurrentUserId(user.id)
+
+    const { data } = await supabase
+      .from("contest_participants")
+      .select("id")
+      .eq("contest_id", params.id)
+      .eq("user_id", user.id)
+      .maybeSingle()
+
+    setIsRegistered(!!data)
+  }
+
+  const handleRegister = async () => {
+    setRegistering(true)
+    try {
+      const response = await fetch(`/api/contests/${params.id}/join`, {
+        method: "POST",
+      })
+
+      if (response.ok) {
+        setIsRegistered(true)
+        toast({
+          title: "Registered!",
+          description: "You have successfully registered for this contest.",
+        })
+        fetchContestData()
+      } else {
+        const error = await response.json()
+        toast({
+          title: "Registration Failed",
+          description: error.error || "Failed to register for contest",
+          variant: "destructive",
+        })
+      }
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Failed to submit solution',
-        variant: 'destructive',
-      });
+        title: "Error",
+        description: "Failed to register for contest",
+        variant: "destructive",
+      })
+    } finally {
+      setRegistering(false)
+    }
+  }
+
+  const handleJoinContest = () => {
+    if (!contest) return
+
+    const now = new Date()
+    const start = new Date(contest.starts_at)
+    const registrationClose = new Date(start.getTime() + 10 * 60 * 1000)
+
+    if (now < start) {
+      toast({
+        title: "Too Early!",
+        description: "Contest has not started yet. Please wait.",
+        variant: "destructive",
+      })
+      return
     }
 
-    setSelectedProblem(null);
-  };
-
-  const exitFullscreen = async () => {
-    try {
-      await document.exitFullscreen();
-    } catch (err) {
-      console.log('Exit fullscreen failed');
+    if (now > registrationClose && !contest.allow_late_join) {
+      toast({
+        title: "Registration Closed",
+        description: "Registration window has closed.",
+        variant: "destructive",
+      })
+      return
     }
-  };
 
-  const getSubmissionStats = () => {
-    const solved = submissions.filter(s => s.status === 'AC').length;
-    const total = contest?.problems.length || 0;
-    const totalPenalty = submissions
-      .filter(s => s.status === 'AC')
-      .reduce((acc, s) => acc + s.penalty, 0);
+    router.push(`/contests/${params.id}/participate`)
+  }
 
-    return { solved, total, penalty: totalPenalty };
-  };
+  const copyShareLink = () => {
+    const link = `${window.location.origin}/contests/${params.id}`
+    navigator.clipboard.writeText(link)
+    toast({
+      title: "Link Copied!",
+      description: "Contest link copied to clipboard.",
+    })
+  }
 
-  if (error) {
+  if (loading) {
     return (
-      <div className='min-h-screen bg-red-50 flex items-center justify-center'>
-        <div className='text-center'>
-          <h1 className='text-2xl font-bold text-red-800'>Contest Not Found</h1>
-          <Button onClick={() => router.push('/contests')} className='mt-4'>
-            Back to Contests
-          </Button>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white/60"></div>
+          <p className="mt-2 text-white/60">Loading contest...</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!contest) {
     return (
-      <div className='min-h-screen bg-gray-900 flex items-center justify-center'>
-        <div className='text-white'>Loading contest...</div>
-      </div>
-    );
-  }
-
-  if (contest.status === 'upcoming') {
-    return (
-      <div className='min-h-screen bg-blue-50 flex items-center justify-center'>
-        <div className='text-center'>
-          <Clock className='mx-auto h-16 w-16 text-blue-600 mb-4' />
-          <h1 className='text-2xl font-bold text-blue-800'>
-            Contest Starting Soon
-          </h1>
-          <p className='text-blue-600 mt-2'>
-            Starts at: {new Date(contest.start_time).toLocaleString()}
-          </p>
-          <Button onClick={() => router.push('/contests')} className='mt-4'>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Contest Not Found</h1>
+          <Button onClick={() => router.push("/contests")} className="mt-4">
             Back to Contests
           </Button>
         </div>
       </div>
-    );
+    )
   }
 
-  const stats = getSubmissionStats();
+  const now = new Date()
+  const start = new Date(contest.starts_at)
+  const end = new Date(contest.ends_at)
+  const hasStarted = now >= start
+  const hasEnded = now >= end
 
   return (
-    <div className='min-h-screen bg-gray-900 text-white'>
+    <main className="mx-auto max-w-6xl px-4 py-10">
       {/* Header */}
-      <div className='bg-gray-800 border-b border-gray-700 px-6 py-4'>
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-4'>
-            <h1 className='text-xl font-bold'>{contest.name}</h1>
-            <Badge
-              variant={contest.status === 'live' ? 'default' : 'secondary'}
-            >
-              {contest.status.toUpperCase()}
-            </Badge>
+      <div className="mb-8">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">{contest.name}</h1>
+            <div className="flex items-center gap-2">
+              <Badge variant={hasEnded ? "secondary" : hasStarted ? "default" : "outline"}>
+                {hasEnded ? "Ended" : hasStarted ? "Live" : "Upcoming"}
+              </Badge>
+              <Badge variant="outline">{contest.contest_mode === "practice" ? "Practice Arena" : "ICPC Arena"}</Badge>
+            </div>
           </div>
+          <Button variant="outline" onClick={copyShareLink}>
+            <Share2 className="w-4 h-4 mr-2" />
+            Share
+          </Button>
+        </div>
 
-          <div className='flex items-center gap-4'>
-            {contest.status === 'live' && (
-              <div className='flex items-center gap-2 text-green-400'>
-                <Clock className='h-4 w-4' />
-                <span className='font-mono text-lg'>
-                  {formatTime(contest.timeRemaining)}
-                </span>
-              </div>
-            )}
+        {contest.description && <p className="text-white/70 leading-relaxed">{contest.description}</p>}
+      </div>
 
-            <div className='flex items-center gap-2'>
-              <Trophy className='h-4 w-4' />
-              <span>
-                {stats.solved}/{stats.total} solved
+      <div className="grid gap-6 md:grid-cols-2 mb-8">
+        {/* Contest Info */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Contest Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between">
+              <span className="text-white/60">Start Time</span>
+              <span className="font-medium">{new Date(contest.starts_at).toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/60">Duration</span>
+              <span className="font-medium">
+                {Math.floor(contest.duration_minutes / 60)}h {contest.duration_minutes % 60}m
               </span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-white/60">Problems</span>
+              <span className="font-medium">{contest.problem_count}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-white/60">Rating Range</span>
+              <span className="font-medium">
+                {contest.rating_min} - {contest.rating_max}
+              </span>
+            </div>
+            {contest.max_participants && (
+              <div className="flex justify-between">
+                <span className="text-white/60">Max Participants</span>
+                <span className="font-medium">{contest.max_participants}</span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={exitFullscreen}
-              className='text-white border-gray-600 hover:bg-gray-700'
-            >
-              <Maximize2 className='h-4 w-4 mr-2' />
-              Exit Fullscreen
-            </Button>
-          </div>
-        </div>
+        {/* Countdown / Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              {hasEnded ? "Contest Ended" : hasStarted ? "Contest Live" : "Countdown"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!hasEnded && !hasStarted && (
+              <div className="text-center py-6">
+                <div className="text-4xl font-bold text-green-400 mb-2">{timeUntilStart}</div>
+                <p className="text-white/60">Until contest starts</p>
+              </div>
+            )}
+            {hasStarted && !hasEnded && (
+              <div className="text-center py-6">
+                <div className="text-2xl font-bold text-green-400 mb-4">Contest is Live!</div>
+                {isRegistered ? (
+                  <Button onClick={handleJoinContest} size="lg" className="w-full">
+                    Join Contest Now
+                  </Button>
+                ) : (
+                  <Button onClick={handleRegister} disabled={registering} size="lg" className="w-full">
+                    {registering ? "Registering..." : "Register & Join"}
+                  </Button>
+                )}
+              </div>
+            )}
+            {hasEnded && (
+              <div className="text-center py-6">
+                <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+                <p className="text-white/60">View final leaderboard below</p>
+              </div>
+            )}
+            {!hasStarted && !hasEnded && (
+              <div className="mt-4">
+                {isRegistered ? (
+                  <div className="text-center">
+                    <Badge variant="default" className="mb-2">
+                      Registered
+                    </Badge>
+                    <p className="text-sm text-white/60">You will be able to join when the contest starts</p>
+                  </div>
+                ) : (
+                  <Button onClick={handleRegister} disabled={registering} className="w-full">
+                    {registering ? "Registering..." : "Register Now"}
+                  </Button>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      <div className='flex h-[calc(100vh-80px)]'>
-        {/* Problems List */}
-        <div className='w-1/2 border-r border-gray-700 p-6'>
-          <h2 className='text-lg font-semibold mb-4'>Problems</h2>
-          <div className='space-y-3'>
-            {contest.problems.map((problem, index) => {
-              const problemSubmissions = submissions.filter(
-                s => s.problemId === problem.id
-              );
-              const solved = problemSubmissions.some(s => s.status === 'AC');
-              const attempted = problemSubmissions.length > 0;
-
-              return (
-                <Card
-                  key={problem.id}
-                  className={`bg-gray-800 border-gray-700 hover:bg-gray-750 cursor-pointer transition-colors ${
-                    solved
-                      ? 'border-green-500'
-                      : attempted
-                        ? 'border-yellow-500'
-                        : ''
-                  }`}
-                  onClick={() => setSelectedProblem(problem)}
+      {/* Leaderboard Preview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="w-5 h-5" />
+            Leaderboard {!hasStarted && "(Preview)"}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {leaderboard.length === 0 ? (
+            <div className="text-center py-8 text-white/60">No submissions yet. Be the first to participate!</div>
+          ) : (
+            <div className="space-y-2">
+              {leaderboard.slice(0, 10).map((entry) => (
+                <div
+                  key={entry.user_id}
+                  className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
                 >
-                  <CardContent className='p-4'>
-                    <div className='flex items-center justify-between'>
-                      <div className='flex items-center gap-3'>
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                            solved
-                              ? 'bg-green-600'
-                              : attempted
-                                ? 'bg-yellow-600'
-                                : 'bg-gray-600'
-                          }`}
-                        >
-                          {problem.index}
-                        </div>
-                        <div>
-                          <div className='font-medium'>{problem.name}</div>
-                          <div className='text-sm text-gray-400'>
-                            Rating: {problem.rating}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className='flex items-center gap-2'>
-                        {solved && (
-                          <CheckCircle className='h-5 w-5 text-green-500' />
-                        )}
-                        {attempted && !solved && (
-                          <XCircle className='h-5 w-5 text-yellow-500' />
-                        )}
-                        <Button
-                          variant='outline'
-                          size='sm'
-                          onClick={e => {
-                            e.stopPropagation();
-                            window.open(
-                              `https://codeforces.com/problemset/problem/${problem.contestId}/${problem.index}`,
-                              '_blank'
-                            );
-                          }}
-                        >
-                          <ExternalLink className='h-4 w-4' />
-                        </Button>
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                        entry.rank === 1
+                          ? "bg-yellow-500 text-black"
+                          : entry.rank === 2
+                            ? "bg-gray-400 text-black"
+                            : entry.rank === 3
+                              ? "bg-orange-600 text-white"
+                              : "bg-white/10"
+                      }`}
+                    >
+                      {entry.rank}
+                    </div>
+                    <div>
+                      <div className="font-medium">User {entry.user_id.slice(0, 8)}</div>
+                      <div className="text-sm text-white/60">
+                        {entry.solved} solved • {Math.floor(entry.penalty / 60)}m penalty
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Submissions Panel */}
-        <div className='w-1/2 p-6'>
-          <h2 className='text-lg font-semibold mb-4'>Submissions</h2>
-          <div className='space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto'>
-            {submissions.length === 0 ? (
-              <div className='text-gray-400 text-center py-8'>
-                No submissions yet. Click on a problem to start!
-              </div>
-            ) : (
-              submissions
-                .slice()
-                .reverse()
-                .map((submission, index) => {
-                  const problem = contest.problems.find(
-                    p => p.id === submission.problemId
-                  );
-                  return (
-                    <Card key={index} className='bg-gray-800 border-gray-700'>
-                      <CardContent className='p-4'>
-                        <div className='flex items-center justify-between'>
-                          <div className='flex items-center gap-3'>
-                            <Badge
-                              variant={
-                                submission.status === 'AC'
-                                  ? 'default'
-                                  : 'destructive'
-                              }
-                            >
-                              {submission.status}
-                            </Badge>
-                            <span>
-                              {problem?.index}. {problem?.name}
-                            </span>
-                          </div>
-                          <div className='text-sm text-gray-400'>
-                            {new Date(
-                              submission.timestamp
-                            ).toLocaleTimeString()}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Submission Dialog */}
-      <Dialog
-        open={!!selectedProblem}
-        onOpenChange={() => setSelectedProblem(null)}
-      >
-        <DialogContent className='bg-gray-800 border-gray-700 text-white'>
-          <DialogHeader>
-            <DialogTitle className='flex items-center gap-2'>
-              Submit Solution for {selectedProblem?.index}.{' '}
-              {selectedProblem?.name}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className='space-y-4'>
-            <p className='text-gray-300'>
-              Have you solved this problem? Select the result of your
-              submission:
-            </p>
-
-            <div className='grid grid-cols-2 gap-3'>
-              <Button
-                onClick={() => handleSubmission('AC')}
-                className='bg-green-600 hover:bg-green-700'
-              >
-                <CheckCircle className='h-4 w-4 mr-2' />
-                Accepted (AC)
-              </Button>
-              <Button
-                onClick={() => handleSubmission('WA')}
-                variant='destructive'
-              >
-                <XCircle className='h-4 w-4 mr-2' />
-                Wrong Answer (WA)
-              </Button>
-              <Button
-                onClick={() => handleSubmission('TLE')}
-                variant='destructive'
-              >
-                <AlertCircle className='h-4 w-4 mr-2' />
-                Time Limit Exceeded (TLE)
-              </Button>
-              <Button
-                onClick={() => handleSubmission('RE')}
-                variant='destructive'
-              >
-                <AlertCircle className='h-4 w-4 mr-2' />
-                Runtime Error (RE)
-              </Button>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-green-400">{entry.solved}</div>
+                    <div className="text-xs text-white/60">problems</div>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Contest End Dialog */}
-      <Dialog open={contestEnded} onOpenChange={() => setContestEnded(false)}>
-        <DialogContent className='bg-gray-800 border-gray-700 text-white'>
-          <DialogHeader>
-            <DialogTitle className='flex items-center gap-2'>
-              <Trophy className='h-6 w-6 text-yellow-500' />
-              Contest Ended!
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className='space-y-4'>
-            <div className='text-center'>
-              <div className='text-4xl font-bold text-green-400 mb-2'>
-                {stats.solved}/{stats.total}
-              </div>
-              <p className='text-gray-300'>Problems Solved</p>
-              {stats.penalty > 0 && (
-                <p className='text-sm text-gray-400 mt-2'>
-                  Total Penalty: {Math.floor(stats.penalty / 60)} minutes
-                </p>
-              )}
-            </div>
-
-            <div className='flex gap-3'>
-              <Button
-                onClick={() => router.push('/contests')}
-                className='flex-1'
-              >
-                Back to Contests
-              </Button>
-              <Button
-                onClick={() => router.push(`/contests/${contest.id}`)}
-                variant='outline'
-                className='flex-1'
-              >
-                View Leaderboard
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+          )}
+        </CardContent>
+      </Card>
+    </main>
+  )
 }

@@ -13,11 +13,11 @@ We welcome **everyone** – whether you are a beginner or an experienced develop
 
 2. **Clone your fork**
 
-   ```bash
+   \`\`\`bash
    git clone https://github.com/<your-username>/AlgoRise.git
    cd AlgoRise
 
-   ```
+   \`\`\`
 
 3. **Install dependencies**
    npm install

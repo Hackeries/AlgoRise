@@ -1,0 +1,110 @@
+[
+  {
+    "id": "contest_1758050994312_5yvyg8g51",
+    "name": "firstContest",
+    "description": "Real Grind",
+    "start_time": "2025-12-08T19:31:00.000Z",
+    "end_time": "2025-12-08T21:31:00.000Z",
+    "duration_minutes": 120,
+    "problem_count": 5,
+    "rating_min": 1200,
+    "rating_max": 1400,
+    "problems": [
+      {
+        "id": "1418A",
+        "contestId": 1418,
+        "index": "A",
+        "name": "Problem A",
+        "rating": 1390
+      },
+      {
+        "id": "1091B",
+        "contestId": 1091,
+        "index": "B",
+        "name": "Problem B",
+        "rating": 1302
+      },
+      {
+        "id": "1830C",
+        "contestId": 1830,
+        "index": "C",
+        "name": "Problem C",
+        "rating": 1361
+      },
+      {
+        "id": "1860D",
+        "contestId": 1860,
+        "index": "D",
+        "name": "Problem D",
+        "rating": 1250
+      },
+      {
+        "id": "1539E",
+        "contestId": 1539,
+        "index": "E",
+        "name": "Problem E",
+        "rating": 1239
+      }
+    ],
+    "max_participants": null,
+    "allow_late_join": true,
+    "status": "upcoming",
+    "created_by": "user_1758050994312",
+    "created_at": "2025-09-16T19:29:54.312Z",
+    "updated_at": "2025-09-16T19:29:54.312Z"
+  },
+  {
+    "id": "contest_1758052991402_6j196ewsz",
+    "name": "firstContest",
+    "description": "RealGrind",
+    "start_time": "2025-09-16T20:04:00.000Z",
+    "end_time": "2025-09-16T22:04:00.000Z",
+    "duration_minutes": 120,
+    "problem_count": 5,
+    "rating_min": 1200,
+    "rating_max": 1400,
+    "problems": [
+      {
+        "id": "1865A",
+        "contestId": 1865,
+        "index": "A",
+        "name": "Problem A",
+        "rating": 1270
+      },
+      {
+        "id": "1458B",
+        "contestId": 1458,
+        "index": "B",
+        "name": "Problem B",
+        "rating": 1211
+      },
+      {
+        "id": "1580C",
+        "contestId": 1580,
+        "index": "C",
+        "name": "Problem C",
+        "rating": 1253
+      },
+      {
+        "id": "1295D",
+        "contestId": 1295,
+        "index": "D",
+        "name": "Problem D",
+        "rating": 1246
+      },
+      {
+        "id": "1818E",
+        "contestId": 1818,
+        "index": "E",
+        "name": "Problem E",
+        "rating": 1275
+      }
+    ],
+    "max_participants": 1,
+    "allow_late_join": true,
+    "status": "upcoming",
+    "created_by": "user_1758052991402",
+    "created_at": "2025-09-16T20:03:11.402Z",
+    "updated_at": "2025-09-16T20:03:11.402Z"
+  }
+]

@@ -36,7 +36,7 @@ This report documents the complete development cycle of the AlgoRise competitive
 
 **Solution Implemented**:
 
-```sql
+\`\`\`sql
 -- Created complete database schema in SUPABASE_SETUP.sql
 CREATE TABLE IF NOT EXISTS public.cf_handles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS public.cf_handles (
   updated_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE (user_id)
 );
-```
+\`\`\`
 
 **Files Modified**:
 
@@ -97,11 +97,11 @@ CREATE TABLE IF NOT EXISTS public.cf_handles (
 
 ### Build Verification
 
-```bash
+\`\`\`bash
 npm run build
 # ✅ Build successful in 1.635s
 # ⚠️ Only expected Supabase Edge Runtime warnings (non-critical)
-```
+\`\`\`
 
 ---
 
@@ -134,11 +134,11 @@ npm run build
 
 **Setup Commands**:
 
-```powershell
+\`\`\`powershell
 # After obtaining authtoken from dashboard.ngrok.com
 .\ngrok.exe config add-authtoken <YOUR_AUTHTOKEN>
 .\ngrok.exe http 3000
-```
+\`\`\`
 
 ### Option 3: Vercel Deployment (Recommended Production)
 
@@ -228,7 +228,7 @@ npm run build
 
 ### Required Variables (Properly Configured)
 
-```bash
+\`\`\`bash
 # Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://mgxwmvwfsyhunyivgxmz.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=[CONFIGURED]
@@ -236,7 +236,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=[CONFIGURED]
 # Codeforces API
 CODEFORCES_API_KEY=[CONFIGURED]
 CODEFORCES_API_SECRET=[CONFIGURED]
-```
+\`\`\`
 
 **Security Status**: ✅ All sensitive data properly protected
 

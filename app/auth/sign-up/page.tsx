@@ -45,7 +45,7 @@ const Spinner = () => (
   <div className='animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full' />
 );
 
-// Input with icon and eye toggle
+// Reusable InputWithIcon component
 const InputWithIcon = ({
   id,
   label,
@@ -72,12 +72,9 @@ const InputWithIcon = ({
       {label}
     </Label>
     <div className='relative'>
-      {/* Left icon */}
       <span className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none'>
         <Icon className='h-5 w-5 text-gray-400' />
       </span>
-
-      {/* Input */}
       <Input
         id={id}
         type={
@@ -92,8 +89,6 @@ const InputWithIcon = ({
         onChange={onChange}
         className='pl-10 pr-10 py-2 w-full focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 transition'
       />
-
-      {/* Eye toggle */}
       {setShowPassword && (
         <button
           type='button'
@@ -142,20 +137,20 @@ export default function SignUpPage() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+
     if (password !== repeatPassword) {
       setError('Passwords do not match');
       setIsLoading(false);
       return;
     }
+
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-            `${window.location.origin}/auth/sign-up-success`,
+          emailRedirectTo: `${window.location.origin}/auth/sign-up-success`,
         },
       });
       if (error) throw error;
@@ -169,6 +164,18 @@ export default function SignUpPage() {
     }
   };
 
+  const getOAuthRedirect = (provider: 'google' | 'github') => {
+    if (provider === 'google') {
+      return process.env.NODE_ENV === 'production'
+        ? process.env.NEXT_PUBLIC_SUPABASE_OAUTH_GOOGLE_PROD
+        : process.env.NEXT_PUBLIC_SUPABASE_OAUTH_GOOGLE_DEV;
+    } else {
+      return process.env.NODE_ENV === 'production'
+        ? process.env.NEXT_PUBLIC_SUPABASE_OAUTH_GITHUB_PROD
+        : process.env.NEXT_PUBLIC_SUPABASE_OAUTH_GITHUB_DEV;
+    }
+  };
+
   const handleOAuthSignIn = async (provider: 'google' | 'github') => {
     setError(null);
     setIsOAuthLoading(provider);
@@ -176,9 +183,7 @@ export default function SignUpPage() {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo: 'https://www.myalgorise.in/profile',
-        },
+        options: { redirectTo: getOAuthRedirect(provider) }, // Use env variables
       });
       if (error) throw error;
     } catch (err: unknown) {
@@ -187,6 +192,7 @@ export default function SignUpPage() {
       setIsOAuthLoading(null);
     }
   };
+
 
   if (!isConfigured) {
     return (
@@ -251,37 +257,38 @@ export default function SignUpPage() {
               </Button>
             </div>
 
-            {/* Email sign up form */}
-            <form onSubmit={handleSignUp} className='space-y-6'>
-              <div className='flex flex-col gap-4'>
-                <InputWithIcon
-                  id='email'
-                  label='Email'
-                  type='email'
-                  placeholder='you@example.com'
-                  icon={Mail}
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                />
-                <InputWithIcon
-                  id='password'
-                  label='Password'
-                  icon={Lock}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  showPassword={showPassword}
-                  setShowPassword={setShowPassword}
-                />
-                <InputWithIcon
-                  id='repeat-password'
-                  label='Repeat Password'
-                  icon={Lock}
-                  value={repeatPassword}
-                  onChange={e => setRepeatPassword(e.target.value)}
-                  showPassword={showRepeatPassword}
-                  setShowPassword={setShowRepeatPassword}
-                />
-              </div>
+            {/* Email/password form */}
+            <form onSubmit={handleSignUp} className='space-y-4'>
+              <InputWithIcon
+                id='email'
+                label='Email'
+                placeholder='Enter your email'
+                icon={Mail}
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+              />
+
+              <InputWithIcon
+                id='password'
+                label='Password'
+                placeholder='Enter password'
+                icon={Lock}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                showPassword={showPassword}
+                setShowPassword={setShowPassword}
+              />
+
+              <InputWithIcon
+                id='repeat-password'
+                label='Repeat Password'
+                placeholder='Repeat password'
+                icon={Lock}
+                value={repeatPassword}
+                onChange={e => setRepeatPassword(e.target.value)}
+                showPassword={showRepeatPassword}
+                setShowPassword={setShowRepeatPassword}
+              />
 
               {error && (
                 <p className='text-sm text-red-500 text-center animate-pulse'>

@@ -147,7 +147,7 @@ export default function Page() {
       });
       if (error) throw error;
       await refreshUser();
-      router.push('/train');
+      router.push('/profile');
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : 'An unexpected error occurred'
@@ -164,7 +164,7 @@ export default function Page() {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: `${window.location.origin}/train` },
+        options: { redirectTo: `${window.location.origin}/profile` },
       });
       if (error) throw error;
     } catch (err: unknown) {

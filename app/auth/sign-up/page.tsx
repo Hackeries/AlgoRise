@@ -177,9 +177,7 @@ export default function SignUpPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-            `${window.location.origin}/protected`,
+          redirectTo: process.env.NEXT_PUBLIC_SUPABASE_OAUTH_REDIRECT,
         },
       });
       if (error) throw error;

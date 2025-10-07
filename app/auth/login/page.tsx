@@ -19,6 +19,17 @@ import { Label } from '@/components/ui/label';
 import { AuthConfigurationAlert } from '@/components/auth/auth-configuration-alert';
 import { Mail, Lock, Eye, EyeOff, Github } from 'lucide-react';
 
+import { createClient } from "@/lib/supabase/client"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { AuthConfigurationAlert } from "@/components/auth/auth-configuration-alert"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/lib/auth/context"
+import { toast } from "react-toastify";
 // Google SVG
 const GoogleIcon = () => (
   <svg className='h-5 w-5' viewBox='0 0 533.5 544.3'>
@@ -144,6 +155,26 @@ export default function Page() {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
+      })
+      if (error) {
+
+        toast.error(`${error.message}`);
+        return;
+      }
+      
+      // Refresh the auth context
+      await refreshUser()
+      
+      // Show success message and redirect
+      console.log('Login successful! Redirecting to dashboard...')
+      toast.success("Login successful!");
+      router.push("/train") // Redirect to main dashboard/train page
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes("Supabase configuration missing")) {
+        setError("Authentication is not configured. Please contact the administrator.")
+      } else {
+        setError(error instanceof Error ? error.message : "An error occurred")
+      }
       });
       if (error) throw error;
       await refreshUser();
@@ -186,6 +217,53 @@ export default function Page() {
   }
 
   return (
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">Login</CardTitle>
+              <CardDescription>Enter your email below to login to your account</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleLogin}>
+                <div className="flex flex-col gap-6">
+                  <div className="grid gap-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="m@example.com"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    />
+                  </div>
+                  
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Logging in..." : "Login"}
+                  </Button>
+                </div>
+                <div className="mt-4 text-center text-sm">
+                  Don&apos;t have an account?{" "}
+                  <Link href="/auth/sign-up" className="underline underline-offset-4">
+                    Sign up
+                  </Link>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
     <div className='flex h-screen w-full items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden'>
       <div className='w-full max-w-md'>
         <Card className='shadow-xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl transform transition duration-300 max-h-[90vh] overflow-y-auto'>

@@ -1,3 +1,14 @@
+import type React from "react";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { Analytics } from "@vercel/analytics/next";
+import { SidebarLayout } from "@/components/sidebar-layout";
+import { Inter, JetBrains_Mono, Bricolage_Grotesque } from "next/font/google";
+import "./globals.css";
+import { PWARegister } from "@/components/pwa/register";
+import { AuthProvider } from "@/lib/auth/context";
+import { CFVerificationProvider } from "@/lib/context/cf-verification";
+import { ToastContainer } from "react-toastify";
 import type React from 'react';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
@@ -50,7 +61,7 @@ export default function RootLayout({
             <SidebarLayout>
               <Suspense fallback={null}>{children}</Suspense>
             </SidebarLayout>
-            <Toaster />
+                <ToastContainer position="bottom-right" autoClose={3000} />
             <PWARegister />
             <Analytics />
           </CFVerificationProvider>

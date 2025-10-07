@@ -144,6 +144,12 @@ export function Header() {
     : 0;
 
   return (
+    <header className="h-17 flex items-center justify-between px-6 bg-[#0B1020] border-b border-white/10 backdrop-blur z-50">
+      {/* Left: Logo */}
+      <div className="flex items-center gap-4">
+        {/* <Link href="/" className="text-white font-bold text-xl">
+          AlgoRise
+        </Link> */}
     <header className='h-16 flex items-center justify-between px-6 bg-[#0B1020] border-b border-white/10 backdrop-blur z-50'>
       {/* Center: Search Bar */}
       <div className='flex-1 max-w-md mx-8 relative' ref={searchContainerRef}>

@@ -1,3 +1,14 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { CheckCircle, TrendingUp, Target, BookOpen, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+import { useCFVerification } from '@/lib/context/cf-verification'
+import { toast } from 'react-toastify'
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -50,6 +61,21 @@ export default function VerificationSuccessPage() {
         rating: parseInt(rating),
         maxRating: parseInt(maxRating),
         rank,
+        verifiedAt: new Date().toISOString()
+      }
+      setVerificationData(verificationData)
+
+       toast.success(`Verification successful for ${handle}! 🎉`, {
+      position: "bottom-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark"
+    })
+      
         verifiedAt: new Date().toISOString(),
       };
       setVerificationData(verificationData);
@@ -104,6 +130,9 @@ export default function VerificationSuccessPage() {
         contestsParticipated,
       });
     } catch (error) {
+      console.error('Error fetching user stats:', error)
+    
+      setUserStats(basicStats as UserStats)
       console.error('Error fetching user stats:', error);
       setUserStats(basicStats as UserStats);
     } finally {

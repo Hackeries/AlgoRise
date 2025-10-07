@@ -1,3 +1,26 @@
+"use client"
+
+import type React from "react"
+
+import { createClient } from "@/lib/supabase/client"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { AuthConfigurationAlert } from "@/components/auth/auth-configuration-alert"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { toast } from "react-toastify";
+
+export default function Page() {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [repeatPassword, setRepeatPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isConfigured, setIsConfigured] = useState(true)
+  const router = useRouter()
 'use client';
 
 import type React from 'react';
@@ -143,6 +166,9 @@ export default function SignUpPage() {
     setIsLoading(true);
     setError(null);
     if (password !== repeatPassword) {
+        toast.error(`${"Passwords do not match"}`);
+      setIsLoading(false)
+      return
       setError('Passwords do not match');
       setIsLoading(false);
       return;
@@ -157,6 +183,19 @@ export default function SignUpPage() {
             process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
             `${window.location.origin}/auth/sign-up-success`,
         },
+      })
+      if (error) {
+             toast.error(`${error.message}`);
+             return;
+      }
+      
+      router.push("/auth/sign-up-success")
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message.includes("Supabase configuration missing")) {
+        setError("Authentication is not configured. Please contact the administrator.")
+      } else {
+        setError(error instanceof Error ? error.message : "An error occurred")
+      }
       });
       if (error) throw error;
       router.push('/auth/sign-up-success');

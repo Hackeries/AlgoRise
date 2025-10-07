@@ -5,10 +5,11 @@ import { Analytics } from '@vercel/analytics/next';
 import { SidebarLayout } from '@/components/sidebar-layout';
 import { Inter, JetBrains_Mono, Bricolage_Grotesque } from 'next/font/google';
 import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
+
 import { PWARegister } from '@/components/pwa/register';
 import { AuthProvider } from '@/lib/auth/context';
 import { CFVerificationProvider } from '@/lib/context/cf-verification';
+import { ToastContainer } from 'react-toastify';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -50,7 +51,18 @@ export default function RootLayout({
             <SidebarLayout>
               <Suspense fallback={null}>{children}</Suspense>
             </SidebarLayout>
-            <Toaster />
+        <ToastContainer
+              position='bottom-right'
+              autoClose={3000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+              theme='dark'
+            />
             <PWARegister />
             <Analytics />
           </CFVerificationProvider>

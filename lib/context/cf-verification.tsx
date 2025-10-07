@@ -146,7 +146,7 @@ export function CFVerificationProvider({
             max_rating: data.maxRating,
             rank: data.rank,
             problems_solved: 0,
-            snapshot_at: new Date().toISOString(),
+            captured_at: new Date().toISOString(),
           });
 
         if (snapshotError) {
@@ -183,7 +183,7 @@ export function CFVerificationProvider({
           max_rating: data.maxRating,
           rank: data.rank,
           problems_solved: 0, // Default value, will be updated later
-          snapshot_at: new Date().toISOString(),
+          captured_at: new Date().toISOString(),
         });
 
       if (user) await saveToSupabase(data);
@@ -220,7 +220,7 @@ export function CFVerificationProvider({
           .from('cf_snapshots')
           .select('rating, max_rating, rank')
           .eq('user_id', user.id)
-          .order('snapshot_at', { ascending: false })
+          .order('captured_at', { ascending: false })
           .limit(1)
           .single();
 

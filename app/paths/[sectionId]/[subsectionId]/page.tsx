@@ -13,7 +13,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Target, Clock, CheckCircle, Loader2 } from 'lucide-react';
+import { ArrowLeft, Target, Clock, CheckCircle, Loader2, Star } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function SubsectionPage() {
@@ -24,21 +24,23 @@ export default function SubsectionPage() {
 
   // State management
   const [solvedProblems, setSolvedProblems] = useState(new Set());
+  const [revisionProblems, setRevisionProblems] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [updatingProblem, setUpdatingProblem] = useState<string | null>(null);
+  const [updatingRevision, setUpdatingRevision] = useState<string | null>(null);
 
   // Find the section and subsection
   const section = LEARNING_PATH_DATA.find(s => s.id === sectionId);
   const subsection = section?.subsections.find(sub => sub.id === subsectionId);
 
-  // Load solved problems from Supabase on mount
+  // Load solved problems and revision status from Supabase on mount
   useEffect(() => {
     if (subsection) {
-      loadSolvedProblems();
+      loadUserProgress();
     }
   }, [subsection]);
 
-  const loadSolvedProblems = async () => {
+  const loadUserProgress = async () => {
     try {
       setLoading(true);
       const {
@@ -56,21 +58,27 @@ export default function SubsectionPage() {
 
       const { data, error } = await supabase
         .from('user_problems')
-        .select('problem_id')
+        .select('problem_id, solved, marked_for_revision')
         .eq('user_id', user.id)
-        .in('problem_id', problemIds)
-        .eq('solved', true);
+        .in('problem_id', problemIds);
 
       if (error) {
-        console.error('Error loading solved problems:', error);
+        console.error('Error loading user progress:', error);
         return;
       }
 
-      // Convert to Set for easy lookup
-      const solved = new Set(data?.map(item => item.problem_id) || []);
+      // Convert to Sets for easy lookup
+      const solved = new Set(
+        data?.filter(item => item.solved).map(item => item.problem_id) || []
+      );
+      const revision = new Set(
+        data?.filter(item => item.marked_for_revision).map(item => item.problem_id) || []
+      );
+      
       setSolvedProblems(solved);
+      setRevisionProblems(revision);
     } catch (error) {
-      console.error('Error in loadSolvedProblems:', error);
+      console.error('Error in loadUserProgress:', error);
     } finally {
       setLoading(false);
     }
@@ -128,6 +136,58 @@ export default function SubsectionPage() {
     }
   };
 
+  const toggleRevisionStatus = async (problemId: string) => {
+    try {
+      setUpdatingRevision(problemId);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        alert('Please log in to mark problems for revision');
+        return;
+      }
+
+      const isCurrentlyMarked = revisionProblems.has(problemId);
+      const newRevisionStatus = !isCurrentlyMarked;
+
+      // Update in Supabase
+      const { error } = await supabase.from('user_problems').upsert(
+        {
+          user_id: user.id,
+          problem_id: problemId,
+          marked_for_revision: newRevisionStatus,
+          revision_marked_at: newRevisionStatus ? new Date().toISOString() : null,
+        },
+        {
+          onConflict: 'user_id,problem_id',
+        }
+      );
+
+      if (error) {
+        console.error('Error updating revision status:', error);
+        alert('Failed to update revision status. Please try again.');
+        return;
+      }
+
+      // Update local state
+      setRevisionProblems(prev => {
+        const newSet = new Set(prev);
+        if (newRevisionStatus) {
+          newSet.add(problemId);
+        } else {
+          newSet.delete(problemId);
+        }
+        return newSet;
+      });
+    } catch (error) {
+      console.error('Error in toggleRevisionStatus:', error);
+      alert('An error occurred. Please try again.');
+    } finally {
+      setUpdatingRevision(null);
+    }
+  };
+
   if (!section || !subsection) {
     return (
       <div className='flex items-center justify-center min-h-[400px]'>
@@ -147,6 +207,7 @@ export default function SubsectionPage() {
   // Calculate completion stats
   const totalProblems = subsection.problems.length;
   const solvedCount = solvedProblems.size;
+  const revisionCount = revisionProblems.size;
   const completionPercentage =
     totalProblems > 0 ? Math.round((solvedCount / totalProblems) * 100) : 0;
 
@@ -196,13 +257,19 @@ export default function SubsectionPage() {
               <span>{subsection.estimatedTime}</span>
             </div>
             {!loading && (
-              <div className='flex items-center gap-2'>
-                <CheckCircle className='h-4 w-4' />
-                <span>
-                  {solvedCount}/{totalProblems} completed (
-                  {completionPercentage}%)
-                </span>
-              </div>
+              <>
+                <div className='flex items-center gap-2'>
+                  <CheckCircle className='h-4 w-4' />
+                  <span>
+                    {solvedCount}/{totalProblems} completed (
+                    {completionPercentage}%)
+                  </span>
+                </div>
+                <div className='flex items-center gap-2'>
+                  <Star className='h-4 w-4' />
+                  <span>{revisionCount} marked for revision</span>
+                </div>
+              </>
             )}
           </div>
         </CardHeader>
@@ -214,7 +281,7 @@ export default function SubsectionPage() {
           <CardTitle>Problems to Solve</CardTitle>
           <CardDescription>
             Complete these problems to master {subsection.title}. Click the
-            circle to mark as solved.
+            circle to mark as solved and the star to mark for revision.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -227,7 +294,9 @@ export default function SubsectionPage() {
             <div className='space-y-3'>
               {subsection.problems.map((problem, index) => {
                 const isSolved = solvedProblems.has(problem.id);
+                const isMarkedForRevision = revisionProblems.has(problem.id);
                 const isUpdating = updatingProblem === problem.id;
+                const isUpdatingRev = updatingRevision === problem.id;
 
                 return (
                   <div
@@ -269,6 +338,24 @@ export default function SubsectionPage() {
                           Solve
                         </Link>
                       </Button>
+                      <button
+                        onClick={() => toggleRevisionStatus(problem.id)}
+                        className='flex-shrink-0 hover:scale-110 transition-transform cursor-pointer disabled:cursor-not-allowed p-1'
+                        title={isMarkedForRevision ? 'Remove from revision' : 'Mark for revision'}
+                        disabled={isUpdatingRev}
+                      >
+                        {isUpdatingRev ? (
+                          <Loader2 className='h-5 w-5 animate-spin text-amber-500' />
+                        ) : (
+                          <Star
+                            className={`h-5 w-5 transition-colors ${
+                              isMarkedForRevision
+                                ? 'fill-amber-500 text-amber-500 hover:fill-amber-600 hover:text-amber-600'
+                                : 'text-muted-foreground hover:text-amber-500'
+                            }`}
+                          />
+                        )}
+                      </button>
                     </div>
                   </div>
                 );

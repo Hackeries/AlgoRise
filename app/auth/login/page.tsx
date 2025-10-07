@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthConfigurationAlert } from '@/components/auth/auth-configuration-alert';
 import { Mail, Lock, Eye, EyeOff, Github } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 // Google SVG
 const GoogleIcon = () => (
@@ -167,8 +168,21 @@ export default function Page() {
         options: { redirectTo: `${window.location.origin}/profile` },
       });
       if (error) throw error;
+      await refreshUser();
+      toast.success('Login successful! Redirecting...', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: 'light',
+      });
+      setTimeout(() => router.push('/profile'), 1500);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'OAuth login failed');
+      const message = err instanceof Error ? err.message : 'OAuth login failed';
+      toast.error(message);
+      setError(message);
     } finally {
       setIsOAuthLoading(null);
     }

@@ -165,7 +165,7 @@ const handleLogin = async (e: React.FormEvent) => {
     });
 
     // Redirect after a small delay to show toast
-    setTimeout(() => router.push('/train'), 1500);
+    setTimeout(() => router.push('/profile'), 1500);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'An unexpected error occurred';
     toast.error(message);
@@ -182,7 +182,7 @@ const handleOAuthLogin = async (provider: 'google' | 'github') => {
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/train` },
+      options: { redirectTo: `${window.location.origin}/profile` },
     });
 
     if (error) {

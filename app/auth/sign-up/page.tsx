@@ -177,7 +177,7 @@ export default function SignUpPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: process.env.NEXT_PUBLIC_SUPABASE_OAUTH_REDIRECT,
+          redirectTo:'https://www.myalgorise.in/profile',
         },
       });
       if (error) throw error;

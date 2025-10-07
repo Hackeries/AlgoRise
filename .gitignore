@@ -1,70 +1,46 @@
-# ========================
-# Node.js dependencies
-# ========================
+# Node dependencies
 /node_modules/
 
-# ========================
-# Next.js / production build output
-# ========================
+# Next.js build output
 /.next/
 /out/
 /build/
 
-# ========================
-# Debug logs
-# ========================
+# Log files
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# ========================
 # Environment files
-# ========================
 .env*
-!.env.example  # Keep template if available
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# ========================
-# Contest / Data storage
-# ========================
-/data/
-
-# ========================
-# Vercel deployment config
-# ========================
+# Vercel deployment
 .vercel/
 
-# ========================
-# TypeScript
-# ========================
+# TypeScript build info
 *.tsbuildinfo
 next-env.d.ts
 
-# ========================
-# Markdown files
-# ========================
-# Ignore all .md files by default
-*.md
+# Husky pre-commit hooks
+.husky/
 
-# Keep important documentation
-!CODE_OF_CONDUCT.md
-!LOGIN_GUIDE.md
-!LEARNING_ROADMAP.md
-!DETAILED_PROJECT_REPORT.md
-!DEPLOYMENT_CHECKLIST.md
-!DATABASE_SETUP_GUIDE.md
-!AUTH_DEMO_STATUS.md
-!CONTRIBUTING.md
-!README.md
-
-# ========================
-# Local test / development scripts
-# ========================
-test-db.js
-test-contest-creation.js
-
-# ========================
-# Optional IDE / OS files
-# ========================
+# Editor files
 .vscode/
+.idea/
+
+# OS files
 .DS_Store
+Thumbs.db
+
+# Public assets that can be regenerated or large binaries
+/public/placeholder*.png
+/public/placeholder*.jpg
+/public/placeholder*.svg
+
+# Lock files (optional: keep one)
+/package-lock.json

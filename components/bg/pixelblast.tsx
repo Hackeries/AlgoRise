@@ -1,11 +1,11 @@
 // @docs i use react bits for this component, bg landing
-"use client";
+'use client';
 
-import React, { useEffect, useRef } from "react";
-import * as THREE from "three";
-import { EffectComposer, EffectPass, RenderPass, Effect } from "postprocessing";
+import React, { useEffect, useRef } from 'react';
+import * as THREE from 'three';
+import { EffectComposer, EffectPass, RenderPass, Effect } from 'postprocessing';
 
-type PixelBlastVariant = "square" | "circle" | "triangle" | "diamond";
+type PixelBlastVariant = 'square' | 'circle' | 'triangle' | 'diamond';
 
 type PixelBlastProps = {
   variant?: PixelBlastVariant;
@@ -34,12 +34,12 @@ type PixelBlastProps = {
 
 const createTouchTexture = () => {
   const size = 64;
-  const canvas = document.createElement("canvas");
+  const canvas = document.createElement('canvas');
   canvas.width = size;
   canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("2D context not available");
-  ctx.fillStyle = "black";
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('2D context not available');
+  ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   const texture = new THREE.Texture(canvas);
   texture.minFilter = THREE.LinearFilter;
@@ -58,7 +58,7 @@ const createTouchTexture = () => {
   let radius = 0.1 * size;
   const speed = 1 / maxAge;
   const clear = () => {
-    ctx.fillStyle = "black";
+    ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   };
   const drawPoint = (p: {
@@ -77,16 +77,14 @@ const createTouchTexture = () => {
     else
       intensity = easeOutQuad(1 - (p.age - maxAge * 0.3) / (maxAge * 0.7)) || 0;
     intensity *= p.force;
-    const color = `${((p.vx + 1) / 2) * 255}, ${((p.vy + 1) / 2) * 255}, ${
-      intensity * 255
-    }`;
+    const color = `${((p.vx + 1) / 2) * 255}, ${((p.vy + 1) / 2) * 255}, ${intensity * 255}`;
     const offset = size * 5;
     ctx.shadowOffsetX = offset;
     ctx.shadowOffsetY = offset;
     ctx.shadowBlur = radius;
     ctx.shadowColor = `rgba(${color},${0.22 * intensity})`;
     ctx.beginPath();
-    ctx.fillStyle = "rgba(255,0,0,1)";
+    ctx.fillStyle = 'rgba(255,0,0,1)';
     ctx.arc(pos.x - offset, pos.y - offset, radius, 0, Math.PI * 2);
     ctx.fill();
   };
@@ -158,12 +156,12 @@ const createLiquidEffect = (
       uv += vec2(vx, vy) * amt;
     }
     `;
-  return new Effect("LiquidEffect", fragment, {
+  return new Effect('LiquidEffect', fragment, {
     uniforms: new Map<string, THREE.Uniform>([
-      ["uTexture", new THREE.Uniform(texture)],
-      ["uStrength", new THREE.Uniform(opts?.strength ?? 0.025)],
-      ["uTime", new THREE.Uniform(0)],
-      ["uFreq", new THREE.Uniform(opts?.freq ?? 4.5)],
+      ['uTexture', new THREE.Uniform(texture)],
+      ['uStrength', new THREE.Uniform(opts?.strength ?? 0.025)],
+      ['uTime', new THREE.Uniform(0)],
+      ['uFreq', new THREE.Uniform(opts?.freq ?? 4.5)],
     ]),
   });
 };
@@ -217,11 +215,7 @@ float Bayer2(vec2 a) {
 #define Bayer4(a) (Bayer2(.5*(a))*0.25 + Bayer2(a))
 #define Bayer8(a) (Bayer4(.5*(a))*0.25 + Bayer2(a))
 
-<<<<<<< HEAD
-#define FBM_OCTAVES 5
-=======
-#define FBM_OCTAVES    5
->>>>>>> 0c88a0aff73832c10eedb3a4b728cef1d20ef662
+#define FBM_OCTAVES     5
 #define FBM_LACUNARITY  1.25
 #define FBM_GAIN        1.0
 
@@ -327,17 +321,10 @@ void main(){
   float jitterScale = 1.0 + (h - 0.5) * uPixelJitter;
   float coverage = bw * jitterScale;
   float M;
-// <<<<<<< HEAD
-if (uShapeType == SHAPE_CIRCLE) M = maskCircle (pixelUV, coverage);
+  if      (uShapeType == SHAPE_CIRCLE)   M = maskCircle (pixelUV, coverage);
   else if (uShapeType == SHAPE_TRIANGLE) M = maskTriangle(pixelUV, pixelId, coverage);
   else if (uShapeType == SHAPE_DIAMOND)  M = maskDiamond(pixelUV, coverage);
-  else M = coverage;
-// =======
-//   if        (uShapeType == SHAPE_CIRCLE)   M = maskCircle (pixelUV, coverage);
-//   else if (uShapeType == SHAPE_TRIANGLE) M = maskTriangle(pixelUV, pixelId, coverage);
-//   else if (uShapeType == SHAPE_DIAMOND)  M = maskDiamond(pixelUV, coverage);
-//   else                                     M = coverage;
-// >>>>>>> 0c88a0aff73832c10eedb3a4b728cef1d20ef662
+  else                                   M = coverage;
 
   if (uEdgeFade > 0.0) {
     vec2 norm = gl_FragCoord.xy / uResolution;
@@ -354,9 +341,9 @@ if (uShapeType == SHAPE_CIRCLE) M = maskCircle (pixelUV, coverage);
 const MAX_CLICKS = 10;
 
 const PixelBlast: React.FC<PixelBlastProps> = ({
-  variant = "square",
+  variant = 'square',
   pixelSize = 3,
-  color = "#B19EEF",
+  color = '#B19EEF',
   className,
   style,
   antialias = true,
@@ -418,7 +405,7 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
     const container = containerRef.current;
     if (!container) return;
     speedRef.current = speed;
-    const needsReinitKeys = ["antialias", "liquid", "noiseAmount"];
+    const needsReinitKeys = ['antialias', 'liquid', 'noiseAmount'];
     const cfg = { antialias, liquid, noiseAmount };
     let mustReinit = false;
     if (!threeRef.current) mustReinit = true;
@@ -442,8 +429,8 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
           container.removeChild(t.renderer.domElement);
         threeRef.current = null;
       }
-      const canvas = document.createElement("canvas");
-      const gl = canvas.getContext("webgl2", { antialias, alpha: true });
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl2', { antialias, alpha: true });
       if (!gl) return;
       const renderer = new THREE.WebGLRenderer({
         canvas,
@@ -451,8 +438,8 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
         antialias,
         alpha: true,
       });
-      renderer.domElement.style.width = "100%";
-      renderer.domElement.style.height = "100%";
+      renderer.domElement.style.width = '100%';
+      renderer.domElement.style.height = '100%';
       renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
       container.appendChild(renderer.domElement);
       const uniforms = {
@@ -512,7 +499,7 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
       ro.observe(container);
       const randomFloat = () => {
         if (
-          typeof window !== "undefined" &&
+          typeof window !== 'undefined' &&
           (window as any).crypto?.getRandomValues
         ) {
           const u32 = new Uint32Array(1);
@@ -545,19 +532,19 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
           composer.addPass(new RenderPass(scene, camera));
         }
         const noiseEffect = new Effect(
-          "NoiseEffect",
+          'NoiseEffect',
           `uniform float uTime; uniform float uAmount; float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453);} void mainUv(inout vec2 uv){} void mainImage(const in vec4 inputColor,const in vec2 uv,out vec4 outputColor){ float n=hash(floor(uv*vec2(1920.0,1080.0))+floor(uTime*60.0)); float g=(n-0.5)*uAmount; outputColor=inputColor+vec4(vec3(g),0.0);} `,
           {
             uniforms: new Map<string, THREE.Uniform>([
-              ["uTime", new THREE.Uniform(0)],
-              ["uAmount", new THREE.Uniform(noiseAmount)],
+              ['uTime', new THREE.Uniform(0)],
+              ['uAmount', new THREE.Uniform(noiseAmount)],
             ]),
           }
         );
         const noisePass = new EffectPass(camera, noiseEffect);
         noisePass.renderToScreen = true;
         if (composer && composer.passes.length > 0)
-          composer.passes.forEach((p) => ((p as any).renderToScreen = false));
+          composer.passes.forEach(p => ((p as any).renderToScreen = false));
         composer.addPass(noisePass);
       }
       if (composer)
@@ -587,10 +574,10 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
         const { fx, fy, w, h } = mapToPixels(e);
         touch.addTouch({ x: fx / w, y: fy / h });
       };
-      renderer.domElement.addEventListener("pointerdown", onPointerDown, {
+      renderer.domElement.addEventListener('pointerdown', onPointerDown, {
         passive: true,
       });
-      renderer.domElement.addEventListener("pointermove", onPointerMove, {
+      renderer.domElement.addEventListener('pointermove', onPointerMove, {
         passive: true,
       });
       let raf = 0;
@@ -602,15 +589,15 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
         uniforms.uTime.value =
           timeOffset + clock.getElapsedTime() * speedRef.current;
         if (liquidEffect)
-          (liquidEffect as any).uniforms.get("uTime").value =
+          (liquidEffect as any).uniforms.get('uTime').value =
             uniforms.uTime.value;
         if (composer) {
           if (touch) touch.update();
-          composer.passes.forEach((p) => {
+          composer.passes.forEach(p => {
             const effs = (p as any).effects;
             if (effs)
               effs.forEach((eff: any) => {
-                const u = eff.uniforms?.get("uTime");
+                const u = eff.uniforms?.get('uTime');
                 if (u) u.value = uniforms.uTime.value;
               });
           });
@@ -651,9 +638,9 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
       if (transparent) t.renderer.setClearAlpha(0);
       else t.renderer.setClearColor(0x000000, 1);
       if (t.liquidEffect) {
-        const uStrength = (t.liquidEffect as any).uniforms.get("uStrength");
+        const uStrength = (t.liquidEffect as any).uniforms.get('uStrength');
         if (uStrength) uStrength.value = liquidStrength;
-        const uFreq = (t.liquidEffect as any).uniforms.get("uFreq");
+        const uFreq = (t.liquidEffect as any).uniforms.get('uFreq');
         if (uFreq) uFreq.value = liquidWobbleSpeed;
       }
       if (t.touch) t.touch.radiusScale = liquidRadius;
@@ -699,12 +686,11 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full relative overflow-hidden ${className ?? ""}`}
+      className={`w-full h-full relative overflow-hidden ${className ?? ''}`}
       style={style}
-      aria-label="PixelBlast interactive background"
+      aria-label='PixelBlast interactive background'
     />
   );
 };
 
 export default PixelBlast;
-

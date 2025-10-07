@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { getUserRatings } from "@/lib/codeforces-api";
+import { NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
+import { getUserRatings } from '@/lib/codeforces-api';
 
 // --- Types ---
 interface CFHandle {
@@ -26,14 +26,14 @@ type RatingMap = Record<string, { rating: number }>;
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
-    const type = url.searchParams.get("type") as "same" | "all"; // same | all
-    const ratingMin = parseInt(url.searchParams.get("ratingMin") || "0");
-    const ratingMax = parseInt(url.searchParams.get("ratingMax") || "4000");
-    const limit = parseInt(url.searchParams.get("limit") || "50");
-    const offset = parseInt(url.searchParams.get("offset") || "0");
+    const type = url.searchParams.get('type') as 'same' | 'all'; // same | all
+    const ratingMin = parseInt(url.searchParams.get('ratingMin') || '0');
+    const ratingMax = parseInt(url.searchParams.get('ratingMax') || '4000');
+    const limit = parseInt(url.searchParams.get('limit') || '50');
+    const offset = parseInt(url.searchParams.get('offset') || '0');
 
-    if (!["same", "all"].includes(type)) {
-      return NextResponse.json({ error: "Invalid type" }, { status: 400 });
+    if (!['same', 'all'].includes(type)) {
+      return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
     }
 
     // --- Supabase client ---
@@ -48,12 +48,12 @@ export async function GET(req: Request) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // --- Build query ---
     let query = supabase
-      .from("profiles")
+      .from('profiles')
       .select(
         `
         id,
@@ -63,24 +63,24 @@ export async function GET(req: Request) {
         colleges(name)
       `
       )
-      .not("cf_handles.handle", "is", null)
-      .gte("cf_handles.rating", ratingMin)
-      .lte("cf_handles.rating", ratingMax)
-      .order("cf_handles.rating", { ascending: false })
+      .not('cf_handles.handle', 'is', null)
+      .gte('cf_handles.rating', ratingMin)
+      .lte('cf_handles.rating', ratingMax)
+      .order('cf_handles.rating', { ascending: false })
       .range(offset, offset + limit - 1);
 
-    if (type === "same") {
+    if (type === 'same') {
       const { data: profile } = await supabase
-        .from("profiles")
-        .select("college_id")
-        .eq("id", user.id)
+        .from('profiles')
+        .select('college_id')
+        .eq('id', user.id)
         .single();
 
       if (!profile?.college_id) {
-        return NextResponse.json({ error: "No college set" }, { status: 400 });
+        return NextResponse.json({ error: 'No college set' }, { status: 400 });
       }
 
-      query = query.eq("college_id", profile.college_id);
+      query = query.eq('college_id', profile.college_id);
     }
 
     // --- Execute query ---
@@ -91,14 +91,14 @@ export async function GET(req: Request) {
 
     if (error || !profiles) {
       return NextResponse.json(
-        { error: error?.message || "Failed to fetch profiles" },
+        { error: error?.message || 'Failed to fetch profiles' },
         { status: 500 }
       );
     }
 
     // --- Extract handles & fetch live ratings ---
     const allHandles = profiles
-      .map((p) => p.cf_handles.map((h) => h.handle))
+      .map(p => p.cf_handles.map(h => h.handle))
       .flat()
       .filter(Boolean);
 
@@ -112,7 +112,7 @@ export async function GET(req: Request) {
         p.cf_handles[0]
       );
 
-      const handle = mainHandle?.handle || "Unknown";
+      const handle = mainHandle?.handle || 'Unknown';
       const liveRating = ratings[handle]?.rating ?? mainHandle?.rating ?? 0;
 
       return {
@@ -120,7 +120,7 @@ export async function GET(req: Request) {
         name: p.full_name || handle,
         handle,
         rating: liveRating,
-        college: p.colleges?.name || "Unknown",
+        college: p.colleges?.name || 'Unknown',
         rank: offset + index + 1,
       };
     });
@@ -128,7 +128,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ leaderboard });
   } catch (err: any) {
     return NextResponse.json(
-      { error: err?.message || "Unexpected server error" },
+      { error: err?.message || 'Unexpected server error' },
       { status: 500 }
     );
   }

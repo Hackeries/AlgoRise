@@ -1,85 +1,98 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
 
-// Helper function to fetch CF user info
-const fetchCFUserInfo = async (handle: string) => {
-  const res = await fetch(
-    `https://codeforces.com/api/user.info?handles=${handle}`
-  );
-  const json = await res.json();
-  if (json.status !== "OK") throw new Error("Failed to fetch user info");
-  return json.result[0];
-};
-
-// Helper function to fetch CF user rating changes
-const fetchCFRating = async (handle: string) => {
-  const res = await fetch(
-    `https://codeforces.com/api/user.rating?handle=${handle}`
-  );
-  const json = await res.json();
-  if (json.status !== "OK") return [];
-  return json.result;
-};
-
-// Helper function to fetch upcoming CF contests
-const fetchUpcomingContest = async () => {
-  const res = await fetch(`https://codeforces.com/api/contest.list`);
-  const json = await res.json();
-  if (json.status !== "OK") return null;
-  const upcoming = json.result
-    .filter((c: any) => c.phase === "BEFORE")
-    .sort((a: any, b: any) => a.startTimeSeconds - b.startTimeSeconds)[0];
-  return upcoming;
-};
-
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const handle = searchParams.get("handle");
-  if (!handle)
-    return NextResponse.json(
-      { error: "No CF handle provided" },
-      { status: 400 }
-    );
-
+export async function GET() {
   try {
-    const userInfo = await fetchCFUserInfo(handle);
-    const ratingHistory = await fetchCFRating(handle);
-    const lastRatingChange = ratingHistory.length
-      ? ratingHistory[ratingHistory.length - 1]
-      : null;
-    const nextContest = await fetchUpcomingContest();
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: userErr,
+    } = await supabase.auth.getUser()
 
-    // Compute rating delta from last contest
-    const ratingDelta = lastRatingChange
-      ? lastRatingChange.newRating - lastRatingChange.oldRating
-      : 0;
+    if (userErr || !user) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 })
+    }
 
-    // Compute last contest date
-    const lastContestAt = lastRatingChange
-      ? new Date(lastRatingChange.ratingUpdateTimeSeconds * 1000).toISOString()
-      : null;
+    // Get CF handle verification status
+    const { data: cfHandle } = await supabase
+      .from("cf_handles")
+      .select("handle, verified")
+      .eq("user_id", user.id)
+      .single()
 
-    // Compute next contest date
-    const nextContestAt = nextContest
-      ? new Date(nextContest.startTimeSeconds * 1000).toISOString()
-      : null;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("status, degree_type, college_id, year, company_id, custom_company")
+      .eq("user_id", user.id)
+      .single()
 
-    const data = {
-      handle: userInfo.handle,
-      rating: userInfo.rating ?? 0,
-      maxRating: userInfo.maxRating ?? 0,
-      rank: userInfo.rank ?? "unrated",
-      ratingDelta,
-      lastContestAt,
-      nextContestAt,
-      nextContestName: nextContest?.name ?? null,
-    };
+    return NextResponse.json({
+      cf_verified: cfHandle?.verified || false,
+      cf_handle: cfHandle?.handle || "",
+      status: profile?.status || null,
+      degree_type: profile?.degree_type || "",
+      college_id: profile?.college_id || "",
+      year: profile?.year || "",
+      company_id: profile?.company_id || "",
+      custom_company: profile?.custom_company || "",
+    })
+  } catch (e: any) {
+    console.error("Failed to fetch profile:", e)
+    return NextResponse.json({ error: e?.message || "unknown error" }, { status: 500 })
+  }
+}
 
-    return NextResponse.json(data);
-  } catch (err) {
-    console.error("Error fetching CF profile:", err);
-    return NextResponse.json(
-      { error: "Failed to fetch CF profile" },
-      { status: 500 }
-    );
+export async function PUT(req: Request) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: userErr,
+    } = await supabase.auth.getUser()
+
+    if (userErr || !user) {
+      return NextResponse.json({ error: "unauthorized" }, { status: 401 })
+    }
+
+    const body = await req.json()
+    const { status, degree_type, college_id, year, company_id, custom_company } = body
+
+    // Validate required fields based on status
+    if (!status || !["student", "working"].includes(status)) {
+      return NextResponse.json({ error: 'Invalid status. Must be "student" or "working"' }, { status: 400 })
+    }
+
+    if (status === "student" && (!degree_type || !college_id || !year)) {
+      return NextResponse.json({ error: "Degree type, college, and year are required for students" }, { status: 400 })
+    }
+
+    if (status === "working" && !company_id) {
+      return NextResponse.json({ error: "Company is required for working professionals" }, { status: 400 })
+    }
+
+    // Upsert profile
+    const { error: upsertErr } = await supabase.from("profiles").upsert(
+      {
+        user_id: user.id,
+        status,
+        degree_type: status === "student" ? degree_type : null,
+        college_id: status === "student" ? college_id : null,
+        year: status === "student" ? year : null,
+        company_id: status === "working" ? company_id : null,
+        custom_company: status === "working" ? custom_company : null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    )
+
+    if (upsertErr) {
+      console.error("Failed to update profile:", upsertErr)
+      return NextResponse.json({ error: upsertErr.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (e: any) {
+    console.error("Profile update failed:", e)
+    return NextResponse.json({ error: e?.message || "unknown error" }, { status: 500 })
   }
 }

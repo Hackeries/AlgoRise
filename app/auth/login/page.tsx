@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthConfigurationAlert } from '@/components/auth/auth-configuration-alert';
 import { Mail, Lock, Eye, EyeOff, Github } from 'lucide-react';
+import {toast} from "react-toastify"
 
 // Google SVG
 const GoogleIcon = () => (
@@ -135,44 +136,68 @@ export default function Page() {
     }
   }, []);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      await refreshUser();
-      router.push('/train');
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : 'An unexpected error occurred'
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setError(null);
+  try {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-  const handleOAuthLogin = async (provider: 'google' | 'github') => {
-    setError(null);
-    setIsOAuthLoading(provider);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: { redirectTo: `${window.location.origin}/train` },
-      });
-      if (error) throw error;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'OAuth login failed');
-    } finally {
-      setIsOAuthLoading(null);
+    if (error) {
+      toast.error(error.message);
+      return;
     }
-  };
+
+    await refreshUser();
+
+    toast.success('Login successful! Redirecting...', {
+      position: 'top-right',
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: 'light',
+    });
+
+    // Redirect after a small delay to show toast
+    setTimeout(() => router.push('/train'), 1500);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'An unexpected error occurred';
+    toast.error(message);
+    setError(message);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+const handleOAuthLogin = async (provider: 'google' | 'github') => {
+  setError(null);
+  setIsOAuthLoading(provider);
+  try {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/train` },
+    });
+
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'OAuth login failed';
+    toast.error(message);
+    setError(message);
+  } finally {
+    setIsOAuthLoading(null);
+  }
+};
+
 
   if (!isConfigured) {
     return (

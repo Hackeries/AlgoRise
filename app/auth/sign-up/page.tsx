@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthConfigurationAlert } from '@/components/auth/auth-configuration-alert';
 import { Mail, Lock, Github, Eye, EyeOff } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 // Google icon
 const GoogleIcon = () => (
@@ -138,57 +139,75 @@ export default function SignUpPage() {
     }
   }, []);
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    if (password !== repeatPassword) {
-      setError('Passwords do not match');
-      setIsLoading(false);
-      return;
-    }
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-            `${window.location.origin}/auth/sign-up-success`,
-        },
-      });
-      if (error) throw error;
-      router.push('/auth/sign-up-success');
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : 'An unexpected error occurred'
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
+ const handleSignUp = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setError(null);
 
-  const handleOAuthSignIn = async (provider: 'google' | 'github') => {
-    setError(null);
-    setIsOAuthLoading(provider);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-            `${window.location.origin}/protected`,
-        },
-      });
-      if (error) throw error;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'OAuth sign in failed');
-    } finally {
-      setIsOAuthLoading(null);
+  if (password !== repeatPassword) {
+    const message = 'Passwords do not match';
+    setError(message);
+    toast.error(message);
+    setIsLoading(false);
+    return;
+  }
+
+  try {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo:
+          process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
+          `${window.location.origin}/auth/sign-up-success`,
+      },
+    });
+
+    if (error) {
+      toast.error(error.message);
+      throw error;
     }
-  };
+
+    toast.success('Account created successfully! Check your email to confirm.');
+    router.push('/auth/sign-up-success');
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'An unexpected error occurred';
+    setError(message);
+    toast.error(message);
+  } finally {
+    setIsLoading(false);
+  }
+};
+const handleOAuthSignIn = async (provider: 'google' | 'github') => {
+  setError(null);
+  setIsOAuthLoading(provider);
+  try {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo:
+          process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
+          `${window.location.origin}/protected`,
+      },
+    });
+
+    if (error) {
+      toast.error(error.message);
+      throw error;
+    }
+
+    toast.success(`Redirecting to ${provider} login...`);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'OAuth sign in failed';
+    setError(message);
+    toast.error(message);
+  } finally {
+    setIsOAuthLoading(null);
+  }
+};
+
 
   if (!isConfigured) {
     return (

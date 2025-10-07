@@ -169,26 +169,27 @@ export default function SignUpPage() {
     }
   };
 
-  const handleOAuthSignIn = async (provider: 'google' | 'github') => {
-    setError(null);
-    setIsOAuthLoading(provider);
-    try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-            `${window.location.origin}/protected`,
-        },
-      });
-      if (error) throw error;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'OAuth sign in failed');
-    } finally {
-      setIsOAuthLoading(null);
-    }
-  };
+const handleOAuthSignIn = async (provider: 'google' | 'github') => {
+  setError(null);
+  setIsOAuthLoading(provider);
+  try {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo:
+          process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
+          `${window.location.origin}/profile`,
+      },
+    });
+    if (error) throw error;
+  } catch (err: unknown) {
+    setError(err instanceof Error ? err.message : 'OAuth sign in failed');
+  } finally {
+    setIsOAuthLoading(null);
+  }
+};
+
 
   if (!isConfigured) {
     return (

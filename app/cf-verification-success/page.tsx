@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCFVerification } from '@/lib/context/cf-verification';
+import { toast } from 'react-toastify';
 
 interface UserStats {
   handle: string;
@@ -66,50 +67,68 @@ export default function VerificationSuccessPage() {
     }
   }, [searchParams]);
 
-  const fetchUserStats = async (
-    handle: string,
-    basicStats: Partial<UserStats>
-  ) => {
-    try {
-      // Fetch user submissions to count problems solved
-      const submissionsResponse = await fetch(
-        `https://codeforces.com/api/user.status?handle=${handle}&from=1&count=10000`
-      );
-      const submissionsData = await submissionsResponse.json();
+const fetchUserStats = async (
+  handle: string,
+  basicStats: Partial<UserStats>
+) => {
+  try {
+    const submissionsResponse = await fetch(
+      `https://codeforces.com/api/user.status?handle=${handle}&from=1&count=10000`
+    );
+    const submissionsData = await submissionsResponse.json();
 
-      let problemsSolved = 0;
-      const solvedProblems = new Set();
+    let problemsSolved = 0;
+    const solvedProblems = new Set();
 
-      if (submissionsData.status === 'OK') {
-        submissionsData.result.forEach((submission: any) => {
-          if (submission.verdict === 'OK') {
-            const problemKey = `${submission.problem.contestId}-${submission.problem.index}`;
-            solvedProblems.add(problemKey);
-          }
-        });
-        problemsSolved = solvedProblems.size;
-      }
-
-      // Fetch contest participation count
-      const ratingResponse = await fetch(
-        `https://codeforces.com/api/user.rating?handle=${handle}`
-      );
-      const ratingData = await ratingResponse.json();
-      const contestsParticipated =
-        ratingData.status === 'OK' ? ratingData.result.length : 0;
-
-      setUserStats({
-        ...(basicStats as UserStats),
-        problemsSolved,
-        contestsParticipated,
+    if (submissionsData.status === 'OK') {
+      submissionsData.result.forEach((submission: any) => {
+        if (submission.verdict === 'OK') {
+          const problemKey = `${submission.problem.contestId}-${submission.problem.index}`;
+          solvedProblems.add(problemKey);
+        }
       });
-    } catch (error) {
-      console.error('Error fetching user stats:', error);
-      setUserStats(basicStats as UserStats);
-    } finally {
-      setLoading(false);
+      problemsSolved = solvedProblems.size;
     }
-  };
+
+    const ratingResponse = await fetch(
+      `https://codeforces.com/api/user.rating?handle=${handle}`
+    );
+    const ratingData = await ratingResponse.json();
+    const contestsParticipated =
+      ratingData.status === 'OK' ? ratingData.result.length : 0;
+
+    setUserStats({
+      ...(basicStats as UserStats),
+      problemsSolved,
+      contestsParticipated,
+    });
+
+    toast.success(`Verification complete! Welcome, ${handle}.`, {
+      position: 'bottom-right',
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: 'dark',
+    });
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    setUserStats(basicStats as UserStats);
+    toast.error('Failed to fetch user stats. Showing basic info.', {
+      position: 'bottom-right',
+      autoClose: 4000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: 'dark',
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const generateAdaptiveSheet = () => {
     if (!userStats) return;

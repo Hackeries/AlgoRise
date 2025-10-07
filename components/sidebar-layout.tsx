@@ -98,8 +98,8 @@ const SidebarItem = ({
       className={cn(
         'relative flex items-center p-2 rounded-lg transition-all duration-150 cursor-pointer group',
         isActive
-          ? 'bg-[#2563EB]/40 text-[#2563EB] shadow-glow'
-          : 'text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105',
+        ? 'bg-[#2563EB]/40 text-[#2563EB] shadow-md'
+        : 'text-white/70 hover:text-white hover:bg-[#2563EB]/25 hover:scale-105',
         isOpen ? 'justify-start gap-3' : 'justify-center'
       )}
       style={{ transitionDelay: `${delay}ms` }}
@@ -142,10 +142,10 @@ const SidebarFooter = ({
         </div>
       ) : (
         <div
-          className={`w-12 h-12 flex items-center justify-center rounded-full border ${tier.bg} ${tier.color} text-[10px] font-bold`}
-        >
-          {tier.label.split(' ')[0]}
-        </div>
+  className={`w-12 h-12 flex items-center justify-center rounded-full border ${tier.bg} ${tier.color} text-[10px] font-bold`}
+>
+  {tier.label.split(' ')[0].slice(0, 3)} {/* limit to 3 chars */}
+</div>
       )}
     </div>
   );
@@ -189,7 +189,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed top-0 left-0 z-50 h-full flex flex-col bg-[#0B1020] border-r border-white/10 shadow-lg transition-width duration-150 overflow-hidden',
+          'fixed top-0 left-0 z-50 h-full flex flex-col bg-[#0B1020] border-r border-white/10 shadow-lg transition-all duration-300 overflow-hidden',
           isOpen ? 'w-64' : 'w-16'
         )}
       >
@@ -204,7 +204,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Main Menu */}
-        <div className='flex-1 mt-4 overflow-y-auto px-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30'>
+<div className='flex-1 mt-4 overflow-y-auto px-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/40 hover:scrollbar-thumb-white/60'>
           <nav className='space-y-2'>
             {menuItems.map((item, idx) => (
               <SidebarItem

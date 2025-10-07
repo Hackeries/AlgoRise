@@ -24,124 +24,85 @@ export default async function ProtectedPage() {
     const user = data.user;
 
     return (
-      <div className='flex-1 w-full flex flex-col gap-8 p-6'>
-        <div className='flex flex-col gap-4'>
-          <h1 className='text-3xl font-bold'>
-            Welcome back, {user.email?.split('@')[0]}!
+      <div className='flex-1 w-full flex flex-col gap-10 p-6 md:p-10 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen'>
+        {/* Greeting */}
+        <div className='flex flex-col gap-4 text-center md:text-left'>
+          <h1 className='text-3xl md:text-4xl font-bold'>
+            👋 Welcome back, {user.email?.split('@')[0]}!
           </h1>
-          <p className='text-muted-foreground'>
+          <p className='text-muted-foreground text-sm md:text-base'>
             Ready to continue your competitive programming journey?
           </p>
         </div>
 
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-          <Card>
-            <CardHeader>
-              <CardTitle>Daily Training</CardTitle>
-              <CardDescription>
-                Start your daily problem-solving session
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button asChild className='w-full'>
-                <Link href='/train'>Start Training</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Adaptive Sheet</CardTitle>
-              <CardDescription>
-                Practice with personalized problem recommendations
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                asChild
-                variant='outline'
-                className='w-full bg-transparent'
-              >
-                <Link href='/adaptive-sheet'>Open Sheet</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Analytics</CardTitle>
-              <CardDescription>
-                Track your progress and performance
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                asChild
-                variant='outline'
-                className='w-full bg-transparent'
-              >
-                <Link href='/analytics'>View Analytics</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Contests</CardTitle>
-              <CardDescription>
-                Participate in competitive programming contests
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                asChild
-                variant='outline'
-                className='w-full bg-transparent'
-              >
-                <Link href='/contests'>Browse Contests</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Groups</CardTitle>
-              <CardDescription>
-                Join study groups and collaborate
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                asChild
-                variant='outline'
-                className='w-full bg-transparent'
-              >
-                <Link href='/groups'>My Groups</Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Visualizers</CardTitle>
-              <CardDescription>
-                Visualize algorithms and data structures
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                asChild
-                variant='outline'
-                className='w-full bg-transparent'
-              >
-                <Link href='/visualizers'>Open Visualizers</Link>
-              </Button>
-            </CardContent>
-          </Card>
+        {/* Feature Cards */}
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
+          {[
+            {
+              title: 'Daily Training',
+              desc: 'Start your daily problem-solving session',
+              href: '/train',
+            },
+            {
+              title: 'Adaptive Sheet',
+              desc: 'Practice with personalized problem recommendations',
+              href: '/adaptive-sheet',
+              outline: true,
+            },
+            {
+              title: 'Analytics',
+              desc: 'Track your progress and performance',
+              href: '/analytics',
+              outline: true,
+            },
+            {
+              title: 'Contests',
+              desc: 'Participate in competitive programming contests',
+              href: '/contests',
+              outline: true,
+            },
+            {
+              title: 'Groups',
+              desc: 'Join study groups and collaborate',
+              href: '/groups',
+              outline: true,
+            },
+            {
+              title: 'Visualizers',
+              desc: 'Visualize algorithms and data structures',
+              href: '/visualizers',
+              outline: true,
+            },
+          ].map((item, idx) => (
+            <Card
+              key={idx}
+              className='hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-300'
+            >
+              <CardHeader>
+                <CardTitle>{item.title}</CardTitle>
+                <CardDescription>{item.desc}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  asChild
+                  className={`w-full ${
+                    item.outline
+                      ? 'bg-transparent border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      : ''
+                  }`}
+                >
+                  <Link href={item.href}>
+                    {item.outline ? 'Open' : 'Start'}
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
+        {/* Account Info */}
         <div className='mt-8'>
-          <Card>
+          <Card className='border border-gray-200 dark:border-gray-700 shadow-lg'>
             <CardHeader>
               <CardTitle>Account Information</CardTitle>
             </CardHeader>
@@ -159,6 +120,15 @@ export default async function ProtectedPage() {
                     ? new Date(user.last_sign_in_at).toLocaleString()
                     : 'N/A'}
                 </p>
+              </div>
+              <div className='mt-4 flex justify-end'>
+                <Button
+                  variant='outline'
+                  asChild
+                  className='text-red-500 border-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
+                >
+                  <Link href='/auth/logout'>Logout</Link>
+                </Button>
               </div>
             </CardContent>
           </Card>

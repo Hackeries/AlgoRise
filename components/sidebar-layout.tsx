@@ -104,7 +104,9 @@ const SidebarItem = ({
       )}
       style={{ transitionDelay: `${delay}ms` }}
     >
-      <Icon className='h-5 w-5 flex-shrink-0' />
+      <div className="flex items-center justify-center w-6 h-6">
+        <Icon className='h-5 w-5 flex-shrink-0' />
+      </div>
       {isOpen && (
         <span className='text-sm font-medium transition-opacity duration-150 opacity-100'>
           {label}

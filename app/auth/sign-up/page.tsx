@@ -17,7 +17,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthConfigurationAlert } from '@/components/auth/auth-configuration-alert';
 import { Mail, Lock, Github, Eye, EyeOff } from 'lucide-react';
-import { toast } from 'react-toastify';
 
 // Google icon
 const GoogleIcon = () => (
@@ -120,7 +119,9 @@ export default function SignUpPage() {
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isOAuthLoading, setIsOAuthLoading] = useState<'google' | 'github' | null>(null);
+  const [isOAuthLoading, setIsOAuthLoading] = useState<
+    'google' | 'github' | null
+  >(null);
   const [isConfigured, setIsConfigured] = useState(true);
   const router = useRouter();
 
@@ -141,15 +142,11 @@ export default function SignUpPage() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
     if (password !== repeatPassword) {
-      const message = 'Passwords do not match';
-      setError(message);
-      toast.error(message);
+      setError('Passwords do not match');
       setIsLoading(false);
       return;
     }
-
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signUp({
@@ -161,18 +158,12 @@ export default function SignUpPage() {
             `${window.location.origin}/auth/sign-up-success`,
         },
       });
-
-      if (error) {
-        toast.error(error.message);
-        throw error;
-      }
-
-      toast.success('Account created successfully! Check your email to confirm.');
+      if (error) throw error;
       router.push('/auth/sign-up-success');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'An unexpected error occurred';
-      setError(message);
-      toast.error(message);
+      setError(
+        err instanceof Error ? err.message : 'An unexpected error occurred'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -186,22 +177,12 @@ export default function SignUpPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo:
-            process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ||
-            `${window.location.origin}/profile`,
+          redirectTo: process.env.NEXT_PUBLIC_SUPABASE_OAUTH_REDIRECT,
         },
       });
-
-      if (error) {
-        toast.error(error.message);
-        throw error;
-      }
-
-      toast.success(`Redirecting to ${provider} login...`);
+      if (error) throw error;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'OAuth sign in failed';
-      setError(message);
-      toast.error(message);
+      setError(err instanceof Error ? err.message : 'OAuth sign in failed');
     } finally {
       setIsOAuthLoading(null);
     }
@@ -224,7 +205,9 @@ export default function SignUpPage() {
         <Card className='shadow-xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl transform hover:scale-105 transition duration-300'>
           <CardHeader className='text-center'>
             <Mail className='mx-auto mb-4 h-10 w-10 text-blue-500' />
-            <CardTitle className='text-2xl md:text-3xl font-bold'>Sign Up</CardTitle>
+            <CardTitle className='text-2xl md:text-3xl font-bold'>
+              Sign Up
+            </CardTitle>
             <CardDescription className='text-gray-600 dark:text-gray-300'>
               Create your account or sign in with Google/GitHub
             </CardDescription>
@@ -257,8 +240,14 @@ export default function SignUpPage() {
                 }`}
                 disabled={!!isOAuthLoading}
               >
-                {isOAuthLoading === 'github' ? <Spinner /> : <Github className='h-4 w-4' />}
-                {isOAuthLoading === 'github' ? 'Signing in...' : 'Sign in with GitHub'}
+                {isOAuthLoading === 'github' ? (
+                  <Spinner />
+                ) : (
+                  <Github className='h-4 w-4' />
+                )}
+                {isOAuthLoading === 'github'
+                  ? 'Signing in...'
+                  : 'Sign in with GitHub'}
               </Button>
             </div>
 
@@ -310,7 +299,10 @@ export default function SignUpPage() {
 
               <p className='text-sm text-center text-gray-600 dark:text-gray-400 mt-2'>
                 Already have an account?{' '}
-                <Link href='/auth/login' className='text-blue-500 hover:underline'>
+                <Link
+                  href='/auth/login'
+                  className='text-blue-500 hover:underline'
+                >
                   Log in
                 </Link>
               </p>

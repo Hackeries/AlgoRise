@@ -1,358 +1,770 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
-import Link from "next/link"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
-import { CheckCircle2, AlertCircle, Clock, ExternalLink, Copy, Loader2 } from "lucide-react"
+import { Loader2, CheckCircle2, AlertCircle, Search, Plus } from "lucide-react"
+import { CFVerificationCompilation } from "@/components/auth/cf-verification-compilation"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+
+type ProfileStatus = "student" | "working" | null
+
+interface College {
+  id: string
+  name: string
+  country: string
+}
+
+interface Company {
+  id: string
+  name: string
+}
+
+// Degree types with their typical duration
+const DEGREE_TYPES = [
+  { value: "btech", label: "B.Tech / B.E.", years: 4 },
+  { value: "mtech", label: "M.Tech / M.E.", years: 2 },
+  { value: "bsc", label: "B.Sc.", years: 3 },
+  { value: "msc", label: "M.Sc.", years: 2 },
+  { value: "bca", label: "BCA", years: 3 },
+  { value: "mca", label: "MCA", years: 2 },
+  { value: "mba", label: "MBA", years: 2 },
+  { value: "phd", label: "Ph.D.", years: 5 },
+  { value: "other", label: "Other", years: 4 },
+]
 
 export default function ProfilePage() {
   const { toast } = useToast()
-  const [loading, setLoading] = useState(false)
-  const [checking, setChecking] = useState(false)
-  const [handle, setHandle] = useState("")
-  const [token, setToken] = useState<string | null>(null)
-  const [verified, setVerified] = useState<boolean | null>(null)
-  const [rating, setRating] = useState<number | null>(null)
-  const [maxRating, setMaxRating] = useState<number | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [cfVerified, setCfVerified] = useState(false)
+  const [cfHandle, setCfHandle] = useState("")
 
-  const cfSettingsUrl = "https://codeforces.com/settings/social"
+  // Profile fields
+  const [status, setStatus] = useState<ProfileStatus>(null)
+  const [degreeType, setDegreeType] = useState<string>("")
+  const [selectedCollege, setSelectedCollege] = useState<string>("")
+  const [year, setYear] = useState<string>("")
+  const [selectedCompany, setSelectedCompany] = useState<string>("")
+  const [customCompany, setCustomCompany] = useState<string>("")
 
+  // College/Company search
+  const [colleges, setColleges] = useState<College[]>([])
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [loadingColleges, setLoadingColleges] = useState(false)
+  const [loadingCompanies, setLoadingCompanies] = useState(false)
+  const [collegeSearch, setCollegeSearch] = useState("")
+  const [companySearch, setCompanySearch] = useState("")
+  const [collegeOpen, setCollegeOpen] = useState(false)
+  const [companyOpen, setCompanyOpen] = useState(false)
+
+  // Custom entry dialogs
+  const [showAddCollege, setShowAddCollege] = useState(false)
+  const [showAddCompany, setShowAddCompany] = useState(false)
+  const [newCollegeName, setNewCollegeName] = useState("")
+  const [newCompanyName, setNewCompanyName] = useState("")
+  const [addingCollege, setAddingCollege] = useState(false)
+  const [addingCompany, setAddingCompany] = useState(false)
+
+  // Load profile data on mount
   useEffect(() => {
-    const checkOnMount = async () => {
-      setChecking(true)
-      try {
-        const res = await fetch("/api/cf/verify/check", { method: "POST" })
-        const data = await res.json()
-        if (res.ok) {
-          if (data?.verified) {
-            setVerified(true)
-            if (typeof data.rating === "number") setRating(data.rating)
-            if (typeof data.maxRating === "number") setMaxRating(data.maxRating)
-          } else {
-            setVerified(false)
-          }
-        } else {
-          if (data?.error === "no handle to verify") {
-            setVerified(null)
-          } else {
-            setError(data?.error || "Unable to check verification")
-          }
-        }
-      } catch (e: any) {
-        setError(e?.message || "Unable to check verification")
-      } finally {
-        setChecking(false)
-      }
-    }
-    checkOnMount()
+    loadProfile()
   }, [])
 
-  const canStart = useMemo(() => handle.trim().length >= 2, [handle])
+  // Load colleges when status is student
+  useEffect(() => {
+    if (status === "student") {
+      loadColleges()
+    }
+  }, [status])
 
-  async function startVerification() {
-    setLoading(true)
-    setError(null)
+  // Load companies when status is working
+  useEffect(() => {
+    if (status === "working") {
+      loadCompanies()
+    }
+  }, [status])
+
+  useEffect(() => {
+    if (degreeType && status === "student") {
+      // Reset year when degree type changes
+      setYear("")
+    }
+  }, [degreeType])
+
+  async function loadProfile() {
     try {
-      const res = await fetch("/api/cf/verify/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ handle: handle.trim() }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data?.error || "Failed to start verification")
-      setToken(data.token)
-      setVerified(false)
-      toast({
-        title: "Verification started",
-        description: "Copy the token and paste it into your Codeforces Organization field, then click Check.",
-      })
-    } catch (e: any) {
-      setError(e?.message || "Failed to start verification")
-      toast({ title: "Error", description: e?.message || "Failed to start verification", variant: "destructive" })
+      const res = await fetch("/api/profile")
+      if (res.ok) {
+        const data = await res.json()
+        setCfVerified(data.cf_verified || false)
+        setCfHandle(data.cf_handle || "")
+        setStatus(data.status || null)
+        setDegreeType(data.degree_type || "")
+        setSelectedCollege(data.college_id || "")
+        setYear(data.year || "")
+        setSelectedCompany(data.company_id || "")
+        setCustomCompany(data.custom_company || "")
+      }
+    } catch (error) {
+      console.error("Failed to load profile data:", error)
     } finally {
       setLoading(false)
     }
   }
 
-  async function checkVerification() {
-    setChecking(true)
-    setError(null)
+  async function loadColleges(search?: string) {
+    setLoadingColleges(true)
     try {
-      const res = await fetch("/api/cf/verify/check", { method: "POST" })
-      const data = await res.json()
-      if (!res.ok) {
-        if (data?.error === "no handle to verify") {
-          setVerified(null)
-          setToken(null)
-          throw new Error("No handle found. Please start verification first.")
-        }
-        throw new Error(data?.error || "Verification check failed")
+      const url = search ? `/api/colleges?q=${encodeURIComponent(search)}` : "/api/colleges"
+      const res = await fetch(url)
+      if (res.ok) {
+        const data = await res.json()
+        setColleges(data.colleges || [])
       }
-      if (data?.verified) {
-        setVerified(true)
-        setToken(null)
-        setRating(typeof data.rating === "number" ? data.rating : null)
-        setMaxRating(typeof data.maxRating === "number" ? data.maxRating : null)
-        toast({ title: "Handle verified", description: "Your Codeforces handle is now verified." })
-      } else {
-        setVerified(false)
-        toast({
-          title: "Not verified yet",
-          description: "Token not found in your Organization field. Paste it and try again.",
-        })
-      }
-    } catch (e: any) {
-      setError(e?.message || "Verification check failed")
-      toast({ title: "Error", description: e?.message || "Verification check failed", variant: "destructive" })
+    } catch (error) {
+      console.error("Failed to load colleges:", error)
     } finally {
-      setChecking(false)
+      setLoadingColleges(false)
     }
   }
 
-  function copyToken() {
-    if (!token) return
-    navigator.clipboard.writeText(token).then(() => {
-      toast({ title: "Token copied", description: "Paste it into your Codeforces Organization field." })
+  async function loadCompanies(search?: string) {
+    setLoadingCompanies(true)
+    try {
+      const url = search ? `/api/companies?q=${encodeURIComponent(search)}` : "/api/companies"
+      const res = await fetch(url)
+      if (res.ok) {
+        const data = await res.json()
+        setCompanies(data.companies || [])
+      }
+    } catch (error) {
+      console.error("Failed to load companies:", error)
+    } finally {
+      setLoadingCompanies(false)
+    }
+  }
+
+  async function addNewCollege() {
+    if (!newCollegeName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a college name",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setAddingCollege(true)
+    try {
+      const res = await fetch("/api/colleges", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newCollegeName.trim() }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to add college")
+      }
+
+      toast({
+        title: "Success",
+        description: data.message || "College added successfully",
+      })
+
+      // Select the newly added college
+      setSelectedCollege(data.college.id)
+      setShowAddCollege(false)
+      setNewCollegeName("")
+
+      // Reload colleges list
+      await loadColleges()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    } finally {
+      setAddingCollege(false)
+    }
+  }
+
+  async function addNewCompany() {
+    if (!newCompanyName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a company name",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setAddingCompany(true)
+    try {
+      const res = await fetch("/api/companies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newCompanyName.trim() }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to add company")
+      }
+
+      toast({
+        title: "Success",
+        description: data.message || "Company added successfully",
+      })
+
+      // Select the newly added company
+      setSelectedCompany(data.company.id)
+      setShowAddCompany(false)
+      setNewCompanyName("")
+
+      // Reload companies list
+      await loadCompanies()
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      })
+    } finally {
+      setAddingCompany(false)
+    }
+  }
+
+  async function saveProfile() {
+    // Validate required fields
+    if (!status) {
+      toast({
+        title: "Missing information",
+        description: "Please select whether you are a student or working professional.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (status === "student") {
+      if (!degreeType) {
+        toast({
+          title: "Missing information",
+          description: "Please select your degree type.",
+          variant: "destructive",
+        })
+        return
+      }
+      if (!selectedCollege) {
+        toast({
+          title: "Missing information",
+          description: "Please select your college.",
+          variant: "destructive",
+        })
+        return
+      }
+      if (!year) {
+        toast({
+          title: "Missing information",
+          description: "Please select your year of study.",
+          variant: "destructive",
+        })
+        return
+      }
+    }
+
+    if (status === "working") {
+      const isOtherCompany = companies.find((c) => c.id === selectedCompany)?.name === "Other (Please specify)"
+      if (!selectedCompany || (isOtherCompany && !customCompany.trim())) {
+        toast({
+          title: "Missing information",
+          description: "Please select or enter your company name.",
+          variant: "destructive",
+        })
+        return
+      }
+    }
+
+    setSaving(true)
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status,
+          degree_type: status === "student" ? degreeType : null,
+          college_id: status === "student" ? selectedCollege : null,
+          year: status === "student" ? year : null,
+          company_id: status === "working" ? selectedCompany : null,
+          custom_company: status === "working" ? customCompany : null,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || "Failed to save profile")
+      }
+
+      toast({
+        title: "Profile saved",
+        description: "Your profile has been updated successfully.",
+      })
+
+      sessionStorage.setItem("profileCompleted", "true")
+      window.location.href = "/train"
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save profile",
+        variant: "destructive",
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function handleVerificationComplete(handle: string) {
+    setCfVerified(true)
+    setCfHandle(handle)
+    toast({
+      title: "Verification complete!",
+      description: "Your Codeforces handle has been verified.",
     })
   }
 
+  function getAvailableYears() {
+    if (!degreeType) return []
+    const degree = DEGREE_TYPES.find((d) => d.value === degreeType)
+    if (!degree) return []
+
+    return Array.from({ length: degree.years }, (_, i) => ({
+      value: String(i + 1),
+      label: `${i + 1}${i === 0 ? "st" : i === 1 ? "nd" : i === 2 ? "rd" : "th"} Year`,
+    }))
+  }
+
+  if (loading) {
+    return (
+      <main className="min-h-screen w-full flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </main>
+    )
+  }
+
+  const selectedCollegeName = colleges.find((c) => c.id === selectedCollege)?.name || "Select college..."
+  const selectedCompanyName = companies.find((c) => c.id === selectedCompany)?.name || "Select company..."
+  const isOtherCompany = selectedCompanyName === "Other (Please specify)"
+
   return (
-    <main className="min-h-screen w-full ">
+    <main className="min-h-screen w-full bg-gradient-to-b from-background to-muted/20">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Header Section */}
         <header className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Profile</h1>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Complete Your Profile</h1>
           <p className="mt-3 text-base text-muted-foreground max-w-2xl">
-            Link and verify your Codeforces handle to earn a verified badge, improve recommendations, and appear on
-            leaderboards.
+            {!cfVerified
+              ? "Verify your Codeforces handle to unlock all features and complete your profile setup."
+              : "Complete your profile information to get personalized recommendations."}
           </p>
         </header>
 
         <div className="grid gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
-          {/* Verification Card */}
-          <Card className="border-2 transition-all hover:shadow-lg">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl">Codeforces Verification</CardTitle>
-              <CardDescription className="text-base">
-                Link your CF handle and verify ownership with a one-time token.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Status Section */}
-              <div className="rounded-lg border bg-muted/50 p-4 transition-all">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-muted-foreground">Verification Status</span>
-                    {checking ? (
-                      <Badge variant="secondary" className="gap-1.5">
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                        Checking...
-                      </Badge>
-                    ) : verified ? (
-                      <Badge className="bg-green-600 hover:bg-green-600/90 gap-1.5 transition-all">
-                        <CheckCircle2 className="h-3 w-3" />
-                        Verified
-                      </Badge>
-                    ) : verified === false ? (
-                      <Badge variant="secondary" className="gap-1.5">
-                        <Clock className="h-3 w-3" />
-                        Pending
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="gap-1.5">
-                        <AlertCircle className="h-3 w-3" />
-                        Not linked
-                      </Badge>
-                    )}
-                  </div>
-                  {verified && (rating !== null || maxRating !== null) && (
-                    <div className="flex gap-4 text-sm">
-                      {rating !== null && (
-                        <div className="text-right">
-                          <div className="text-muted-foreground">Current Rating</div>
-                          <div className="text-lg font-semibold">{rating}</div>
-                        </div>
-                      )}
-                      {maxRating !== null && (
-                        <div className="text-right">
-                          <div className="text-muted-foreground">Max Rating</div>
-                          <div className="text-lg font-semibold text-primary">{maxRating}</div>
-                        </div>
+          {/* CF Verification Card */}
+          {!cfVerified ? (
+            <Card className="border-2 border-primary/20 transition-all hover:shadow-lg">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl flex items-center gap-2">
+                  <AlertCircle className="h-6 w-6 text-primary" />
+                  Codeforces Verification Required
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Verify your Codeforces handle to access all features of AlgoRise.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CFVerificationCompilation onVerificationComplete={handleVerificationComplete} />
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-2 border-green-500/20 bg-green-500/5 transition-all">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl flex items-center gap-2">
+                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+                  Codeforces Verified
+                </CardTitle>
+                <CardDescription className="text-base">
+                  Your handle <span className="font-semibold text-foreground">{cfHandle}</span> is verified.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+
+          {/* Profile Information Card - Only show if CF verified */}
+          {cfVerified && (
+            <Card className="border-2 transition-all hover:shadow-lg">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl">Profile Information</CardTitle>
+                <CardDescription className="text-base">
+                  Tell us about yourself to get personalized recommendations.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Status Selection */}
+                <div className="space-y-3">
+                  <Label htmlFor="status" className="text-base font-medium">
+                    I am a <span className="text-red-500">*</span>
+                  </Label>
+                  <Select value={status || ""} onValueChange={(val) => setStatus(val as ProfileStatus)}>
+                    <SelectTrigger id="status" className="h-11">
+                      <SelectValue placeholder="Select your status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="working">Working Professional</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Student Fields */}
+                {status === "student" && (
+                  <>
+                    {/* Degree Type */}
+                    <div className="space-y-3">
+                      <Label htmlFor="degree" className="text-base font-medium">
+                        Degree Type <span className="text-red-500">*</span>
+                      </Label>
+                      <Select value={degreeType} onValueChange={setDegreeType}>
+                        <SelectTrigger id="degree" className="h-11">
+                          <SelectValue placeholder="Select your degree" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DEGREE_TYPES.map((degree) => (
+                            <SelectItem key={degree.value} value={degree.value}>
+                              {degree.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* College Selection with Search */}
+                    <div className="space-y-3">
+                      <Label htmlFor="college" className="text-base font-medium">
+                        College/University <span className="text-red-500">*</span>
+                      </Label>
+                      <Popover open={collegeOpen} onOpenChange={setCollegeOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={collegeOpen}
+                            className="w-full h-11 justify-between font-normal bg-transparent"
+                          >
+                            <span className="truncate">{selectedCollegeName}</span>
+                            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+                          <Command>
+                            <CommandInput
+                              placeholder="Search colleges..."
+                              value={collegeSearch}
+                              onValueChange={(val) => {
+                                setCollegeSearch(val)
+                                loadColleges(val)
+                              }}
+                            />
+                            <CommandList>
+                              <CommandEmpty>
+                                <div className="p-4 text-center space-y-3">
+                                  <p className="text-sm text-muted-foreground">No college found</p>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      setShowAddCollege(true)
+                                      setCollegeOpen(false)
+                                    }}
+                                    className="w-full"
+                                  >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add New College
+                                  </Button>
+                                </div>
+                              </CommandEmpty>
+                              <CommandGroup>
+                                {colleges.map((college) => (
+                                  <CommandItem
+                                    key={college.id}
+                                    value={college.name}
+                                    onSelect={() => {
+                                      setSelectedCollege(college.id)
+                                      setCollegeOpen(false)
+                                    }}
+                                  >
+                                    {college.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-muted-foreground">Can't find your college?</p>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={() => setShowAddCollege(true)}
+                          className="h-auto p-0 text-sm"
+                        >
+                          <Plus className="mr-1 h-3 w-3" />
+                          Add it here
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Year Selection - Smart based on degree */}
+                    <div className="space-y-3">
+                      <Label htmlFor="year" className="text-base font-medium">
+                        Year of Study <span className="text-red-500">*</span>
+                      </Label>
+                      <Select value={year} onValueChange={setYear} disabled={!degreeType}>
+                        <SelectTrigger id="year" className="h-11">
+                          <SelectValue placeholder={degreeType ? "Select your year" : "Select degree first"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {getAvailableYears().map((yearOption) => (
+                            <SelectItem key={yearOption.value} value={yearOption.value}>
+                              {yearOption.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {degreeType && (
+                        <p className="text-sm text-muted-foreground">
+                          {DEGREE_TYPES.find((d) => d.value === degreeType)?.label} typically has{" "}
+                          {DEGREE_TYPES.find((d) => d.value === degreeType)?.years} years
+                        </p>
                       )}
                     </div>
+                  </>
+                )}
+
+                {/* Working Professional Fields */}
+                {status === "working" && (
+                  <>
+                    <div className="space-y-3">
+                      <Label htmlFor="company" className="text-base font-medium">
+                        Company <span className="text-red-500">*</span>
+                      </Label>
+                      <Popover open={companyOpen} onOpenChange={setCompanyOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={companyOpen}
+                            className="w-full h-11 justify-between font-normal bg-transparent"
+                          >
+                            <span className="truncate">{selectedCompanyName}</span>
+                            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+                          <Command>
+                            <CommandInput
+                              placeholder="Search companies..."
+                              value={companySearch}
+                              onValueChange={(val) => {
+                                setCompanySearch(val)
+                                loadCompanies(val)
+                              }}
+                            />
+                            <CommandList>
+                              <CommandEmpty>
+                                <div className="p-4 text-center space-y-3">
+                                  <p className="text-sm text-muted-foreground">No company found</p>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => {
+                                      setShowAddCompany(true)
+                                      setCompanyOpen(false)
+                                    }}
+                                    className="w-full"
+                                  >
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Add New Company
+                                  </Button>
+                                </div>
+                              </CommandEmpty>
+                              <CommandGroup>
+                                {companies.map((company) => (
+                                  <CommandItem
+                                    key={company.id}
+                                    value={company.name}
+                                    onSelect={() => {
+                                      setSelectedCompany(company.id)
+                                      setCompanyOpen(false)
+                                    }}
+                                  >
+                                    {company.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-muted-foreground">Can't find your company?</p>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={() => setShowAddCompany(true)}
+                          className="h-auto p-0 text-sm"
+                        >
+                          <Plus className="mr-1 h-3 w-3" />
+                          Add it here
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Custom Company Input - Show if "Other" is selected */}
+                    {isOtherCompany && (
+                      <div className="space-y-3">
+                        <Label htmlFor="custom-company" className="text-base font-medium">
+                          Company Name <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                          id="custom-company"
+                          placeholder="Enter your company name"
+                          value={customCompany}
+                          onChange={(e) => setCustomCompany(e.target.value)}
+                          className="h-11 text-base"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Save Button */}
+                <Button onClick={saveProfile} disabled={saving} className="w-full h-11 text-base" size="lg">
+                  {saving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Profile & Continue"
                   )}
-                </div>
-              </div>
-
-              {/* Handle Input Section */}
-              <div className="space-y-3">
-                <Label htmlFor="handle" className="text-base font-medium">
-                  Codeforces Handle
-                </Label>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Input
-                    id="handle"
-                    placeholder="e.g. tourist"
-                    value={handle}
-                    onChange={(e) => setHandle(e.target.value)}
-                    className="flex-1 h-11 text-base transition-all focus:ring-2"
-                    disabled={loading}
-                  />
-                  <Button 
-                    onClick={startVerification} 
-                    disabled={!canStart || loading}
-                    className="h-11 px-6 transition-all hover:scale-105 active:scale-95"
-                    size="lg"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Starting...
-                      </>
-                    ) : (
-                      "Start Verification"
-                    )}
-                  </Button>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  We'll create a one-time token. Paste it in{" "}
-                  <span className="font-medium">Codeforces → Settings → Social → Organization</span>.
-                </p>
-              </div>
-
-              {/* Token Display Section */}
-              {token && (
-                <div className="space-y-4 rounded-lg border-2 border-primary/20 bg-primary/5 p-5 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="text-base font-semibold flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-primary" />
-                        Verification Token
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Paste this token into your CF Organization field, save, then click Check below.
-                      </div>
-                    </div>
-                    <Button 
-                      variant="secondary" 
-                      onClick={copyToken}
-                      className="transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
-                      size="sm"
-                    >
-                      <Copy className="mr-2 h-4 w-4" />
-                      Copy Token
-                    </Button>
-                  </div>
-                  
-                  <code className="block rounded-md bg-black/40 px-4 py-3 text-sm font-mono break-all border">
-                    {token}
-                  </code>
-                  
-                  <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                    <Button 
-                      asChild 
-                      variant="outline" 
-                      className="flex-1 transition-all hover:scale-105"
-                      size="lg"
-                    >
-                      <Link href={cfSettingsUrl} target="_blank" rel="noreferrer">
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Open Codeforces Settings
-                      </Link>
-                    </Button>
-                    <Button 
-                      onClick={checkVerification} 
-                      disabled={checking}
-                      className="flex-1 transition-all hover:scale-105 active:scale-95"
-                      size="lg"
-                    >
-                      {checking ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Checking...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="mr-2 h-4 w-4" />
-                          Check Verification
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Manual Check Section */}
-              {!token && (
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button 
-                    variant="outline" 
-                    onClick={checkVerification} 
-                    disabled={checking}
-                    className="flex-1 h-11 transition-all hover:scale-105"
-                  >
-                    {checking ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Checking...
-                      </>
-                    ) : (
-                      "Check Verification Status"
-                    )}
-                  </Button>
-                  <Button 
-                    asChild 
-                    variant="ghost" 
-                    className="flex-1 h-11 transition-all hover:scale-105"
-                  >
-                    <Link href={cfSettingsUrl} target="_blank" rel="noreferrer">
-                      <ExternalLink className="mr-2 h-4 w-4" />
-                      Open CF Settings
-                    </Link>
-                  </Button>
-                </div>
-              )}
-
-              {/* Error Display */}
-              {error && (
-                <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/50 p-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex gap-3">
-                    <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-red-800 dark:text-red-200">Verification Error</p>
-                      <p className="text-sm text-red-700 dark:text-red-300 mt-1">{error}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Preferences Card */}
-          <Card className="border transition-all hover:shadow-lg">
-            <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl">Preferences</CardTitle>
-              <CardDescription className="text-base">
-                Set your training defaults and notification preferences (coming soon).
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-lg border border-dashed bg-muted/30 p-8 text-center">
-                <Clock className="mx-auto h-12 w-12 text-muted-foreground/50 mb-3" />
-                <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                  Customization options will be available after completing your Codeforces verification.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
+
+      {/* Add College Dialog */}
+      <Dialog open={showAddCollege} onOpenChange={setShowAddCollege}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New College</DialogTitle>
+            <DialogDescription>
+              Enter the name of your college. It will be added to our database for future users.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-college">College Name</Label>
+              <Input
+                id="new-college"
+                placeholder="e.g. ABC Institute of Technology"
+                value={newCollegeName}
+                onChange={(e) => setNewCollegeName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    addNewCollege()
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddCollege(false)}>
+              Cancel
+            </Button>
+            <Button onClick={addNewCollege} disabled={addingCollege}>
+              {addingCollege ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                "Add College"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Company Dialog */}
+      <Dialog open={showAddCompany} onOpenChange={setShowAddCompany}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Company</DialogTitle>
+            <DialogDescription>
+              Enter the name of your company. It will be added to our database for future users.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-company">Company Name</Label>
+              <Input
+                id="new-company"
+                placeholder="e.g. Tech Startup Inc."
+                value={newCompanyName}
+                onChange={(e) => setNewCompanyName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    addNewCompany()
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddCompany(false)}>
+              Cancel
+            </Button>
+            <Button onClick={addNewCompany} disabled={addingCompany}>
+              {addingCompany ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                "Add Company"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   )
 }

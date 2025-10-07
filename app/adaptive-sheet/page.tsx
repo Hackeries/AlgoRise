@@ -1,5 +1,5 @@
-import { AdaptiveSheetPageClient } from "@/components/adaptive/page-client"
+import { PracticeSessionClient } from "@/components/practice/practice-session-client"
 
-export default function AdaptiveSheetPage() {
-  return <AdaptiveSheetPageClient />
+export default function PracticeProblemsPage() {
+  return <PracticeSessionClient />
 }

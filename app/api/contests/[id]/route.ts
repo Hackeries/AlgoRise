@@ -32,3 +32,21 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
   return NextResponse.json({ ok: true })
 }
+
+export async function GET(req: Request, { params }: { params: { id: string } }) {
+  const contestId = params.id
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies },
+  )
+
+  const { data: contest, error } = await supabase.from("contests").select("*").eq("id", contestId).single()
+
+  if (error || !contest) {
+    return NextResponse.json({ error: "Contest not found" }, { status: 404 })
+  }
+
+  return NextResponse.json(contest)
+}

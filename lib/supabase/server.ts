@@ -7,7 +7,7 @@ import { cookies } from 'next/headers';
  * it.
  */
 export async function createClient() {
-  const cookieStore = await cookies();
+  const cookieStore = (await cookies()) as any;
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -30,7 +30,11 @@ export async function createClient() {
   };
 
   const cookieRemove = (name: string, options: CookieOptions) => {
-    cookieStore.set({ name, value: '', ...options });
+    if (typeof cookieStore.delete === 'function') {
+      cookieStore.delete({ name, ...options });
+    } else {
+      cookieStore.set({ name, value: '', ...options });
+    }
   };
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {

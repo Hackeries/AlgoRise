@@ -1,117 +1,143 @@
-import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { cfGetProblems, type CodeforcesProblem } from "@/lib/codeforces-api";
 
-// ✅ Helper to create Supabase client compatible with latest Next.js & Supabase versions
-async function createSupabaseClient() {
-  const cookieStore = await cookies(); // 👈 await is required here
+export const dynamic = "force-dynamic";
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: cookiesToSet => {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
-        },
-      },
-    }
-  );
-}
-
-export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  const contestId = params.id;
-  const body = await req.json().catch(() => ({}));
-  const problem_id = (body?.problemId as string | undefined)?.trim();
-  const status = body?.status as 'solved' | 'failed' | undefined;
-  const penalty_s = Number(body?.penalty ?? 0);
-
-  if (!problem_id || !status)
-    return NextResponse.json(
-      { error: 'problemId and status required' },
-      { status: 400 }
-    );
-
-  const supabase = await createSupabaseClient();
+export async function GET(req: Request) {
+  const supabase = await createClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user)
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (!user) {
+    // Return only public contests for non-authenticated users
+    const { data: contests, error } = await supabase
+      .from("contests")
+      .select("*")
+      .eq("visibility", "public")
+      .order("created_at", { ascending: false })
+      .limit(50);
 
-  const { error } = await supabase.from('contest_submissions').insert({
-    contest_id: contestId,
-    user_id: user.id,
-    problem_id,
-    status,
-    penalty_s: isFinite(penalty_s) ? penalty_s : 0,
-  });
+    if (error) {
+      console.error("Error fetching public contests:", error);
+      return NextResponse.json({ contests: [] }, { status: 500 });
+    }
 
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ 
+      contests: contests?.map(contest => ({
+        ...contest,
+        isRegistered: false,
+        isHost: false
+      })) || [] 
+    });
+  }
 
-  return NextResponse.json({ ok: true });
+  // For authenticated users, let RLS handle the filtering
+  const { data: contests, error } = await supabase
+    .from("contests")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (error) {
+    console.error("Error fetching contests:", error);
+    return NextResponse.json({ contests: [] }, { status: 500 });
+  }
+
+  // Check which contests the user is registered for
+  const { data: participations, error: partErr } = await supabase
+    .from("contest_participants")
+    .select("contest_id")
+    .eq("user_id", user.id);
+
+  if (partErr) {
+    console.error("Error fetching participations:", partErr);
+  }
+
+  const registeredContestIds = new Set(participations?.map((p: any) => p.contest_id) || []);
+
+  const formattedContests = contests?.map((contest: any) => ({
+    ...contest,
+    isRegistered: registeredContestIds.has(contest.id),
+    isHost: contest.host_user_id === user.id,
+  })) || [];
+
+  return NextResponse.json({ contests: formattedContests });
 }
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  const contestId = params.id;
-  const supabase = await createSupabaseClient();
+export async function POST(req: Request) {
+  const supabase = await createClient();
 
-  const { data: contest, error: contestError } = await supabase
-    .from('contests')
-    .select('*')
-    .eq('id', contestId)
-    .single();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (contestError || !contest)
-    return NextResponse.json({ error: 'Contest not found' }, { status: 404 });
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  const { data: problems } = await supabase
-    .from('contest_problems')
-    .select('*')
-    .eq('contest_id', contestId)
-    .order('problem_id');
+  try {
+    const body = await req.json();
+    console.log("Creating contest for user:", user.id);
 
-  const now = new Date();
-  const start = new Date(contest.starts_at);
-  const end = new Date(contest.ends_at);
+    // Simple validation
+    const name = body.name?.toString()?.trim() || "";
+    if (!name) {
+      return NextResponse.json({ error: "Contest name is required" }, { status: 400 });
+    }
 
-  let status: 'upcoming' | 'live' | 'ended' = 'upcoming';
-  if (now >= end) status = 'ended';
-  else if (now >= start) status = 'live';
+    // Create basic contest - let RLS handle the rest
+    const contestInsert = {
+      name,
+      description: body.description?.toString()?.trim() || "",
+      visibility: body.visibility === "public" ? "public" : "private",
+      status: "draft",
+      host_user_id: user.id,
+      starts_at: body.starts_at,
+      ends_at: body.ends_at,
+      max_participants: body.max_participants || null,
+      allow_late_join: body.allow_late_join !== false,
+      contest_mode: body.contest_mode === "icpc" ? "icpc" : "practice",
+      duration_minutes: body.duration_minutes || 120,
+      problem_count: body.problem_count || 5,
+      rating_min: body.rating_min || 800,
+      rating_max: body.rating_max || 1600,
+    };
 
-  const timeRemaining = end.getTime() - now.getTime();
+    console.log("Contest insert data:", contestInsert);
 
-  const formattedProblems = (problems || []).map(p => ({
-    id: p.problem_id,
-    contestId: p.contest_id_cf || 0,
-    index: p.index_cf || '',
-    name: p.title,
-    rating: p.rating || 0,
-  }));
+    const { data: contest, error: contestError } = await supabase
+      .from("contests")
+      .insert(contestInsert)
+      .select()
+      .single();
 
-  const shareUrl = `${
-    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  }/contests/${contestId}`;
+    if (contestError) {
+      console.error("Database error:", contestError);
+      return NextResponse.json({ 
+        error: `Database error: ${contestError.message}`,
+        details: contestError 
+      }, { status: 500 });
+    }
 
-  return NextResponse.json({
-    contest: {
-      ...contest,
-      problems: formattedProblems,
-      status,
-      timeRemaining: Math.max(0, timeRemaining),
-      shareUrl,
-    },
-  });
+    console.log("Contest created successfully:", contest.id);
+
+    return NextResponse.json({ 
+      success: true,
+      contest: {
+        id: contest.id,
+        name: contest.name,
+        status: contest.status,
+      }
+    });
+
+  } catch (error) {
+    console.error("Contest creation failed:", error);
+    return NextResponse.json({ 
+      error: "Internal server error",
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
+  }
 }

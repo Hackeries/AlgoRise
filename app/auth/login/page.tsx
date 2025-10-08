@@ -18,7 +18,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthConfigurationAlert } from '@/components/auth/auth-configuration-alert';
 import { Mail, Lock, Eye, EyeOff, Github } from 'lucide-react';
-import { toast } from 'react-toastify';
 
 // Google SVG
 const GoogleIcon = () => (
@@ -47,7 +46,7 @@ const Spinner = () => (
   <div className='animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full' />
 );
 
-// Reusable InputWithIcon component
+// Input with icon & eye toggle
 const InputWithIcon = ({
   id,
   label,
@@ -108,7 +107,7 @@ const InputWithIcon = ({
   </div>
 );
 
-export default function LoginPage() {
+export default function Page() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -118,18 +117,19 @@ export default function LoginPage() {
     'google' | 'github' | null
   >(null);
   const [isConfigured, setIsConfigured] = useState(true);
-
   const router = useRouter();
   const { refreshUser } = useAuth();
 
   useEffect(() => {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
     if (
       !supabaseUrl ||
       !supabaseAnonKey ||
-      supabaseUrl.includes('your-project-ref') ||
-      supabaseAnonKey.includes('your-anon-key')
+      supabaseUrl === 'https://your-project-ref.supabase.co' ||
+      supabaseAnonKey === 'your-anon-key-here' ||
+      supabaseAnonKey === '[YOUR-ANON-KEY-HERE]'
     ) {
       setIsConfigured(false);
     }
@@ -139,7 +139,6 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithPassword({
@@ -147,14 +146,12 @@ export default function LoginPage() {
         password,
       });
       if (error) throw error;
-
       await refreshUser();
-      toast.success('Login successful! Redirecting...', { autoClose: 2000 });
-      setTimeout(() => router.push('/profile'), 1500);
+      router.push('/train');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Login failed';
-      toast.error(message);
-      setError(message);
+      setError(
+        err instanceof Error ? err.message : 'An unexpected error occurred'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -163,19 +160,15 @@ export default function LoginPage() {
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
     setError(null);
     setIsOAuthLoading(provider);
-
     try {
       const supabase = createClient();
-      const redirectUrl = `${window.location.origin}/profile`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: redirectUrl },
+        options: { redirectTo: `${window.location.origin}/train` },
       });
       if (error) throw error;
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'OAuth login failed';
-      toast.error(message);
-      setError(message);
+      setError(err instanceof Error ? err.message : 'OAuth login failed');
     } finally {
       setIsOAuthLoading(null);
     }
@@ -186,7 +179,7 @@ export default function LoginPage() {
       <div className='flex h-screen w-full items-center justify-center'>
         <AuthConfigurationAlert
           title='Login Unavailable'
-          description='Authentication is not configured. Please set up Supabase to enable login.'
+          description='Authentication is not configured. Please set up Supabase to enable user login.'
         />
       </div>
     );
@@ -205,8 +198,8 @@ export default function LoginPage() {
               Login with email or social accounts
             </CardDescription>
           </CardHeader>
-
           <CardContent>
+            {/* Social login */}
             <div className='flex flex-col gap-3 mb-4'>
               <Button
                 onClick={() => handleOAuthLogin('google')}
@@ -244,38 +237,36 @@ export default function LoginPage() {
             </div>
 
             <form onSubmit={handleLogin} className='space-y-6'>
-              <InputWithIcon
-                id='email'
-                label='Email'
-                type='email'
-                placeholder='you@example.com'
-                icon={Mail}
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-              />
-
-              <InputWithIcon
-                id='password'
-                label='Password'
-                icon={Lock}
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                showPassword={showPassword}
-                setShowPassword={setShowPassword}
-              />
-
-              {error && (
-                <p className='text-sm text-red-500 text-center'>{error}</p>
-              )}
-
-              <Button
-                type='submit'
-                className='w-full bg-blue-500 hover:bg-blue-600 text-white transition duration-300'
-                disabled={isLoading || !email || !password}
-              >
-                {isLoading ? 'Logging in...' : 'Login'}
-              </Button>
-
+              <div className='flex flex-col gap-4'>
+                <InputWithIcon
+                  id='email'
+                  label='Email'
+                  type='email'
+                  placeholder='you@example.com'
+                  icon={Mail}
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                />
+                <InputWithIcon
+                  id='password'
+                  label='Password'
+                  icon={Lock}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  showPassword={showPassword}
+                  setShowPassword={setShowPassword}
+                />
+                {error && (
+                  <p className='text-sm text-red-500 text-center'>{error}</p>
+                )}
+                <Button
+                  type='submit'
+                  className='w-full bg-blue-500 hover:bg-blue-600 text-white transition duration-300'
+                  disabled={isLoading || !email || !password}
+                >
+                  {isLoading ? 'Logging in...' : 'Login'}
+                </Button>
+              </div>
               <div className='mt-4 text-center text-sm text-gray-600 dark:text-gray-400'>
                 Don&apos;t have an account?{' '}
                 <Link

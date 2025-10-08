@@ -25,6 +25,7 @@ interface Contest {
   max_participants?: number
   status: string
   host_user_id: string
+  allow_late_join?: boolean // added
 }
 
 interface LeaderboardEntry {
@@ -181,7 +182,8 @@ export default function ContestDetailPage() {
   }
 
   const copyShareLink = () => {
-    const link = `${window.location.origin}/contests/${params.id}`
+    const base = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+    const link = `${base}/contests/${params.id}`
     navigator.clipboard.writeText(link)
     toast({
       title: "Link Copied!",
@@ -266,12 +268,7 @@ export default function ContestDetailPage() {
               <span className="text-white/60">Problems</span>
               <span className="font-medium">{contest.problem_count}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-white/60">Rating Range</span>
-              <span className="font-medium">
-                {contest.rating_min} - {contest.rating_max}
-              </span>
-            </div>
+            {/* Rating Range is hidden for participants */}
             {contest.max_participants && (
               <div className="flex justify-between">
                 <span className="text-white/60">Max Participants</span>

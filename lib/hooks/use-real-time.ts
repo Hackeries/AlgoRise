@@ -13,7 +13,7 @@ export function useRealtimeUpdates(
   key: string | null,
   config: RealtimeConfig = {}
 ) {
-  const intervalRef = useRef<NodeJS.Timeout>();
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!key) return;

@@ -1,117 +1,96 @@
-import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { NextResponse } from "next/server"
+import { createClient } from "@/lib/supabase/server"
 
-// ✅ Helper to create Supabase client compatible with latest Next.js & Supabase versions
-async function createSupabaseClient() {
-  const cookieStore = await cookies(); // 👈 await is required here
+export async function POST(req: Request, { params }: { params: { id: string } }) {
+  const contestId = params.id
+  const body = await req.json().catch(() => ({}))
+  const problem_id = (body?.problemId as string | undefined)?.trim()
+  const status = body?.status as "solved" | "failed" | undefined
+  const penalty_s = Number(body?.penalty ?? 0)
 
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: cookiesToSet => {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
-        },
-      },
-    }
-  );
-}
+  if (!problem_id || !status) return NextResponse.json({ error: "problemId and status required" }, { status: 400 })
 
-export async function POST(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  const contestId = params.id;
-  const body = await req.json().catch(() => ({}));
-  const problem_id = (body?.problemId as string | undefined)?.trim();
-  const status = body?.status as 'solved' | 'failed' | undefined;
-  const penalty_s = Number(body?.penalty ?? 0);
-
-  if (!problem_id || !status)
-    return NextResponse.json(
-      { error: 'problemId and status required' },
-      { status: 400 }
-    );
-
-  const supabase = await createSupabaseClient();
-
+  const supabase = createClient()
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: "unauthorized" }, { status: 401 })
 
-  if (!user)
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-
-  const { error } = await supabase.from('contest_submissions').insert({
+  const { error } = await supabase.from("contest_submissions").insert({
     contest_id: contestId,
     user_id: user.id,
     problem_id,
     status,
     penalty_s: isFinite(penalty_s) ? penalty_s : 0,
-  });
+  })
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 500 });
-
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true })
 }
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  const contestId = params.id;
-  const supabase = await createSupabaseClient();
+export async function GET(req: Request, { params }: { params: { id: string } }) {
+  const contestId = params.id
 
-  const { data: contest, error: contestError } = await supabase
-    .from('contests')
-    .select('*')
-    .eq('id', contestId)
-    .single();
+  const supabase = createClient()
 
-  if (contestError || !contest)
-    return NextResponse.json({ error: 'Contest not found' }, { status: 404 });
+  const { data: rawContest, error } = await supabase.from("contests").select("*").eq("id", contestId).single()
 
-  const { data: problems } = await supabase
-    .from('contest_problems')
-    .select('*')
-    .eq('contest_id', contestId)
-    .order('problem_id');
+  if (error || !rawContest) {
+    return NextResponse.json({ error: "Contest not found" }, { status: 404 })
+  }
 
-  const now = new Date();
-  const start = new Date(contest.starts_at);
-  const end = new Date(contest.ends_at);
+  // Fetch contest problems to populate contest window
+  const { data: problemRows } = await supabase
+    .from("contest_problems")
+    .select("problem_id, title, contest_id_cf, index_cf, rating")
+    .eq("contest_id", contestId)
 
-  let status: 'upcoming' | 'live' | 'ended' = 'upcoming';
-  if (now >= end) status = 'ended';
-  else if (now >= start) status = 'live';
+  // Compute status + timeRemaining
+  const now = Date.now()
+  const startsAt = rawContest.starts_at ? new Date(rawContest.starts_at).getTime() : null
+  const endsAt = rawContest.ends_at ? new Date(rawContest.ends_at).getTime() : null
 
-  const timeRemaining = end.getTime() - now.getTime();
+  let status: "upcoming" | "live" | "ended" = "upcoming"
+  if (startsAt && endsAt) {
+    if (now >= endsAt) status = "ended"
+    else if (now >= startsAt) status = "live"
+    else status = "upcoming"
+  }
 
-  const formattedProblems = (problems || []).map(p => ({
-    id: p.problem_id,
-    contestId: p.contest_id_cf || 0,
-    index: p.index_cf || '',
-    name: p.title,
-    rating: p.rating || 0,
-  }));
+  // For the participation UI:
+  // - start_time is expected in the client (mapped from starts_at)
+  // - timeRemaining should be ms until end if live; otherwise until start
+  const timeRemaining = status === "live" ? Math.max(0, (endsAt ?? now) - now) : Math.max(0, (startsAt ?? now) - now)
 
-  const shareUrl = `${
-    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  }/contests/${contestId}`;
+  const problems = (problemRows || []).map((p) => ({
+    id: p.problem_id, // unique id per problem row
+    contestId: p.contest_id_cf ?? 0,
+    index: p.index_cf ?? "",
+    name: p.title ?? p.problem_id,
+    rating: p.rating ?? 0,
+  }))
 
+  // Return the shape the clients expect
   return NextResponse.json({
     contest: {
-      ...contest,
-      problems: formattedProblems,
+      id: rawContest.id,
+      name: rawContest.name,
+      description: rawContest.description ?? "",
+      start_time: rawContest.starts_at ?? null,
+      duration_minutes: rawContest.duration_minutes ?? 0,
+      problems,
       status,
-      timeRemaining: Math.max(0, timeRemaining),
-      shareUrl,
+      timeRemaining,
+      max_participants: rawContest.max_participants ?? null,
+      // Keep raw fields for other pages if needed
+      starts_at: rawContest.starts_at,
+      ends_at: rawContest.ends_at,
+      contest_mode: rawContest.contest_mode,
+      rating_min: rawContest.rating_min,
+      rating_max: rawContest.rating_max,
+      visibility: rawContest.visibility,
+      host_user_id: rawContest.host_user_id,
+      allow_late_join: rawContest.allow_late_join ?? true,
     },
-  });
+  })
 }

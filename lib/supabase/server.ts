@@ -1,4 +1,4 @@
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
 /**
@@ -17,27 +17,24 @@ export async function createClient() {
       'Supabase environment variables not found for server-side client.'
     );
     throw new Error(
-      'Supabase configuration missing. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file.'
+      'Supabase configuration missing. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your environment.'
     );
   }
 
+  const cookieGet = (name: string) => {
+    return cookieStore.get(name)?.value as string | undefined;
+  };
+
+  const cookieSet = (name: string, value: string, options: CookieOptions) => {
+    cookieStore.set({ name, value, ...options });
+  };
+
+  const cookieRemove = (name: string, options: CookieOptions) => {
+    cookieStore.set({ name, value: '', ...options });
+  };
+
   return createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return cookieStore.getAll();
-      },
-      setAll(cookiesToSet) {
-        try {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          );
-        } catch {
-          // The "setAll" method was called from a Server Component.
-          // This can be ignored if you have middleware refreshing
-          // user sessions.
-        }
-      },
-    },
+    cookies: { get: cookieGet, set: cookieSet, remove: cookieRemove } as any,
   });
 }
 

@@ -26,6 +26,7 @@ interface CFVerificationContextType {
   clearVerification: () => void;
   resetVerificationUI: () => void;
   refreshVerificationStatus: () => void;
+  allowReVerification: () => void;
 }
 
 const CFVerificationContext = createContext<
@@ -312,6 +313,11 @@ export function CFVerificationProvider({
     setIsVerified(false);
   }, []);
 
+  const allowReVerification = useCallback(() => {
+    setVerificationDataState(null);
+    setIsVerified(false);
+  }, []);
+
   // ---------------- Initialize ----------------
   useEffect(() => {
     refreshVerificationStatus();
@@ -327,6 +333,7 @@ export function CFVerificationProvider({
         clearVerification,
         resetVerificationUI,
         refreshVerificationStatus,
+        allowReVerification,
       }}
     >
       {children}

@@ -443,6 +443,23 @@ export default function ContestsPage() {
     }
 
     const now = new Date();
+    const end = contest.ends_at
+      ? new Date(contest.ends_at)
+      : new Date(
+          new Date(contest.starts_at).getTime() +
+            (contest.duration_minutes ?? 0) * 60 * 1000
+        );
+
+    if (contest.status === 'ended' || (contest.ends_at && now >= end)) {
+      toast({
+        title: 'Contest Ended',
+        description:
+          'This contest has already ended. You can view details or leaderboard instead.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const start = new Date(contest.starts_at);
     const registrationClose = new Date(start.getTime() + 10 * 60 * 1000);
 

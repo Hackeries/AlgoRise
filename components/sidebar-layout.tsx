@@ -9,7 +9,7 @@ import { Header } from "@/components/header"
 import { useCFVerification } from "@/lib/context/cf-verification"
 import { useState, useEffect } from "react"
 import { Calendar, Target, Trophy, BookOpen, Users, PieChart, BarChart3, Menu } from "lucide-react"
-
+import {motion} from "framer-motion"
 // ------------------ CF Rating System ------------------
 const getCFTier = (rating: number) => {
   if (rating < 1200) return { label: "Newbie", color: "text-gray-400", bg: "bg-gray-800" }
@@ -63,6 +63,7 @@ const menuItems = [
   { href: "/visualizers", label: "Visualizers", icon: PieChart },
   { href: "/groups", label: "Groups", icon: Users },
 ]
+
 
 // ------------------ Sidebar Item ------------------
 const SidebarItem = ({
@@ -170,45 +171,70 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-background text-foreground">
       {/* Sidebar */}
-      <div
+      <motion.div
+        initial={false}
+        animate={{ 
+          width: isOpen ? "16rem" : "4rem"
+        }}
+        transition={{ 
+          duration: 0.3,
+          ease: "easeInOut"
+        }}
         className={cn(
-          "fixed top-0 left-0 z-50 h-full flex flex-col bg-card border-r border-border shadow-lg transition-width duration-150 overflow-hidden",
-          isOpen ? "w-64" : "w-16",
+          "fixed top-0 left-0 z-50 h-full flex flex-col bg-card border-r border-border shadow-lg overflow-hidden"
         )}
       >
         {/* Top: Hamburger always left */}
-        <div className="flex items-center justify-start p-4 border-b border-border">
+        <div className={`flex items-center p-4 border-b border-border`}>
           <button
-            className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-muted transition"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle sidebar"
+        className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-muted transition-colors duration-200"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-label="Toggle sidebar"
           >
-            <Menu className="h-5 w-5" />
+        <Menu className="h-5 w-5" />
           </button>
+          <motion.h1
+        initial={false}
+        animate={{ 
+          opacity: isOpen ? 1 : 0,
+          x: isOpen ? 0 : -20,
+          scale: isOpen ? 1 : 0.8
+        }}
+        transition={{ 
+          duration: 0.3,
+          ease: "easeInOut",
+          delay: isOpen ? 0.1 : 0
+        }}
+        className={`text-lg ml-3 md:text-2xl font-extrabold leading-tight font-[Bricolage_Grotesque] 
+          bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 
+          bg-clip-text text-transparent animate-gradient-x whitespace-nowrap`}  
+          >
+        AlgoRise
+          </motion.h1>
         </div>
 
         {/* Main Menu */}
         <div className="flex-1 mt-4 overflow-y-auto px-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30">
           <nav className="space-y-2">
-            {menuItems.map((item, idx) => (
-              <SidebarItem
-                key={item.href}
-                {...item}
-                isActive={pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href))}
-                isOpen={isOpen}
-                delay={idx * 30}
-              />
-            ))}
+        {menuItems.map((item, idx) => (
+          <SidebarItem
+            key={item.href}
+            {...item}
+            isActive={pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href))}
+            isOpen={isOpen}
+            delay={idx * 30}
+          />
+        ))}
           </nav>
         </div>
 
         {/* Footer */}
         {isVerified && (
           <div className="p-4 border-t border-border flex flex-col items-start">
-            <SidebarFooter cfData={cfData} isOpen={isOpen} />
+        <SidebarFooter cfData={cfData} isOpen={isOpen} />
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Main Content */}
       <div
@@ -221,3 +247,5 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     </div>
   )
 }
+
+

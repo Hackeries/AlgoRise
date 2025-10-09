@@ -340,9 +340,9 @@ export default function ProfilePage() {
     }
   }
 
-  function handleVerificationComplete(handle: string) {
+  function handleVerificationComplete(data: { handle?: string }) {
     setCfVerified(true)
-    setCfHandle(handle)
+    setCfHandle(data?.handle || "")
     toast({
       title: "Verification complete!",
       description: "Your Codeforces handle has been verified.",

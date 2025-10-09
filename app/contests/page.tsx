@@ -92,24 +92,20 @@ export default function ContestsPage() {
     ratingMax: '1600',
     maxParticipants: '',
     allowLateJoin: true,
-    contestMode: 'practice',
-    visibility: 'private',
-  });
-  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
-  const [userRating, setUserRating] = useState<number>(0);
-
-  const [createdContestLink, setCreatedContestLink] = useState<string | null>(
-    null
-  );
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+    contestMode: "practice",
+    visibility: "private",
+  })
+  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null)
+  const [userRating, setUserRating] = useState<number>(0)
+  
+  const [createdContestLink, setCreatedContestLink] = useState<string | null>(null)
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setCurrentUser(user);
-    };
+      const { data: { user } } = await supabase.auth.getUser()
+      setCurrentUser(user)
+    }
 
     const fetchUserRating = async () => {
       const { data: userData } = await supabase.auth.getUser();
@@ -142,8 +138,8 @@ export default function ContestsPage() {
 
   const fetchContests = async () => {
     try {
-      setLoading(true);
-
+      setLoading(true)
+      
       // Fetch Codeforces contests
       try {
         const cfResponse = await fetch('/api/cf/contests');
@@ -295,13 +291,15 @@ export default function ContestsPage() {
         }
       }
 
+      console.log("[v0] Creating contest payload:", bodyData) // debug
+
       const response = await fetch('/api/contests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyData),
       });
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (response.ok) {
         if (!data || !data.contest?.id) {
@@ -313,29 +311,28 @@ export default function ContestsPage() {
           return;
         }
 
-        setCreatedContestLink(
-          `${window.location.origin}/contests/${data.contest.id}/participate`
-        );
-        setShareDialogOpen(true);
+        setCreatedContestLink(`${window.location.origin}/contests/${data.contest.id}/participate`)
+        setShareDialogOpen(true)
 
-        resetForm();
-        setCreateDialogOpen(false);
-        fetchContests();
-
+        resetForm()
+        setCreateDialogOpen(false)
+        fetchContests()
+        
         toast({
           title: 'Success',
           description: 'Contest created successfully!',
           variant: 'default',
         });
       } else {
+        console.log("[v0] Create contest failure:", data) // debug
         toast({
-          title: 'Error',
-          description: data?.error || 'Failed to create contest',
-          variant: 'destructive',
-        });
+          title: "Error",
+          description: data?.error || "Failed to create contest",
+          variant: "destructive",
+        })
       }
     } catch (error) {
-      console.error('Contest creation error:', error);
+      console.error("Contest creation error:", error)
       toast({
         title: 'Error',
         description: 'Failed to create contest',
@@ -407,22 +404,20 @@ export default function ContestsPage() {
       return;
     }
 
-    const now = new Date();
-    const start = new Date(contest.starts_at);
-    const end = contest.ends_at ? new Date(contest.ends_at) : null;
+    const now = new Date()
+    const start = new Date(contest.starts_at)
+    const registrationClose = new Date(start.getTime() + 10 * 60 * 1000)
 
-    // Registration is open from contest creation until contest starts (or 10 min after if late join allowed)
-    if (contest.status === 'ended') {
+    if (now < start) {
       toast({
-        title: 'Contest Ended',
-        description: 'This contest has already ended.',
-        variant: 'destructive',
-      });
-      return;
+        title: "Too Early!",
+        description: "Registration hasn't started yet! Wait for the contest to begin.",
+        variant: "destructive",
+      })
+      return
     }
 
-    // If contest is running and late join is not allowed
-    if (contest.status === 'running' && !contest.allow_late_join) {
+    if (now > registrationClose) {
       toast({
         title: 'Too Late!',
         description:
@@ -448,10 +443,10 @@ export default function ContestsPage() {
     // Register user if not already registered
     if (!contest.isRegistered) {
       try {
-        const response = await fetch(`/api/contests/${contest.id}/join`, {
-          method: 'POST',
-        });
-
+        const response = await fetch(`/api/contests/${contest.id}/register`, {
+          method: "POST",
+        })
+        
         if (response.ok) {
           toast({
             title: 'Registered!',
@@ -496,10 +491,10 @@ export default function ContestsPage() {
     const hours = Math.floor((diff % 86400) / 3600);
     const minutes = Math.floor((diff % 3600) / 60);
 
-    if (days > 0) return `${days}d ${hours}h`;
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    return `${minutes}m`;
-  };
+    if (days > 0) return `${days}d ${hours}h`
+    if (hours > 0) return `${hours}h ${minutes}m`
+    return `${minutes}m`
+  }
 
   return (
     <main className='mx-auto max-w-6xl px-4 py-10'>
@@ -957,33 +952,21 @@ export default function ContestsPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-                {privateContests.map(contest => (
-                  <Card
-                    key={contest.id}
-                    className='hover:bg-white/5 transition-colors'
-                  >
-                    <CardHeader className='pb-3'>
-                      <CardTitle className='text-sm font-medium'>
-                        {contest.name}
-                      </CardTitle>
-                      <CardDescription className='text-xs'>
-                        {contest.visibility === 'public' ? 'Public' : 'Private'}{' '}
-                        • Created by {contest.isHost ? 'You' : 'Others'}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {privateContests.map((contest) => (
+                  <Card key={contest.id} className="hover:bg-white/5 transition-colors">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium">{contest.name}</CardTitle>
+                      <CardDescription className="text-xs">
+                        {contest.visibility === "public" ? "Public" : "Private"} • Created by {contest.isHost ? "You" : "Others"}
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className='pt-0'>
-                      <div className='flex items-center justify-between mb-3'>
-                        <Badge
-                          variant={
-                            contest.status === 'running'
-                              ? 'default'
-                              : contest.status === 'ended'
-                              ? 'secondary'
-                              : 'outline'
-                          }
-                          className='text-xs'
-                        >
+                    <CardContent className="pt-0">
+                      <div className="flex items-center justify-between mb-3">
+                        <Badge variant={
+                          contest.status === "running" ? "default" : 
+                          contest.status === "ended" ? "secondary" : "outline"
+                        } className="text-xs">
                           {contest.status}
                         </Badge>
                         <div className='flex gap-2'>
@@ -997,23 +980,16 @@ export default function ContestsPage() {
                           >
                             View Details
                           </Button>
-                          {(contest.status === 'draft' ||
-                            contest.status === 'running') &&
-                            !contest.isHost && (
-                              <Button
-                                size='sm'
-                                className='h-8 px-2 text-xs bg-green-600 hover:bg-green-700'
-                                onClick={() =>
-                                  handleJoinPrivateContest(contest)
-                                }
-                                disabled={
-                                  contest.isRegistered &&
-                                  contest.status === 'draft'
-                                }
-                              >
-                                {contest.isRegistered ? 'Join Now' : 'Register'}
-                              </Button>
-                            )}
+                          {(contest.status === "draft" || contest.status === "running") && !contest.isHost && (
+                            <Button
+                              size="sm"
+                              className="h-8 px-2 text-xs bg-green-600 hover:bg-green-700"
+                              onClick={() => handleJoinPrivateContest(contest)}
+                              disabled={contest.isRegistered && contest.status === "draft"}
+                            >
+                              {contest.isRegistered ? "Join Now" : "Register"}
+                            </Button>
+                          )}
                         </div>
                       </div>
 
@@ -1026,15 +1002,11 @@ export default function ContestsPage() {
                             </span>
                           </div>
                           {contest.description && (
-                            <div className='text-white/50'>
-                              {contest.description}
-                            </div>
+                            <div className="text-white/50">{contest.description}</div>
                           )}
-                          <div className='flex items-center gap-4 text-white/50'>
+                          <div className="flex items-center gap-4 text-white/50">
                             <span>{contest.problem_count} Problems</span>
-                            <span>
-                              Rating: {contest.rating_min}-{contest.rating_max}
-                            </span>
+                            <span>Rating: {contest.rating_min}-{contest.rating_max}</span>
                             <span>{contest.duration_minutes}m</span>
                           </div>
                           <div className='flex items-center gap-2 text-white/50'>

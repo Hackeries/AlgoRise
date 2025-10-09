@@ -1,46 +1,27 @@
-# Node dependencies
-/node_modules/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Next.js build output
+# dependencies
+/node_modules
+
+# next.js
 /.next/
 /out/
-/build/
 
-# Log files
+# production
+/build
+
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Environment files
-.env*
+# env files
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
-# Vercel deployment
-.vercel/
+# vercel
+.vercel
 
-# TypeScript build info
+# typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# Husky pre-commit hooks
-.husky/
-
-# Editor files
-.vscode/
-.idea/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Public assets that can be regenerated or large binaries
-/public/placeholder*.png
-/public/placeholder*.jpg
-/public/placeholder*.svg
-
-# Lock files (optional: keep one)
-/package-lock.json

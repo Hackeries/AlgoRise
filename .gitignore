@@ -17,7 +17,9 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files
+# Ignore all local env variants but keep the example in the repo
 .env*
+!.env.example
 
 # vercel
 .vercel

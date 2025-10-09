@@ -101,9 +101,42 @@ export function CFVerificationCompilation({
     }
   }
 
+  const safeJson = async (resp: Response) => {
+    try {
+      return await resp.json()
+    } catch {
+      return null
+    }
+  }
+
   const checkVerification = async () => {
+    // Guard: require handle and verificationId
+    if (!handle.trim()) {
+      toast({
+        title: "Handle required",
+        description: "Enter your Codeforces handle before verifying.",
+        variant: "destructive",
+      })
+      return
+    }
+    if (!verificationId) {
+      toast({
+        title: "Start verification first",
+        description: "Please click Next and copy/submit the code, then press Verify Now.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setLoading(true)
     setError(null)
+
+    // Informational toast before we start
+    toast({
+      title: "Checking recent submission",
+      description:
+        "We’re checking the most recent submission for Problem 1869A. The verdict must be Compilation Error (CE).",
+    })
 
     try {
       const response = await fetch("/api/cf/verify/compilation/check", {
@@ -112,17 +145,19 @@ export function CFVerificationCompilation({
         body: JSON.stringify({ verificationId }),
       })
 
-      const data = await response.json()
+      const data = await safeJson(response)
 
       if (!response.ok) {
-        throw new Error(data.error || "Verification failed")
+        const msg =
+          (data && (data.error || data.message)) || `Verification failed with status ${response.status}. Please retry.`
+        throw new Error(msg)
       }
 
-      if (data.verified) {
+      // Expecting shape: { verified: boolean, handle, rating?, maxRating?, rank?, recentVerdict? }
+      if (data && data.verified) {
         setTimerActive(false)
         setStep("complete")
 
-        // Save verification data
         const verificationData = {
           handle: data.handle,
           rating: data.rating || 0,
@@ -134,22 +169,35 @@ export function CFVerificationCompilation({
         setVerificationData(verificationData)
 
         toast({
-          title: "Verification Successful!",
-          description: `Your Codeforces handle ${data.handle} has been verified`,
+          title: "Verification successful",
+          description: `${data.handle} verification done.`,
         })
 
         onVerificationComplete?.(verificationData)
+        return
+      }
+
+      // Not verified yet: provide verdict-aware feedback when available
+      const verdict = data?.recentVerdict
+      if (verdict) {
+        toast({
+          title: "Not verified yet",
+          description: `Latest verdict is "${verdict}". It must be "Compilation error". Please resubmit the provided code and try again.`,
+        })
       } else {
         toast({
-          title: "Not Verified Yet",
-          description: data.message || "Please submit the code and try again",
+          title: "Not verified yet",
+          description:
+            data?.message ||
+            "Please ensure your most recent submission for Problem 1869A shows 'Compilation error', then click Verify Now.",
         })
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Verification failed")
+      const message = err instanceof Error ? err.message : "Verification failed"
+      setError(message)
       toast({
         title: "Error",
-        description: err instanceof Error ? err.message : "Verification failed",
+        description: message,
         variant: "destructive",
       })
     } finally {
@@ -289,7 +337,7 @@ export function CFVerificationCompilation({
                     <p className="text-sm text-muted-foreground mt-1">
                       Submit a solution that results in a compilation error for{" "}
                       <a
-                        href="https://codeforces.com/problemset/problem/1869/A"
+                        href="https://codeforces.com/problemset/problem/4/A"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline inline-flex items-center gap-1"
@@ -326,10 +374,10 @@ export function CFVerificationCompilation({
             </div>
 
             <div className="flex gap-3">
-              <Button variant="outline" onClick={restartVerification} className="flex-1">
+              <Button variant="outline" onClick={restartVerification} className="flex-1 bg-transparent">
                 Cancel
               </Button>
-              <Button onClick={checkVerification} disabled={loading} className="flex-1">
+              <Button onClick={checkVerification} disabled={loading || !verificationId} className="flex-1">
                 {loading ? "Verifying..." : "Verify Now"}
               </Button>
             </div>

@@ -175,14 +175,16 @@ export async function getUserRatings(handles: string[]): Promise<Record<string, 
 
   const ratingMap: Record<string, { rating: number }> = {}
 
-  results.forEach((response) => {
-    if (response.status === "OK" && response.result) {
-      const users = Array.isArray(response.result) ? response.result : [response.result]
+  results.forEach(response => {
+    if (response.status === 'OK' && 'result' in response && response.result) {
+      const users = Array.isArray(response.result)
+        ? response.result
+        : [response.result];
       users.forEach((user: CodeforcesUser) => {
-        ratingMap[user.handle] = { rating: user.rating || 0 }
-      })
+        ratingMap[user.handle] = { rating: user.rating || 0 };
+      });
     }
-  })
+  });
 
   return ratingMap
 }

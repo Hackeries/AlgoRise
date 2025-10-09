@@ -248,168 +248,195 @@ export function CFVerificationCompilation({
         <CardHeader>
           <CardTitle>Connect Codeforces Handle</CardTitle>
           <CardDescription>
-            {step === "input" && "Enter your Codeforces Handle"}
-            {step === "submit" && "Submit a compilation error"}
-            {step === "verify" && "Verify your submission"}
-            {step === "timeout" && "Verification Timed Out"}
+            {step === 'input' && 'Enter your Codeforces Handle'}
+            {step === 'submit' && 'Submit a compilation error'}
+            {step === 'verify' && 'Verify your submission'}
+            {step === 'timeout' && 'Verification Timed Out'}
           </CardDescription>
         </CardHeader>
       )}
-      <CardContent className="space-y-4">
-        {step === "input" && (
+      <CardContent className='space-y-4'>
+        {step === 'input' && (
           <>
-            <div className="space-y-2">
-              <Label htmlFor="cf-handle">Codeforces Handle</Label>
+            <div className='space-y-2'>
+              <Label htmlFor='cf-handle'>Codeforces Handle</Label>
               <Input
-                id="cf-handle"
-                placeholder="Enter your handle"
+                id='cf-handle'
+                placeholder='Enter your handle'
                 value={handle}
-                onChange={(e) => setHandle(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && startVerification()}
+                onChange={e => setHandle(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && startVerification()}
               />
-              <p className="text-sm text-muted-foreground">
-                Don't have a Codeforces Account?{" "}
+              <p className='text-sm text-muted-foreground'>
+                Don't have a Codeforces Account?{' '}
                 <a
-                  href="https://codeforces.com/register"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
+                  href='https://codeforces.com/register'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-primary hover:underline'
                 >
                   Create Now
                 </a>
               </p>
             </div>
 
-            <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
-              <h4 className="font-semibold text-sm">Why connect your Codeforces handle?</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <Zap className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary" />
+            <div className='rounded-lg border bg-muted/50 p-4 space-y-2'>
+              <h4 className='font-semibold text-sm'>
+                Why connect your Codeforces handle?
+              </h4>
+              <ul className='space-y-1 text-sm text-muted-foreground'>
+                <li className='flex items-start gap-2'>
+                  <Zap className='h-4 w-4 mt-0.5 flex-shrink-0 text-primary' />
                   <span>Automatically sync your Codeforces submissions</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Target className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary" />
+                <li className='flex items-start gap-2'>
+                  <Target className='h-4 w-4 mt-0.5 flex-shrink-0 text-primary' />
                   <span>Track your problem-solving progress in real time</span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <Trophy className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary" />
-                  <span>See your name on leaderboards for that instant dopamine rush</span>
+                <li className='flex items-start gap-2'>
+                  <Trophy className='h-4 w-4 mt-0.5 flex-shrink-0 text-primary' />
+                  <span>
+                    See your name on leaderboards for that instant dopamine rush
+                  </span>
                 </li>
-                <li className="flex items-start gap-2">
-                  <TrendingUp className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary" />
-                  <span>Stay motivated by comparing with your college peers</span>
+                <li className='flex items-start gap-2'>
+                  <TrendingUp className='h-4 w-4 mt-0.5 flex-shrink-0 text-primary' />
+                  <span>
+                    Stay motivated by comparing with your college peers
+                  </span>
                 </li>
               </ul>
             </div>
 
             <Alert>
-              <AlertCircle className="h-4 w-4" />
+              <AlertCircle className='h-4 w-4' />
               <AlertDescription>
-                <strong>Note:</strong> Codeforces handle is case-sensitive, enter it exactly as it appears on
-                Codeforces.
+                <strong>Note:</strong> Codeforces handle is case-sensitive,
+                enter it exactly as it appears on Codeforces.
               </AlertDescription>
             </Alert>
 
-            <Button onClick={startVerification} disabled={loading || !handle.trim()} className="w-full">
-              {loading ? "Starting..." : "Next"}
+            <Button
+              onClick={startVerification}
+              disabled={loading || !handle.trim()}
+              className='w-full'
+            >
+              {loading ? 'Starting...' : 'Next'}
             </Button>
           </>
         )}
 
-        {step === "submit" && (
+        {step === 'submit' && (
           <>
-            <div className="flex items-center justify-between">
+            <div className='flex items-center justify-between'>
               <div>
-                <p className="text-sm font-medium">Codeforces Handle:</p>
-                <p className="text-lg font-bold">{handle}</p>
+                <p className='text-sm font-medium'>Codeforces Handle:</p>
+                <p className='text-lg font-bold'>{handle}</p>
               </div>
-              <div className="text-right">
-                <p className="text-sm font-medium">Time remaining to submit:</p>
-                <p className="text-2xl font-bold text-primary">{formatTime(timeRemaining)}</p>
+              <div className='text-right'>
+                <p className='text-sm font-medium'>Time remaining to submit:</p>
+                <p className='text-2xl font-bold text-primary'>
+                  {formatTime(timeRemaining)}
+                </p>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-4">
-                <div className="flex items-start justify-between mb-2">
+            <div className='space-y-3'>
+              <div className='rounded-lg border-2 border-primary/20 bg-primary/5 p-4'>
+                <div className='flex items-start justify-between mb-2'>
                   <div>
-                    <p className="font-semibold">1. Submit a compilation error</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Submit a solution that results in a compilation error for{" "}
+                    <p className='font-semibold'>
+                      1. Submit a compilation error
+                    </p>
+                    <p className='text-sm text-muted-foreground mt-1'>
+                      Submit a solution that results in a compilation error for{' '}
                       <a
-                        href="https://codeforces.com/problemset/problem/4/A"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline inline-flex items-center gap-1"
+                        href='https://codeforces.com/problemset/problem/1631/B'
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='text-primary hover:underline inline-flex items-center gap-1'
                       >
-                        Problem 1869A <ExternalLink className="h-3 w-3" />
-                      </a>{" "}
-                      using your Codeforces account ({handle}). Go to the problem page, open the Submit tab, paste the
-                      provided code into the editor, and click the Submit button.
+                        Problem 1631B <ExternalLink className='h-3 w-3' />
+                      </a>{' '}
+                      using your Codeforces account ({handle}). Go to the
+                      problem page, open the Submit tab, paste the provided code
+                      into the editor, and click the Submit button.
                     </p>
                   </div>
                 </div>
-                <div className="mt-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <code className="text-xs text-muted-foreground">{codeSnippet.split("\n")[0]}</code>
-                    <Button variant="outline" size="sm" onClick={copyCode}>
-                      <Copy className="h-3 w-3 mr-1" />
+                <div className='mt-3'>
+                  <div className='flex items-center justify-between mb-2'>
+                    <code className='text-xs text-muted-foreground'>
+                      {codeSnippet.split('\n')[0]}
+                    </code>
+                    <Button variant='outline' size='sm' onClick={copyCode}>
+                      <Copy className='h-3 w-3 mr-1' />
                       Copy Code
                     </Button>
                   </div>
-                  <pre className="bg-black/80 text-green-400 p-3 rounded text-xs overflow-x-auto font-mono">
+                  <pre className='bg-black/80 text-green-400 p-3 rounded text-xs overflow-x-auto font-mono'>
                     {codeSnippet}
                   </pre>
                 </div>
               </div>
 
-              <div className="rounded-lg border bg-muted/50 p-4">
-                <p className="font-semibold">2. Verify your submission</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  After submission, you will be redirected to the Status tab where the result of your submission will
-                  appear. Wait until the verdict displays <strong>Compilation Error</strong>. Once it does, return to
-                  this page and click Verify Now button to finish.
+              <div className='rounded-lg border bg-muted/50 p-4'>
+                <p className='font-semibold'>2. Verify your submission</p>
+                <p className='text-sm text-muted-foreground mt-1'>
+                  After submission, you will be redirected to the Status tab
+                  where the result of your submission will appear. Wait until
+                  the verdict displays <strong>Compilation Error</strong>. Once
+                  it does, return to this page and click Verify Now button to
+                  finish.
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={restartVerification} className="flex-1 bg-transparent">
+            <div className='flex gap-3'>
+              <Button
+                variant='outline'
+                onClick={restartVerification}
+                className='flex-1 bg-transparent'
+              >
                 Cancel
               </Button>
-              <Button onClick={checkVerification} disabled={loading || !verificationId} className="flex-1">
-                {loading ? "Verifying..." : "Verify Now"}
+              <Button
+                onClick={checkVerification}
+                disabled={loading || !verificationId}
+                className='flex-1'
+              >
+                {loading ? 'Verifying...' : 'Verify Now'}
               </Button>
             </div>
           </>
         )}
 
-        {step === "timeout" && (
+        {step === 'timeout' && (
           <>
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
+            <Alert variant='destructive'>
+              <AlertCircle className='h-4 w-4' />
               <AlertDescription>
                 <strong>Verification Timed Out</strong>
-                <p className="mt-1">
-                  This could be because the submission wasn't made in time or there was an issue with the verification
-                  process.
+                <p className='mt-1'>
+                  This could be because the submission wasn't made in time or
+                  there was an issue with the verification process.
                 </p>
               </AlertDescription>
             </Alert>
 
-            <Button onClick={restartVerification} className="w-full">
+            <Button onClick={restartVerification} className='w-full'>
               Restart Verification
             </Button>
           </>
         )}
 
         {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+          <Alert variant='destructive'>
+            <AlertCircle className='h-4 w-4' />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

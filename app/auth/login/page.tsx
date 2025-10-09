@@ -157,6 +157,7 @@ export default function Page() {
         options: {
           redirectTo,
           queryParams: { prompt: "select_account" },
+          // flowType: "pkce",
         },
       })
       if (error) throw error

@@ -12,60 +12,69 @@ export default function AuthCallback() {
   useEffect(() => {
     let mounted = true
 
+    // Ensure the "next" path is safe and defaults to /profile
     const sanitizeNext = (raw: string | null) => {
       const dec = raw ?? ""
       return dec.startsWith("/") ? dec : "/profile"
     }
+
     ;(async () => {
       try {
         const supabase = createClient()
 
-        if (typeof window !== "undefined") {
-          const startedOrigin = params.get("o")
-          const here = window.location.origin
-          if (startedOrigin && startedOrigin !== here) {
-            // Keep the original query string so PKCE exchange works on the correct origin
-            console.log(
-              "[v0] OAuth started on",
-              startedOrigin,
-              "but callback hit",
-              here,
-              "- forwarding to correct origin",
-            )
-            window.location.replace(`${startedOrigin}/auth/callback${window.location.search}`)
-            return
-          }
-        }
-
+        // Check if OAuth provider returned an error
         const providerError = params.get("error") || params.get("error_description")
-        if (providerError) throw new Error(providerError)
-
-        const hasCode = params.get("code") || params.get("access_token")
-        if (typeof window !== "undefined" && hasCode) {
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(window.location.href)
-          if (exchangeError) throw exchangeError
+        if (providerError) {
+          throw new Error(`OAuth provider error: ${providerError}`)
         }
 
-        // Wait until a session with user exists to avoid 404s on the next page
-        let attempts = 0
-        let userOk = false
-        while (attempts < 6 && !userOk) {
-          const { data, error: sErr } = await supabase.auth.getSession()
-          if (sErr) throw sErr
-          if (data.session?.user) {
-            userOk = true
-            break
+        // Get the code or access_token from callback URL
+        const hasCode = params.get("code") || params.get("access_token")
+        if (!hasCode) {
+          throw new Error("Missing authorization code in callback URL")
+        }
+
+        // Check if PKCE code verifier exists in sessionStorage
+        let hasPkce = false
+        if (typeof window !== "undefined") {
+          try {
+            for (let i = 0; i < sessionStorage.length; i++) {
+              const key = sessionStorage.key(i)?.toLowerCase() || ""
+              if (key.includes("verifier") || key.includes("pkce")) {
+                hasPkce = true
+                break
+              }
+            }
+          } catch {}
+        }
+
+        // Exchange the code for a session if PKCE exists
+        if (typeof window !== "undefined" && hasCode && hasPkce) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(window.location.href)
+          if (exchangeError) {
+            throw new Error(`Failed to exchange code for session: ${exchangeError.message}`)
           }
-          await new Promise((r) => setTimeout(r, 250))
+        } else if (!hasPkce) {
+          throw new Error("Missing code verifier for PKCE. Make sure you start and finish sign-in on the same domain.")
+        }
+
+        // Wait until a valid session is established
+        let attempts = 0
+        while (attempts < 6) {
+          const { data, error: sessionError } = await supabase.auth.getSession()
+          if (sessionError) throw sessionError
+          if (data.session?.user) break
+          await new Promise((resolve) => setTimeout(resolve, 250))
           attempts++
         }
 
+        // Redirect user to next page (default: /profile)
         const next = sanitizeNext(params.get("next"))
-        if (mounted) {
-          window.location.replace(next)
-        }
+        if (mounted) window.location.replace(next)
       } catch (e) {
-        if (mounted) setError(e instanceof Error ? e.message : "Authentication failed")
+        // Display user-friendly error messages
+        const msg = e instanceof Error ? e.message : "Authentication failed"
+        if (mounted) setError(msg)
       }
     })()
 

@@ -1,79 +1,68 @@
-'use client';
+"use client"
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
-import { Header } from '@/components/header';
-import { useCFVerification } from '@/lib/context/cf-verification';
-import { useState, useEffect } from 'react';
-import {
-  Calendar,
-  Target,
-  Trophy,
-  BookOpen,
-  Users,
-  PieChart,
-  BarChart3,
-  Menu,
-} from 'lucide-react';
+import type React from "react"
+
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { cn } from "@/lib/utils"
+import { Header } from "@/components/header"
+import { useCFVerification } from "@/lib/context/cf-verification"
+import { useState, useEffect } from "react"
+import { Calendar, Target, Trophy, BookOpen, Users, PieChart, BarChart3, Menu } from "lucide-react"
 
 // ------------------ CF Rating System ------------------
 const getCFTier = (rating: number) => {
-  if (rating < 1200)
-    return { label: 'Newbie', color: 'text-gray-400', bg: 'bg-gray-800' };
-  if (rating < 1400)
-    return { label: 'Pupil', color: 'text-green-400', bg: 'bg-green-900/40' };
+  if (rating < 1200) return { label: "Newbie", color: "text-gray-400", bg: "bg-gray-800" }
+  if (rating < 1400) return { label: "Pupil", color: "text-green-400", bg: "bg-green-900/40" }
   if (rating < 1600)
     return {
-      label: 'Specialist',
-      color: 'text-cyan-400',
-      bg: 'bg-cyan-900/40',
-    };
-  if (rating < 1900)
-    return { label: 'Expert', color: 'text-blue-400', bg: 'bg-blue-900/40' };
+      label: "Specialist",
+      color: "text-cyan-400",
+      bg: "bg-cyan-900/40",
+    }
+  if (rating < 1900) return { label: "Expert", color: "text-blue-400", bg: "bg-blue-900/40" }
   if (rating < 2100)
     return {
-      label: 'Candidate Master',
-      color: 'text-purple-400',
-      bg: 'bg-purple-900/40',
-    };
+      label: "Candidate Master",
+      color: "text-purple-400",
+      bg: "bg-purple-900/40",
+    }
   if (rating < 2300)
     return {
-      label: 'Master',
-      color: 'text-orange-400',
-      bg: 'bg-orange-900/40',
-    };
+      label: "Master",
+      color: "text-orange-400",
+      bg: "bg-orange-900/40",
+    }
   if (rating < 2400)
     return {
-      label: 'International Master',
-      color: 'text-red-400',
-      bg: 'bg-red-900/40',
-    };
-  if (rating < 2600)
-    return { label: 'Grandmaster', color: 'text-red-500', bg: 'bg-red-900/40' };
+      label: "International Master",
+      color: "text-red-400",
+      bg: "bg-red-900/40",
+    }
+  if (rating < 2600) return { label: "Grandmaster", color: "text-red-500", bg: "bg-red-900/40" }
   if (rating < 3000)
     return {
-      label: 'International GM',
-      color: 'text-red-600',
-      bg: 'bg-red-950/40',
-    };
+      label: "International GM",
+      color: "text-red-600",
+      bg: "bg-red-950/40",
+    }
   return {
-    label: 'Legendary GM',
-    color: 'text-yellow-400',
-    bg: 'bg-yellow-900/40',
-  };
-};
+    label: "Legendary GM",
+    color: "text-yellow-400",
+    bg: "bg-yellow-900/40",
+  }
+}
 
 // ------------------ Menu Items ------------------
 const menuItems = [
-  { href: '/', label: 'Dashboard', icon: Calendar },
-  { href: '/adaptive-sheet', label: 'Practice Problems', icon: Target },
-  { href: '/contests', label: 'Contests', icon: Trophy },
-  { href: '/paths', label: 'Learning Paths', icon: BookOpen },
-  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/visualizers', label: 'Visualizers', icon: PieChart },
-  { href: '/groups', label: 'Groups', icon: Users },
-];
+  { href: "/", label: "Dashboard", icon: Calendar },
+  { href: "/adaptive-sheet", label: "Practice Problems", icon: Target },
+  { href: "/contests", label: "Contests", icon: Trophy },
+  { href: "/paths", label: "Learning Paths", icon: BookOpen },
+  { href: "/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/visualizers", label: "Visualizers", icon: PieChart },
+  { href: "/groups", label: "Groups", icon: Users },
+]
 
 // ------------------ Sidebar Item ------------------
 const SidebarItem = ({
@@ -84,59 +73,55 @@ const SidebarItem = ({
   isOpen,
   delay,
 }: {
-  href: string;
-  label: string;
-  icon: React.ElementType;
-  isActive: boolean;
-  isOpen: boolean;
-  delay: number;
+  href: string
+  label: string
+  icon: React.ElementType
+  isActive: boolean
+  isOpen: boolean
+  delay: number
 }) => {
   return (
     <Link
       href={href}
       title={!isOpen ? label : undefined}
       className={cn(
-        'relative flex items-center p-2 rounded-lg transition-all duration-150 cursor-pointer group',
+        "relative flex items-center p-2 rounded-lg transition-all duration-150 cursor-pointer group",
         isActive
-          ? 'bg-[#2563EB]/40 text-[#2563EB] shadow-glow'
-          : 'text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105',
-        isOpen ? 'justify-start gap-3' : 'justify-center'
+          ? "bg-[#2563EB]/40 text-[#2563EB] shadow-glow"
+          : "text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105",
+        isOpen ? "justify-start gap-3" : "justify-center",
       )}
       style={{ transitionDelay: `${delay}ms` }}
     >
-      <Icon className='h-5 w-5 flex-shrink-0' />
-      {isOpen && (
-        <span className='text-sm font-medium transition-opacity duration-150 opacity-100'>
-          {label}
-        </span>
-      )}
+      <Icon className="h-5 w-5 flex-shrink-0" />
+      {isOpen && <span className="text-sm font-medium transition-opacity duration-150 opacity-100">{label}</span>}
     </Link>
-  );
-};
+  )
+}
 
 // ------------------ Sidebar Footer ------------------
 const SidebarFooter = ({
   cfData,
   isOpen,
 }: {
-  cfData: any;
-  isOpen: boolean;
+  cfData: any
+  isOpen: boolean
 }) => {
-  if (!cfData) return null;
-  const tier = getCFTier(cfData.rating);
+  if (!cfData) return null
+  const tier = getCFTier(cfData.rating)
 
   return (
     <div
       className={cn(
-        'cursor-pointer transition-transform duration-150 hover:scale-105 flex items-center',
-        !isOpen && 'justify-center'
+        "cursor-pointer transition-transform duration-150 hover:scale-105 flex items-center",
+        !isOpen && "justify-center",
       )}
       title={`${cfData.handle} (${cfData.rating})`}
     >
       {isOpen ? (
         <div className={`p-3 rounded-xl border ${tier.bg} ${tier.color}`}>
-          <p className='text-sm font-bold'>{cfData.handle}</p>
-          <p className='text-xs'>
+          <p className="text-sm font-bold">{cfData.handle}</p>
+          <p className="text-xs">
             {tier.label} · {cfData.rating}
           </p>
         </div>
@@ -144,76 +129,72 @@ const SidebarFooter = ({
         <div
           className={`w-12 h-12 flex items-center justify-center rounded-full border ${tier.bg} ${tier.color} text-[10px] font-bold`}
         >
-          {tier.label.split(' ')[0]}
+          {tier.label.split(" ")[0]}
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
 // ------------------ Sidebar Layout ------------------
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const { isVerified, verificationData } = useCFVerification();
-  const [isOpen, setIsOpen] = useState(true);
-  const [cfData, setCfData] = useState(verificationData);
+  const pathname = usePathname()
+  const { isVerified, verificationData } = useCFVerification()
+  const [isOpen, setIsOpen] = useState(true)
+  const [cfData, setCfData] = useState(verificationData)
 
   // Fetch latest CF rating
   useEffect(() => {
     const fetchLatestCFData = async () => {
       if (verificationData?.handle) {
         try {
-          const res = await fetch(
-            `https://codeforces.com/api/user.info?handles=${verificationData.handle}`
-          );
-          const data = await res.json();
-          if (data.status === 'OK') {
-            const user = data.result[0];
+          const res = await fetch(`https://codeforces.com/api/user.info?handles=${verificationData.handle}`)
+          const data = await res.json()
+          if (data.status === "OK") {
+            const user = data.result[0]
             setCfData({
               ...verificationData,
               rating: user.rating || 0,
               maxRating: user.maxRating || 0,
               rank: user.rank,
-            });
+            })
           }
         } catch (err) {
-          console.error('Failed to fetch CF data:', err);
+          console.error("Failed to fetch CF data:", err)
         }
       }
-    };
-    fetchLatestCFData();
-  }, [verificationData?.handle]);
+    }
+    fetchLatestCFData()
+  }, [verificationData]) // Updated to use the entire verificationData object
 
   return (
-    <div className='flex min-h-screen bg-[#0B1020] text-white'>
+    <div className="flex min-h-screen bg-background text-foreground">
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed top-0 left-0 z-50 h-full flex flex-col bg-[#0B1020] border-r border-white/10 shadow-lg transition-width duration-150 overflow-hidden',
-          isOpen ? 'w-64' : 'w-16'
+          "fixed top-0 left-0 z-50 h-full flex flex-col bg-card border-r border-border shadow-lg transition-width duration-150 overflow-hidden",
+          isOpen ? "w-64" : "w-16",
         )}
       >
         {/* Top: Hamburger always left */}
-        <div className='flex items-center justify-start p-4 border-b border-white/10'>
+        <div className="flex items-center justify-start p-4 border-b border-border">
           <button
-            className='flex items-center justify-center w-8 h-8 rounded-md hover:bg-white/10 transition'
+            className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-muted transition"
             onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle sidebar"
           >
-            <Menu className='h-5 w-5' />
+            <Menu className="h-5 w-5" />
           </button>
         </div>
 
         {/* Main Menu */}
-        <div className='flex-1 mt-4 overflow-y-auto px-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30'>
-          <nav className='space-y-2'>
+        <div className="flex-1 mt-4 overflow-y-auto px-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30">
+          <nav className="space-y-2">
             {menuItems.map((item, idx) => (
               <SidebarItem
                 key={item.href}
                 {...item}
-                isActive={
-                  pathname === item.href ||
-                  (item.href !== '/' && pathname?.startsWith(item.href))
-                }
+                isActive={pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href))}
                 isOpen={isOpen}
                 delay={idx * 30}
               />
@@ -223,7 +204,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
 
         {/* Footer */}
         {isVerified && (
-          <div className='p-4 border-t border-white/10 flex flex-col items-start'>
+          <div className="p-4 border-t border-border flex flex-col items-start">
             <SidebarFooter cfData={cfData} isOpen={isOpen} />
           </div>
         )}
@@ -231,14 +212,12 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
 
       {/* Main Content */}
       <div
-        className='flex-1 flex flex-col h-screen transition-all duration-150'
-        style={{ marginLeft: isOpen ? '16rem' : '4rem' }}
+        className="flex-1 flex flex-col h-screen transition-all duration-150"
+        style={{ marginLeft: isOpen ? "16rem" : "4rem" }}
       >
         <Header />
-        <main className='flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30'>
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto p-4">{children}</main>
       </div>
     </div>
-  );
+  )
 }

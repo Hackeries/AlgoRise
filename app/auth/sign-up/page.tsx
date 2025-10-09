@@ -28,7 +28,7 @@ const GoogleIcon = () => (
       fill="#FBBC05"
     />
     <path
-      d="M272 107.7c38.9 0 73.9 13.4 101.5 39.5l76.2-76.2C404.6 24.4 343.6 0 272 0 168.6 0 76.6 57.3 32.2 142.1l88.1 69.8c21.4-63.8 81.2-111.4 151.7-111.4z"
+      d="M272 107.7c38.9 0 73.9 13.4 101.5 39.5l76.2-76.2C404.6 24.4 343.6 0 272 0 168.6 0 76.6 57.3 32.2 142.1l88.1 69.8z"
       fill="#EA4335"
     />
   </svg>
@@ -151,8 +151,17 @@ export default function SignUpPage() {
     setIsOAuthLoading(provider)
     try {
       const supabase = createClient()
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://www.myalgorise.in"
-      const redirectTo = `${siteUrl}/auth/callback?next=${encodeURIComponent("/profile")}`
+
+      const getBaseUrl = () => {
+        if (typeof window !== "undefined" && window.location?.origin) {
+          return window.location.origin
+        }
+        return process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000"
+      }
+
+      const origin = getBaseUrl()
+      const nextPath = "/profile"
+      const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}&o=${encodeURIComponent(origin)}`
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider,

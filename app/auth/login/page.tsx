@@ -140,8 +140,17 @@ export default function Page() {
     setIsOAuthLoading(provider)
     try {
       const supabase = createClient()
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "https://www.myalgorise.in"
-      const redirectTo = `${siteUrl}/auth/callback?next=${encodeURIComponent("/profile")}` // Change OAuth redirect to target /profile
+
+      const getBaseUrl = () => {
+        if (typeof window !== "undefined" && window.location?.origin) {
+          return window.location.origin
+        }
+        return process.env.NEXT_PUBLIC_SITE_URL?.trim() || "http://localhost:3000"
+      }
+
+      const origin = getBaseUrl()
+      const nextPath = "/profile"
+      const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}&o=${encodeURIComponent(origin)}`
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider,

@@ -1,77 +1,85 @@
-'use client';
+"use client"
 
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import { Loader2 } from "lucide-react"
 
 export default function AuthCallback() {
-  const params = useSearchParams();
-  const [error, setError] = useState<string | null>(null);
+  const params = useSearchParams()
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    let mounted = true;
+    let mounted = true
 
     const sanitizeNext = (raw: string | null) => {
-      const dec = raw ?? '';
-      // URLSearchParams already decodes, this guards and defaults
-      return dec.startsWith('/') ? dec : '/profile';
-    };
-    (async () => {
+      const dec = raw ?? ""
+      return dec.startsWith("/") ? dec : "/profile"
+    }
+    ;(async () => {
       try {
-        const supabase = createClient();
+        const supabase = createClient()
 
-        const providerError =
-          params.get('error') || params.get('error_description');
-        if (providerError) throw new Error(providerError);
+        if (typeof window !== "undefined") {
+          const startedOrigin = params.get("o")
+          const here = window.location.origin
+          if (startedOrigin && startedOrigin !== here) {
+            // Keep the original query string so PKCE exchange works on the correct origin
+            console.log(
+              "[v0] OAuth started on",
+              startedOrigin,
+              "but callback hit",
+              here,
+              "- forwarding to correct origin",
+            )
+            window.location.replace(`${startedOrigin}/auth/callback${window.location.search}`)
+            return
+          }
+        }
 
-        const hasCode = params.get('code') || params.get('access_token');
-        if (typeof window !== 'undefined' && hasCode) {
-          const { error: exchangeError } =
-            await supabase.auth.exchangeCodeForSession(window.location.href);
-          if (exchangeError) throw exchangeError;
+        const providerError = params.get("error") || params.get("error_description")
+        if (providerError) throw new Error(providerError)
+
+        const hasCode = params.get("code") || params.get("access_token")
+        if (typeof window !== "undefined" && hasCode) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(window.location.href)
+          if (exchangeError) throw exchangeError
         }
 
         // Wait until a session with user exists to avoid 404s on the next page
-        let attempts = 0;
-        let userOk = false;
+        let attempts = 0
+        let userOk = false
         while (attempts < 6 && !userOk) {
-          const { data, error: sErr } = await supabase.auth.getSession();
-          if (sErr) throw sErr;
+          const { data, error: sErr } = await supabase.auth.getSession()
+          if (sErr) throw sErr
           if (data.session?.user) {
-            userOk = true;
-            break;
+            userOk = true
+            break
           }
-          await new Promise(r => setTimeout(r, 250));
-          attempts++;
+          await new Promise((r) => setTimeout(r, 250))
+          attempts++
         }
 
-        const next = sanitizeNext(params.get('next'));
+        const next = sanitizeNext(params.get("next"))
         if (mounted) {
-          // Use hard redirect to ensure SSR sees fresh cookies
-          window.location.replace(next);
+          window.location.replace(next)
         }
       } catch (e) {
-        if (mounted)
-          setError(e instanceof Error ? e.message : 'Authentication failed');
+        if (mounted) setError(e instanceof Error ? e.message : "Authentication failed")
       }
-    })();
+    })()
 
     return () => {
-      mounted = false;
-    };
-  }, [params]);
+      mounted = false
+    }
+  }, [params])
 
   return (
-    <div className='min-h-[60vh] flex items-center justify-center'>
-      <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-        <Loader2 className='h-4 w-4 animate-spin' />
-        {error ? (
-          <span>Sign-in failed: {error}</span>
-        ) : (
-          <span>Completing sign-in…</span>
-        )}
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        {error ? <span>Sign-in failed: {error}</span> : <span>Completing sign-in…</span>}
       </div>
     </div>
-  );
+  )
 }

@@ -75,12 +75,12 @@ export default function ModernLanding() {
   return (
     <div className='min-h-screen dark:from-gray-900 dark:to-gray-800'>
       {/* Landing Section */}
-      <section className='pt-20 pb-16 px-4'>
+      <section className='pt-10 pb-16 px-4'>
         <div className='max-w-6xl mx-auto text-center mb-10'>
           <BannerLanding />
 
           {/* CF Verification */}
-          <div className='max-w-md mx-auto mt-10 mb-8'>
+          <div className='max-w-md mx-auto mt-12 mb-8'>
             <CFVerificationTrigger
               compact
               showTitle={false}

@@ -1,19 +1,34 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { CheckCircle, AlertCircle, ExternalLink, Copy, Trophy, Target, TrendingUp, Zap } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { useCFVerification } from "@/lib/context/cf-verification"
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  CheckCircle,
+  AlertCircle,
+  ExternalLink,
+  Copy,
+  Trophy,
+  Target,
+  TrendingUp,
+  Zap,
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { useCFVerification } from '@/lib/context/cf-verification';
 
 interface CFVerificationCompilationProps {
-  onVerificationComplete?: (data: any) => void
-  showTitle?: boolean
-  compact?: boolean
+  onVerificationComplete?: (data: any) => void;
+  showTitle?: boolean;
+  compact?: boolean;
 }
 
 export function CFVerificationCompilation({
@@ -21,225 +36,234 @@ export function CFVerificationCompilation({
   showTitle = true,
   compact = false,
 }: CFVerificationCompilationProps) {
-  const { toast } = useToast()
-  const { setVerificationData } = useCFVerification()
+  const { toast } = useToast();
+  const { setVerificationData } = useCFVerification();
 
-  const [step, setStep] = useState<"input" | "submit" | "verify" | "timeout" | "complete">("input")
-  const [handle, setHandle] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [codeSnippet, setCodeSnippet] = useState("")
-  const [verificationId, setVerificationId] = useState("")
-  const [timeRemaining, setTimeRemaining] = useState(120) // 2 minutes
-  const [timerActive, setTimerActive] = useState(false)
+  const [step, setStep] = useState<
+    'input' | 'submit' | 'verify' | 'timeout' | 'complete'
+  >('input');
+  const [handle, setHandle] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [codeSnippet, setCodeSnippet] = useState('');
+  const [verificationId, setVerificationId] = useState('');
+  const [timeRemaining, setTimeRemaining] = useState(120); // 2 minutes
+  const [timerActive, setTimerActive] = useState(false);
 
   // Timer countdown
   useEffect(() => {
-    if (!timerActive || timeRemaining <= 0) return
+    if (!timerActive || timeRemaining <= 0) return;
 
     const interval = setInterval(() => {
-      setTimeRemaining((prev) => {
+      setTimeRemaining(prev => {
         if (prev <= 1) {
-          setTimerActive(false)
-          setStep("timeout")
-          return 0
+          setTimerActive(false);
+          setStep('timeout');
+          return 0;
         }
-        return prev - 1
-      })
-    }, 1000)
+        return prev - 1;
+      });
+    }, 1000);
 
-    return () => clearInterval(interval)
-  }, [timerActive, timeRemaining])
+    return () => clearInterval(interval);
+  }, [timerActive, timeRemaining]);
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs
+      .toString()
+      .padStart(2, '0')}`;
+  };
 
   const startVerification = async () => {
     if (!handle.trim()) {
-      setError("Please enter your Codeforces handle")
-      return
+      setError('Please enter your Codeforces handle');
+      return;
     }
 
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     try {
-      const response = await fetch("/api/cf/verify/compilation/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/cf/verify/compilation/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ handle: handle.trim() }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to start verification")
+        throw new Error(data.error || 'Failed to start verification');
       }
 
-      setCodeSnippet(data.codeSnippet)
-      setVerificationId(data.verificationId)
-      setStep("submit")
-      setTimeRemaining(120)
-      setTimerActive(true)
+      setCodeSnippet(data.codeSnippet);
+      setVerificationId(data.verificationId);
+      setStep('submit');
+      setTimeRemaining(120);
+      setTimerActive(true);
 
       toast({
-        title: "Verification Started",
-        description: "Copy the code and submit it on Codeforces",
-      })
+        title: 'Verification Started',
+        description: 'Copy the code and submit it on Codeforces',
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred")
+      setError(err instanceof Error ? err.message : 'An error occurred');
       toast({
-        title: "Error",
-        description: err instanceof Error ? err.message : "An error occurred",
-        variant: "destructive",
-      })
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'An error occurred',
+        variant: 'destructive',
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const safeJson = async (resp: Response) => {
     try {
-      return await resp.json()
+      return await resp.json();
     } catch {
-      return null
+      return null;
     }
-  }
+  };
 
   const checkVerification = async () => {
     // Guard: require handle and verificationId
     if (!handle.trim()) {
       toast({
-        title: "Handle required",
-        description: "Enter your Codeforces handle before verifying.",
-        variant: "destructive",
-      })
-      return
+        title: 'Handle required',
+        description: 'Enter your Codeforces handle before verifying.',
+        variant: 'destructive',
+      });
+      return;
     }
     if (!verificationId) {
       toast({
-        title: "Start verification first",
-        description: "Please click Next and copy/submit the code, then press Verify Now.",
-        variant: "destructive",
-      })
-      return
+        title: 'Start verification first',
+        description:
+          'Please click Next and copy/submit the code, then press Verify Now.',
+        variant: 'destructive',
+      });
+      return;
     }
 
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     // Informational toast before we start
     toast({
-      title: "Checking recent submission",
+      title: 'Checking recent submission',
       description:
-        "We’re checking the most recent submission for Problem 1869A. The verdict must be Compilation Error (CE).",
-    })
+        'We’re checking the most recent submission for Problem 1631B. The verdict must be Compilation Error (CE).',
+    });
 
     try {
-      const response = await fetch("/api/cf/verify/compilation/check", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/cf/verify/compilation/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ verificationId }),
-      })
+      });
 
-      const data = await safeJson(response)
+      const data = await safeJson(response);
 
       if (!response.ok) {
         const msg =
-          (data && (data.error || data.message)) || `Verification failed with status ${response.status}. Please retry.`
-        throw new Error(msg)
+          (data && (data.error || data.message)) ||
+          `Verification failed with status ${response.status}. Please retry.`;
+        throw new Error(msg);
       }
 
       // Expecting shape: { verified: boolean, handle, rating?, maxRating?, rank?, recentVerdict? }
       if (data && data.verified) {
-        setTimerActive(false)
-        setStep("complete")
+        setTimerActive(false);
+        setStep('complete');
 
         const verificationData = {
           handle: data.handle,
           rating: data.rating || 0,
           maxRating: data.maxRating || 0,
-          rank: data.rank || "unrated",
+          rank: data.rank || 'unrated',
           verifiedAt: new Date().toISOString(),
-        }
+        };
 
-        setVerificationData(verificationData)
+        setVerificationData(verificationData);
 
         toast({
-          title: "Verification successful",
+          title: 'Verification successful',
           description: `${data.handle} verification done.`,
-        })
+        });
 
-        onVerificationComplete?.(verificationData)
-        return
+        onVerificationComplete?.(verificationData);
+        return;
       }
 
       // Not verified yet: provide verdict-aware feedback when available
-      const verdict = data?.recentVerdict
+      const verdict = data?.recentVerdict;
       if (verdict) {
         toast({
-          title: "Not verified yet",
+          title: 'Not verified yet',
           description: `Latest verdict is "${verdict}". It must be "Compilation error". Please resubmit the provided code and try again.`,
-        })
+        });
       } else {
         toast({
-          title: "Not verified yet",
+          title: 'Not verified yet',
           description:
             data?.message ||
-            "Please ensure your most recent submission for Problem 1869A shows 'Compilation error', then click Verify Now.",
-        })
+            "Please ensure your most recent submission for Problem 1631B shows 'Compilation error', then click Verify Now.",
+        });
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Verification failed"
-      setError(message)
+      const message =
+        err instanceof Error ? err.message : 'Verification failed';
+      setError(message);
       toast({
-        title: "Error",
+        title: 'Error',
         description: message,
-        variant: "destructive",
-      })
+        variant: 'destructive',
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const copyCode = () => {
-    navigator.clipboard.writeText(codeSnippet)
+    navigator.clipboard.writeText(codeSnippet);
     toast({
-      title: "Code Copied",
-      description: "Paste it in the Codeforces submission editor",
-    })
-  }
+      title: 'Code Copied',
+      description: 'Paste it in the Codeforces submission editor',
+    });
+  };
 
   const restartVerification = () => {
-    setStep("input")
-    setHandle("")
-    setError(null)
-    setCodeSnippet("")
-    setVerificationId("")
-    setTimeRemaining(120)
-    setTimerActive(false)
-  }
+    setStep('input');
+    setHandle('');
+    setError(null);
+    setCodeSnippet('');
+    setVerificationId('');
+    setTimeRemaining(120);
+    setTimerActive(false);
+  };
 
-  if (step === "complete") {
+  if (step === 'complete') {
     return (
-      <Card className="border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950">
+      <Card className='border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950'>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-400">
-            <CheckCircle className="h-5 w-5" />
+          <CardTitle className='flex items-center gap-2 text-green-700 dark:text-green-400'>
+            <CheckCircle className='h-5 w-5' />
             Codeforces Verified
           </CardTitle>
-          <CardDescription>Your Codeforces handle has been successfully verified</CardDescription>
+          <CardDescription>
+            Your Codeforces handle has been successfully verified
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button variant="outline" onClick={restartVerification}>
+          <Button variant='outline' onClick={restartVerification}>
             Verify Another Account
           </Button>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (

@@ -5,6 +5,9 @@ export async function middleware(request: NextRequest) {
   return await updateSession(request)
 }
 
+// Run middleware on the Node.js runtime to allow use of Supabase server packages
+export const runtime = 'nodejs'
+
 export const config = {
   matcher: [
     /*

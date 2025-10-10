@@ -40,7 +40,7 @@ export function AdaptiveSheetPageClient() {
         ratingBase:
           typeof base === 'number' && !Number.isNaN(base)
             ? base
-            : Math.max(800, prev.ratingBase - 200),
+            : Math.max(800, prev.ratingBase - 100),
         tags: parsedTags.length ? parsedTags : prev.tags,
       }));
     }

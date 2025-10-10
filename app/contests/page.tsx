@@ -92,6 +92,22 @@ export default function ContestsPage() {
     ratingMax: '1600',
     maxParticipants: '',
     allowLateJoin: true,
+<<<<<<< HEAD
+    contestMode: "practice",
+    visibility: "private",
+  })
+  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null)
+  const [userRating, setUserRating] = useState<number>(0)
+  
+  const [createdContestLink, setCreatedContestLink] = useState<string | null>(null)
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setCurrentUser(user)
+    }
+=======
     contestMode: 'practice',
     visibility: 'private',
   });
@@ -113,6 +129,7 @@ export default function ContestsPage() {
       } = await supabase.auth.getUser();
       setCurrentUser(user);
     };
+>>>>>>> main
 
     const fetchUserRating = async () => {
       const { data: userData } = await supabase.auth.getUser();
@@ -145,8 +162,13 @@ export default function ContestsPage() {
 
   const fetchContests = async () => {
     try {
+<<<<<<< HEAD
+      setLoading(true)
+      
+=======
       setLoading(true);
 
+>>>>>>> main
       // Fetch Codeforces contests
       try {
         const cfResponse = await fetch('/api/cf/contests');
@@ -261,10 +283,16 @@ export default function ContestsPage() {
       }));
 
       toast({
+<<<<<<< HEAD
+        title: 'Error',
+        description: 'Start time must be at least 1 hour from now',
+        variant: 'destructive',
+=======
         title: 'Start time adjusted',
         description:
           'Contest start time must be at least 1 hour from now. Time has been adjusted automatically.',
         variant: 'default',
+>>>>>>> main
       });
       return;
     }
@@ -292,8 +320,13 @@ export default function ContestsPage() {
       const bodyData: any = {
         name: formData.name.trim(),
         description: formData.description.trim() || '',
+<<<<<<< HEAD
+        starts_at: startDateTime, // Changed from start_time to starts_at
+        ends_at: endDateTime, // Changed from end_time to ends_at
+=======
         starts_at: startDateTime,
         ends_at: endDateTime,
+>>>>>>> main
         duration_minutes: durationMinutes,
         problem_count: Number.parseInt(formData.problemCount) || 5,
         rating_min: minRating,
@@ -310,12 +343,20 @@ export default function ContestsPage() {
         }
       }
 
+<<<<<<< HEAD
+      console.log("[v0] Creating contest payload:", bodyData) // debug
+
+=======
+>>>>>>> main
       const response = await fetch('/api/contests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyData),
       });
 
+<<<<<<< HEAD
+      const data = await response.json()
+=======
       // Explicit 401 handling (common on deployed site if not signed in)
       if (response.status === 401) {
         toast({
@@ -334,6 +375,7 @@ export default function ContestsPage() {
       } catch {
         // swallow JSON parse errors to surface a generic message
       }
+>>>>>>> main
 
       if (response.ok) {
         if (!data || !data.contest?.id) {
@@ -345,6 +387,15 @@ export default function ContestsPage() {
           return;
         }
 
+<<<<<<< HEAD
+        setCreatedContestLink(`${window.location.origin}/contests/${data.contest.id}/participate`)
+        setShareDialogOpen(true)
+
+        resetForm()
+        setCreateDialogOpen(false)
+        fetchContests()
+        
+=======
         const baseUrl =
           process.env.NEXT_PUBLIC_SITE_URL ||
           (typeof window !== 'undefined' ? window.location.origin : '');
@@ -357,6 +408,7 @@ export default function ContestsPage() {
         setCreateDialogOpen(false);
         fetchContests();
 
+>>>>>>> main
         toast({
           title: 'Success',
           description: 'Contest created successfully!',
@@ -364,6 +416,15 @@ export default function ContestsPage() {
         });
       } else {
         toast({
+<<<<<<< HEAD
+          title: "Error",
+          description: data?.error || "Failed to create contest",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Contest creation error:", error)
+=======
           title: 'Error',
           description:
             data?.error || data?.details || 'Failed to create contest',
@@ -371,6 +432,7 @@ export default function ContestsPage() {
         });
       }
     } catch (error: any) {
+>>>>>>> main
       toast({
         title: 'Error',
         description: 'Failed to create contest',
@@ -464,6 +526,14 @@ export default function ContestsPage() {
     const registrationClose = new Date(start.getTime() + 10 * 60 * 1000);
 
     if (now < start) {
+<<<<<<< HEAD
+      toast({
+        title: "Too Early!",
+        description: "Registration hasn't started yet! Wait for the contest to begin.",
+        variant: "destructive",
+      })
+      return
+=======
       const diffMs = start.getTime() - now.getTime();
       const minutes = Math.max(0, Math.floor(diffMs / 60000));
       toast({
@@ -472,26 +542,54 @@ export default function ContestsPage() {
         variant: 'destructive',
       });
       return;
+>>>>>>> main
     }
 
-    if (now > registrationClose && !contest.allow_late_join) {
+    if (now > registrationClose) {
       toast({
         title: 'Too Late!',
         description:
-          'You missed the registration window! This is CP, not a casual meet 😎',
+<<<<<<< HEAD
+          'Registration closed. Late join is not allowed for this contest.',
         variant: 'destructive',
       });
       return;
     }
 
+    // If contest is running and late join is allowed, check if within 10 min window
+    if (contest.status === 'running' && contest.allow_late_join) {
+      const tenMinutesAfterStart = new Date(start.getTime() + 10 * 60 * 1000);
+      if (now > tenMinutesAfterStart) {
+        toast({
+          title: 'Too Late!',
+          description: 'Late join window (10 minutes) has closed.',
+          variant: 'destructive',
+        });
+        return;
+      }
+=======
+          'You missed the registration window! This is CP, not a casual meet 😎',
+        variant: 'destructive',
+      });
+      return;
+>>>>>>> main
+    }
+
     // Register user if not already registered
     if (!contest.isRegistered) {
       try {
+<<<<<<< HEAD
+        const response = await fetch(`/api/contests/${contest.id}/register`, {
+          method: "POST",
+        })
+        
+=======
         // IMPORTANT: use /join route which exists in the API
         const response = await fetch(`/api/contests/${contest.id}/join`, {
           method: 'POST',
         });
 
+>>>>>>> main
         if (response.ok) {
           toast({
             title: 'Registered!',
@@ -515,8 +613,19 @@ export default function ContestsPage() {
         });
       }
     } else {
+<<<<<<< HEAD
+      // Already registered, navigate to contest page
+      if (contest.status === 'draft') {
+        // Contest hasn't started yet, go to contest detail page
+        window.location.href = `/contests/${contest.id}`;
+      } else {
+        // Contest is running, go to participate page
+        window.location.href = `/contests/${contest.id}/participate`;
+      }
+=======
       // Already registered, join the contest
       window.open(`/contests/${contest.id}/participate`, '_blank');
+>>>>>>> main
     }
   };
 
@@ -535,6 +644,8 @@ export default function ContestsPage() {
     return `${minutes}m`;
   };
 
+<<<<<<< HEAD
+=======
   useEffect(() => {
     if (!privateContests?.length) return;
     const interval = setInterval(() => {
@@ -569,6 +680,7 @@ export default function ContestsPage() {
     return () => clearInterval(interval);
   }, [privateContests, notifiedContestIds, toast]);
 
+>>>>>>> main
   return (
     <main className='mx-auto max-w-6xl px-4 py-10'>
       <div className='flex items-center justify-between mb-6'>
@@ -697,7 +809,10 @@ export default function ContestsPage() {
                         }))
                       }
                       min={new Date().toISOString().split('T')[0]}
+<<<<<<< HEAD
+=======
                       className='dark:bg-background dark:text-foreground dark:[color-scheme:dark]'
+>>>>>>> main
                     />
                   </div>
                   <div className='space-y-2'>
@@ -712,7 +827,10 @@ export default function ContestsPage() {
                           startTime: e.target.value,
                         }))
                       }
+<<<<<<< HEAD
+=======
                       className='dark:bg-background dark:text-foreground dark:[color-scheme:dark]'
+>>>>>>> main
                     />
                   </div>
                 </div>
@@ -1032,6 +1150,23 @@ export default function ContestsPage() {
                 </CardContent>
               </Card>
             ) : (
+<<<<<<< HEAD
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {privateContests.map((contest) => (
+                  <Card key={contest.id} className="hover:bg-white/5 transition-colors">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm font-medium">{contest.name}</CardTitle>
+                      <CardDescription className="text-xs">
+                        {contest.visibility === "public" ? "Public" : "Private"} • Created by {contest.isHost ? "You" : "Others"}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="flex items-center justify-between mb-3">
+                        <Badge variant={
+                          contest.status === "running" ? "default" : 
+                          contest.status === "ended" ? "secondary" : "outline"
+                        } className="text-xs">
+=======
               <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
                 {privateContests.map(contest => (
                   <Card
@@ -1059,6 +1194,7 @@ export default function ContestsPage() {
                           }
                           className='text-xs'
                         >
+>>>>>>> main
                           {contest.status}
                         </Badge>
                         <div className='flex gap-2'>
@@ -1072,6 +1208,18 @@ export default function ContestsPage() {
                           >
                             View Details
                           </Button>
+<<<<<<< HEAD
+                          {(contest.status === "draft" || contest.status === "running") && !contest.isHost && (
+                            <Button
+                              size="sm"
+                              className="h-8 px-2 text-xs bg-green-600 hover:bg-green-700"
+                              onClick={() => handleJoinPrivateContest(contest)}
+                              disabled={contest.isRegistered && contest.status === "draft"}
+                            >
+                              {contest.isRegistered ? "Join Now" : "Register"}
+                            </Button>
+                          )}
+=======
                           {(contest.status === 'draft' ||
                             contest.status === 'running') &&
                             !contest.isHost && (
@@ -1095,6 +1243,7 @@ export default function ContestsPage() {
                                   : 'Register'}
                               </Button>
                             )}
+>>>>>>> main
                         </div>
                       </div>
 
@@ -1107,6 +1256,13 @@ export default function ContestsPage() {
                             </span>
                           </div>
                           {contest.description && (
+<<<<<<< HEAD
+                            <div className="text-white/50">{contest.description}</div>
+                          )}
+                          <div className="flex items-center gap-4 text-white/50">
+                            <span>{contest.problem_count} Problems</span>
+                            <span>Rating: {contest.rating_min}-{contest.rating_max}</span>
+=======
                             <div className='text-white/50'>
                               {contest.description}
                             </div>
@@ -1119,6 +1275,7 @@ export default function ContestsPage() {
                                 {contest.rating_max}
                               </span>
                             )}
+>>>>>>> main
                             <span>{contest.duration_minutes}m</span>
                           </div>
                           <div className='flex items-center gap-2 text-white/50'>
@@ -1148,11 +1305,15 @@ export default function ContestsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className='flex items-center gap-2 mt-4'>
+<<<<<<< HEAD
+            <Input value={createdContestLink || ''} readOnly />
+=======
             <Input
               value={createdContestLink || ''}
               readOnly
               className='flex-1'
             />
+>>>>>>> main
             <Button
               onClick={() => {
                 if (createdContestLink)
@@ -1176,4 +1337,8 @@ export default function ContestsPage() {
       </Dialog>
     </main>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> main

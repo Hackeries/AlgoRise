@@ -13,7 +13,14 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Target, Clock, CheckCircle, Loader2, Star } from 'lucide-react';
+import {
+  ArrowLeft,
+  Target,
+  Clock,
+  CheckCircle,
+  Loader2,
+  Star,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function SubsectionPage() {
@@ -72,9 +79,11 @@ export default function SubsectionPage() {
         data?.filter(item => item.solved).map(item => item.problem_id) || []
       );
       const revision = new Set(
-        data?.filter(item => item.marked_for_revision).map(item => item.problem_id) || []
+        data
+          ?.filter(item => item.marked_for_revision)
+          .map(item => item.problem_id) || []
       );
-      
+
       setSolvedProblems(solved);
       setRevisionProblems(revision);
     } catch (error) {
@@ -157,7 +166,9 @@ export default function SubsectionPage() {
           user_id: user.id,
           problem_id: problemId,
           marked_for_revision: newRevisionStatus,
-          revision_marked_at: newRevisionStatus ? new Date().toISOString() : null,
+          revision_marked_at: newRevisionStatus
+            ? new Date().toISOString()
+            : null,
         },
         {
           onConflict: 'user_id,problem_id',
@@ -320,7 +331,9 @@ export default function SubsectionPage() {
                       </button>
                       <div>
                         <div
-                          className={`font-medium ${isSolved ? 'line-through text-muted-foreground' : ''}`}
+                          className={`font-medium ${
+                            isSolved ? 'line-through text-muted-foreground' : ''
+                          }`}
                         >
                           Problem {index + 1}: {problem.title}
                         </div>
@@ -341,7 +354,11 @@ export default function SubsectionPage() {
                       <button
                         onClick={() => toggleRevisionStatus(problem.id)}
                         className='flex-shrink-0 hover:scale-110 transition-transform cursor-pointer disabled:cursor-not-allowed p-1'
-                        title={isMarkedForRevision ? 'Remove from revision' : 'Mark for revision'}
+                        title={
+                          isMarkedForRevision
+                            ? 'Remove from revision'
+                            : 'Mark for revision'
+                        }
                         disabled={isUpdatingRev}
                       >
                         {isUpdatingRev ? (

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { Clock, ExternalLink, Trophy, CheckCircle, XCircle, AlertCircle, Maximize2 } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -49,6 +50,9 @@ export default function ContestParticipationPage() {
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null)
   const [submissionStatus, setSubmissionStatus] = useState<string>("")
   const [contestEnded, setContestEnded] = useState(false)
+  const [language, setLanguage] = useState<string>("cpp")
+  const [codeText, setCodeText] = useState<string>("")
+  const [fileName, setFileName] = useState<string>("")
 
   const { data, error, mutate } = useSWR<{ contest: Contest }>(
     params.id ? `/api/contests/${params.id}` : null,
@@ -164,6 +168,44 @@ export default function ContestParticipationPage() {
     const totalPenalty = submissions.filter((s) => s.status === "AC").reduce((acc, s) => acc + s.penalty, 0)
 
     return { solved, total, penalty: totalPenalty }
+  }
+
+  const onFilePick = async (file: File) => {
+    try {
+      const text = await file.text()
+      setCodeText(text)
+      setFileName(file.name)
+      toast({ title: "File loaded", description: `${file.name} (${Math.round(file.size / 1024)} KB)` })
+    } catch {
+      toast({ title: "Failed to read file", variant: "destructive" })
+    }
+  }
+
+  const uploadSolution = async () => {
+    if (!selectedProblem) return
+    if (!codeText.trim()) {
+      toast({ title: "No code", description: "Paste code or upload a file first.", variant: "destructive" })
+      return
+    }
+    try {
+      const res = await fetch(`/api/contests/${params.id}/upload`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          problemId: selectedProblem.id,
+          language,
+          fileName,
+          codeText,
+        }),
+      })
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}))
+        throw new Error(e?.error || "Upload failed")
+      }
+      toast({ title: "Submitted", description: "Your file was uploaded." })
+    } catch (e: any) {
+      toast({ title: "Upload error", description: e?.message || "Failed to submit file", variant: "destructive" })
+    }
   }
 
   if (error) {
@@ -395,26 +437,77 @@ export default function ContestParticipationPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <p className="text-gray-300">Have you solved this problem? Select the result of your submission:</p>
+            <div className="flex items-center justify-between gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  window.open(
+                    `https://codeforces.com/problemset/problem/${selectedProblem?.contestId}/${selectedProblem?.index}`,
+                    "_blank",
+                  )
+                }
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Open Problem
+              </Button>
+
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cpp">C++17</SelectItem>
+                  <SelectItem value="py">Python 3</SelectItem>
+                  <SelectItem value="java">Java 17</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Simple editor */}
+            <div className="rounded-md border border-gray-700 overflow-hidden">
+              <textarea
+                className="w-full h-56 p-3 bg-gray-900 text-gray-100 font-mono text-sm outline-none resize-none"
+                placeholder="// Paste your code here or upload a file below"
+                value={codeText}
+                onChange={(e) => setCodeText(e.target.value)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <input
+                type="file"
+                accept=".cpp,.cc,.cxx,.c,.py,.java,.txt,.rs,.go,.kt,.js,.ts"
+                onChange={(e) => {
+                  const file = e.currentTarget.files?.[0]
+                  if (file) onFilePick(file)
+                }}
+                className="block w-full text-sm text-gray-300 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-700 file:text-white hover:file:bg-gray-600"
+              />
+              <Button onClick={uploadSolution} className="bg-blue-600 hover:bg-blue-700">
+                Submit File
+              </Button>
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
               <Button onClick={() => handleSubmission("AC")} className="bg-green-600 hover:bg-green-700">
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Accepted (AC)
+                Mark Accepted
               </Button>
               <Button onClick={() => handleSubmission("WA")} variant="destructive">
                 <XCircle className="h-4 w-4 mr-2" />
-                Wrong Answer (WA)
-              </Button>
-              <Button onClick={() => handleSubmission("TLE")} variant="destructive">
-                <AlertCircle className="h-4 w-4 mr-2" />
-                Time Limit Exceeded (TLE)
-              </Button>
-              <Button onClick={() => handleSubmission("RE")} variant="destructive">
-                <AlertCircle className="h-4 w-4 mr-2" />
-                Runtime Error (RE)
+                Mark Wrong Answer
               </Button>
             </div>
+
+            {/* Reveal ratings/points after contest ends */}
+            {contest?.status === "ended" ? (
+              <p className="text-xs text-gray-400">
+                Ratings/points are visible. Problem rating: {selectedProblem?.rating ?? "N/A"} • Points: 1
+              </p>
+            ) : (
+              <p className="text-xs text-gray-500">Ratings and points are hidden until the contest ends.</p>
+            )}
           </div>
         </DialogContent>
       </Dialog>

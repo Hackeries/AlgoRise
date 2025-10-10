@@ -63,7 +63,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const timeRemaining = status === "live" ? Math.max(0, (endsAt ?? now) - now) : Math.max(0, (startsAt ?? now) - now)
 
-  // ✅ FIX: Explicit typing for 'p'
+  // ✅ Explicit typing for 'p'
   const problems = (problemRows || []).map((p: any) => ({
     id: p.problem_id,
     contestId: p.contest_id_cf ?? 0,
@@ -71,6 +71,29 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     name: p.title ?? p.problem_id,
     rating: p.rating ?? 0,
   }))
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const mySubmissions: Record<string, "solved" | "failed"> = {}
+  if (user) {
+    const { data: myRows } = await supabase
+      .from("contest_submissions")
+      .select("problem_id, status, created_at")
+      .eq("contest_id", contestId)
+      .eq("user_id", user.id)
+
+    // Prefer 'solved' if any solved exists; otherwise 'failed' if any failed exists.
+    const latestMap = new Map<string, { status: "solved" | "failed"; created_at: string }>()
+    for (const r of myRows || []) {
+      const prev = latestMap.get(r.problem_id)
+      if (!prev || new Date(r.created_at).getTime() > new Date(prev.created_at).getTime()) {
+        latestMap.set(r.problem_id, { status: r.status as "solved" | "failed", created_at: r.created_at })
+      }
+    }
+    latestMap.forEach((v, k) => (mySubmissions[k] = v.status))
+  }
 
   return NextResponse.json({
     contest: {
@@ -91,6 +114,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       visibility: rawContest.visibility,
       host_user_id: rawContest.host_user_id,
       allow_late_join: rawContest.allow_late_join ?? true,
+      my_submissions: mySubmissions,
     },
   })
 }

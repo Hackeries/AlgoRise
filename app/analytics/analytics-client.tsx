@@ -15,6 +15,8 @@ import { useCFVerification } from "@/lib/context/cf-verification"
 import { useAuth } from "@/lib/auth/context"
 import useSWR from "swr"
 import Link from "next/link"
+import { CompareHandles } from "@/components/analytics/compare-handles"
+import { LiveActivity } from "@/components/analytics/live-activity"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -163,6 +165,7 @@ export default function AnalyticsPageClient() {
             <TabsTrigger value="contests">Contests</TabsTrigger>
             <TabsTrigger value="topics">Topics</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
+            <TabsTrigger value="compare">Compare</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -233,6 +236,13 @@ export default function AnalyticsPageClient() {
                 <ActivityHeatmap range={range} />
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="compare" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <CompareHandles />
+              <LiveActivity />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

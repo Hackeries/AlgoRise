@@ -329,8 +329,8 @@ export default function ProfilePage() {
       })
 
       sessionStorage.setItem("profileCompleted", "true")
-      sessionStorage.setItem("profile_just_completed", "true") // added
-      window.location.href = "/train"
+      sessionStorage.setItem("profile_just_completed", "true")
+      window.location.href = "/profile/overview" // go to profile summary
     } catch (error: any) {
       toast({
         title: "Error",

@@ -400,6 +400,7 @@ export default function ContestsPage() {
     }
 
     const now = new Date()
+    const start = new Date(contest.starts_at)
     const end = contest.ends_at
       ? new Date(contest.ends_at)
       : new Date(new Date(contest.starts_at).getTime() + (contest.duration_minutes ?? 0) * 60 * 1000)
@@ -413,18 +414,20 @@ export default function ContestsPage() {
       return
     }
 
-    const start = new Date(contest.starts_at)
     const registrationClose = new Date(start.getTime() + 10 * 60 * 1000)
 
     if (now < start) {
       const diffMs = start.getTime() - now.getTime()
-      const minutes = Math.max(0, Math.floor(diffMs / 60000))
-      toast({
-        title: "Contest hasn't started",
-        description: `${minutes} minute(s) left to start.`,
-        variant: "destructive",
-      })
-      return
+      const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+      if (daysLeft > 2) {
+        toast({
+          title: "Registration Not Open",
+          description: `${daysLeft} day(s) until registration opens. Please check back later.`,
+          variant: "destructive",
+        })
+        return
+      }
+      // ≤ 2 days left -> proceed to registration flow below
     }
 
     if (now > registrationClose && !contest.allow_late_join) {
@@ -439,7 +442,6 @@ export default function ContestsPage() {
     // Register user if not already registered
     if (!contest.isRegistered) {
       try {
-        // IMPORTANT: use /join route which exists in the API
         const response = await fetch(`/api/contests/${contest.id}/join`, {
           method: "POST",
         })
@@ -495,8 +497,15 @@ export default function ContestsPage() {
       privateContests.forEach((c) => {
         if (!c.isRegistered || !c.starts_at) return
         const startMs = new Date(c.starts_at).getTime()
-        // fire exactly at or just after start, once
-        if (now >= startMs && !nextNotified.has(c.id)) {
+        const endMs = c.ends_at
+          ? new Date(c.ends_at).getTime()
+          : c.starts_at && c.duration_minutes
+            ? new Date(c.starts_at).getTime() + c.duration_minutes * 60 * 1000
+            : null
+
+        const isLive = now >= startMs && (endMs == null || now < endMs)
+        const alreadyNotified = nextNotified.has(c.id)
+        if (isLive && !alreadyNotified) {
           nextNotified.add(c.id)
           toast({
             title: "Contest started",
@@ -941,14 +950,6 @@ export default function ContestsPage() {
                           {contest.status}
                         </Badge>
                         <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 px-2 text-xs"
-                            onClick={() => window.open(`/contests/${contest.id}`, "_blank")}
-                          >
-                            View Details
-                          </Button>
                           {(() => {
                             const now = Date.now()
                             const startsAt = contest.starts_at ? new Date(contest.starts_at).getTime() : null
@@ -967,7 +968,7 @@ export default function ContestsPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="h-8 px-2 text-xs"
+                                  className="h-8 px-2 text-xs bg-transparent"
                                   onClick={() => window.open(`/contests/${contest.id}`, "_blank")}
                                 >
                                   View Leaderboard
@@ -985,13 +986,15 @@ export default function ContestsPage() {
                                     )}`
                                 : "Register"
 
+                              const disabled = contest.isRegistered ? !hasStarted && !contest.allow_late_join : false
+
                               return (
                                 <Button
                                   size="sm"
                                   className={`h-8 px-2 text-xs ${hasStarted ? "bg-green-600 hover:bg-green-700" : ""}`}
                                   onClick={() => handleJoinPrivateContest(contest)}
-                                  disabled={!hasStarted && !contest.allow_late_join}
-                                  aria-disabled={!hasStarted && !contest.allow_late_join}
+                                  disabled={disabled}
+                                  aria-disabled={disabled}
                                 >
                                   {label}
                                 </Button>

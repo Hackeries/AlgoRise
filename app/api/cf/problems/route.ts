@@ -10,9 +10,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const handle = searchParams.get('handle');
-    const rating = Number(searchParams.get('rating') || '1500');
+    const rating = Number(searchParams.get('rating') || '1000');
     const tagsParam = searchParams.get('tags') || '';
-    const count = Number(searchParams.get('count') || '20');
+    const count = Number(searchParams.get('count') || '39');
 
     const tags = tagsParam
       ? tagsParam
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
         userSolved: solvedProblems.size,
         availableCount: allProblems.length - solvedProblems.size,
         filterCriteria: {
-          rating: `${rating - 200} - ${rating + 200}`,
+          rating: `${rating - 100} - ${rating + 200}`,
           tags: tags,
           excludingSolved: handle ? true : false,
         },

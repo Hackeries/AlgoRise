@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { Clock, ExternalLink, Trophy, CheckCircle, XCircle, AlertCircle, Maximize2 } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
@@ -49,6 +50,9 @@ export default function ContestParticipationPage() {
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null)
   const [submissionStatus, setSubmissionStatus] = useState<string>("")
   const [contestEnded, setContestEnded] = useState(false)
+  const [language, setLanguage] = useState<string>("cpp")
+  const [codeText, setCodeText] = useState<string>("")
+  const [fileName, setFileName] = useState<string>("")
 
   const { data, error, mutate } = useSWR<{ contest: Contest }>(
     params.id ? `/api/contests/${params.id}` : null,
@@ -104,7 +108,9 @@ export default function ContestParticipationPage() {
     const hours = Math.floor(ms / (1000 * 60 * 60))
     const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
     const seconds = Math.floor((ms % (1000 * 60)) / 1000)
-    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+    return `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
   }
 
   const handleSubmission = async (status: string) => {
@@ -164,6 +170,44 @@ export default function ContestParticipationPage() {
     return { solved, total, penalty: totalPenalty }
   }
 
+  const onFilePick = async (file: File) => {
+    try {
+      const text = await file.text()
+      setCodeText(text)
+      setFileName(file.name)
+      toast({ title: "File loaded", description: `${file.name} (${Math.round(file.size / 1024)} KB)` })
+    } catch {
+      toast({ title: "Failed to read file", variant: "destructive" })
+    }
+  }
+
+  const uploadSolution = async () => {
+    if (!selectedProblem) return
+    if (!codeText.trim()) {
+      toast({ title: "No code", description: "Paste code or upload a file first.", variant: "destructive" })
+      return
+    }
+    try {
+      const res = await fetch(`/api/contests/${params.id}/upload`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          problemId: selectedProblem.id,
+          language,
+          fileName,
+          codeText,
+        }),
+      })
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}))
+        throw new Error(e?.error || "Upload failed")
+      }
+      toast({ title: "Submitted", description: "Your file was uploaded." })
+    } catch (e: any) {
+      toast({ title: "Upload error", description: e?.message || "Failed to submit file", variant: "destructive" })
+    }
+  }
+
   if (error) {
     return (
       <div className="min-h-screen bg-red-50 flex items-center justify-center">
@@ -181,6 +225,32 @@ export default function ContestParticipationPage() {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-white">Loading contest...</div>
+      </div>
+    )
+  }
+
+  if (contest.status === "ended") {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white px-6">
+        <div className="text-center max-w-md">
+          <Trophy className="mx-auto h-16 w-16 text-yellow-500 mb-4" />
+          <h1 className="text-2xl font-bold mb-2">Contest Ended</h1>
+          <p className="text-white/70 mb-6">
+            This contest has finished. You can go back to the contests list or view the leaderboard and details.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button onClick={() => router.push("/contests")} className="flex-1 sm:flex-none">
+              Back to Contests
+            </Button>
+            <Button
+              onClick={() => router.push(`/contests/${contest.id}`)}
+              variant="outline"
+              className="flex-1 sm:flex-none"
+            >
+              View Details
+            </Button>
+          </div>
+        </div>
       </div>
     )
   }
@@ -231,7 +301,7 @@ export default function ContestParticipationPage() {
               variant="outline"
               size="sm"
               onClick={exitFullscreen}
-              className="text-white border-gray-600 hover:bg-gray-700"
+              className="text-white border-gray-600 hover:bg-gray-700 bg-transparent"
             >
               <Maximize2 className="h-4 w-4 mr-2" />
               Exit Fullscreen
@@ -244,61 +314,80 @@ export default function ContestParticipationPage() {
         {/* Problems List */}
         <div className="w-1/2 border-r border-gray-700 p-6">
           <h2 className="text-lg font-semibold mb-4">Problems</h2>
-          <div className="space-y-3">
-            {contest.problems.map((problem, index) => {
-              const problemSubmissions = submissions.filter((s) => s.problemId === problem.id)
-              const solved = problemSubmissions.some((s) => s.status === "AC")
-              const attempted = problemSubmissions.length > 0
 
-              return (
-                <Card
-                  key={problem.id}
-                  className={`bg-gray-800 border-gray-700 hover:bg-gray-750 cursor-pointer transition-colors ${
-                    solved ? "border-green-500" : attempted ? "border-yellow-500" : ""
-                  }`}
-                  onClick={() => setSelectedProblem(problem)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                            solved ? "bg-green-600" : attempted ? "bg-yellow-600" : "bg-gray-600"
-                          }`}
-                        >
-                          {problem.index}
+          {!contest.problems || contest.problems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center text-center h-full text-gray-400">
+              <AlertCircle className="h-8 w-8 mb-2 text-gray-500" />
+              <p className="mb-2">No problems are available yet.</p>
+              <p className="text-sm text-gray-500 mb-4">
+                The host may not have added problems or the contest hasn&apos;t fully started. Please check back soon.
+              </p>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => router.refresh()}>
+                  Refresh
+                </Button>
+                <Button variant="ghost" onClick={() => router.push("/contests")}>
+                  Back to Contests
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {contest.problems.map((problem, index) => {
+                const problemSubmissions = submissions.filter((s) => s.problemId === problem.id)
+                const solved = problemSubmissions.some((s) => s.status === "AC")
+                const attempted = problemSubmissions.length > 0
+
+                return (
+                  <Card
+                    key={problem.id}
+                    className={`bg-gray-800 border-gray-700 hover:bg-gray-750 cursor-pointer transition-colors ${
+                      solved ? "border-green-500" : attempted ? "border-yellow-500" : ""
+                    }`}
+                    onClick={() => setSelectedProblem(problem)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                              solved ? "bg-green-600" : attempted ? "bg-yellow-600" : "bg-gray-600"
+                            }`}
+                          >
+                            {problem.index}
+                          </div>
+                          <div>
+                            <div className="font-medium">{problem.name}</div>
+                            {/* <div className='text-sm text-gray-400'>
+                              Rating: {problem.rating}
+                            </div> */}
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-medium">{problem.name}</div>
-                          {/* <div className='text-sm text-gray-400'>
-                            Rating: {problem.rating}
-                          </div> */}
+
+                        <div className="flex items-center gap-2">
+                          {solved && <CheckCircle className="h-5 w-5 text-green-500" />}
+                          {attempted && !solved && <XCircle className="h-5 w-5 text-yellow-500" />}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              window.open(
+                                `https://codeforces.com/problemset/problem/${problem.contestId}/${problem.index}`,
+                                "_blank",
+                              )
+                            }}
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-
-                      <div className="flex items-center gap-2">
-                        {solved && <CheckCircle className="h-5 w-5 text-green-500" />}
-                        {attempted && !solved && <XCircle className="h-5 w-5 text-yellow-500" />}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            window.open(
-                              `https://codeforces.com/problemset/problem/${problem.contestId}/${problem.index}`,
-                              "_blank",
-                            )
-                          }}
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
         </div>
 
         {/* Submissions Panel */}
@@ -348,59 +437,77 @@ export default function ContestParticipationPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <p className="text-gray-300">Have you solved this problem? Select the result of your submission:</p>
+            <div className="flex items-center justify-between gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  window.open(
+                    `https://codeforces.com/problemset/problem/${selectedProblem?.contestId}/${selectedProblem?.index}`,
+                    "_blank",
+                  )
+                }
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Open Problem
+              </Button>
+
+              <Select value={language} onValueChange={setLanguage}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="Language" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cpp">C++17</SelectItem>
+                  <SelectItem value="py">Python 3</SelectItem>
+                  <SelectItem value="java">Java 17</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Simple editor */}
+            <div className="rounded-md border border-gray-700 overflow-hidden">
+              <textarea
+                className="w-full h-56 p-3 bg-gray-900 text-gray-100 font-mono text-sm outline-none resize-none"
+                placeholder="// Paste your code here or upload a file below"
+                value={codeText}
+                onChange={(e) => setCodeText(e.target.value)}
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <input
+                type="file"
+                accept=".cpp,.cc,.cxx,.c,.py,.java,.txt,.rs,.go,.kt,.js,.ts"
+                onChange={(e) => {
+                  const file = e.currentTarget.files?.[0]
+                  if (file) onFilePick(file)
+                }}
+                className="block w-full text-sm text-gray-300 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gray-700 file:text-white hover:file:bg-gray-600"
+              />
+              <Button onClick={uploadSolution} className="bg-blue-600 hover:bg-blue-700">
+                Submit File
+              </Button>
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
               <Button onClick={() => handleSubmission("AC")} className="bg-green-600 hover:bg-green-700">
                 <CheckCircle className="h-4 w-4 mr-2" />
-                Accepted (AC)
+                Mark Accepted
               </Button>
               <Button onClick={() => handleSubmission("WA")} variant="destructive">
                 <XCircle className="h-4 w-4 mr-2" />
-                Wrong Answer (WA)
-              </Button>
-              <Button onClick={() => handleSubmission("TLE")} variant="destructive">
-                <AlertCircle className="h-4 w-4 mr-2" />
-                Time Limit Exceeded (TLE)
-              </Button>
-              <Button onClick={() => handleSubmission("RE")} variant="destructive">
-                <AlertCircle className="h-4 w-4 mr-2" />
-                Runtime Error (RE)
+                Mark Wrong Answer
               </Button>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* Contest End Dialog */}
-      <Dialog open={contestEnded} onOpenChange={() => setContestEnded(false)}>
-        <DialogContent className="bg-gray-800 border-gray-700 text-white">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Trophy className="h-6 w-6 text-yellow-500" />
-              Contest Ended!
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-green-400 mb-2">
-                {stats.solved}/{stats.total}
-              </div>
-              <p className="text-gray-300">Problems Solved</p>
-              {stats.penalty > 0 && (
-                <p className="text-sm text-gray-400 mt-2">Total Penalty: {Math.floor(stats.penalty / 60)} minutes</p>
-              )}
-            </div>
-
-            <div className="flex gap-3">
-              <Button onClick={() => router.push("/contests")} className="flex-1">
-                Back to Contests
-              </Button>
-              <Button onClick={() => router.push(`/contests/${contest.id}`)} variant="outline" className="flex-1">
-                View Leaderboard
-              </Button>
-            </div>
+            {/* Reveal ratings/points after contest ends */}
+            {contest?.status === "ended" ? (
+              <p className="text-xs text-gray-400">
+                Ratings/points are visible. Problem rating: {selectedProblem?.rating ?? "N/A"} • Points: 1
+              </p>
+            ) : (
+              <p className="text-xs text-gray-500">Ratings and points are hidden until the contest ends.</p>
+            )}
           </div>
         </DialogContent>
       </Dialog>

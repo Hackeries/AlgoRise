@@ -39,10 +39,10 @@ export async function GET(request: NextRequest) {
         : 0;
 
     return NextResponse.json({
-      eligible: contestCount >= 3,
+      eligible: contestCount >= 2,
       contestCount,
-      rating: user.rating || 1200,
-      maxRating: user.maxRating || user.rating || 1200,
+      rating: user.rating || 1000,
+      maxRating: user.maxRating || user.rating || 1000,
       handle: user.handle,
     });
   } catch (error) {

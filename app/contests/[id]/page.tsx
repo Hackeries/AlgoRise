@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Clock, Calendar, Trophy, Share2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
@@ -25,7 +27,9 @@ interface Contest {
   max_participants?: number
   status: string
   host_user_id: string
-  allow_late_join?: boolean // added
+  allow_late_join?: boolean
+  problems?: { id: string; contestId: number; index: string; name: string; rating: number }[]
+  my_submissions?: Record<string, "solved" | "failed">
 }
 
 interface LeaderboardEntry {
@@ -46,6 +50,7 @@ export default function ContestDetailPage() {
   const [isRegistered, setIsRegistered] = useState(false)
   const [registering, setRegistering] = useState(false)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [showAttemptedOnly, setShowAttemptedOnly] = useState(false)
 
   useEffect(() => {
     fetchContestData()
@@ -332,6 +337,81 @@ export default function ContestDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {contest.problems && contest.problems.length > 0 && (
+        <Card className="mb-8">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              Problems
+              <Badge variant="secondary">{contest.problems.length}</Badge>
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="attempted-only" className="text-sm text-white/70">
+                Show attempted only
+              </Label>
+              <Switch id="attempted-only" checked={showAttemptedOnly} onCheckedChange={setShowAttemptedOnly} />
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {(showAttemptedOnly
+              ? contest.problems.filter((p) => {
+                  const st = contest.my_submissions?.[p.id]
+                  return st === "solved" || st === "failed"
+                })
+              : contest.problems
+            ).map((p) => {
+              const status = contest.my_submissions?.[p.id] // 'solved' | 'failed' | undefined
+              const isSolved = status === "solved"
+              const isFailed = status === "failed"
+              return (
+                <a
+                  key={p.id}
+                  href={`https://codeforces.com/problemset/problem/${p.contestId}/${p.index}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  <div
+                    className={`flex items-center justify-between rounded-md p-3 transition-colors ${
+                      isSolved
+                        ? "bg-green-600/20 border border-green-600/40"
+                        : isFailed
+                          ? "bg-red-600/20 border border-red-600/40"
+                          : "bg-white/5 border border-white/10 hover:bg-white/10"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        aria-hidden
+                        className={`w-2 h-2 rounded-full ${
+                          isSolved ? "bg-green-500" : isFailed ? "bg-red-500" : "bg-white/30"
+                        }`}
+                      />
+                      <div>
+                        <div className="font-medium">
+                          {p.index}. {p.name}
+                        </div>
+                        <div className="text-xs text-white/60">
+                          CF {p.contestId}/{p.index} • {p.rating ? `Rating ${p.rating}` : "Unrated"}
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      {isSolved ? (
+                        <Badge className="bg-green-600 hover:bg-green-600 text-black">Solved</Badge>
+                      ) : isFailed ? (
+                        <Badge className="bg-red-600 hover:bg-red-600">Failed</Badge>
+                      ) : (
+                        <Badge variant="outline">Unattempted</Badge>
+                      )}
+                    </div>
+                  </div>
+                </a>
+              )
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Leaderboard Preview */}
       <Card>

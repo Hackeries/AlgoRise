@@ -56,6 +56,7 @@ const getCFTier = (rating: number) => {
 // ------------------ Menu Items ------------------
 const menuItems = [
   { href: "/", label: "Dashboard", icon: Calendar },
+  { href: "/train", label: "Train", icon: Target }, // Added
   { href: "/adaptive-sheet", label: "Practice Problems", icon: Target },
   { href: "/contests", label: "Contests", icon: Trophy },
   { href: "/paths", label: "Learning Paths", icon: BookOpen },

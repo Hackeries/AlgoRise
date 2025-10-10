@@ -26,9 +26,12 @@ export function WelcomeBanner() {
     fetch("/api/profile")
       .then((res) => res.json())
       .then((data) => {
-        if (data.handle) {
-          setUserName(data.handle)
-        }
+        const display =
+          data?.name?.trim?.() ||
+          data?.full_name?.trim?.() || // in case API extends later
+          data?.cf_handle?.trim?.() ||
+          ""
+        if (display) setUserName(display)
       })
       .catch(() => {})
   }, [])
@@ -69,7 +72,7 @@ export function WelcomeBanner() {
                 <div className="flex-1 space-y-4">
                   <div>
                     <h2 className="text-xl sm:text-2xl font-bold text-white">
-                      Welcome to AlgoRise{userName ? `, ${userName}` : ""}! 🚀
+                      {"Welcome to AlgoRise" + (userName ? `, ${userName}` : "") + "!"}
                     </h2>
                     <p className="mt-2 text-sm sm:text-base text-gray-300 leading-relaxed">
                       Your competitive programming journey starts here. We've analyzed your Codeforces profile and

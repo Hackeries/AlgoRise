@@ -1,5 +1,6 @@
 create table if not exists public.cf_snapshots (
-  user_id uuid primary key references auth.users(id) on delete cascade,
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
   handle text not null,
   last_rating int,
   last_contest text,
@@ -8,6 +9,7 @@ create table if not exists public.cf_snapshots (
 );
 
 alter table public.cf_snapshots enable row level security;
+
 do $$ begin
   create policy "cf_snapshots_select_own" on public.cf_snapshots
     for select using (auth.uid() = user_id);

@@ -160,7 +160,7 @@ export async function GET(request: NextRequest) {
       solvedProblems: solvedProblemsList
         .sort((a, b) => b.solvedAt - a.solvedAt)
         .slice(0, 50), // 50 most recent
-      recentSubmissions: submissions.slice(0, 20), // 20 most recent submissions
+      recentSubmissions: submissions.slice(0, 14), // 20 most recent submissions
     });
   } catch (error) {
     console.error('Error fetching user profile:', error);

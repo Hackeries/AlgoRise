@@ -7,6 +7,7 @@ import { QuickActions } from "@/components/train/quick-actions"
 import { RecentActivity } from "@/components/train/recent-activity"
 import { UpcomingContests } from "@/components/train/upcoming-contests"
 import { ProblemRecommendations } from "@/components/train/problem-recommendations"
+import { GamifiedStrip } from "@/components/train/gamified-strip"
 import { motion } from "framer-motion"
 import { useCFVerification } from "@/lib/context/cf-verification"
 import { useAuth } from "@/lib/auth/context"
@@ -64,6 +65,16 @@ export default function TrainingHub() {
               <WelcomeBanner onDismiss={() => setShowWelcome(false)} />
             </motion.div>
           )}
+
+          {/* Gamified progress strip */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="mb-6"
+          >
+            <GamifiedStrip />
+          </motion.div>
 
           {/* Quick Actions */}
           <motion.div

@@ -834,8 +834,8 @@ export default function ContestsPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white/60"></div>
-          <p className="mt-2 text-white/60">Loading contests...</p>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="mt-2 text-muted-foreground">Loading contests...</p>
         </div>
       ) : (
         <div className="space-y-8">
@@ -865,7 +865,7 @@ export default function ContestsPage() {
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <CardTitle className="text-sm font-medium leading-tight">{contest.name}</CardTitle>
-                        <ExternalLinkIcon className="w-4 h-4 text-white/40 flex-shrink-0 ml-2 hover:text-white/60 transition-colors" />
+                        <ExternalLinkIcon className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-2 hover:text-foreground transition-colors" />
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-xs">
@@ -879,18 +879,18 @@ export default function ContestsPage() {
                     <CardContent className="pt-0">
                       <div className="space-y-2 text-sm">
                         {contest.startTimeSeconds && (
-                          <div className="flex items-center gap-2 text-white/70">
+                          <div className="flex items-center gap-2 text-muted-foreground">
                             <CalendarIcon className="w-4 h-4" />
                             <span>{formatTime(contest.startTimeSeconds)}</span>
                           </div>
                         )}
-                        <div className="flex items-center gap-2 text-white/70">
+                        <div className="flex items-center gap-2 text-muted-foreground">
                           <ClockIcon className="w-4 h-4" />
                           <span>{formatDuration(contest.durationSeconds)}</span>
                         </div>
                         {contest.startTimeSeconds && (
                           <div className="flex items-center justify-between">
-                            <span className="text-white/60">Starts in:</span>
+                            <span className="text-muted-foreground">Starts in:</span>
                             <Badge variant="default" className="text-xs">
                               {getTimeUntilStart(contest.startTimeSeconds)}
                             </Badge>

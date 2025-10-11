@@ -416,28 +416,15 @@ export default function ContestsPage() {
 
     const registrationClose = new Date(start.getTime() + 10 * 60 * 1000)
 
-    if (now < start &&start.getTime() - now.getTime() > 2 * 24 * 60 * 60 * 1000) {
-      const daysLeft = Math.ceil(
-        (start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      toast({
-        title: 'Registration Not Open',
-        description: `${daysLeft} day(s) until registration opens. Please check back later.`,
-        variant: 'destructive',
-      });
-      return;
-    }
-
     if (now >= registrationClose && !contest.allow_late_join) {
       toast({
-        title: "Too Late!",
-        description: "You missed the registration window! This is CP, not a casual meet 😎",
+        title: "Registration Closed",
+        description: "Registration window has closed.",
         variant: "destructive",
       })
       return
     }
 
-    // Register user if not already registered
     if (!contest.isRegistered) {
       try {
         const response = await fetch(`/api/contests/${contest.id}/join`, {
@@ -452,14 +439,14 @@ export default function ContestsPage() {
           })
           fetchContests() // Refresh to update registration status
         } else {
-          const errorData = await response.json()
+          const errorData = await response.json().catch(() => null)
           toast({
             title: "Registration Failed",
-            description: errorData.error || "Failed to register for contest",
+            description: errorData?.error || "Failed to register for contest",
             variant: "destructive",
           })
         }
-      } catch (error) {
+      } catch {
         toast({
           title: "Error",
           description: "Failed to register for contest",
@@ -467,8 +454,15 @@ export default function ContestsPage() {
         })
       }
     } else {
-      // Already registered, join the contest
-      window.open(`/contests/${contest.id}/participate`, "_blank", "noopener")
+      // Already registered
+      if (now >= start || contest.allow_late_join) {
+        window.open(`/contests/${contest.id}/participate`, "_blank", "noopener")
+      } else {
+        toast({
+          title: "Registered",
+          description: "You're registered. You can join once the contest starts.",
+        })
+      }
     }
   }
 
@@ -974,32 +968,29 @@ export default function ContestsPage() {
                               )
                             }
 
-                            // Allow register/join only if not host
-                            if (!contest.isHost) {
-                              const label = contest.isRegistered
-                                ? hasStarted
-                                  ? "Join Now"
-                                  : `Join Now • ${getTimeUntilStart(
-                                      Math.floor(new Date(contest.starts_at!).getTime() / 1000),
-                                    )}`
-                                : "Register"
+                            // Allow register/join for both participants and host
+                            const label = contest.isRegistered
+                              ? hasStarted
+                                ? "Join Now"
+                                : `Registered • ${contest.starts_at ? getTimeUntilStart(Math.floor(new Date(contest.starts_at).getTime() / 1000)) : ""}`
+                              : "Register"
 
-                              const disabled = contest.isRegistered ? !hasStarted && !contest.allow_late_join : false
+                            const disabled = contest.isRegistered ? !hasStarted && !contest.allow_late_join : false
 
-                              return (
-                                <Button
-                                  size="sm"
-                                  className={`h-8 px-2 text-xs ${hasStarted ? "bg-green-600 hover:bg-green-700" : ""}`}
-                                  onClick={() => handleJoinPrivateContest(contest)}
-                                  disabled={disabled}
-                                  aria-disabled={disabled}
-                                >
-                                  {label}
-                                </Button>
-                              )
-                            }
-
-                            return null
+                            return (
+                              <Button
+                                size="sm"
+                                className={`h-8 px-2 text-xs ${hasStarted ? "bg-green-600 hover:bg-green-700" : ""}`}
+                                onClick={() => handleJoinPrivateContest(contest)}
+                                disabled={disabled}
+                                aria-disabled={disabled}
+                                title={
+                                  contest.isHost && !contest.isRegistered ? "Register as participant (host)" : undefined
+                                }
+                              >
+                                {label}
+                              </Button>
+                            )
                           })()}
                         </div>
                       </div>

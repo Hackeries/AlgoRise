@@ -163,6 +163,7 @@ export default function ContestDetailPage() {
 
     const now = new Date()
     const start = new Date(contest.starts_at)
+    const end = new Date(contest.ends_at)
     const registrationClose = new Date(start.getTime() + 10 * 60 * 1000)
 
     if (now < start) {
@@ -300,7 +301,7 @@ export default function ContestDetailPage() {
             {hasStarted && !hasEnded && (
               <div className="text-center py-6">
                 <div className="text-2xl font-bold text-green-400 mb-4">Contest is Live!</div>
-                {isRegistered ? (
+                {isRegistered || currentUserId === contest.host_user_id || contest.allow_late_join ? (
                   <Button onClick={handleJoinContest} size="lg" className="w-full">
                     Join Contest Now
                   </Button>
@@ -319,7 +320,7 @@ export default function ContestDetailPage() {
             )}
             {!hasStarted && !hasEnded && (
               <div className="mt-4">
-                {isRegistered ? (
+                {isRegistered || currentUserId === contest.host_user_id || contest.allow_late_join ? (
                   <div className="text-center">
                     <Badge variant="default" className="mb-2">
                       Registered

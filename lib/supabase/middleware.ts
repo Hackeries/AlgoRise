@@ -71,6 +71,18 @@ export async function updateSession(request: NextRequest) {
       request.nextUrl.pathname === "/profile/overview" ||
       request.nextUrl.pathname === "/settings"
     ) {
+      if (request.nextUrl.pathname === "/profile") {
+        const { data: cfHandle } = await supabase.from("cf_handles").select("verified").eq("user_id", user.id).single()
+
+        const { data: profile } = await supabase.from("profiles").select("status").eq("user_id", user.id).single()
+
+        if (cfHandle?.verified && profile?.status) {
+          const url = request.nextUrl.clone()
+          url.pathname = "/profile/overview"
+          return NextResponse.redirect(url)
+        }
+      }
+
       return supabaseResponse
     }
 

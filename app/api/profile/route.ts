@@ -22,9 +22,17 @@ export async function GET() {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("status, degree_type, college_id, year, company_id, custom_company")
+      .select("status, degree_type, college_id, year, company_id, custom_company, colleges(name), companies(name)")
       .eq("user_id", user.id)
       .single()
+
+    // Normalize related names
+    const collegeName = Array.isArray((profile as any)?.colleges)
+      ? (profile as any)?.colleges?.[0]?.name
+      : (profile as any)?.colleges?.name
+    const companyName = Array.isArray((profile as any)?.companies)
+      ? (profile as any)?.companies?.[0]?.name
+      : (profile as any)?.companies?.name
 
     return NextResponse.json({
       cf_verified: cfHandle?.verified || false,
@@ -32,8 +40,10 @@ export async function GET() {
       status: profile?.status || null,
       degree_type: profile?.degree_type || "",
       college_id: profile?.college_id || "",
+      college_name: collegeName || "",
       year: profile?.year || "",
       company_id: profile?.company_id || "",
+      company_name: companyName || "",
       custom_company: profile?.custom_company || "",
     })
   } catch (e: any) {

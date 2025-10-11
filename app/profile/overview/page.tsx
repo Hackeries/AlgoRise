@@ -1,106 +1,206 @@
 // app/profile/overview/page.tsx
-import React from 'react';
-import Link from 'next/link';
-import { cookies } from 'next/headers';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Pencil, CheckCircle2, AlertCircle } from 'lucide-react';
+import type React from "react"
+import Link from "next/link"
+import { cookies } from "next/headers"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { CheckCircle2, AlertCircle, ExternalLink } from "lucide-react"
 
 // Fetch profile data from API (SSR-safe)
 async function getProfile() {
   try {
     // Await cookies if your Next.js version requires it
-    const cookieStore = await cookies(); // type is inferred automatically
+    const cookieStore = await cookies() // type is inferred automatically
 
     // Map cookies; define type inline for TS
     const cookieHeader = cookieStore
       .getAll()
       .map((c: { name: string; value: string }) => `${c.name}=${c.value}`)
-      .join('; ');
+      .join("; ")
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/profile`, {
-      cache: 'no-store',
+    const base = process.env.NEXT_PUBLIC_SITE_URL?.trim() || ""
+    const url = base ? `${base}/api/profile` : "/api/profile"
+
+    const res = await fetch(url, {
+      cache: "no-store",
       headers: { cookie: cookieHeader },
-    });
+    })
 
-    if (!res.ok) return null;
-    return await res.json();
+    if (!res.ok) return null
+    return await res.json()
   } catch (err) {
-    console.error('Failed to fetch profile:', err);
-    return null;
+    console.error("Failed to fetch profile:", err)
+    return null
   }
 }
 
 // Reusable row component
 interface ProfileRowProps {
-  label: React.ReactNode;
-  value?: string | null;
+  label: React.ReactNode
+  value?: string | null
 }
 function ProfileRow({ label, value }: ProfileRowProps) {
   return (
-    <div className='flex items-center justify-between'>
-      <span className='text-muted-foreground'>{label}</span>
-      <span className='font-medium capitalize'>{value || '—'}</span>
+    <div className="flex items-center justify-between">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium capitalize">{value || "—"}</span>
     </div>
-  );
+  )
 }
 
 // Main page component
 export default async function ProfileOverviewPage() {
-  const data = await getProfile();
+  const data = await getProfile()
 
-  const name = data?.name || data?.full_name || 'Your Profile';
-  const status = data?.status;
-  const college = data?.college_name || data?.college || null;
-  const year = data?.year || null;
-  const company =
-    data?.company_name || data?.company || data?.custom_company || null;
-  const cf = data?.cf_handle || data?.cf || null;
-  const cfVerified = data?.cf_verified || false;
+  const name = data?.name || data?.full_name || "Your Profile"
+  const status = data?.status as "student" | "working" | null
+  const college = data?.college_name || data?.college || null
+  const year = data?.year || null
+  const company = data?.company_name || data?.company || data?.custom_company || null
+  const cf = data?.cf_handle || data?.cf || null
+  const cfVerified = data?.cf_verified || false
+
+  // Compute simple completion score (used for UI only)
+  const pieces = [!!cfVerified, status === "student" ? !!college && !!year : status === "working" ? !!company : false]
+  const completion = Math.round((pieces.filter(Boolean).length / pieces.length) * 100) || 0
 
   return (
-    <main className='min-h-screen w-full bg-gradient-to-b from-background to-muted/20'>
-      <div className='mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8'>
+    <main className="min-h-screen w-full bg-gradient-to-b from-background to-muted/20">
+      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+        {/* Progress / Strength */}
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between'>
-            <CardTitle className='text-2xl'>{name}</CardTitle>
-            <Link href='/profile'>
-              <Button variant='outline' size='sm'>
-                <Pencil className='h-4 w-4 mr-2' />
-                Edit Profile
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl">Profile Strength: {completion}%</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-2 w-full rounded bg-muted overflow-hidden" aria-label="Profile completion progress">
+              <div
+                className="h-full bg-primary transition-all"
+                style={{ width: `${completion}%` }}
+                role="progressbar"
+                aria-valuenow={completion}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              />
+            </div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {completion >= 100
+                ? "Profile Complete! You're all set to connect, learn, and shine."
+                : "Complete your profile to unlock personalized recommendations."}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* About + Quick Actions */}
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card className="md:col-span-2">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-2xl">{name}</CardTitle>
+              <Link href="/profile">
+                <Button variant="outline" size="sm">
+                  Edit Profile
+                </Button>
+              </Link>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Status</div>
+                  <div className="font-medium capitalize">{status || "—"}</div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Codeforces</div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{cf || "—"}</span>
+                    {cf ? (
+                      cfVerified ? (
+                        <Badge className="bg-green-600 hover:bg-green-600">
+                          <CheckCircle2 className="h-3 w-3 mr-1" /> Verified
+                        </Badge>
+                      ) : (
+                        <Badge variant="destructive">
+                          <AlertCircle className="h-3 w-3 mr-1" /> Unverified
+                        </Badge>
+                      )
+                    ) : null}
+                  </div>
+                </div>
+
+                {/* Always show college/company if present */}
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">College</div>
+                  <div className="font-medium">{college || "—"}</div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-sm text-muted-foreground">Company</div>
+                  <div className="font-medium">{company || "—"}</div>
+                </div>
+
+                {status === "student" && (
+                  <div className="space-y-1">
+                    <div className="text-sm text-muted-foreground">Year</div>
+                    <div className="font-medium">{year || "—"}</div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <Link href="/adaptive-sheet">
+                <Button className="w-full">Open Adaptive Sheet</Button>
+              </Link>
+              <Link href="/paths">
+                <Button variant="secondary" className="w-full">
+                  Browse Learning Paths
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Coding Profiles / Links */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-lg">Coding Profiles</CardTitle>
+            <Link href="/profile" className="text-sm">
+              <Button variant="outline" size="sm">
+                Add/Update Links
               </Button>
             </Link>
           </CardHeader>
-          <CardContent className='space-y-3'>
-            <ProfileRow label='Status' value={status} />
-
-            {status === 'student' && (
-              <>
-                <ProfileRow label='College' value={college} />
-                <ProfileRow label='Year' value={year} />
-              </>
+          <CardContent className="flex flex-wrap gap-2">
+            {/* Codeforces link if handle present */}
+            {cf ? (
+              <a
+                href={`https://codeforces.com/profile/${encodeURIComponent(cf)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1 bg-muted hover:bg-muted/80 transition"
+              >
+                <span className="font-medium">Codeforces</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            ) : (
+              <Badge variant="outline">Add Codeforces</Badge>
             )}
 
-            {status === 'working' && (
-              <ProfileRow label='Company' value={company} />
-            )}
-
-            <ProfileRow
-              label={
-                <div className='flex items-center gap-1'>
-                  Codeforces Handle
-                  {cfVerified ? (
-                    <CheckCircle2 className='h-4 w-4 text-green-600' />
-                  ) : (
-                    <AlertCircle className='h-4 w-4 text-red-500' />
-                  )}
-                </div>
-              }
-              value={cf}
-            />
+            {/* Placeholders for other platforms; stored via profile edit in future */}
+            <Badge variant="outline">Add LeetCode</Badge>
+            <Badge variant="outline">Add CodeChef</Badge>
+            <Badge variant="outline">Add AtCoder</Badge>
+            <Badge variant="outline">Add GfG</Badge>
           </CardContent>
         </Card>
       </div>
     </main>
-  );
+  )
 }

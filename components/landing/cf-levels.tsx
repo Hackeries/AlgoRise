@@ -86,7 +86,7 @@ export default function CFLevels() {
             Follow the proven roadmap from{' '}
             <span className='font-bold font-mono text-gray-400'>Newbie</span>{' '}
             <span className='font-bold font-mono text-white'>→</span>{' '}
-            <span className='font-bold font-mono text-purple-400'>
+            <span className='font-bold font-mono text-purple-400'> 
               Candidate Master
             </span>
             . Master one level at a time with curated topics, key data

@@ -1,8 +1,10 @@
 'use client';
-import { useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { loadScript } from '@/lib/load-script';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { WalletCards } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -22,35 +24,79 @@ export function RazorpayCheckoutButton({
   label = 'Buy Now',
 }: Props) {
   const [loading, setLoading] = useState(false);
+  const [enabled, setEnabled] = useState<boolean | null>(null);
+  const [reason, setReason] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/razorpay/create-order', {
+          method: 'GET',
+          cache: 'no-store',
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!active) return;
+        if (res.ok && data?.enabled) {
+          setEnabled(true);
+        } else {
+          setEnabled(false);
+          setReason(data?.reason || 'Checkout unavailable.');
+        }
+      } catch {
+        if (active) {
+          setEnabled(false);
+          setReason('Network error while checking payment status.');
+        }
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const onClick = useCallback(async () => {
     try {
       setLoading(true);
 
       if (!amount || amount <= 0) {
-        alert('Amount is invalid. Please refresh the page and try again.');
+        toast({
+          title: 'Invalid amount',
+          description: 'Please refresh the page and try again.',
+          variant: 'destructive',
+        });
         return;
       }
 
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) {
-        alert('Please sign in to continue.');
+      if (enabled === false) {
+        toast({
+          title: 'Checkout unavailable',
+          description: reason || 'Payments are currently disabled.',
+          variant: 'destructive',
+        });
         return;
       }
 
-      // Prefill info (optional)
-      let name = '';
-      let email = '';
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name,email')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      name = profile?.full_name || user.user_metadata?.name || '';
-      email = profile?.email || user.email || '';
+      // Require sign-in but fail gracefully
+      let userId: string | null = null;
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        userId = user?.id ?? null;
+      } catch {
+        // ignore – may be running without Supabase config
+      }
+      if (!userId) {
+        toast({
+          title: 'Sign in required',
+          description: 'Please sign in to complete the purchase.',
+          variant: 'destructive',
+        });
+        window.location.href = '/auth/login';
+        return;
+      }
 
       // 1) Create order
       const orderRes = await fetch('/api/razorpay/create-order', {
@@ -59,17 +105,13 @@ export function RazorpayCheckoutButton({
         body: JSON.stringify({ amount, currency: 'INR', sheetCode }),
         cache: 'no-store',
       });
-      let orderJson: any = null;
-      try {
-        orderJson = await orderRes.json();
-      } catch {
-        // ignore, handled below
-      }
+      const orderJson = await orderRes.json().catch(() => null);
       if (!orderRes.ok || !orderJson?.order_id) {
-        alert(
-          orderJson?.error ||
-            'Unable to start payment right now. Please try again.'
-        );
+        toast({
+          title: 'Unable to start payment',
+          description: orderJson?.error || 'Please try again later.',
+          variant: 'destructive',
+        });
         return;
       }
 
@@ -78,19 +120,25 @@ export function RazorpayCheckoutButton({
         'https://checkout.razorpay.com/v1/checkout.js'
       );
       if (!ok || !window.Razorpay) {
-        alert(
-          'Payment SDK failed to load. Please check your connection and try again.'
-        );
+        toast({
+          title: 'Payment SDK failed to load',
+          description: 'Check your connection and try again.',
+          variant: 'destructive',
+        });
         return;
       }
 
       const { key, amount: orderAmount, currency, order_id } = orderJson;
       if (!key) {
-        alert('Payment key is not configured. Please contact support.');
+        toast({
+          title: 'Missing key',
+          description: 'Payment key is not configured.',
+          variant: 'destructive',
+        });
         return;
       }
 
-      const options = {
+      const rzp = new window.Razorpay({
         key,
         amount: orderAmount,
         currency,
@@ -100,7 +148,6 @@ export function RazorpayCheckoutButton({
           : 'Problem Sheet',
         order_id,
         theme: { color: '#2563EB' },
-        prefill: { name, email },
         notes: sheetCode ? { sheetCode } : undefined,
         handler: async (response: any) => {
           // 3) Verify
@@ -114,47 +161,84 @@ export function RazorpayCheckoutButton({
             }),
             cache: 'no-store',
           });
-          const verifyJson = await verifyRes.json();
-          if (verifyRes.ok && verifyJson.verified) {
+          const verifyJson = await verifyRes.json().catch(() => null);
+          if (verifyRes.ok && verifyJson?.verified) {
+            toast({
+              title: 'Payment successful',
+              description: 'Access unlocked. Redirecting…',
+            });
             window.location.href = '/paths';
           } else {
-            alert(
-              verifyJson?.error ||
-                "We couldn't verify your payment. If you were charged, please contact support."
-            );
+            toast({
+              title: 'Verification failed',
+              description:
+                verifyJson?.error ||
+                "We couldn't verify your payment. If you were charged, please contact support.",
+              variant: 'destructive',
+            });
           }
         },
         modal: {
           ondismiss: () => {
-            // user closed modal
+            toast({
+              title: 'Payment cancelled',
+              description: 'You closed the checkout.',
+            });
           },
         },
-      };
+      });
 
-      const rzp = new window.Razorpay(options);
       rzp.on?.('payment.failed', (resp: any) => {
         const msg =
           resp?.error?.description ||
           resp?.error?.reason ||
-          'Payment failed. Please try again or use a different method.';
-        alert(msg);
+          'Payment failed. Please try again.';
+        toast({
+          title: 'Payment failed',
+          description: msg,
+          variant: 'destructive',
+        });
       });
       rzp.open();
-    } catch {
-      alert('Something went wrong. Please try again.');
+    } catch (e: any) {
+      toast({
+        title: 'Something went wrong',
+        description: e?.message || 'Please try again.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
-  }, [amount, sheetCode]);
+  }, [amount, sheetCode, enabled, reason]);
 
   return (
     <Button
       type='button'
       onClick={onClick}
-      disabled={loading || !amount || amount <= 0}
+      disabled={loading || !amount || amount <= 0 || enabled === false}
       aria-busy={loading}
+      aria-label={
+        enabled === false ? 'Checkout unavailable' : `Buy now for ₹${amount}`
+      }
+      title={
+        enabled === false
+          ? reason ?? 'Checkout unavailable'
+          : `Buy now for ₹${amount}`
+      }
+      className={`w-full transition-all ${
+        enabled === false ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+      }`}
     >
-      {loading ? 'Processing...' : label}
+      {loading ? (
+        'Processing…'
+      ) : enabled === false ? (
+        'Unavailable'
+      ) : (
+        <span className='inline-flex items-center gap-2'>
+          <WalletCards className='h-4 w-4' aria-hidden='true' />
+          {label}
+        </span>
+      )}
     </Button>
   );
 }

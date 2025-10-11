@@ -915,8 +915,8 @@ export default function ContestsPage() {
               <Card>
                 <CardContent className="p-6">
                   <div className="text-center">
-                    <UsersIcon className="w-12 h-12 text-white/20 mx-auto mb-4" />
-                    <p className="text-white/60 mb-4">No private contests yet.</p>
+                    <UsersIcon className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-4">No private contests yet.</p>
                     <Button onClick={() => setCreateDialogOpen(true)}>
                       <PlusIcon className="w-4 h-4 mr-2" />
                       Create Your First Contest
@@ -1007,13 +1007,13 @@ export default function ContestsPage() {
                       </div>
 
                       {contest.starts_at && (
-                        <div className="mt-3 text-xs text-white/60 space-y-2">
+                        <div className="mt-3 text-xs text-muted-foreground space-y-2">
                           <div className="flex items-center gap-2">
                             <CalendarIcon className="w-3 h-3" />
                             <span>{new Date(contest.starts_at).toLocaleString()}</span>
                           </div>
-                          {contest.description && <div className="text-white/50">{contest.description}</div>}
-                          <div className="flex items-center gap-4 text-white/50">
+                          {contest.description && <div className="text-muted-foreground/80">{contest.description}</div>}
+                          <div className="flex items-center gap-4 text-muted-foreground/80">
                             <span>{contest.problem_count} Problems</span>
                             {contest.isHost && (
                               <span>
@@ -1022,7 +1022,7 @@ export default function ContestsPage() {
                             )}
                             <span>{contest.duration_minutes}m</span>
                           </div>
-                          <div className="flex items-center gap-2 text-white/50">
+                          <div className="flex items-center gap-2 text-muted-foreground/80">
                             <span>Mode: {contest.contest_mode}</span>
                             {contest.allow_late_join && <span>• Late Join</span>}
                           </div>

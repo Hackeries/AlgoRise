@@ -17,7 +17,10 @@ export async function POST(req: Request) {
     };
 
     if (!amount || amount <= 0) {
-      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'The amount provided is invalid or zero.' },
+        { status: 400 }
+      );
     }
 
     // Razorpay keys
@@ -25,7 +28,7 @@ export async function POST(req: Request) {
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
     if (!keyId || !keySecret) {
       return NextResponse.json(
-        { error: 'Razorpay env vars missing' },
+        { error: 'Razorpay API keys are missing from environment.' },
         { status: 500 }
       );
     }
@@ -48,7 +51,10 @@ export async function POST(req: Request) {
     } = await supabase.auth.getUser();
 
     if (userErr || !user) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'You must be logged in to make a purchase.' },
+        { status: 401 }
+      );
     }
 
     // Insert pending purchase
@@ -62,7 +68,7 @@ export async function POST(req: Request) {
     });
 
     if (upErr) {
-      console.error('[v0] purchases insert failed:', upErr.message);
+      console.error('Failed to save purchase in database:', upErr.message);
     }
 
     return NextResponse.json({
@@ -72,9 +78,9 @@ export async function POST(req: Request) {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || keyId,
     });
   } catch (err: any) {
-    console.error('[v0] create-order error:', err?.message);
+    console.error('Error while creating Razorpay order:', err?.message);
     return NextResponse.json(
-      { error: 'Failed to create order' },
+      { error: 'Unable to create payment order. Please try again.' },
       { status: 500 }
     );
   }

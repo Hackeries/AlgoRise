@@ -63,13 +63,13 @@ export default function ContestsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [formData, setFormData] = useState({
-    name: "",
+    name: "Custom Contest",
     description: "",
     startDate: "",
     startTime: "",
     problemCount: "5",
     ratingMin: "800",
-    ratingMax: "1600",
+    ratingMax: "3500",
     maxParticipants: "",
     allowLateJoin: true,
     contestMode: "practice",
@@ -162,13 +162,13 @@ export default function ContestsPage() {
 
   const resetForm = () => {
     setFormData({
-      name: "",
+      name: "Custom Contest",
       description: "",
       startDate: "",
       startTime: "",
       problemCount: "5",
       ratingMin: "800",
-      ratingMax: "1600",
+      ratingMax: "3500",
       maxParticipants: "",
       allowLateJoin: true,
       contestMode: "practice",
@@ -416,21 +416,19 @@ export default function ContestsPage() {
 
     const registrationClose = new Date(start.getTime() + 10 * 60 * 1000)
 
-    if (now < start) {
-      const diffMs = start.getTime() - now.getTime()
-      const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
-      if (daysLeft > 2) {
-        toast({
-          title: "Registration Not Open",
-          description: `${daysLeft} day(s) until registration opens. Please check back later.`,
-          variant: "destructive",
-        })
-        return
-      }
-      // ≤ 2 days left -> proceed to registration flow below
+    if (now < start &&start.getTime() - now.getTime() > 2 * 24 * 60 * 60 * 1000) {
+      const daysLeft = Math.ceil(
+        (start.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      toast({
+        title: 'Registration Not Open',
+        description: `${daysLeft} day(s) until registration opens. Please check back later.`,
+        variant: 'destructive',
+      });
+      return;
     }
 
-    if (now > registrationClose && !contest.allow_late_join) {
+    if (now >= registrationClose && !contest.allow_late_join) {
       toast({
         title: "Too Late!",
         description: "You missed the registration window! This is CP, not a casual meet 😎",
@@ -470,7 +468,7 @@ export default function ContestsPage() {
       }
     } else {
       // Already registered, join the contest
-      window.open(`/contests/${contest.id}/participate`, "_blank")
+      window.open(`/contests/${contest.id}/participate`, "_blank", "noopener")
     }
   }
 

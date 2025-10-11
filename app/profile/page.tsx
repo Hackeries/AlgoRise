@@ -319,8 +319,12 @@ export default function ProfilePage() {
       })
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || "Failed to save profile")
+        let errorMsg = 'Failed to save profile';
+        try {
+          const data = await res.json();
+          if (data?.error) errorMsg = data.error;
+        } catch {}
+        throw new Error(errorMsg);
       }
 
       toast({
@@ -330,7 +334,7 @@ export default function ProfilePage() {
 
       sessionStorage.setItem("profileCompleted", "true")
       sessionStorage.setItem("profile_just_completed", "true")
-      window.location.href = "/profile/overview" // go to profile summary
+      window.location.href = "/train"
     } catch (error: any) {
       toast({
         title: "Error",
@@ -379,51 +383,67 @@ export default function ProfilePage() {
 
   const selectedCollegeName = colleges.find((c) => c.id === selectedCollege)?.name || "Select college..."
   const selectedCompanyName = companies.find((c) => c.id === selectedCompany)?.name || "Select company..."
-  const isOtherCompany = selectedCompanyName === "Other (Please specify)"
+  const isOtherCompany =
+    companies.find(c => c.id === selectedCompany)?.name ===
+    'Other (Please specify)';
+
 
   return (
-    <main className="min-h-screen w-full bg-gradient-to-b from-background to-muted/20">
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+    <main className='min-h-screen w-full bg-gradient-to-b from-background to-muted/20'>
+      <div className='mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8'>
         {/* Header Section */}
-        <header className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Complete Your Profile</h1>
-          <p className="mt-3 text-base text-muted-foreground max-w-2xl">
+        <header className='mb-8 animate-in fade-in slide-in-from-top-4 duration-500'>
+          <h1 className='text-3xl font-bold tracking-tight sm:text-4xl'>
+            Complete Your Profile
+          </h1>
+          <p className='mt-3 text-base text-muted-foreground max-w-2xl'>
             {!cfVerified
-              ? "Verify your Codeforces handle to unlock all features and complete your profile setup."
-              : "Complete your profile information to get personalized recommendations."}
+              ? 'Verify your Codeforces handle to unlock all features and complete your profile setup.'
+              : 'Complete your profile information to get personalized recommendations.'}
           </p>
         </header>
 
-        <div className="grid gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+        <div className='grid gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100'>
           {/* CF Verification Card */}
           {!cfVerified ? (
-            <Card className="border-2 border-primary/20 transition-all hover:shadow-lg">
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  <AlertCircle className="h-6 w-6 text-primary" />
+            <Card className='border-2 border-primary/20 transition-all hover:shadow-lg'>
+              <CardHeader className='space-y-1'>
+                <CardTitle className='text-2xl flex items-center gap-2'>
+                  <AlertCircle className='h-6 w-6 text-primary' />
                   Codeforces Verification Required
                 </CardTitle>
-                <CardDescription className="text-base">
-                  Verify your Codeforces handle to access all features of AlgoRise.
+                <CardDescription className='text-base'>
+                  Verify your Codeforces handle to access all features of
+                  AlgoRise.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <CFVerificationCompilation onVerificationComplete={handleVerificationComplete} />
+                <CFVerificationCompilation
+                  onVerificationComplete={handleVerificationComplete}
+                />
               </CardContent>
             </Card>
           ) : (
-            <Card className="border-2 border-green-500/20 bg-green-500/5 transition-all">
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl flex items-center gap-2">
-                  <CheckCircle2 className="h-6 w-6 text-green-600" />
+            <Card className='border-2 border-green-500/20 bg-green-500/5 transition-all'>
+              <CardHeader className='space-y-1'>
+                <CardTitle className='text-2xl flex items-center gap-2'>
+                  <CheckCircle2 className='h-6 w-6 text-green-600' />
                   Codeforces Verified
                 </CardTitle>
-                <CardDescription className="text-base">
-                  Your handle <span className="font-semibold text-foreground">{cfHandle}</span> is verified.
+                <CardDescription className='text-base'>
+                  Your handle{' '}
+                  <span className='font-semibold text-foreground'>
+                    {cfHandle}
+                  </span>{' '}
+                  is verified.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="outline" onClick={handleChangeCFHandle} className="w-full sm:w-auto bg-transparent">
+                <Button
+                  variant='outline'
+                  onClick={handleChangeCFHandle}
+                  className='w-full sm:w-auto bg-transparent'
+                >
                   Change Codeforces Handle
                 </Button>
               </CardContent>
@@ -432,44 +452,49 @@ export default function ProfilePage() {
 
           {/* Profile Information Card - Only show if CF verified */}
           {cfVerified && (
-            <Card className="border-2 transition-all hover:shadow-lg">
-              <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl">Profile Information</CardTitle>
-                <CardDescription className="text-base">
+            <Card className='border-2 transition-all hover:shadow-lg'>
+              <CardHeader className='space-y-1'>
+                <CardTitle className='text-2xl'>Profile Information</CardTitle>
+                <CardDescription className='text-base'>
                   Tell us about yourself to get personalized recommendations.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className='space-y-6'>
                 {/* Status Selection */}
-                <div className="space-y-3">
-                  <Label htmlFor="status" className="text-base font-medium">
-                    I am a <span className="text-red-500">*</span>
+                <div className='space-y-3'>
+                  <Label htmlFor='status' className='text-base font-medium'>
+                    I am a <span className='text-red-500'>*</span>
                   </Label>
-                  <Select value={status || ""} onValueChange={(val) => setStatus(val as ProfileStatus)}>
-                    <SelectTrigger id="status" className="h-11">
-                      <SelectValue placeholder="Select your status" />
+                  <Select
+                    value={status || ''}
+                    onValueChange={val => setStatus(val as ProfileStatus)}
+                  >
+                    <SelectTrigger id='status' className='h-11'>
+                      <SelectValue placeholder='Select your status' />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="student">Student</SelectItem>
-                      <SelectItem value="working">Working Professional</SelectItem>
+                      <SelectItem value='student'>Student</SelectItem>
+                      <SelectItem value='working'>
+                        Working Professional
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* Student Fields */}
-                {status === "student" && (
+                {status === 'student' && (
                   <>
                     {/* Degree Type */}
-                    <div className="space-y-3">
-                      <Label htmlFor="degree" className="text-base font-medium">
-                        Degree Type <span className="text-red-500">*</span>
+                    <div className='space-y-3'>
+                      <Label htmlFor='degree' className='text-base font-medium'>
+                        Degree Type <span className='text-red-500'>*</span>
                       </Label>
                       <Select value={degreeType} onValueChange={setDegreeType}>
-                        <SelectTrigger id="degree" className="h-11">
-                          <SelectValue placeholder="Select your degree" />
+                        <SelectTrigger id='degree' className='h-11'>
+                          <SelectValue placeholder='Select your degree' />
                         </SelectTrigger>
                         <SelectContent>
-                          {DEGREE_TYPES.map((degree) => (
+                          {DEGREE_TYPES.map(degree => (
                             <SelectItem key={degree.value} value={degree.value}>
                               {degree.label}
                             </SelectItem>
@@ -479,57 +504,68 @@ export default function ProfilePage() {
                     </div>
 
                     {/* College Selection with Search */}
-                    <div className="space-y-3">
-                      <Label htmlFor="college" className="text-base font-medium">
-                        College/University <span className="text-red-500">*</span>
+                    <div className='space-y-3'>
+                      <Label
+                        htmlFor='college'
+                        className='text-base font-medium'
+                      >
+                        College/University{' '}
+                        <span className='text-red-500'>*</span>
                       </Label>
                       <Popover open={collegeOpen} onOpenChange={setCollegeOpen}>
                         <PopoverTrigger asChild>
                           <Button
-                            variant="outline"
-                            role="combobox"
+                            variant='outline'
+                            role='combobox'
                             aria-expanded={collegeOpen}
-                            className="w-full h-11 justify-between font-normal bg-transparent"
+                            className='w-full h-11 justify-between font-normal bg-transparent'
                           >
-                            <span className="truncate">{selectedCollegeName}</span>
-                            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            <span className='truncate'>
+                              {selectedCollegeName}
+                            </span>
+                            <Search className='ml-2 h-4 w-4 shrink-0 opacity-50' />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+                        <PopoverContent
+                          className='w-[var(--radix-popover-trigger-width)] p-0'
+                          align='start'
+                        >
                           <Command>
                             <CommandInput
-                              placeholder="Search colleges..."
+                              placeholder='Search colleges...'
                               value={collegeSearch}
-                              onValueChange={(val) => {
-                                setCollegeSearch(val)
-                                loadColleges(val)
+                              onValueChange={val => {
+                                setCollegeSearch(val);
+                                loadColleges(val);
                               }}
                             />
                             <CommandList>
                               <CommandEmpty>
-                                <div className="p-4 text-center space-y-3">
-                                  <p className="text-sm text-muted-foreground">No college found</p>
+                                <div className='p-4 text-center space-y-3'>
+                                  <p className='text-sm text-muted-foreground'>
+                                    No college found
+                                  </p>
                                   <Button
-                                    size="sm"
+                                    size='sm'
                                     onClick={() => {
-                                      setShowAddCollege(true)
-                                      setCollegeOpen(false)
+                                      setShowAddCollege(true);
+                                      setCollegeOpen(false);
                                     }}
-                                    className="w-full"
+                                    className='w-full'
                                   >
-                                    <Plus className="mr-2 h-4 w-4" />
+                                    <Plus className='mr-2 h-4 w-4' />
                                     Add New College
                                   </Button>
                                 </div>
                               </CommandEmpty>
                               <CommandGroup>
-                                {colleges.map((college) => (
+                                {colleges.map(college => (
                                   <CommandItem
                                     key={college.id}
                                     value={college.name}
                                     onSelect={() => {
-                                      setSelectedCollege(college.id)
-                                      setCollegeOpen(false)
+                                      setSelectedCollege(college.id);
+                                      setCollegeOpen(false);
                                     }}
                                   >
                                     {college.name}
@@ -540,41 +576,64 @@ export default function ProfilePage() {
                           </Command>
                         </PopoverContent>
                       </Popover>
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-muted-foreground">Can't find your college?</p>
+                      <div className='flex items-center justify-between'>
+                        <p className='text-sm text-muted-foreground'>
+                          Can't find your college?
+                        </p>
                         <Button
-                          variant="link"
-                          size="sm"
+                          variant='link'
+                          size='sm'
                           onClick={() => setShowAddCollege(true)}
-                          className="h-auto p-0 text-sm"
+                          className='h-auto p-0 text-sm'
                         >
-                          <Plus className="mr-1 h-3 w-3" />
+                          <Plus className='mr-1 h-3 w-3' />
                           Add it here
                         </Button>
                       </div>
                     </div>
 
                     {/* Year Selection - Smart based on degree */}
-                    <div className="space-y-3">
-                      <Label htmlFor="year" className="text-base font-medium">
-                        Year of Study <span className="text-red-500">*</span>
+                    <div className='space-y-3'>
+                      <Label htmlFor='year' className='text-base font-medium'>
+                        Year of Study <span className='text-red-500'>*</span>
                       </Label>
-                      <Select value={year} onValueChange={setYear} disabled={!degreeType}>
-                        <SelectTrigger id="year" className="h-11">
-                          <SelectValue placeholder={degreeType ? "Select your year" : "Select degree first"} />
+                      <Select
+                        value={year}
+                        onValueChange={setYear}
+                        disabled={!degreeType}
+                      >
+                        <SelectTrigger id='year' className='h-11'>
+                          <SelectValue
+                            placeholder={
+                              degreeType
+                                ? 'Select your year'
+                                : 'Select degree first'
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          {getAvailableYears().map((yearOption) => (
-                            <SelectItem key={yearOption.value} value={yearOption.value}>
+                          {getAvailableYears().map(yearOption => (
+                            <SelectItem
+                              key={yearOption.value}
+                              value={yearOption.value}
+                            >
                               {yearOption.label}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                       {degreeType && (
-                        <p className="text-sm text-muted-foreground">
-                          {DEGREE_TYPES.find((d) => d.value === degreeType)?.label} typically has{" "}
-                          {DEGREE_TYPES.find((d) => d.value === degreeType)?.years} years
+                        <p className='text-sm text-muted-foreground'>
+                          {
+                            DEGREE_TYPES.find(d => d.value === degreeType)
+                              ?.label
+                          }{' '}
+                          typically has{' '}
+                          {
+                            DEGREE_TYPES.find(d => d.value === degreeType)
+                              ?.years
+                          }{' '}
+                          years
                         </p>
                       )}
                     </div>
@@ -582,59 +641,69 @@ export default function ProfilePage() {
                 )}
 
                 {/* Working Professional Fields */}
-                {status === "working" && (
+                {status === 'working' && (
                   <>
-                    <div className="space-y-3">
-                      <Label htmlFor="company" className="text-base font-medium">
-                        Company <span className="text-red-500">*</span>
+                    <div className='space-y-3'>
+                      <Label
+                        htmlFor='company'
+                        className='text-base font-medium'
+                      >
+                        Company <span className='text-red-500'>*</span>
                       </Label>
                       <Popover open={companyOpen} onOpenChange={setCompanyOpen}>
                         <PopoverTrigger asChild>
                           <Button
-                            variant="outline"
-                            role="combobox"
+                            variant='outline'
+                            role='combobox'
                             aria-expanded={companyOpen}
-                            className="w-full h-11 justify-between font-normal bg-transparent"
+                            className='w-full h-11 justify-between font-normal bg-transparent'
                           >
-                            <span className="truncate">{selectedCompanyName}</span>
-                            <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            <span className='truncate'>
+                              {selectedCompanyName}
+                            </span>
+                            <Search className='ml-2 h-4 w-4 shrink-0 opacity-50' />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
+                        <PopoverContent
+                          className='w-(--radix-popover-trigger-width) p-0'
+                          align='start'
+                        >
                           <Command>
                             <CommandInput
-                              placeholder="Search companies..."
+                              placeholder='Search companies...'
                               value={companySearch}
-                              onValueChange={(val) => {
-                                setCompanySearch(val)
-                                loadCompanies(val)
+                              onValueChange={val => {
+                                setCompanySearch(val);
+                                loadCompanies(val);
                               }}
                             />
                             <CommandList>
                               <CommandEmpty>
-                                <div className="p-4 text-center space-y-3">
-                                  <p className="text-sm text-muted-foreground">No company found</p>
+                                <div className='p-4 text-center space-y-3'>
+                                  <p className='text-sm text-muted-foreground'>
+                                    No company found
+                                  </p>
                                   <Button
-                                    size="sm"
+                                    size='sm'
                                     onClick={() => {
-                                      setShowAddCompany(true)
-                                      setCompanyOpen(false)
+                                      setShowAddCompany(true);
+                                      setCompanyOpen(false);
                                     }}
-                                    className="w-full"
+                                    className='w-full'
                                   >
-                                    <Plus className="mr-2 h-4 w-4" />
+                                    <Plus className='mr-2 h-4 w-4' />
                                     Add New Company
                                   </Button>
                                 </div>
                               </CommandEmpty>
                               <CommandGroup>
-                                {companies.map((company) => (
+                                {companies.map(company => (
                                   <CommandItem
                                     key={company.id}
                                     value={company.name}
                                     onSelect={() => {
-                                      setSelectedCompany(company.id)
-                                      setCompanyOpen(false)
+                                      setSelectedCompany(company.id);
+                                      setCompanyOpen(false);
                                     }}
                                   >
                                     {company.name}
@@ -645,15 +714,17 @@ export default function ProfilePage() {
                           </Command>
                         </PopoverContent>
                       </Popover>
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-muted-foreground">Can't find your company?</p>
+                      <div className='flex items-center justify-between'>
+                        <p className='text-sm text-muted-foreground'>
+                          Can't find your company?
+                        </p>
                         <Button
-                          variant="link"
-                          size="sm"
+                          variant='link'
+                          size='sm'
                           onClick={() => setShowAddCompany(true)}
-                          className="h-auto p-0 text-sm"
+                          className='h-auto p-0 text-sm'
                         >
-                          <Plus className="mr-1 h-3 w-3" />
+                          <Plus className='mr-1 h-3 w-3' />
                           Add it here
                         </Button>
                       </div>
@@ -661,16 +732,19 @@ export default function ProfilePage() {
 
                     {/* Custom Company Input - Show if "Other" is selected */}
                     {isOtherCompany && (
-                      <div className="space-y-3">
-                        <Label htmlFor="custom-company" className="text-base font-medium">
-                          Company Name <span className="text-red-500">*</span>
+                      <div className='space-y-3'>
+                        <Label
+                          htmlFor='custom-company'
+                          className='text-base font-medium'
+                        >
+                          Company Name <span className='text-red-500'>*</span>
                         </Label>
                         <Input
-                          id="custom-company"
-                          placeholder="Enter your company name"
+                          id='custom-company'
+                          placeholder='Enter your company name'
                           value={customCompany}
-                          onChange={(e) => setCustomCompany(e.target.value)}
-                          className="h-11 text-base"
+                          onChange={e => setCustomCompany(e.target.value)}
+                          className='h-11 text-base'
                         />
                       </div>
                     )}
@@ -678,14 +752,22 @@ export default function ProfilePage() {
                 )}
 
                 {/* Save Button */}
-                <Button onClick={saveProfile} disabled={saving} className="w-full h-11 text-base" size="lg">
+                <Button
+                  onClick={saveProfile}
+                  disabled={saving}
+                  className='w-full h-11 text-base'
+                  size='lg'
+                >
                   {saving ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2
+                        className='mr-2 h-4 w-4 animate-spin'
+                        aria-label='Loading'
+                      />
                       Saving...
                     </>
                   ) : (
-                    "Save Profile & Continue"
+                    'Save Profile & Continue'
                   )}
                 </Button>
               </CardContent>
@@ -700,37 +782,42 @@ export default function ProfilePage() {
           <DialogHeader>
             <DialogTitle>Add New College</DialogTitle>
             <DialogDescription>
-              Enter the name of your college. It will be added to our database for future users.
+              Enter the name of your college. It will be added to our database
+              for future users.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="new-college">College Name</Label>
+          <div className='space-y-4 py-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='new-college'>College Name</Label>
               <Input
-                id="new-college"
-                placeholder="e.g. ABC Institute of Technology"
+                id='new-college'
+                placeholder='e.g. ABC Institute of Technology'
                 value={newCollegeName}
-                onChange={(e) => setNewCollegeName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    addNewCollege()
+                onChange={e => setNewCollegeName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addNewCollege();
                   }
                 }}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddCollege(false)}>
+            <Button variant='outline' onClick={() => setShowAddCollege(false)}>
               Cancel
             </Button>
             <Button onClick={addNewCollege} disabled={addingCollege}>
               {addingCollege ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2
+                    className='mr-2 h-4 w-4 animate-spin'
+                    aria-label='Loading'
+                  />
                   Adding...
                 </>
               ) : (
-                "Add College"
+                'Add College'
               )}
             </Button>
           </DialogFooter>
@@ -743,42 +830,46 @@ export default function ProfilePage() {
           <DialogHeader>
             <DialogTitle>Add New Company</DialogTitle>
             <DialogDescription>
-              Enter the name of your company. It will be added to our database for future users.
+              Enter the name of your company. It will be added to our database
+              for future users.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="new-company">Company Name</Label>
+          <div className='space-y-4 py-4'>
+            <div className='space-y-2'>
+              <Label htmlFor='new-company'>Company Name</Label>
               <Input
-                id="new-company"
-                placeholder="e.g. Tech Startup Inc."
+                id='new-company'
+                placeholder='e.g. Tech Startup Inc.'
                 value={newCompanyName}
-                onChange={(e) => setNewCompanyName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    addNewCompany()
+                onChange={e => setNewCompanyName(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    addNewCompany();
                   }
                 }}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddCompany(false)}>
+            <Button variant='outline' onClick={() => setShowAddCompany(false)}>
               Cancel
             </Button>
             <Button onClick={addNewCompany} disabled={addingCompany}>
               {addingCompany ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2
+                    className='mr-2 h-4 w-4 animate-spin'
+                    aria-label='Loading'
+                  />
                   Adding...
                 </>
               ) : (
-                "Add Company"
+                'Add Company'
               )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </main>
-  )
+  );
 }

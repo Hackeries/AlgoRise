@@ -273,7 +273,6 @@ export default function ContestDetailPage() {
               <span className="text-white/60">Problems</span>
               <span className="font-medium">{contest.problem_count}</span>
             </div>
-            {/* Rating Range is hidden for participants */}
             {contest.max_participants && (
               <div className="flex justify-between">
                 <span className="text-white/60">Max Participants</span>
@@ -360,15 +359,13 @@ export default function ContestDetailPage() {
                 })
               : contest.problems
             ).map((p) => {
-              const status = contest.my_submissions?.[p.id] // 'solved' | 'failed' | undefined
+              const status = contest.my_submissions?.[p.id]
               const isSolved = status === "solved"
               const isFailed = status === "failed"
               return (
                 <a
                   key={p.id}
                   href={`https://codeforces.com/problemset/problem/${p.contestId}/${p.index}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className="block"
                 >
                   <div

@@ -1,14 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trophy, Target, TrendingUp, Calendar, Users } from 'lucide-react';
+import { Trophy } from 'lucide-react';
 import CFVerificationTrigger from '@/components/auth/cf-verification-trigger';
-import ContestSection from './contests-section';
 import BannerLanding from './banner-landing';
-import { motion, AnimatePresence } from 'framer-motion';
+
+// Animated counter using requestAnimationFrame
+const AnimatedCounter = ({ value }: { value: number }) => {
+  const [display, setDisplay] = useState(0);
+  useEffect(() => {
+    const startTime = performance.now();
+    const duration = 1000;
+
+    const animate = (now: number) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      setDisplay(Math.floor(progress * value));
+      if (progress < 1) requestAnimationFrame(animate);
+    };
+    requestAnimationFrame(animate);
+  }, [value]);
+
+  return <span>{display.toLocaleString()}</span>;
+};
 
 interface UserStats {
   totalSolved: number;
@@ -16,23 +33,6 @@ interface UserStats {
   maxRating: number;
   tagDistribution: Record<string, number>;
 }
-
-// Animated counter component
-const AnimatedCounter = ({ value }: { value: number }) => {
-  const [display, setDisplay] = useState(0);
-  useEffect(() => {
-    let start = 0;
-    const duration = 1000;
-    const stepTime = Math.abs(Math.floor(duration / value));
-    const interval = setInterval(() => {
-      start += 1;
-      setDisplay(start);
-      if (start >= value) clearInterval(interval);
-    }, stepTime);
-    return () => clearInterval(interval);
-  }, [value]);
-  return <span>{display}</span>;
-};
 
 export default function ModernLanding() {
   const [userHandle, setUserHandle] = useState('');
@@ -50,37 +50,45 @@ export default function ModernLanding() {
       const response = await fetch(`/api/cf/profile?handle=${userHandle}`);
       if (!response.ok)
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      const text = await response.text();
-      const data = JSON.parse(text);
+      const data = await response.json();
       setUserStats(data.stats);
     } catch (error) {
-      console.error('Error fetching user stats:', error);
-      let errorMessage = 'Failed to fetch user data. Please try again.';
+      let msg = 'Failed to fetch user data. Please try again.';
       if (error instanceof Error) {
-        if (
-          error.message.includes('404') ||
-          error.message.includes('not found')
-        ) {
-          errorMessage = `User '${userHandle}' not found on Codeforces. Please check the handle and try again.`;
-        } else {
-          errorMessage = error.message;
-        }
+        if (error.message.includes('404'))
+          msg = `User '${userHandle}' not found on Codeforces.`;
+        else msg = error.message;
       }
-      setUserError(errorMessage);
+      setUserError(msg);
     } finally {
       setUserLoading(false);
     }
   };
 
   return (
-    <div className='min-h-screen dark:from-gray-900 dark:to-gray-800'>
-      {/* Landing Section */}
-      <section className='pt-10 pb-16 px-4'>
+    <div className='min-h-screen relative overflow-hidden'>
+      {/* ✨ Decorative Background Shapes */}
+      <div className='absolute top-[-100px] left-[-100px] w-[300px] h-[300px] bg-purple-400 rounded-full opacity-20 blur-3xl animate-blob' />
+      <div className='absolute bottom-[-80px] right-[-120px] w-[400px] h-[400px] bg-blue-400 rounded-full opacity-20 blur-3xl animate-blob animation-delay-2000' />
+
+      <section className='relative pt-10 pb-16 px-4 z-10'>
         <div className='max-w-6xl mx-auto text-center mb-10'>
-          <BannerLanding />
+          {/* Banner */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <BannerLanding />
+          </motion.div>
 
           {/* CF Verification */}
-          <div className='max-w-md mx-auto mt-12 mb-8'>
+          <motion.div
+            className='max-w-md mx-auto mt-12 mb-8'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
             <CFVerificationTrigger
               compact
               showTitle={false}
@@ -89,160 +97,121 @@ export default function ModernLanding() {
                 fetchUserStats();
               }}
             />
-          </div>
+          </motion.div>
 
-          {/* User Input */}
-          <div className='max-w-md mx-auto mb-12'>
-            <div className='flex gap-2'>
-              <Input
-                placeholder='Enter Codeforces handle'
-                value={userHandle}
-                onChange={e => setUserHandle(e.target.value)}
-                onKeyPress={e => e.key === 'Enter' && fetchUserStats()}
-                className='flex-1'
-              />
-              <Button onClick={fetchUserStats} disabled={userLoading}>
-                {userLoading ? 'Loading...' : 'Get Stats'}
-              </Button>
-            </div>
-          </div>
+          {/* Input */}
+          <motion.div
+            className='max-w-md mx-auto mb-12 flex gap-2'
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Input
+              placeholder='Enter Codeforces handle'
+              value={userHandle}
+              onChange={e => setUserHandle(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && fetchUserStats()}
+              className='flex-1'
+            />
+            <Button onClick={fetchUserStats} disabled={userLoading}>
+              {userLoading ? (
+                <motion.div
+                  className='h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin'
+                  aria-label='Loading'
+                />
+              ) : (
+                'Get Stats'
+              )}
+            </Button>
+          </motion.div>
 
-          {/* User Stats Card */}
+          {/* Error */}
           <AnimatePresence>
             {userError && (
               <motion.div
                 key='error'
-                initial={{ opacity: 0, y: -20 }}
+                initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className='max-w-4xl mx-auto mb-12'
+                exit={{ opacity: 0, y: -10 }}
+                className='max-w-3xl mx-auto mb-8'
               >
-                <Card className='bg-red-50 dark:bg-red-900/20 backdrop-blur-sm border border-red-200 dark:border-red-800'>
-                  <CardContent className='p-6'>
-                    <div className='text-center text-red-600 dark:text-red-400'>
-                      {userError}
-                    </div>
+                <Card className='bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 shadow-sm'>
+                  <CardContent className='p-4 text-center text-red-600 dark:text-red-400 font-medium'>
+                    {userError}
                   </CardContent>
                 </Card>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {userStats && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 1 }}
-              className='max-w-4xl mx-auto mb-12'
-            >
-              <Card className='bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-xl'>
-                <CardHeader>
-                  <CardTitle className='flex items-center gap-2'>
-                    <Trophy className='h-5 w-5 text-yellow-500' />
-                    {userHandle}'s Profile
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-                    <div className='text-center'>
-                      <div className='text-3xl font-bold text-blue-600'>
-                        <AnimatedCounter value={userStats.totalSolved} />
-                      </div>
-                      <div className='text-gray-600 dark:text-gray-400'>
-                        Problems Solved
-                      </div>
-                    </div>
-                    <div className='text-center'>
-                      <div className='text-3xl font-bold text-green-600'>
-                        <AnimatedCounter value={userStats.currentRating} />
-                      </div>
-                      <div className='text-gray-600 dark:text-gray-400'>
-                        Current Rating
-                      </div>
-                    </div>
-                    <div className='text-center'>
-                      <div className='text-3xl font-bold text-purple-600'>
-                        <AnimatedCounter value={userStats.maxRating} />
-                      </div>
-                      <div className='text-gray-600 dark:text-gray-400'>
-                        Max Rating
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
-        </div>
-      </section>
-
-      {/* Contest Section with hover/animations */}
-      <ContestSection />
-
-      {/* Features Section */}
-      <section className='py-40 px-4 relative overflow-hidden'>
-        {/* Animated gradient background */}
-        <div className='absolute inset-0 bg-gradient-to-r from-indigo-700 via-purple-600 to-transparent opacity-30 animate-pulse pointer-events-none'></div>
-
-        <div className='max-w-6xl mx-auto relative z-10'>
-          <div className='text-center mb-12'>
-            <h2 className='text-4xl font-bold mb-4'>
-              Why Choose <span className='text-yellow-400'>AlgoRise</span>?
-            </h2>
-            <p className='text-gray-600 dark:text-gray-400 max-w-2xl mx-auto'>
-              Built for competitive programmers who want to improve
-              systematically at your own pace
-            </p>
-          </div>
-
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 py-5'>
-            {[
-              {
-                icon: Target,
-                title: 'Adaptive Practice',
-                description:
-                  'Problems tailored to your skill level that evolve as you improve',
-              },
-              {
-                icon: TrendingUp,
-                title: 'Progress Analytics',
-                description:
-                  'Detailed insights into your solving patterns and improvement areas',
-              },
-              {
-                icon: Calendar,
-                title: 'Contest Tracking',
-                description:
-                  'Never miss a contest with real-time updates and reminders',
-              },
-              {
-                icon: Users,
-                title: 'Community',
-                description:
-                  'Join groups, compete with friends, and climb leaderboards',
-              },
-            ].map(feature => (
+          {/* Stats */}
+          <AnimatePresence>
+            {userStats && (
               <motion.div
-                key={feature.title}
-                className='block h-full'
-                whileHover={{ scale: 1.05, y: -5 }}
-                whileTap={{ scale: 0.95 }}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: 'easeInOut' }}
+                key='stats'
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, type: 'spring' }}
+                className='max-w-4xl mx-auto mb-12'
               >
-                <Card className='border-1 border-solid border-[#DCD9D4] backdrop-blur-sm shadow-lg text-center h-full hover:shadow-xl transition-all duration-300'>
-                  <CardContent className='p-6'>
-                    <feature.icon className='h-12 w-12 mx-auto mb-4 text-[#DCD9D4] drop-shadow-[0_0_15px_var(--primary)] animate-bounce' />
-                    <h3 className='font-semibold mb-2'>{feature.title}</h3>
-                    <p className='text-sm text-gray-600 dark:text-gray-400'>
-                      {feature.description}
-                    </p>
+                <Card className='bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-border/30 shadow-xl'>
+                  <CardHeader>
+                    <CardTitle className='flex items-center gap-2 justify-center text-xl font-semibold'>
+                      <Trophy className='h-5 w-5 text-yellow-500' />
+                      <span className='bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent'>
+                        {userHandle}'s Profile
+                      </span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <motion.div
+                      className='grid grid-cols-1 md:grid-cols-3 gap-6'
+                      initial='hidden'
+                      animate='visible'
+                      variants={{
+                        hidden: {},
+                        visible: { transition: { staggerChildren: 0.15 } },
+                      }}
+                    >
+                      {[
+                        {
+                          label: 'Problems Solved',
+                          color: 'text-blue-600',
+                          value: userStats.totalSolved,
+                        },
+                        {
+                          label: 'Current Rating',
+                          color: 'text-green-600',
+                          value: userStats.currentRating,
+                        },
+                        {
+                          label: 'Max Rating',
+                          color: 'text-purple-600',
+                          value: userStats.maxRating,
+                        },
+                      ].map(({ label, color, value }) => (
+                        <motion.div
+                          key={label}
+                          variants={{
+                            hidden: { opacity: 0, y: 15 },
+                            visible: { opacity: 1, y: 0 },
+                          }}
+                          className='text-center'
+                        >
+                          <div className={`text-3xl font-bold ${color}`}>
+                            <AnimatedCounter value={value} />
+                          </div>
+                          <div className='text-gray-600 dark:text-gray-400 mt-1'>
+                            {label}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </motion.div>
                   </CardContent>
                 </Card>
               </motion.div>
-            ))}
-          </div>
+            )}
+          </AnimatePresence>
         </div>
       </section>
     </div>

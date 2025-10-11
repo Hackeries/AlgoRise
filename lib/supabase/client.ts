@@ -6,12 +6,49 @@ export function createClient() {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     console.warn(
-      'Supabase environment variables not found. Please check your .env.local file.'
+      'Supabase env missing; returning disabled browser client (features requiring Supabase will be unavailable).'
     );
-    // Return a mock client or throw a more descriptive error
-    throw new Error(
-      'Supabase configuration missing. Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to your .env.local file.'
-    );
+    const disabledClient: any = {
+      auth: {
+        getUser: async () => ({ data: { user: null }, error: null }),
+        getSession: async () => ({ data: { session: null }, error: null }),
+        signInWithPassword: async () => ({
+          data: null,
+          error: new Error('Supabase disabled'),
+        }),
+        signUp: async () => ({
+          data: null,
+          error: new Error('Supabase disabled'),
+        }),
+        signOut: async () => ({ error: new Error('Supabase disabled') }),
+      },
+      from: () => {
+        const builder: any = {
+          select: () => builder,
+          insert: () => builder,
+          update: () => builder,
+          delete: () => builder,
+          eq: () => builder,
+          neq: () => builder,
+          gte: () => builder,
+          lte: () => builder,
+          is: () => builder,
+          order: () => builder,
+          range: () => builder,
+          single: async () => ({
+            data: null,
+            error: new Error('Supabase disabled'),
+          }),
+          maybeSingle: async () => ({
+            data: null,
+            error: new Error('Supabase disabled'),
+          }),
+        };
+        return builder;
+      },
+      rpc: async () => ({ data: null, error: new Error('Supabase disabled') }),
+    };
+    return disabledClient;
   }
 
   return createBrowserClient(supabaseUrl, supabaseAnonKey);

@@ -840,8 +840,8 @@ export default function ContestsPage() {
 
       {loading ? (
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white/60"></div>
-          <p className="mt-2 text-white/60">Loading contests...</p>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <p className="mt-2 text-muted-foreground">Loading contests...</p>
         </div>
       ) : (
         <div className="space-y-8">
@@ -871,7 +871,7 @@ export default function ContestsPage() {
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <CardTitle className="text-sm font-medium leading-tight">{contest.name}</CardTitle>
-                        <ExternalLinkIcon className="w-4 h-4 text-white/40 flex-shrink-0 ml-2 hover:text-white/60 transition-colors" />
+                        <ExternalLinkIcon className="w-4 h-4 text-muted-foreground flex-shrink-0 ml-2 hover:text-foreground transition-colors" />
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-xs">
@@ -885,18 +885,18 @@ export default function ContestsPage() {
                     <CardContent className="pt-0">
                       <div className="space-y-2 text-sm">
                         {contest.startTimeSeconds && (
-                          <div className="flex items-center gap-2 text-white/70">
+                          <div className="flex items-center gap-2 text-muted-foreground">
                             <CalendarIcon className="w-4 h-4" />
                             <span>{formatTime(contest.startTimeSeconds)}</span>
                           </div>
                         )}
-                        <div className="flex items-center gap-2 text-white/70">
+                        <div className="flex items-center gap-2 text-muted-foreground">
                           <ClockIcon className="w-4 h-4" />
                           <span>{formatDuration(contest.durationSeconds)}</span>
                         </div>
                         {contest.startTimeSeconds && (
                           <div className="flex items-center justify-between">
-                            <span className="text-white/60">Starts in:</span>
+                            <span className="text-muted-foreground">Starts in:</span>
                             <Badge variant="default" className="text-xs">
                               {getTimeUntilStart(contest.startTimeSeconds)}
                             </Badge>
@@ -921,8 +921,8 @@ export default function ContestsPage() {
               <Card>
                 <CardContent className="p-6">
                   <div className="text-center">
-                    <UsersIcon className="w-12 h-12 text-white/20 mx-auto mb-4" />
-                    <p className="text-white/60 mb-4">No private contests yet.</p>
+                    <UsersIcon className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
+                    <p className="text-muted-foreground mb-4">No private contests yet.</p>
                     <Button onClick={() => setCreateDialogOpen(true)}>
                       <PlusIcon className="w-4 h-4 mr-2" />
                       Create Your First Contest
@@ -1010,13 +1010,13 @@ export default function ContestsPage() {
                       </div>
 
                       {contest.starts_at && (
-                        <div className="mt-3 text-xs text-white/60 space-y-2">
+                        <div className="mt-3 text-xs text-muted-foreground space-y-2">
                           <div className="flex items-center gap-2">
                             <CalendarIcon className="w-3 h-3" />
                             <span>{new Date(contest.starts_at).toLocaleString()}</span>
                           </div>
-                          {contest.description && <div className="text-white/50">{contest.description}</div>}
-                          <div className="flex items-center gap-4 text-white/50">
+                          {contest.description && <div className="text-muted-foreground/80">{contest.description}</div>}
+                          <div className="flex items-center gap-4 text-muted-foreground/80">
                             <span>{contest.problem_count} Problems</span>
                             {contest.isHost && (
                               <span>
@@ -1025,7 +1025,7 @@ export default function ContestsPage() {
                             )}
                             <span>{contest.duration_minutes}m</span>
                           </div>
-                          <div className="flex items-center gap-2 text-white/50">
+                          <div className="flex items-center gap-2 text-muted-foreground/80">
                             <span>Mode: {contest.contest_mode}</span>
                             {contest.allow_late_join && <span>• Late Join</span>}
                           </div>

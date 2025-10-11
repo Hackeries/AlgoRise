@@ -1,11 +1,9 @@
 import Razorpay from 'razorpay';
 import { NextResponse } from 'next/server';
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase/server'; // <- use our server util
 
 export async function POST(req: Request) {
   try {
-    // Parse request
     const {
       amount,
       currency = 'INR',
@@ -18,58 +16,50 @@ export async function POST(req: Request) {
 
     if (!amount || amount <= 0) {
       return NextResponse.json(
-        { error: 'The amount provided is invalid or zero.' },
+        { error: 'Amount must be greater than zero.' },
         { status: 400 }
       );
     }
 
-    // Razorpay keys
     const keyId = process.env.RAZORPAY_KEY_ID;
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
     if (!keyId || !keySecret) {
       return NextResponse.json(
-        { error: 'Razorpay API keys are missing from environment.' },
+        {
+          error:
+            'Payment is not configured yet. Please contact support to enable checkout.',
+        },
         { status: 500 }
       );
     }
 
-    // Create Razorpay order
     const rp = new Razorpay({ key_id: keyId, key_secret: keySecret });
     const order = await rp.orders.create({
-      amount: Math.round(amount * 100), // amount in paise
+      amount: Math.round(amount * 100),
       currency,
       notes: sheetCode ? { sheetCode } : undefined,
     });
 
-    // Create Supabase server client
-    const supabase = createServerComponentClient({ cookies });
-
-    // Get current authenticated user
+    const supabase = await createClient();
     const {
       data: { user },
-      error: userErr,
     } = await supabase.auth.getUser();
-
-    if (userErr || !user) {
+    if (!user) {
       return NextResponse.json(
-        { error: 'You must be logged in to make a purchase.' },
+        { error: 'Please sign in to continue.' },
         { status: 401 }
       );
     }
 
-    // Insert pending purchase
-    const { error: upErr } = await supabase.from('purchases').insert({
+    // best-effort logging of created order
+    await supabase.from('purchases').insert({
       user_id: user.id,
       sheet_code: sheetCode || null,
-      amount: Math.round(amount * 100),
+      amount: order.amount,
       currency,
       order_id: order.id,
       status: 'created',
     });
-
-    if (upErr) {
-      console.error('Failed to save purchase in database:', upErr.message);
-    }
 
     return NextResponse.json({
       order_id: order.id,
@@ -77,10 +67,12 @@ export async function POST(req: Request) {
       currency: order.currency,
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || keyId,
     });
-  } catch (err: any) {
-    console.error('Error while creating Razorpay order:', err?.message);
+  } catch {
     return NextResponse.json(
-      { error: 'Unable to create payment order. Please try again.' },
+      {
+        error:
+          "We couldn't create your payment order. Please try again in a moment.",
+      },
       { status: 500 }
     );
   }

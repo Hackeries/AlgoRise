@@ -945,7 +945,7 @@ export default function ContestsPage() {
                       <div className="flex items-center justify-between mb-3">
                         <Badge
                           variant={
-                            contest.status === "running"
+                            contest.status === "running" || contest.status === "live"
                               ? "default"
                               : contest.status === "ended"
                                 ? "secondary"
@@ -953,7 +953,7 @@ export default function ContestsPage() {
                           }
                           className="text-xs"
                         >
-                          {contest.status}
+                          {contest.status === "draft" ? "upcoming" : contest.status}
                         </Badge>
                         <div className="flex gap-2">
                           {(() => {

@@ -14,7 +14,8 @@ export const config = {
      * - favicon.ico (favicon file)
      * - images - .svg, .png, .jpg, .jpeg, .gif, .webp
      * - exclude auth callback to avoid PKCE interference
+     * - exclude /api and common public assets/extensions from middleware
      */
-    "/((?!_next/static|_next/image|favicon.ico|auth/callback|.*.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|auth/callback|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|webmanifest)$).*)",
   ],
 }

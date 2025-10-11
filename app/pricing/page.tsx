@@ -1,6 +1,4 @@
 'use client';
-
-import { Button } from '@/components/ui/button';
 import RazorpayCheckoutButton from '@/components/payments/razorpay-checkout-button';
 import {
   Card,
@@ -99,15 +97,35 @@ export default function PricingPage() {
           Codeforces Level-Up Roadmap ⚡
         </h1>
         <p className='text-muted-foreground mt-4 text-lg max-w-2xl mx-auto leading-relaxed'>
-          Progress from{' '}
-          <span className='font-bold font-mono text-gray-500'>Newbie</span>{' '}
-          <span className='font-bold font-mono text-white'>→</span>{' '}
-          <span className='font-bold font-mono text-purple-500'>
-            Candidate Master
-          </span>{' '}
-          master one stage at a time with curated topic sheets designed for
-          your growth.
+          Progress from <span className='font-bold font-mono'>Newbie</span>
+          {' → '}
+          <span className='font-bold font-mono'>Candidate Master</span> one
+          stage at a time with curated topic sheets.
         </p>
+        {/* Inline curation overview */}
+        <div className='mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-left'>
+          <div className='rounded-lg border p-4'>
+            <h3 className='font-semibold mb-2'>How we curate</h3>
+            <p className='text-sm text-muted-foreground'>
+              We analyze thousands of CF problems, cluster by pattern and
+              difficulty, then hand-pick balanced sets for each level.
+            </p>
+          </div>
+          <div className='rounded-lg border p-4'>
+            <h3 className='font-semibold mb-2'>What you practice</h3>
+            <p className='text-sm text-muted-foreground'>
+              From basics (I/O, arrays, math) up to advanced topics (DP, graphs,
+              number theory, segment trees, LCA, bitmasking).
+            </p>
+          </div>
+          <div className='rounded-lg border p-4'>
+            <h3 className='font-semibold mb-2'>Weekly subscription</h3>
+            <p className='text-sm text-muted-foreground'>
+              20–30 fresh problems every week so you keep momentum and steadily
+              raise rating.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Pricing Cards */}
@@ -171,9 +189,15 @@ export default function PricingPage() {
                     />
                   </div>
                 ) : (
-                  <Button className='mt-6 w-full' disabled>
-                    Subscription Coming Soon
-                  </Button>
+                  <div className='mt-6'>
+                    <RazorpayCheckoutButton
+                      amount={
+                        (p.amountInr ?? 0) > 0 ? (p.amountInr as number) : 149
+                      }
+                      sheetCode={'subscription-monthly'}
+                      label='Buy Now'
+                    />
+                  </div>
                 )}
               </CardContent>
             </Card>

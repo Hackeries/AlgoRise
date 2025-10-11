@@ -1,57 +1,68 @@
-import Razorpay from "razorpay"
-import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import Razorpay from 'razorpay';
+import { NextResponse } from 'next/server';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
   try {
+    // Parse request
     const {
       amount,
-      currency = "INR",
+      currency = 'INR',
       sheetCode,
     } = (await req.json()) as {
-      amount: number
-      currency?: string
-      sheetCode?: string
-    }
+      amount: number;
+      currency?: string;
+      sheetCode?: string;
+    };
 
     if (!amount || amount <= 0) {
-      return NextResponse.json({ error: "Invalid amount" }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid amount' }, { status: 400 });
     }
 
-    const keyId = process.env.RAZORPAY_KEY_ID
-    const keySecret = process.env.RAZORPAY_KEY_SECRET
+    // Razorpay keys
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
     if (!keyId || !keySecret) {
-      return NextResponse.json({ error: "Razorpay env vars missing" }, { status: 500 })
+      return NextResponse.json(
+        { error: 'Razorpay env vars missing' },
+        { status: 500 }
+      );
     }
 
-    // Create order in Razorpay (amount in paise)
-    const rp = new Razorpay({ key_id: keyId, key_secret: keySecret })
+    // Create Razorpay order
+    const rp = new Razorpay({ key_id: keyId, key_secret: keySecret });
     const order = await rp.orders.create({
-      amount: Math.round(amount * 100),
+      amount: Math.round(amount * 100), // amount in paise
       currency,
       notes: sheetCode ? { sheetCode } : undefined,
-    })
+    });
 
-    // Persist pending purchase
-    const supabase = createClient()
+    // Create Supabase server client
+    const supabase = createServerComponentClient({ cookies });
+
+    // Get current authenticated user
     const {
       data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
+      error: userErr,
+    } = await supabase.auth.getUser();
+
+    if (userErr || !user) {
+      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const { error: upErr } = await supabase.from("purchases").insert({
+    // Insert pending purchase
+    const { error: upErr } = await supabase.from('purchases').insert({
       user_id: user.id,
       sheet_code: sheetCode || null,
       amount: Math.round(amount * 100),
       currency,
       order_id: order.id,
-      status: "created",
-    })
+      status: 'created',
+    });
+
     if (upErr) {
-      // We still return order to client, but log server-side for diagnostics
-      console.error("[v0] purchases insert failed:", upErr.message)
+      console.error('[v0] purchases insert failed:', upErr.message);
     }
 
     return NextResponse.json({
@@ -59,9 +70,12 @@ export async function POST(req: Request) {
       amount: order.amount,
       currency: order.currency,
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || keyId,
-    })
+    });
   } catch (err: any) {
-    console.error("[v0] create-order error:", err?.message)
-    return NextResponse.json({ error: "Failed to create order" }, { status: 500 })
+    console.error('[v0] create-order error:', err?.message);
+    return NextResponse.json(
+      { error: 'Failed to create order' },
+      { status: 500 }
+    );
   }
 }

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, AlertCircle, ExternalLink } from "lucide-react"
+import LinksEditor from "@/components/profile/links-editor"
 
 // Fetch profile data from API (SSR-safe)
 async function getProfile() {
@@ -60,6 +61,10 @@ export default async function ProfileOverviewPage() {
   const company = data?.company_name || data?.company || data?.custom_company || null
   const cf = data?.cf_handle || data?.cf || null
   const cfVerified = data?.cf_verified || false
+  const lc = data?.leetcode_handle || null
+  const cc = data?.codechef_handle || null
+  const ac = data?.atcoder_handle || null
+  const gfg = data?.gfg_handle || null
 
   // Compute simple completion score (used for UI only)
   const pieces = [!!cfVerified, status === "student" ? !!college && !!year : status === "working" ? !!company : false]
@@ -171,14 +176,12 @@ export default async function ProfileOverviewPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg">Coding Profiles</CardTitle>
-            <Link href="/profile" className="text-sm">
-              <Button variant="outline" size="sm">
-                Add/Update Links
-              </Button>
-            </Link>
+            <LinksEditor
+              defaultValues={{ leetcode: lc || "", codechef: cc || "", atcoder: ac || "", gfg: gfg || "" }}
+            />
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
-            {/* Codeforces link if handle present */}
+            {/* Codeforces */}
             {cf ? (
               <a
                 href={`https://codeforces.com/profile/${encodeURIComponent(cf)}`}
@@ -193,11 +196,61 @@ export default async function ProfileOverviewPage() {
               <Badge variant="outline">Add Codeforces</Badge>
             )}
 
-            {/* Placeholders for other platforms; stored via profile edit in future */}
-            <Badge variant="outline">Add LeetCode</Badge>
-            <Badge variant="outline">Add CodeChef</Badge>
-            <Badge variant="outline">Add AtCoder</Badge>
-            <Badge variant="outline">Add GfG</Badge>
+            {lc ? (
+              <a
+                href={`https://leetcode.com/${encodeURIComponent(lc)}/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1 bg-muted hover:bg-muted/80 transition"
+              >
+                <span className="font-medium">LeetCode</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            ) : (
+              <Badge variant="outline">Add LeetCode</Badge>
+            )}
+
+            {cc ? (
+              <a
+                href={`https://www.codechef.com/users/${encodeURIComponent(cc)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1 bg-muted hover:bg-muted/80 transition"
+              >
+                <span className="font-medium">CodeChef</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            ) : (
+              <Badge variant="outline">Add CodeChef</Badge>
+            )}
+
+            {ac ? (
+              <a
+                href={`https://atcoder.jp/users/${encodeURIComponent(ac)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1 bg-muted hover:bg-muted/80 transition"
+              >
+                <span className="font-medium">AtCoder</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            ) : (
+              <Badge variant="outline">Add AtCoder</Badge>
+            )}
+
+            {gfg ? (
+              <a
+                href={`https://auth.geeksforgeeks.org/user/${encodeURIComponent(gfg)}/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 rounded-full px-3 py-1 bg-muted hover:bg-muted/80 transition"
+              >
+                <span className="font-medium">GfG</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            ) : (
+              <Badge variant="outline">Add GfG</Badge>
+            )}
           </CardContent>
         </Card>
       </div>

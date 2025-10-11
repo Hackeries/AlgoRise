@@ -126,8 +126,35 @@ export default function ContestDetailPage() {
   }
 
   const handleRegister = async () => {
+    if (!contest) return
     setRegistering(true)
     try {
+      const now = new Date()
+      const start = new Date(contest.starts_at)
+      const registrationClose = new Date(start.getTime() - 10 * 60 * 1000)
+
+      // Block registrations 10 minutes before start
+      if (now < start && now >= registrationClose) {
+        toast({
+          title: "Registration Closed",
+          description: "Registration closes 10 minutes before the contest start.",
+          variant: "destructive",
+        })
+        setRegistering(false)
+        return
+      }
+
+      // After start, allow registration only if late join is enabled
+      if (now >= start && !contest.allow_late_join) {
+        toast({
+          title: "Registration Closed",
+          description: "Registration closed when the contest started.",
+          variant: "destructive",
+        })
+        setRegistering(false)
+        return
+      }
+
       const response = await fetch(`/api/contests/${params.id}/join`, {
         method: "POST",
       })
@@ -163,8 +190,6 @@ export default function ContestDetailPage() {
 
     const now = new Date()
     const start = new Date(contest.starts_at)
-    const end = new Date(contest.ends_at)
-    const registrationClose = new Date(start.getTime() + 10 * 60 * 1000)
 
     if (now < start) {
       toast({
@@ -175,10 +200,11 @@ export default function ContestDetailPage() {
       return
     }
 
-    if (now > registrationClose && !contest.allow_late_join) {
+    // After start: join allowed if user pre-registered or late-join is enabled
+    if (!isRegistered && !contest.allow_late_join) {
       toast({
-        title: "Registration Closed",
-        description: "Registration window has closed.",
+        title: "Registration Required",
+        description: "You needed to register before the contest started.",
         variant: "destructive",
       })
       return

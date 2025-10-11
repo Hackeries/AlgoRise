@@ -414,18 +414,31 @@ export default function ContestsPage() {
       return
     }
 
-    const registrationClose = new Date(start.getTime() + 10 * 60 * 1000)
-
-    if (now >= registrationClose && !contest.allow_late_join) {
-      toast({
-        title: "Registration Closed",
-        description: "Registration window has closed.",
-        variant: "destructive",
-      })
-      return
-    }
+    // Registration closes 10 minutes BEFORE start (Codeforces-style)
+    const registrationClose = new Date(start.getTime() - 10 * 60 * 1000)
 
     if (!contest.isRegistered) {
+      // Not registered yet
+      // If contest already started and late join is not allowed -> block new registrations
+      if (now >= start && !contest.allow_late_join) {
+        toast({
+          title: "Registration Closed",
+          description: "Registration closed when the contest started.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // If before start but within 10 minutes window -> block registrations
+      if (now < start && now >= registrationClose) {
+        toast({
+          title: "Registration Closed",
+          description: "Registration closes 10 minutes before the contest start.",
+          variant: "destructive",
+        })
+        return
+      }
+
       try {
         const response = await fetch(`/api/contests/${contest.id}/join`, {
           method: "POST",
@@ -455,7 +468,8 @@ export default function ContestsPage() {
       }
     } else {
       // Already registered
-      if (now >= start || contest.allow_late_join) {
+      if (now >= start) {
+        // If registered before start, allow joining any time after start
         window.open(`/contests/${contest.id}/participate`, "_blank", "noopener")
       } else {
         toast({

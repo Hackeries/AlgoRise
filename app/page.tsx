@@ -2,6 +2,7 @@ import PlatformFeatures from '@/components/landing/platform-features';
 import HowItWorks from '@/components/landing/how-it-works';
 import ModernLanding from '@/components/landing-hero';
 import PixelBlast from '@/components/bg/pixelblast';
+import CFLevels from '@/components/landing/cf-levels';
 
 export default function VisualizersPage() {
   return (
@@ -12,13 +13,24 @@ export default function VisualizersPage() {
       </div>
 
       {/* Hero Section */}
-      <section className='relative z-10'>
+      <section className='relative z-5 py-1' aria-label='Hero Section'>
         <ModernLanding />
       </section>
 
-      <HowItWorks />
+      {/* Codeforces Levels Section */}
+      <section className='relative z-5 py-1' aria-label='Codeforces Levels'>
+        <CFLevels />
+      </section>
 
-      <PlatformFeatures />
+      {/* How It Works Section */}
+      <section className='relative z-5 py-1' aria-label='How It Works'>
+        <HowItWorks />
+      </section>
+
+      {/* Platform Features Section */}
+      <section className='relative z-5 py-1' aria-label='Platform Features'>
+        <PlatformFeatures />
+      </section>
     </main>
   );
 }

@@ -17,7 +17,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/lib/auth/context"
 import { useSearch } from "@/hooks/use-search"
-import { Bell, User, LogOut, Moon, Sun, Search, X } from "lucide-react"
+import { Bell, User, LogOut, Moon, Sun, Search, X, CreditCard } from "lucide-react"
 import { useTheme } from "next-themes"
 
 interface Notification {
@@ -307,6 +307,15 @@ export function Header() {
               <DropdownMenuItem asChild>
                 <Link href="/profile/overview" className="flex items-center gap-2 text-foreground">
                   <User className="h-4 w-4" /> Profile
+                </Link>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator className="bg-border" />
+
+              {/* Subscriptions entry pointing to /pricing */}
+              <DropdownMenuItem asChild>
+                <Link href="/pricing" className="flex items-center gap-2 text-foreground">
+                  <CreditCard className="h-4 w-4" /> Subscriptions
                 </Link>
               </DropdownMenuItem>
 

@@ -236,3 +236,11 @@
     cursor: pointer;
   }
 }
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(255,255,255,0.1); }
+  50% { box-shadow: 0 0 25px rgba(255,255,255,0.2); }
+}
+.hover-glow:hover {
+  animation: glow 1.5s infinite ease-in-out;
+}

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { ChevronDown, ChevronUp, HelpCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { ReportBugButton } from "@/components/report-bug-button"
+// import { ReportBugButton } from "@/components/report-bug-button"
 
 interface FAQ {
   question: string
@@ -207,35 +207,39 @@ export default function FAQsPage() {
   const activeCategoryData = faqCategories.find((cat) => cat.name === activeCategory)
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className='min-h-screen bg-background'>
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-pink-600/10 border-b border-border">
-        <div className="max-w-5xl mx-auto px-4 py-12 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <HelpCircle className="w-8 h-8 text-primary" />
+      <div className='bg-gradient-to-br from-blue-600/10 via-purple-600/10 to-pink-600/10 border-b border-border'>
+        <div className='max-w-5xl mx-auto px-4 py-12 text-center'>
+          <div className='inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4'>
+            <HelpCircle className='w-8 h-8 text-primary' />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <h1 className='text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent'>
             Frequently Asked Questions
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Find answers to common questions about AlgoRise. Can't find what you're looking for? Feel free to report a
-            bug or contact our support team.
+          <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>
+            Find answers to common questions about AlgoRise. Can't find what
+            you're looking for? Feel free to report a bug or contact our support
+            team.
           </p>
         </div>
       </div>
 
       {/* FAQ Content */}
-      <div className="max-w-5xl mx-auto px-4 py-12">
+      <div className='max-w-5xl mx-auto px-4 py-12'>
         {/* Category Tabs */}
-        <div className="flex flex-wrap gap-2 mb-8 justify-center">
-          {faqCategories.map((category) => (
+        <div className='flex flex-wrap gap-2 mb-8 justify-center'>
+          {faqCategories.map(category => (
             <Button
               key={category.name}
-              variant={activeCategory === category.name ? "default" : "outline"}
+              variant={activeCategory === category.name ? 'default' : 'outline'}
               onClick={() => setActiveCategory(category.name)}
               className={cn(
-                "transition-all",
-                activeCategory === category.name ? "bg-primary text-primary-foreground shadow-lg" : "hover:bg-muted/50",
+                'transition-all duration-200 transform', // smooth transitions & scale
+                'text-foreground',
+                activeCategory === category.name
+                  ? 'bg-primary text-primary-foreground shadow-lg'
+                  : 'hover:bg-primary/10 hover:text-foreground hover:shadow-md hover:scale-105'
               )}
             >
               {category.name}
@@ -244,62 +248,59 @@ export default function FAQsPage() {
         </div>
 
         {/* FAQ Items */}
-        <div className="space-y-3">
+        <div className='space-y-3'>
           {activeCategoryData?.faqs.map((faq, index) => {
-            const isExpanded = expandedQuestions.has(faq.question)
+            const isExpanded = expandedQuestions.has(faq.question);
             return (
               <div
                 key={index}
-                className="bg-card border border-border rounded-lg overflow-hidden hover:border-primary/50 transition-all"
+                className='bg-card border border-border rounded-lg overflow-hidden transition-all duration-200 hover:border-primary/50 hover:shadow-lg'
               >
                 <button
                   onClick={() => toggleQuestion(faq.question)}
-                  className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-muted/30 transition-colors"
+                  className='w-full px-6 py-4 flex items-center justify-between text-left bg-card text-foreground hover:bg-card/90 transition-colors duration-200'
                 >
-                  <span className="font-semibold text-foreground pr-4">{faq.question}</span>
+                  <span className='font-semibold pr-4'>{faq.question}</span>
                   {isExpanded ? (
-                    <ChevronUp className="w-5 h-5 text-primary flex-shrink-0" />
+                    <ChevronUp className='w-5 h-5 text-primary flex-shrink-0' />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                    <ChevronDown className='w-5 h-5 text-primary flex-shrink-0' />
                   )}
                 </button>
                 {isExpanded && (
-                  <div className="px-6 pb-4 text-muted-foreground">
+                  <div className='px-6 pb-4 text-foreground'>
                     {Array.isArray(faq.answer) ? (
-                      <ul className="space-y-2">
+                      <ul className='space-y-2'>
                         {faq.answer.map((line, i) => (
-                          <li key={i} className="leading-relaxed">
+                          <li key={i} className='leading-relaxed'>
                             {line}
                           </li>
                         ))}
                       </ul>
                     ) : (
-                      <p className="leading-relaxed">{faq.answer}</p>
+                      <p className='leading-relaxed'>{faq.answer}</p>
                     )}
                   </div>
                 )}
               </div>
-            )
+            );
           })}
         </div>
 
         {/* Still Need Help Section */}
-        <div className="mt-12 p-8 bg-gradient-to-br from-blue-600/5 via-purple-600/5 to-pink-600/5 border border-border rounded-xl text-center">
-          <h2 className="text-2xl font-bold mb-3">Still need help?</h2>
-          <p className="text-muted-foreground mb-6">
-            If you couldn't find the answer you were looking for, we're here to help!
+        <div className='mt-12 p-8 bg-gradient-to-br from-blue-600/5 via-purple-600/5 to-pink-600/5 border border-border rounded-xl text-center'>
+          <h2 className='text-2xl font-bold mb-3'>Still need help?</h2>
+          <p className='text-muted-foreground mb-6'>
+            If you couldn't find the answer you were looking for, we're here to
+            help!
           </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <ReportBugButton
-              variant="default"
-              className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-            />
-            <Button variant="outline" asChild>
-              <a href="mailto:support@algorise.com">Contact Support</a>
+          <div className='flex flex-wrap gap-4 justify-center'>
+            <Button variant='outline' asChild>
+              <a href='mailto:support@algorise.com'>Contact Support</a>
             </Button>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

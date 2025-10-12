@@ -1,22 +1,25 @@
 {
-  "name": "AlgoRise",
+  "name": "AlgoRise - Master Competitive Programming",
   "short_name": "AlgoRise",
+  "description": "Practice that adapts. Compete when it counts. Master algorithms and data structures with personalized learning paths.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0a0a0a",
+  "background_color": "#0a0a0a",
+  "theme_color": "#06B6D4",
   "icons": [
     {
-      "src": "/placeholder-logo.png",
+      "src": "/icon-192.jpg",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/jpeg",
+      "purpose": "any maskable"
     },
     {
-      "src": "/placeholder-logo.png",
+      "src": "/icon-512.jpg",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/jpeg",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "categories": ["education", "productivity"],
+  "orientation": "portrait-primary"
 }

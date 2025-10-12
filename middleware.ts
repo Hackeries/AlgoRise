@@ -1,9 +1,12 @@
 import { updateSession } from "@/lib/supabase/middleware"
 import type { NextRequest } from "next/server"
 
-export async function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   return await updateSession(request)
 }
+
+// Also export as named export for compatibility
+export { middleware }
 
 export const config = {
   matcher: [

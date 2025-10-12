@@ -10,10 +10,17 @@ export interface SearchResult {
   metadata?: Record<string, any>;
   relevanceScore?: number;
 }
+
 export interface SearchSuggestion {
   suggestion: string;
   type: string;
   frequency: number;
+}
+
+export interface SearchOptions {
+  categories?: string[];
+  limit?: number;
+  includeMetadata?: boolean;
 }
 
 export interface SearchHookReturn {
@@ -27,12 +34,13 @@ export interface SearchHookReturn {
   search: (query: string, options?: SearchOptions) => Promise<void>;
   getSuggestions: (query: string) => Promise<void>;
   clearResults: () => void;
-}
-
-export interface SearchOptions {
-  categories?: string[];
-  limit?: number;
-  includeMetadata?: boolean;
+  categorizedResults: {
+    contests: SearchResult[];
+    groups: SearchResult[];
+    problems: SearchResult[];
+    users: SearchResult[];
+    handles: SearchResult[];
+  };
 }
 
 export function useSearch(): SearchHookReturn {
@@ -44,7 +52,6 @@ export function useSearch(): SearchHookReturn {
   const [totalResults, setTotalResults] = useState(0);
   const [searchTime, setSearchTime] = useState(0);
 
-  // Debounce and cache for suggestions
   const suggestionsCache = useRef<Map<string, SearchSuggestion[]>>(new Map());
   const searchCache = useRef<Map<string, SearchResult[]>>(new Map());
   const debounceTimeouts = useRef<Map<string, NodeJS.Timeout>>(new Map());
@@ -63,10 +70,9 @@ export function useSearch(): SearchHookReturn {
       setQuery(searchQuery);
 
       try {
-        // Check cache first
         const cacheKey = `${searchQuery}-${JSON.stringify(options)}`;
         if (searchCache.current.has(cacheKey)) {
-          const cachedResults = searchCache.current.get(cacheKey)!;
+          const cachedResults = searchCache.current.get(cacheKey) || [];
           setResults(cachedResults);
           setTotalResults(cachedResults.length);
           setLoading(false);
@@ -82,35 +88,29 @@ export function useSearch(): SearchHookReturn {
           ...(options.includeMetadata && { metadata: 'true' }),
         });
 
-        const response = await fetch(`/api/search?${params}`, {
+        const response = await fetch(`/api/search?${params.toString()}`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
         });
 
-        if (!response.ok) {
-          throw new Error('Search request failed');
-        }
+        if (!response.ok) throw new Error('Search request failed');
 
         const data = await response.json();
+        const safeResults: SearchResult[] = Array.isArray(data.results)
+          ? data.results
+          : [];
 
-        setResults(data.results);
-        setTotalResults(data.totalResults);
-        setSearchTime(data.searchTime);
+        setResults(safeResults);
+        setTotalResults(data.totalResults ?? safeResults.length);
+        setSearchTime(data.searchTime ?? 0);
 
-        // Cache results for 5 minutes
-        searchCache.current.set(cacheKey, data.results);
-        setTimeout(
-          () => {
-            searchCache.current.delete(cacheKey);
-          },
-          5 * 60 * 1000
-        );
+        searchCache.current.set(cacheKey, safeResults);
+        setTimeout(() => searchCache.current.delete(cacheKey), 5 * 60 * 1000); // 5 min cache
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Search failed');
         setResults([]);
         setTotalResults(0);
+        setSearchTime(0);
       } finally {
         setLoading(false);
       }
@@ -124,53 +124,45 @@ export function useSearch(): SearchHookReturn {
       return;
     }
 
-    // Clear previous debounce timeout
     const existingTimeout = debounceTimeouts.current.get('suggestions');
-    if (existingTimeout) {
-      clearTimeout(existingTimeout);
-    }
+    if (existingTimeout) clearTimeout(existingTimeout);
 
-    // Debounce suggestions
     const timeoutId = setTimeout(async () => {
       try {
-        // Check cache first
         if (suggestionsCache.current.has(searchQuery)) {
-          setSuggestions(suggestionsCache.current.get(searchQuery)!);
+          setSuggestions(suggestionsCache.current.get(searchQuery) || []);
           return;
         }
 
-        const params = new URLSearchParams({
-          q: searchQuery,
-          limit: '5',
-        });
+        const params = new URLSearchParams({ q: searchQuery, limit: '5' });
+        const response = await fetch(
+          `/api/search/suggestions?${params.toString()}`,
+          {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
 
-        const response = await fetch(`/api/search/suggestions?${params}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Suggestions request failed');
-        }
+        if (!response.ok) throw new Error('Suggestions request failed');
 
         const data = await response.json();
-        setSuggestions(data.suggestions);
+        const safeSuggestions: SearchSuggestion[] = Array.isArray(
+          data.suggestions
+        )
+          ? data.suggestions
+          : [];
 
-        // Cache suggestions for 10 minutes
-        suggestionsCache.current.set(searchQuery, data.suggestions);
+        setSuggestions(safeSuggestions);
+        suggestionsCache.current.set(searchQuery, safeSuggestions);
         setTimeout(
-          () => {
-            suggestionsCache.current.delete(searchQuery);
-          },
+          () => suggestionsCache.current.delete(searchQuery),
           10 * 60 * 1000
-        );
+        ); // 10 min cache
       } catch (err) {
         console.error('Failed to get suggestions:', err);
         setSuggestions([]);
       }
-    }, 300); // 300ms debounce
+    }, 300);
 
     debounceTimeouts.current.set('suggestions', timeoutId);
   }, []);
@@ -184,16 +176,17 @@ export function useSearch(): SearchHookReturn {
     setError(null);
   }, []);
 
-  // Categorized results for easier frontend consumption
   const categorizedResults = useMemo(() => {
+    const safeResults = results || [];
     return {
-      contests: results.filter(r => r.type === 'contest'),
-      groups: results.filter(r => r.type === 'group'),
-      problems: results.filter(r => r.type === 'problem'),
-      users: results.filter(r => r.type === 'user'),
-      handles: results.filter(r => r.type === 'handle'),
+      contests: safeResults.filter(r => r.type === 'contest'),
+      groups: safeResults.filter(r => r.type === 'group'),
+      problems: safeResults.filter(r => r.type === 'problem'),
+      users: safeResults.filter(r => r.type === 'user'),
+      handles: safeResults.filter(r => r.type === 'handle'),
     };
   }, [results]);
+
   return {
     results,
     suggestions,
@@ -206,5 +199,5 @@ export function useSearch(): SearchHookReturn {
     getSuggestions,
     clearResults,
     categorizedResults,
-  } as SearchHookReturn & { categorizedResults: typeof categorizedResults };
+  };
 }

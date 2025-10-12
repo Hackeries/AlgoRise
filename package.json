@@ -1,6 +1,5 @@
 {
-  "$schema": "./schema/package.schema.json",
-  "name": "algorise",
+  "name": "myalgorise",
   "version": "0.1.0",
   "private": true,
   "scripts": {

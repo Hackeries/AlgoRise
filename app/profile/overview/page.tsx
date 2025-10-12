@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle2, AlertCircle, ExternalLink } from "lucide-react"
 import LinksEditor from "@/components/profile/links-editor"
-import { ReportBugButton } from "@/components/report-bug-button"
+// import { ReportBugButton } from "@/components/report-bug-button"
 
 function formatYear(year: string | null): string {
   if (!year) return "—"
@@ -133,7 +133,7 @@ export default async function ProfileOverviewPage() {
             <h1 className="text-3xl font-bold tracking-tight">Profile Overview</h1>
             <p className="text-muted-foreground mt-1">View and manage your profile information</p>
           </div>
-          <ReportBugButton variant="outline" section="Profile" />
+          {/* <ReportBugButton variant="outline" section="Profile" /> */}
         </div>
 
         {/* Progress / Strength */}

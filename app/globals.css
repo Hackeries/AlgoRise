@@ -6,7 +6,7 @@
 :root {
   /* Refined palette for CP audience: crisp neutrals, brand blue primary, teal accent */
   --background: oklch(0.995 0 0); /* almost white */
-  --foreground: oklch(0.22 0 0); /* slate-900 ink */
+  --foreground: oklch(0.02 0 0); /* near-black */
 
   --card: var(--background);
   --card-foreground: var(--foreground);
@@ -235,4 +235,17 @@
   [role="button"]:not([disabled]) {
     cursor: pointer;
   }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+  }
+}
+.hover-glow:hover {
+  animation: glow 1.5s infinite ease-in-out;
 }

@@ -1,14 +1,14 @@
 "use client"
 
 import type React from "react"
-
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
 import { useCFVerification } from "@/lib/context/cf-verification"
-import { useState, useEffect } from "react"
-import { Calendar, Target, Trophy, BookOpen, Users, PieChart, BarChart3, Menu } from "lucide-react"
+import { Home, Zap, FileText, Trophy, BookOpen, Users, BarChart3, Cpu, Menu } from "lucide-react"
 
 // ------------------ CF Rating System ------------------
 const getCFTier = (rating: number) => {
@@ -55,13 +55,13 @@ const getCFTier = (rating: number) => {
 
 // ------------------ Menu Items ------------------
 const menuItems = [
-  { href: "/", label: "Dashboard", icon: Calendar },
-  { href: "/train", label: "Train", icon: Target }, // Added
-  { href: "/adaptive-sheet", label: "Practice Problems", icon: Target },
+  { href: "/", label: "Dashboard", icon: Home },
+  { href: "/train", label: "Train", icon: Zap },
+  { href: "/adaptive-sheet", label: "Practice Problems", icon: FileText },
   { href: "/contests", label: "Contests", icon: Trophy },
   { href: "/paths", label: "Learning Paths", icon: BookOpen },
   { href: "/analytics", label: "Analytics", icon: BarChart3 },
-  { href: "/visualizers", label: "Visualizers", icon: PieChart },
+  { href: "/visualizers", label: "Visualizers", icon: Cpu },
   { href: "/groups", label: "Groups", icon: Users },
 ]
 
@@ -80,49 +80,46 @@ const SidebarItem = ({
   isActive: boolean
   isOpen: boolean
   delay: number
-}) => {
-  return (
-    <Link
-      href={href}
-      title={!isOpen ? label : undefined}
-      className={cn(
-        "relative flex items-center p-2 rounded-lg transition-all duration-150 cursor-pointer group",
-        isActive
-          ? "bg-[#2563EB]/40 text-[#2563EB] shadow-glow"
-          : "text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105",
-        isOpen ? "justify-start gap-3" : "justify-center",
-      )}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
-      <Icon className="h-5 w-5 flex-shrink-0" />
-      {isOpen && <span className="text-sm font-medium transition-opacity duration-150 opacity-100">{label}</span>}
-    </Link>
-  )
-}
+}) => (
+  <Link
+    href={href}
+    title={!isOpen ? label : undefined}
+    className={cn(
+      "relative flex items-center p-2 rounded-lg transition-all duration-150 cursor-pointer group",
+      isActive
+        ? "bg-[#2563EB]/40 text-[#2563EB] shadow-glow"
+        : "text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105",
+      isOpen ? "justify-start gap-3" : "justify-center",
+    )}
+    style={{ transitionDelay: `${delay}ms` }}
+    aria-current={isActive ? "page" : undefined}
+  >
+    <Icon className="h-5 w-5 flex-shrink-0" />
+    {isOpen && <span className="text-sm font-medium transition-opacity duration-150">{label}</span>}
+  </Link>
+)
 
-// ------------------ Sidebar Footer ------------------
 const SidebarFooter = ({
   cfData,
   isOpen,
 }: {
-  cfData: any
-  isOpen: boolean
+  cfData: any;
+  isOpen: boolean;
 }) => {
-  if (!cfData) return null
-  const tier = getCFTier(cfData.rating)
-
+  if (!cfData) return null;
+  const tier = getCFTier(cfData.rating);
   return (
     <div
       className={cn(
-        "cursor-pointer transition-transform duration-150 hover:scale-105 flex items-center",
-        !isOpen && "justify-center",
+        'cursor-pointer transition-transform duration-150 hover:scale-105 flex items-center',
+        isOpen ? 'gap-2' : 'justify-center w-full' // <- full width so icon aligns correctly
       )}
       title={`${cfData.handle} (${cfData.rating})`}
     >
       {isOpen ? (
         <div className={`p-3 rounded-xl border ${tier.bg} ${tier.color}`}>
-          <p className="text-sm font-bold">{cfData.handle}</p>
-          <p className="text-xs">
+          <p className='text-sm font-bold'>{cfData.handle}</p>
+          <p className='text-xs'>
             {tier.label} · {cfData.rating}
           </p>
         </div>
@@ -130,12 +127,13 @@ const SidebarFooter = ({
         <div
           className={`w-12 h-12 flex items-center justify-center rounded-full border ${tier.bg} ${tier.color} text-[10px] font-bold`}
         >
-          {tier.label.split(" ")[0]}
+          {tier.label.split(' ')[0]}
         </div>
       )}
     </div>
-  )
-}
+  );
+};
+
 
 // ------------------ Sidebar Layout ------------------
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
@@ -144,7 +142,6 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(true)
   const [cfData, setCfData] = useState(verificationData)
 
-  // Fetch latest CF rating
   useEffect(() => {
     const fetchLatestCFData = async () => {
       if (verificationData?.handle) {
@@ -166,59 +163,68 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       }
     }
     fetchLatestCFData()
-  }, [verificationData]) // Updated to use the entire verificationData object
+  }, [verificationData])
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className='flex min-h-screen bg-background text-foreground'>
       {/* Sidebar */}
-      <div
+      <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-full flex flex-col bg-card border-r border-border shadow-lg transition-width duration-150 overflow-hidden",
-          isOpen ? "w-64" : "w-16",
+          'fixed top-0 left-0 z-50 h-full flex flex-col bg-card border-r border-border shadow-lg transition-all duration-150 overflow-hidden',
+          isOpen ? 'w-64' : 'w-16'
         )}
       >
-        {/* Top: Hamburger always left */}
-        <div className="flex items-center justify-start p-4 border-b border-border">
+        {/* Hamburger */}
+        <div
+          className={cn(
+            'flex items-center p-4 border-b border-border',
+            isOpen ? 'justify-start' : 'justify-center'
+          )}
+        >
           <button
-            className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-muted transition"
+            className='flex items-center justify-center w-8 h-8 rounded-md hover:bg-muted transition'
             onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle sidebar"
+            aria-label='Toggle sidebar'
           >
-            <Menu className="h-5 w-5" />
+            <Menu className='h-5 w-5' />
           </button>
         </div>
 
-        {/* Main Menu */}
-        <div className="flex-1 mt-4 overflow-y-auto px-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30">
-          <nav className="space-y-2">
-            {menuItems.map((item, idx) => (
-              <SidebarItem
-                key={item.href}
-                {...item}
-                isActive={pathname === item.href || (item.href !== "/" && pathname?.startsWith(item.href))}
-                isOpen={isOpen}
-                delay={idx * 30}
-              />
-            ))}
-          </nav>
-        </div>
+        {/* Menu */}
+        <nav className='flex-1 mt-4 overflow-y-auto px-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30 space-y-2'>
+          {menuItems.map((item, idx) => (
+            <SidebarItem
+              key={item.href}
+              {...item}
+              isActive={
+                pathname === item.href ||
+                (item.href !== '/' && pathname?.startsWith(item.href))
+              }
+              isOpen={isOpen}
+              delay={idx * 30}
+            />
+          ))}
+        </nav>
 
         {/* Footer */}
         {isVerified && (
-          <div className="p-4 border-t border-border flex flex-col items-start">
+          <div className='p-4 border-t border-border flex flex-col items-start'>
             <SidebarFooter cfData={cfData} isOpen={isOpen} />
           </div>
         )}
-      </div>
+      </aside>
 
       {/* Main Content */}
       <div
-        className="flex-1 flex flex-col h-screen transition-all duration-150"
-        style={{ marginLeft: isOpen ? "16rem" : "4rem" }}
+        className={cn(
+          'flex-1 flex flex-col min-h-screen transition-all duration-150',
+          isOpen ? 'ml-64' : 'ml-16'
+        )}
       >
         <Header />
-        <main className="flex-1 overflow-y-auto p-4">{children}</main>
+        <main className='flex-1 overflow-y-auto p-4'>{children}</main>
+        <Footer />
       </div>
     </div>
-  )
+  );
 }

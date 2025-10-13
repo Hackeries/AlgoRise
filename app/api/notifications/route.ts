@@ -1,117 +1,12 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createNotificationService } from '@/lib/notification-service';
+import RealTimeNotificationManager from '@/lib/realtime-notifications';
 
 export const dynamic = 'force-dynamic';
 
-// GET /api/notifications - Fetch notifications with pagination and filtering
-export async function GET(req: NextRequest) {
-  try {
-    const supabase = await createClient();
-    const { searchParams } = new URL(req.url);
-
-    // Authentication check
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Parse query parameters
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50); // Max 50 per page
-    const type = searchParams.get('type'); // notification type filter
-    const unreadOnly = searchParams.get('unread') === 'true';
-    const since = searchParams.get('since'); // ISO date string
-
-    const offset = (page - 1) * limit;
-
-    // Build query
-    let query = supabase
-      .from('notifications')
-      .select(
-        `
-        id,
-        type,
-        title,
-        message,
-        data,
-        read_at,
-        created_at,
-        priority,
-        group_id,
-        contest_id,
-        related_user_id
-      `
-      )
-      .eq('user_id', user.id)
-      .order('priority', { ascending: false })
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
-
-    // Apply filters
-    if (type) {
-      query = query.eq('type', type);
-    }
-
-    if (unreadOnly) {
-      query = query.is('read_at', null);
-    }
-
-    if (since) {
-      query = query.gte('created_at', since);
-    }
-
-    // Filter out expired notifications
-    query = query.or(
-      'expires_at.is.null,expires_at.gt.' + new Date().toISOString()
-    );
-
-    const { data: notifications, error, count } = await query;
-
-    if (error) {
-      console.error('Error fetching notifications:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch notifications' },
-        { status: 500 }
-      );
-    }
-
-    // Get total count for pagination
-    const { count: totalCount } = await supabase
-      .from('notifications')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .or('expires_at.is.null,expires_at.gt.' + new Date().toISOString());
-
-    // Get unread count
-    const { data: unreadCountResult } = await supabase.rpc(
-      'get_unread_notification_count',
-      { target_user_id: user.id }
-    );
-
-    return NextResponse.json({
-      notifications: notifications || [],
-      pagination: {
-        page,
-        limit,
-        total: totalCount || 0,
-        totalPages: Math.ceil((totalCount || 0) / limit),
-        hasMore: (totalCount || 0) > offset + limit,
-      },
-      unreadCount: unreadCountResult || 0,
-    });
-  } catch (error) {
-    console.error('Error in notifications API:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-// POST /api/notifications - Create a new notification (admin/system use)
+// POST /api/notifications/test - Test notification system
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
@@ -125,60 +20,187 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const {
-      targetUserId,
-      type,
-      title,
-      message,
-      data = {},
-      priority = 1,
-      expiresAt,
-      groupId,
-      contestId,
-      relatedUserId,
-    } = body;
+    const { testType = 'basic', ...params } = body;
 
-    // Validate required fields
-    if (!targetUserId || !type || !title || !message) {
-      return NextResponse.json(
-        {
-          error: 'Missing required fields: targetUserId, type, title, message',
-        },
-        { status: 400 }
-      );
+    const notificationService = await createNotificationService();
+    const rtManager = RealTimeNotificationManager.getInstance();
+
+    let result;
+
+    switch (testType) {
+      case 'basic':
+        // Test basic notification creation
+        result = await notificationService.createNotification(user.id, {
+          type: 'system_announcement',
+          title: 'Test Notification',
+          message:
+            'This is a test notification to verify the system is working correctly.',
+          priority: 2,
+        });
+
+        if (result.success && result.notification) {
+          // Send real-time notification
+          await rtManager.sendToUser(user.id, result.notification);
+        }
+        break;
+
+      case 'achievement':
+        // Test achievement notification
+        result = await notificationService.notifyAchievement(
+          user.id,
+          'streak_milestone',
+          { days: params.days || 7 }
+        );
+        break;
+
+      case 'contest':
+        // Test contest notification
+        const contestName = params.contestName || 'Test Contest';
+        const startTime =
+          params.startTime || new Date(Date.now() + 3600000).toISOString(); // 1 hour from now
+
+        result = await notificationService.createNotification(user.id, {
+          type: 'contest_starting',
+          title: 'Contest Starting Soon!',
+          message: `${contestName} will start at ${new Date(startTime).toLocaleString()}`,
+          priority: 3,
+          data: { contestName, startTime },
+        });
+        break;
+
+      case 'realtime':
+        // Test real-time functionality
+        await rtManager.sendToUser(user.id, {
+          id: 'test-realtime',
+          type: 'test',
+          title: 'Real-time Test',
+          message: 'This notification was sent via real-time connection',
+          priority: 1,
+          created_at: new Date().toISOString(),
+        });
+
+        result = { success: true, message: 'Real-time notification sent' };
+        break;
+
+      case 'bulk':
+        // Test bulk notifications (send to current user multiple times)
+        const notifications = [
+          {
+            type: 'system_announcement' as const,
+            title: 'Bulk Test 1',
+            message: 'First bulk notification',
+            priority: 1,
+          },
+          {
+            type: 'system_announcement' as const,
+            title: 'Bulk Test 2',
+            message: 'Second bulk notification',
+            priority: 2,
+          },
+          {
+            type: 'achievement' as const,
+            title: 'Bulk Test 3',
+            message: 'Third bulk notification (achievement)',
+            priority: 4,
+          },
+        ];
+
+        const bulkResults = await Promise.all(
+          notifications.map(notif =>
+            notificationService.createNotification(user.id, notif)
+          )
+        );
+
+        result = {
+          success: bulkResults.every(r => r.success),
+          count: bulkResults.filter(r => r.success).length,
+          details: bulkResults,
+        };
+        break;
+
+      case 'cleanup':
+        // Test cleanup functionality
+        result = await notificationService.cleanupExpiredNotifications();
+        break;
+
+      default:
+        return NextResponse.json(
+          { error: 'Invalid test type' },
+          { status: 400 }
+        );
     }
 
-    // Create notification
-    const { data: notification, error } = await supabase
-      .from('notifications')
-      .insert({
-        user_id: targetUserId,
-        type,
-        title,
-        message,
-        data,
-        priority,
-        expires_at: expiresAt,
-        group_id: groupId,
-        contest_id: contestId,
-        related_user_id: relatedUserId,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error creating notification:', error);
-      return NextResponse.json(
-        { error: 'Failed to create notification' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({ notification });
+    return NextResponse.json({
+      success: true,
+      testType,
+      result,
+      timestamp: new Date().toISOString(),
+      connectionStats: {
+        activeUsers: rtManager.getActiveUsersCount(),
+        totalConnections: rtManager.getTotalConnectionsCount(),
+      },
+    });
   } catch (error) {
-    console.error('Error in notifications POST API:', error);
+    console.error('Error in notification test:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      {
+        error: 'Test failed',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// GET /api/notifications/test - Get test status and stats
+export async function GET(req: NextRequest) {
+  try {
+    const supabase = await createClient();
+
+    // Authentication check
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const rtManager = RealTimeNotificationManager.getInstance();
+
+    // Get recent notifications for the user
+    const { data: recentNotifications } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    // Get unread count
+    const { data: unreadCount } = await supabase.rpc(
+      'get_unread_notification_count',
+      { target_user_id: user.id }
+    );
+
+    return NextResponse.json({
+      status: 'ok',
+      user: {
+        id: user.id,
+        email: user.email,
+      },
+      notifications: {
+        recent: recentNotifications || [],
+        unreadCount: unreadCount || 0,
+      },
+      realTime: {
+        activeUsers: rtManager.getActiveUsersCount(),
+        totalConnections: rtManager.getTotalConnectionsCount(),
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error getting test status:', error);
+    return NextResponse.json(
+      { error: 'Failed to get status' },
       { status: 500 }
     );
   }

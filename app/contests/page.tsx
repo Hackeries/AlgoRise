@@ -796,11 +796,16 @@ export default function ContestsPage() {
                           ))
                         : [10, 11, 12, 13].map(num => (
                             <SelectItem key={num} value={`${num}`}>
-                              {num} Problems
+                              {num} Problems (ICPC Standard)
                             </SelectItem>
                           ))}
                     </SelectContent>
                   </Select>
+                  <p className='text-xs text-muted-foreground'>
+                    {formData.contestMode === 'practice'
+                      ? 'Practice mode: 5-12 problems, flexible duration'
+                      : 'ICPC mode: Strictly 10-13 problems, 5 hours fixed duration'}
+                  </p>
                 </div>
 
                 {/* Rating Range */}

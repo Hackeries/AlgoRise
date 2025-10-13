@@ -47,30 +47,60 @@ export function Header() {
     setTheme(effectiveTheme === 'dark' ? 'light' : 'dark');
 
   // ------------------- Search -------------------
-  const { results, loading: searchLoading, search, clearResults } = useSearch();
+  const {
+    results,
+    suggestions,
+    loading: searchLoading,
+    search,
+    getSuggestions,
+    clearResults,
+  } = useSearch();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
+
     if (value.trim().length >= 2) {
-      setShowSearchResults(true);
-      await search(value, {
-        categories: ['contest', 'group', 'handle', 'user'],
-        limit: 8,
-      });
+      setShowSuggestions(true);
+      setShowSearchResults(false);
+      await getSuggestions(value);
     } else {
+      setShowSuggestions(false);
       setShowSearchResults(false);
       clearResults();
     }
   };
 
+  const handleSearchSubmit = async () => {
+    if (searchQuery.trim().length >= 2) {
+      setShowSuggestions(false);
+      setShowSearchResults(true);
+      await search(searchQuery, {
+        categories: ['contest', 'group', 'handle', 'user'],
+        limit: 8,
+      });
+    }
+  };
+
+  const handleSuggestionClick = async (suggestion: string) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+    setShowSearchResults(true);
+    await search(suggestion, {
+      categories: ['contest', 'group', 'handle', 'user'],
+      limit: 8,
+    });
+  };
+
   const handleResultClick = (result: any) => {
     setSearchQuery('');
     setShowSearchResults(false);
+    setShowSuggestions(false);
     clearResults();
     if (result.url) window.location.href = result.url;
   };
@@ -78,6 +108,7 @@ export function Header() {
   const handleClearSearch = () => {
     setSearchQuery('');
     setShowSearchResults(false);
+    setShowSuggestions(false);
     clearResults();
   };
 
@@ -88,6 +119,7 @@ export function Header() {
         !searchContainerRef.current.contains(event.target as Node)
       ) {
         setShowSearchResults(false);
+        setShowSuggestions(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -98,6 +130,8 @@ export function Header() {
     if (e.key === 'Escape') {
       handleClearSearch();
       searchInputRef.current?.blur();
+    } else if (e.key === 'Enter') {
+      handleSearchSubmit();
     }
   };
 
@@ -172,6 +206,46 @@ export function Header() {
             </Button>
           )}
         </div>
+
+        {showSuggestions && suggestions.length > 0 && (
+          <div className='absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto'>
+            <div className='py-2'>
+              <div className='px-4 py-2 text-xs text-muted-foreground font-medium'>
+                Suggestions
+              </div>
+              {suggestions.map((suggestion, index) => (
+                <button
+                  key={`${suggestion.suggestion}-${index}`}
+                  onClick={() => handleSuggestionClick(suggestion.suggestion)}
+                  className='w-full px-4 py-3 text-left hover:bg-muted/40 flex items-center gap-3 transition-colors'
+                >
+                  <Search className='h-4 w-4 text-muted-foreground flex-shrink-0' />
+                  <div className='flex-1 min-w-0'>
+                    <div className='text-foreground font-medium truncate'>
+                      {suggestion.suggestion}
+                    </div>
+                    <div className='text-muted-foreground text-xs capitalize'>
+                      {suggestion.type}
+                    </div>
+                  </div>
+                  {suggestion.frequency > 1 && (
+                    <Badge variant='secondary' className='text-xs'>
+                      {suggestion.frequency}
+                    </Badge>
+                  )}
+                </button>
+              ))}
+              <div className='border-t border-border mt-2 pt-2'>
+                <button
+                  onClick={handleSearchSubmit}
+                  className='w-full px-4 py-2 text-center text-primary hover:bg-muted/40 text-sm transition-colors'
+                >
+                  Search for "{searchQuery}" →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showSearchResults && (
           <div className='absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto'>

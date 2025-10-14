@@ -220,18 +220,18 @@ export default function ContestParticipationPage() {
   if (!contest) {
     return (
       <div className='min-h-screen bg-gray-900 flex items-center justify-center'>
-        <div className='text-white'>Loading contest...</div>
+        <div className='text-black dark:text-white'>Loading contest...</div>
       </div>
     );
   }
 
   if (contest.status === 'ended') {
     return (
-      <div className='min-h-screen bg-gray-900 flex items-center justify-center text-white px-6'>
+      <div className='min-h-screen bg-gray-900 flex items-center justify-center text-black dark:text-white px-6'>
         <div className='text-center max-w-md'>
           <Trophy className='mx-auto h-16 w-16 text-yellow-500 mb-4' />
           <h1 className='text-2xl font-bold mb-2'>Contest Ended</h1>
-          <p className='text-white/70 mb-6'>
+          <p className='text-black dark:text-white/70 mb-6'>
             This contest has finished. You can go back to the contests list or
             view the leaderboard and details.
           </p>
@@ -275,7 +275,7 @@ export default function ContestParticipationPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gray-900 text-white'>
+    <div className='min-h-screen bg-gray-900 text-black dark:text-white'>
       {/* Header */}
       <div className='bg-gray-800 border-b border-gray-700 px-6 py-4'>
         <div className='flex items-center justify-between'>
@@ -294,7 +294,7 @@ export default function ContestParticipationPage() {
               size='sm'
               onClick={() => refreshCF()}
               disabled={!handle || cfRefreshing}
-              className='text-white border-gray-600 hover:bg-gray-700 bg-transparent'
+              className='text-black dark:text-white border-gray-600 hover:bg-gray-700 bg-transparent'
               title={
                 handle
                   ? `Refresh Codeforces status for ${handle}`
@@ -320,7 +320,7 @@ export default function ContestParticipationPage() {
               variant='outline'
               size='sm'
               onClick={exitFullscreen}
-              className='text-white border-gray-600 hover:bg-gray-700 bg-transparent'
+              className='text-black dark:text-white border-gray-600 hover:bg-gray-700 bg-transparent'
             >
               <Maximize2 className='h-4 w-4 mr-2' />
               Exit Fullscreen
@@ -405,7 +405,7 @@ export default function ContestParticipationPage() {
                             <div className='font-medium truncate'>
                               {problem.name}
                             </div>
-                            <div className='text-xs text-white/60 truncate'>
+                            <div className='text-xs text-black/60 dark:text-white/60 truncate'>
                               {status === 'UNATTEMPTED'
                                 ? 'Unattempted'
                                 : `Latest: ${status}`}
@@ -475,7 +475,7 @@ export default function ContestParticipationPage() {
               Recent Submissions (Codeforces)
             </h2>
             {handle && (
-              <div className='text-xs text-white/60'>Handle: {handle}</div>
+              <div className='text-xs text-black/60 dark:text-white/60'>Handle: {handle}</div>
             )}
           </div>
           <div className='space-y-3'>

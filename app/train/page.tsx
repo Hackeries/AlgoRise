@@ -29,7 +29,7 @@ export default function TrainingHub() {
   }, [])
 
   return (
-    <main className="flex flex-1 min-h-screen bg-gradient-to-br from-gray-900 via-neutral-900 to-gray-950 text-white">
+    <main className="flex flex-1 min-h-screen bg-gradient-to-br from-gray-900 via-neutral-900 to-gray-950 text-black dark:text-white">
       {/* Main Content */}
       <section className="flex-1 overflow-auto">
         <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">

@@ -129,7 +129,7 @@ export default function ContestSection() {
           description:
             'Register for Div2 because your current rating is <1900.',
           variant: 'destructive',
-          className: 'text-white',
+          className: 'text-black dark:text-white',
         });
         return;
       }
@@ -142,7 +142,7 @@ export default function ContestSection() {
         title: 'Registration Not Started',
         description: `Registration isn't opened yet, please wait ~${daysLeft} days!`,
         variant: 'destructive',
-        className: 'text-white',
+        className: 'text-black dark:text-white',
       });
     }
   };
@@ -252,7 +252,7 @@ export default function ContestSection() {
 
                           <Button
                             asChild
-                            className='w-full mt-4 text-white bg-sky-500/50 hover:bg-sky-900'
+                            className='w-full mt-4 text-black dark:text-white bg-sky-500/50 hover:bg-sky-900'
                             onClick={e => e.stopPropagation()}
                           >
                             <a

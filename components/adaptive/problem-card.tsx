@@ -152,7 +152,7 @@ export function AdaptiveProblemCard({
                 className={`
                   w-full bg-gradient-to-r from-blue-600 to-blue-700 
                   hover:from-blue-700 hover:to-blue-800 
-                  text-white font-medium flex items-center justify-center gap-2 
+                  text-black dark:text-white font-medium flex items-center justify-center gap-2 
                   shadow-md hover:shadow-lg transition-all duration-200
                   ${isClicked ? 'ring-2 ring-blue-400 ring-opacity-75' : ''}
                 `}

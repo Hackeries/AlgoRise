@@ -36,7 +36,7 @@ export default function AnalyticsPageClient() {
     return (
       <div className="flex items-center justify-center h-full p-6 space-y-6">
         <div className="flex items-center justify-center h-64">
-          <div className="text-white/70">Loading...</div>
+          <div className="text-black dark:text-white/70">Loading...</div>
         </div>
       </div>
     )
@@ -48,8 +48,8 @@ export default function AnalyticsPageClient() {
       <div className="flex items-center justify-center h-full p-6 space-y-6">
         <div className="flex flex-col items-center justify-center h-64 space-y-4">
           <LogIn className="h-16 w-16 text-blue-400" />
-          <h2 className="text-2xl font-bold text-white">Please Sign In</h2>
-          <p className="text-white/70 text-center max-w-md">
+          <h2 className="text-2xl font-bold text-black dark:text-white">Please Sign In</h2>
+          <p className="text-black/70 dark:text-white/70 text-center max-w-md">
             You need to sign in to view your analytics and track your competitive programming progress.
           </p>
           <div className="flex gap-4">

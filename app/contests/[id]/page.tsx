@@ -239,7 +239,7 @@ export default function ContestDetailPage() {
       <div className='min-h-screen flex items-center justify-center'>
         <div className='text-center'>
           <div className='inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white/60'></div>
-          <p className='mt-2 text-white/60'>Loading contest...</p>
+          <p className='mt-2 text-black/60 dark:text-white/60'>Loading contest...</p>
         </div>
       </div>
     );
@@ -293,7 +293,7 @@ export default function ContestDetailPage() {
         </div>
 
         {contest.description && (
-          <p className='text-white/70 leading-relaxed'>{contest.description}</p>
+          <p className='text-black dark:text-white/70 leading-relaxed'>{contest.description}</p>
         )}
       </div>
 
@@ -308,25 +308,25 @@ export default function ContestDetailPage() {
           </CardHeader>
           <CardContent className='space-y-4'>
             <div className='flex justify-between'>
-              <span className='text-white/60'>Start Time</span>
+              <span className='text-black/60 dark:text-white/60'>Start Time</span>
               <span className='font-medium'>
                 {new Date(contest.starts_at).toLocaleString()}
               </span>
             </div>
             <div className='flex justify-between'>
-              <span className='text-white/60'>Duration</span>
+              <span className='text-black/60 dark:text-white/60'>Duration</span>
               <span className='font-medium'>
                 {Math.floor(contest.duration_minutes / 60)}h{' '}
                 {contest.duration_minutes % 60}m
               </span>
             </div>
             <div className='flex justify-between'>
-              <span className='text-white/60'>Problems</span>
+              <span className='text-black/60 dark:text-white/60'>Problems</span>
               <span className='font-medium'>{contest.problem_count}</span>
             </div>
             {contest.max_participants && (
               <div className='flex justify-between'>
-                <span className='text-white/60'>Max Participants</span>
+                <span className='text-black/60 dark:text-white/60'>Max Participants</span>
                 <span className='font-medium'>{contest.max_participants}</span>
               </div>
             )}
@@ -351,7 +351,7 @@ export default function ContestDetailPage() {
                 <div className='text-4xl font-bold text-green-400 mb-2'>
                   {timeUntilStart}
                 </div>
-                <p className='text-white/60'>Until contest starts</p>
+                <p className='text-black/60 dark:text-white/60'>Until contest starts</p>
               </div>
             )}
             {hasStarted && !hasEnded && (
@@ -384,7 +384,7 @@ export default function ContestDetailPage() {
             {hasEnded && (
               <div className='text-center py-6'>
                 <Trophy className='w-16 h-16 text-yellow-500 mx-auto mb-4' />
-                <p className='text-white/60'>View final leaderboard below</p>
+                <p className='text-black/60 dark:text-white/60'>View final leaderboard below</p>
               </div>
             )}
             {!hasStarted && !hasEnded && (
@@ -396,7 +396,7 @@ export default function ContestDetailPage() {
                     <Badge variant='default' className='mb-2'>
                       Registered
                     </Badge>
-                    <p className='text-sm text-white/60'>
+                    <p className='text-sm text-black/60 dark:text-white/60'>
                       You will be able to join when the contest starts
                     </p>
                   </div>
@@ -426,7 +426,7 @@ export default function ContestDetailPage() {
               <div className='flex items-center gap-2'>
                 <Label
                   htmlFor='attempted-only'
-                  className='text-sm text-white/70'
+                  className='text-sm text-black dark:text-white/70'
                 >
                   Show attempted only
                 </Label>
@@ -455,7 +455,7 @@ export default function ContestDetailPage() {
                       <div className='font-medium'>
                         {p.index}. {p.name}
                       </div>
-                      <div className='text-xs text-white/60'>
+                      <div className='text-xs text-black/60 dark:text-white/60'>
                         CF {p.contestId}/{p.index} •{' '}
                         {p.rating ? `Rating ${p.rating}` : 'Unrated'}
                       </div>
@@ -472,7 +472,7 @@ export default function ContestDetailPage() {
                   })
                 : contest.problems
               ).length === 0 ? (
-              <div className='text-center py-8 text-white/60'>
+              <div className='text-center py-8 text-black/60 dark:text-white/60'>
                 {showAttemptedOnly
                   ? 'No attempted problems yet. Start solving to see your progress here!'
                   : 'No problems available.'}
@@ -520,7 +520,7 @@ export default function ContestDetailPage() {
                           <div className='font-medium'>
                             {p.index}. {p.name}
                           </div>
-                          <div className='text-xs text-white/60'>
+                          <div className='text-xs text-black/60 dark:text-white/60'>
                             CF {p.contestId}/{p.index} •{' '}
                             {p.rating ? `Rating ${p.rating}` : 'Unrated'}
                           </div>
@@ -558,7 +558,7 @@ export default function ContestDetailPage() {
         </CardHeader>
         <CardContent>
           {leaderboard.length === 0 ? (
-            <div className='text-center py-8 text-white/60'>
+            <div className='text-center py-8 text-black/60 dark:text-white/60'>
               No submissions yet. Be the first to participate!
             </div>
           ) : (
@@ -576,7 +576,7 @@ export default function ContestDetailPage() {
                           : entry.rank === 2
                           ? 'bg-gray-400 text-black'
                           : entry.rank === 3
-                          ? 'bg-orange-600 text-white'
+                          ? 'bg-orange-600 text-black dark:text-white'
                           : 'bg-white/10'
                       }`}
                     >
@@ -586,7 +586,7 @@ export default function ContestDetailPage() {
                       <div className='font-medium'>
                         User {entry.user_id.slice(0, 8)}
                       </div>
-                      <div className='text-sm text-white/60'>
+                      <div className='text-sm text-black/60 dark:text-white/60'>
                         {entry.solved} solved • {Math.floor(entry.penalty / 60)}
                         m penalty
                       </div>
@@ -596,7 +596,7 @@ export default function ContestDetailPage() {
                     <div className='text-lg font-bold text-green-400'>
                       {entry.solved}
                     </div>
-                    <div className='text-xs text-white/60'>problems</div>
+                    <div className='text-xs text-black/60 dark:text-white/60'>problems</div>
                   </div>
                 </div>
               ))}

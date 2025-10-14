@@ -609,7 +609,7 @@ export default function ContestsPage() {
       <div className='flex items-center justify-between mb-6'>
         <div>
           <h1 className='text-2xl font-semibold'>Contests</h1>
-          <p className='mt-2 text-white/80 leading-relaxed'>
+          <p className='mt-2 text-black/80 dark:text-white/80 leading-relaxed'>
             Host or join private training contests. After the contest, view
             rating simulation and get a recovery set.
           </p>
@@ -970,7 +970,7 @@ export default function ContestsPage() {
       {loading ? (
         <div className='text-center py-12'>
           <div className='inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white/60'></div>
-          <p className='mt-2 text-white/60'>Loading contests...</p>
+          <p className='mt-2 text-black dark:text-white/60'>Loading contests...</p>
         </div>
       ) : (
         <div className='space-y-8'>
@@ -986,7 +986,7 @@ export default function ContestsPage() {
             {upcomingCfContests.length === 0 ? (
               <Card>
                 <CardContent className='p-6'>
-                  <p className='text-white/60 text-center'>
+                  <p className='text-black dark:text-white/60 text-center'>
                     No upcoming Codeforces contests found.
                   </p>
                 </CardContent>
@@ -1010,7 +1010,7 @@ export default function ContestsPage() {
                         <CardTitle className='text-sm font-medium leading-tight'>
                           {contest.name}
                         </CardTitle>
-                        <ExternalLinkIcon className='w-4 h-4 text-white/40 flex-shrink-0 ml-2 hover:text-white/60 transition-colors' />
+                        <ExternalLinkIcon className='w-4 h-4 text-black/40 dark:text-white/40 flex-shrink-0 ml-2 hover:text-white/60 transition-colors' />
                       </div>
                       <div className='flex items-center gap-2'>
                         <Badge variant='outline' className='text-xs'>
@@ -1024,18 +1024,18 @@ export default function ContestsPage() {
                     <CardContent className='pt-0'>
                       <div className='space-y-2 text-sm'>
                         {contest.startTimeSeconds && (
-                          <div className='flex items-center gap-2 text-white/70'>
+                          <div className='flex items-center gap-2 text-black dark:text-white/70'>
                             <CalendarIcon className='w-4 h-4' />
                             <span>{formatTime(contest.startTimeSeconds)}</span>
                           </div>
                         )}
-                        <div className='flex items-center gap-2 text-white/70'>
+                        <div className='flex items-center gap-2 text-black dark:text-white/70'>
                           <ClockIcon className='w-4 h-4' />
                           <span>{formatDuration(contest.durationSeconds)}</span>
                         </div>
                         {contest.startTimeSeconds && (
                           <div className='flex items-center justify-between'>
-                            <span className='text-white/60'>Starts in:</span>
+                            <span className='text-black/60 dark:text-white/60'>Starts in:</span>
                             <Badge variant='default' className='text-xs'>
                               {getTimeUntilStart(contest.startTimeSeconds)}
                             </Badge>
@@ -1060,8 +1060,8 @@ export default function ContestsPage() {
               <Card>
                 <CardContent className='p-6'>
                   <div className='text-center'>
-                    <UsersIcon className='w-12 h-12 text-white/20 mx-auto mb-4' />
-                    <p className='text-white/60 mb-4'>
+                    <UsersIcon className='w-12 h-12 text-black/20 dark:text-white/20 mx-auto mb-4' />
+                    <p className='text-black dark:text-white/60 mb-4'>
                       No private contests yet.
                     </p>
                     <Button onClick={() => setCreateDialogOpen(true)}>
@@ -1183,7 +1183,7 @@ export default function ContestsPage() {
                       </div>
 
                       {contest.starts_at && (
-                        <div className='mt-3 text-xs text-white/70 space-y-2'>
+                        <div className='mt-3 text-xs text-black dark:text-white/70 space-y-2'>
                           <div className='flex items-center gap-2'>
                             <CalendarIcon className='w-3 h-3' />
                             <span>
@@ -1191,11 +1191,11 @@ export default function ContestsPage() {
                             </span>
                           </div>
                           {contest.description && (
-                            <div className='text-white/60'>
+                            <div className='text-black/60 dark:text-white/60'>
                               {contest.description}
                             </div>
                           )}
-                          <div className='flex flex-wrap items-center gap-3 text-white/60'>
+                          <div className='flex flex-wrap items-center gap-3 text-black/60 dark:text-white/60'>
                             <span>{contest.problem_count} problems</span>
                             <span>{contest.duration_minutes} min</span>
                             <span>Mode: {contest.contest_mode}</span>

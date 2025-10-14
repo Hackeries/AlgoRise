@@ -88,7 +88,7 @@ const SidebarItem = ({
       "relative flex items-center p-2 rounded-lg transition-all duration-150 cursor-pointer group",
       isActive
         ? "bg-[#2563EB]/40 text-[#2563EB] shadow-glow"
-        : "text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105",
+        : "dark:text-white/70 dark:hover:text-white hover:bg-[#2563EB]/20 hover:scale-105 text-black",
       isOpen ? "justify-start gap-3" : "justify-center",
     )}
     style={{ transitionDelay: `${delay}ms` }}

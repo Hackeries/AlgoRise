@@ -422,25 +422,56 @@ export default function ContestDetailPage() {
               Problems
               <Badge variant='secondary'>{contest.problems.length}</Badge>
             </CardTitle>
-            <div className='flex items-center gap-2'>
-              <Label htmlFor='attempted-only' className='text-sm text-white/70'>
-                Show attempted only
-              </Label>
-              <Switch
-                id='attempted-only'
-                checked={showAttemptedOnly}
-                onCheckedChange={setShowAttemptedOnly}
-              />
-            </div>
+            {(hasStarted || hasEnded) && (
+              <div className='flex items-center gap-2'>
+                <Label
+                  htmlFor='attempted-only'
+                  className='text-sm text-white/70'
+                >
+                  Show attempted only
+                </Label>
+                <Switch
+                  id='attempted-only'
+                  checked={showAttemptedOnly}
+                  onCheckedChange={setShowAttemptedOnly}
+                />
+              </div>
+            )}
           </CardHeader>
           <CardContent className='space-y-2'>
-            {(showAttemptedOnly
-              ? contest.problems.filter(p => {
-                  const st = contest.my_submissions?.[p.id];
-                  return st === 'solved' || st === 'failed';
-                })
-              : contest.problems
-            ).length === 0 ? (
+            {!hasStarted ? (
+              // Before contest: show all problems as locked/upcoming
+              contest.problems.map(p => (
+                <div
+                  key={p.id}
+                  className='flex items-center justify-between rounded-md p-3 bg-white/5 border border-white/10'
+                >
+                  <div className='flex items-center gap-3'>
+                    <div
+                      aria-hidden
+                      className='w-2 h-2 rounded-full bg-white/30'
+                    />
+                    <div>
+                      <div className='font-medium'>
+                        {p.index}. {p.name}
+                      </div>
+                      <div className='text-xs text-white/60'>
+                        CF {p.contestId}/{p.index} •{' '}
+                        {p.rating ? `Rating ${p.rating}` : 'Unrated'}
+                      </div>
+                    </div>
+                  </div>
+                  <Badge variant='outline'>Locked</Badge>
+                </div>
+              ))
+            ) : // During/After contest: show with status
+            (showAttemptedOnly
+                ? contest.problems.filter(p => {
+                    const st = contest.my_submissions?.[p.id];
+                    return st === 'solved' || st === 'failed';
+                  })
+                : contest.problems
+              ).length === 0 ? (
               <div className='text-center py-8 text-white/60'>
                 {showAttemptedOnly
                   ? 'No attempted problems yet. Start solving to see your progress here!'

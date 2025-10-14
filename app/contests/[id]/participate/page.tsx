@@ -115,6 +115,39 @@ export default function ContestParticipationPage() {
     return map;
   }, [cfData]);
 
+  useEffect(() => {
+    if (!contest || !contest.problems || contest.status !== 'live') return;
+    if (problemVerdicts.size === 0) return;
+
+    const saveSubmissions = async () => {
+      for (const problem of contest.problems) {
+        const key = `${problem.contestId}${problem.index}`;
+        const verdict = problemVerdicts.get(key);
+
+        if (verdict && verdict.verdict !== 'UNATTEMPTED') {
+          const status = verdict.verdict === 'AC' ? 'solved' : 'failed';
+
+          // Save to database
+          try {
+            await fetch(`/api/contests/${params.id}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                problemId: problem.id,
+                status,
+                penalty: 0, // Can be calculated based on time if needed
+              }),
+            });
+          } catch (err) {
+            console.error('Failed to save submission:', err);
+          }
+        }
+      }
+    };
+
+    saveSubmissions();
+  }, [problemVerdicts, contest, params.id]);
+
   const formatTime = (ms: number) => {
     const hours = Math.floor(ms / (1000 * 60 * 60));
     const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
@@ -298,7 +331,7 @@ export default function ContestParticipationPage() {
 
       <div className='flex h-[calc(100vh-80px)] overflow-hidden'>
         {/* Problems List */}
-        <div className='w-1/2 border-r border-gray-700 p-6 overflow-y-auto'>
+        <div className='w-1/2 min-w-0 border-r border-gray-700 p-6 overflow-y-auto'>
           <div className='flex items-center justify-between mb-4'>
             <h2 className='text-lg font-semibold'>Problems</h2>
             {!handle && (
@@ -355,7 +388,7 @@ export default function ContestParticipationPage() {
                     }`}
                   >
                     <CardContent className='p-4'>
-                      <div className='flex items-center justify-between gap-3'>
+                      <div className='flex items-center justify-between gap-3 min-w-0'>
                         <div className='flex items-center gap-3 min-w-0 flex-1'>
                           <div
                             className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
@@ -372,7 +405,7 @@ export default function ContestParticipationPage() {
                             <div className='font-medium truncate'>
                               {problem.name}
                             </div>
-                            <div className='text-xs text-white/60'>
+                            <div className='text-xs text-white/60 truncate'>
                               {status === 'UNATTEMPTED'
                                 ? 'Unattempted'
                                 : `Latest: ${status}`}
@@ -436,7 +469,7 @@ export default function ContestParticipationPage() {
         </div>
 
         {/* Submissions Panel */}
-        <div className='w-1/2 p-6 overflow-y-auto'>
+        <div className='w-1/2 min-w-0 p-6 overflow-y-auto'>
           <div className='flex items-center justify-between mb-4'>
             <h2 className='text-lg font-semibold'>
               Recent Submissions (Codeforces)
@@ -477,7 +510,7 @@ export default function ContestParticipationPage() {
                     className='bg-gray-800 border-gray-700'
                   >
                     <CardContent className='p-4'>
-                      <div className='flex items-center justify-between gap-3'>
+                      <div className='flex items-center justify-between gap-3 min-w-0'>
                         <div className='flex items-center gap-3 min-w-0 flex-1'>
                           <Badge
                             variant={v === 'AC' ? 'default' : 'destructive'}

@@ -39,10 +39,9 @@ export async function POST(req: Request) {
     );
   }
 
-  // Get group college
   const { data: group } = await supabase
     .from('groups')
-    .select('college_id')
+    .select('type, college_id, max_members')
     .eq('id', groupId)
     .single();
 
@@ -50,37 +49,55 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Group not found' }, { status: 404 });
 
   // Find target user by handle
+  const { data: cfHandle } = await supabase
+    .from('cf_handles')
+    .select('user_id')
+    .eq('handle', targetHandle.trim())
+    .eq('verified', true)
+    .single();
+
+  if (!cfHandle)
+    return NextResponse.json(
+      { error: 'User not found or handle not verified' },
+      { status: 404 }
+    );
+
   const { data: targetProfile } = await supabase
     .from('profiles')
     .select('id, college_id')
-    .eq('cf_handles.handle', targetHandle.trim())
+    .eq('id', cfHandle.user_id)
     .single();
 
   if (!targetProfile)
     return NextResponse.json(
-      { error: 'User not found or not verified' },
+      { error: 'User profile not found' },
       { status: 404 }
     );
 
-  // Check college match
-  if (targetProfile.college_id !== group.college_id) {
-    return NextResponse.json(
-      { error: 'This user belongs to a different college.' },
-      { status: 400 }
-    );
+  if ((group.type === 'icpc' || group.type === 'college') && group.college_id) {
+    if (targetProfile.college_id !== group.college_id) {
+      return NextResponse.json(
+        {
+          error: `This user belongs to a different college. ${
+            group.type === 'icpc' ? 'ICPC teams' : 'College groups'
+          } require all members from the same college.`,
+        },
+        { status: 400 }
+      );
+    }
   }
 
-  // Check member count < 3
   const { count } = await supabase
     .from('group_memberships')
     .select('*', { count: 'exact', head: true })
     .eq('group_id', groupId);
 
-  if (count && count >= 3)
+  if (group.max_members && count && count >= group.max_members) {
     return NextResponse.json(
-      { error: 'Group is full (max 3 members)' },
+      { error: `Group is full (max ${group.max_members} members)` },
       { status: 400 }
     );
+  }
 
   // Add member
   const { error } = await supabase.from('group_memberships').upsert(

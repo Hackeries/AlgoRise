@@ -9,7 +9,7 @@ export async function POST(req: Request) {
 
     if (!name || name.length < 2) {
       return NextResponse.json(
-        { error: 'Group name must be at least 2 characters' },
+        { error: 'Team name must be at least 2 characters' },
         { status: 400 }
       );
     }
@@ -24,25 +24,43 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
     }
 
+    // Check if user has college set
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('college_id')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.college_id) {
+      return NextResponse.json(
+        { error: 'You must set your college before creating an ICPC team' },
+        { status: 400 }
+      );
+    }
+
+    // Create ICPC team with max 3 members
     const { data: group, error: gErr } = await supabase
       .from('groups')
       .insert({
         name,
-        type: 'friends',
+        type: 'icpc',
         created_by: user.id,
+        college_id: profile.college_id,
+        max_members: 3,
         description: description || null,
       })
       .select('id')
       .single();
 
     if (gErr) {
-      console.error('Error creating group:', gErr);
+      console.error('Error creating ICPC team:', gErr);
       return NextResponse.json(
-        { error: gErr.message || 'Failed to create group' },
+        { error: gErr.message || 'Failed to create ICPC team' },
         { status: 500 }
       );
     }
 
+    // Add creator as admin
     const { error: mErr } = await supabase
       .from('group_memberships')
       .insert({ group_id: group.id, user_id: user.id, role: 'admin' });
@@ -57,7 +75,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, groupId: group.id });
   } catch (e: any) {
-    console.error('Unexpected error in create-friends:', e);
+    console.error('Unexpected error in create-icpc:', e);
     return NextResponse.json(
       { error: e?.message || 'unknown error' },
       { status: 500 }

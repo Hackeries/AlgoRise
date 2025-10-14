@@ -56,7 +56,9 @@ interface GroupMember {
 interface GroupManagementProps {
   groupId: string;
   groupName: string;
+  groupType: 'college' | 'friends' | 'icpc'; // Added groupType prop
   userRole: 'admin' | 'moderator' | 'member';
+  maxMembers?: number; // Added maxMembers prop
 }
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
@@ -64,7 +66,9 @@ const fetcher = (url: string) => fetch(url).then(r => r.json());
 export function GroupManagement({
   groupId,
   groupName,
+  groupType, // Added groupType
   userRole,
+  maxMembers, // Added maxMembers
 }: GroupManagementProps) {
   const { toast } = useToast();
   const [inviteEmail, setInviteEmail] = useState('');
@@ -74,6 +78,9 @@ export function GroupManagement({
   const [isInviting, setIsInviting] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [copiedInvite, setCopiedInvite] = useState(false);
+  const [addMemberHandle, setAddMemberHandle] = useState('');
+  const [isAddingMember, setIsAddingMember] = useState(false);
+  const [showAddMemberDialog, setShowAddMemberDialog] = useState(false);
 
   const { data: groupData, isLoading } = useSWR<{
     members: GroupMember[];
@@ -216,6 +223,45 @@ export function GroupManagement({
     }
   };
 
+  const handleAddMemberByHandle = async () => {
+    if (!addMemberHandle.trim() || !canInvite) return;
+
+    setIsAddingMember(true);
+    try {
+      const res = await fetch(`/api/groups/add-member`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          groupId,
+          handle: addMemberHandle.trim(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to add member');
+      }
+
+      toast({
+        title: 'Member added!',
+        description: `${addMemberHandle} has been added to ${groupName}`,
+      });
+
+      setAddMemberHandle('');
+      setShowAddMemberDialog(false);
+      mutate(`/api/groups/${groupId}/members`);
+    } catch (error: any) {
+      toast({
+        title: 'Failed to add member',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsAddingMember(false);
+    }
+  };
+
   const getRoleIcon = (role: string) => {
     switch (role) {
       case 'admin':
@@ -247,14 +293,36 @@ export function GroupManagement({
             <CardTitle className='flex items-center gap-2'>
               <UserPlus className='h-5 w-5' />
               Invite Members
+              {maxMembers && (
+                <Badge variant='secondary' className='ml-auto'>
+                  {members.length}/{maxMembers} members
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className='space-y-4'>
+            {maxMembers && members.length >= maxMembers && (
+              <div className='bg-destructive/10 text-destructive p-3 rounded-lg text-sm'>
+                This group is full. Remove a member before adding new ones.
+              </div>
+            )}
+
+            {groupType === 'icpc' && (
+              <div className='bg-muted/50 p-3 rounded-lg text-sm'>
+                <p className='font-medium'>ICPC Team Rules:</p>
+                <ul className='list-disc list-inside mt-1 text-muted-foreground'>
+                  <li>Maximum 3 members (ICPC regulation)</li>
+                  <li>All members must be from the same college</li>
+                </ul>
+              </div>
+            )}
+
             <div className='flex gap-2'>
               <Button
                 onClick={copyInviteLink}
                 variant='outline'
                 className='flex-1'
+                disabled={maxMembers ? members.length >= maxMembers : false}
               >
                 {copiedInvite ? (
                   <Check className='h-4 w-4 mr-2' />
@@ -263,6 +331,58 @@ export function GroupManagement({
                 )}
                 {copiedInvite ? 'Copied!' : 'Copy Invite Link'}
               </Button>
+
+              <Dialog
+                open={showAddMemberDialog}
+                onOpenChange={setShowAddMemberDialog}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    disabled={maxMembers ? members.length >= maxMembers : false}
+                  >
+                    <UserPlus className='h-4 w-4 mr-2' />
+                    Add by Handle
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add Member to {groupName}</DialogTitle>
+                    <DialogDescription>
+                      Enter the Codeforces handle of the user you want to add.
+                      {groupType === 'icpc' &&
+                        ' They must be from the same college.'}
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className='space-y-4'>
+                    <div>
+                      <label className='text-sm font-medium'>
+                        Codeforces Handle
+                      </label>
+                      <Input
+                        placeholder='Enter CF handle'
+                        value={addMemberHandle}
+                        onChange={e => setAddMemberHandle(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <DialogFooter>
+                    <Button
+                      variant='outline'
+                      onClick={() => setShowAddMemberDialog(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleAddMemberByHandle}
+                      disabled={!addMemberHandle.trim() || isAddingMember}
+                    >
+                      {isAddingMember ? 'Adding...' : 'Add Member'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               <Dialog
                 open={showInviteDialog}
@@ -371,7 +491,10 @@ export function GroupManagement({
                 >
                   <div className='relative'>
                     <Avatar className='h-10 w-10'>
-                      <AvatarImage src={member.avatar} alt={member.name} />
+                      <AvatarImage
+                        src={member.avatar || '/placeholder.svg'}
+                        alt={member.name}
+                      />
                       <AvatarFallback>
                         {member.name.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
@@ -473,8 +596,8 @@ export function GroupManagement({
                       invite.status === 'pending'
                         ? 'secondary'
                         : invite.status === 'accepted'
-                          ? 'default'
-                          : 'destructive'
+                        ? 'default'
+                        : 'destructive'
                     }
                   >
                     {invite.status}

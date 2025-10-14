@@ -35,8 +35,7 @@ export async function GET(
   // Generate invite code
   const inviteCode = randomUUID();
 
-  // Store in DB (assume invite_codes table or add to groups)
-  // For simplicity, add to groups table
+  // Store in DB
   const { error } = await supabase
     .from('groups')
     .update({ invite_code: inviteCode })
@@ -77,10 +76,9 @@ export async function POST(
   if (!user)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  // Verify code
   const { data: group } = await supabase
     .from('groups')
-    .select('college_id, invite_code')
+    .select('type, college_id, invite_code, max_members')
     .eq('id', groupId)
     .eq('invite_code', inviteCode)
     .single();
@@ -88,25 +86,37 @@ export async function POST(
   if (!group)
     return NextResponse.json({ error: 'Invalid invite code' }, { status: 400 });
 
-  // Check user's college
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('college_id')
-    .eq('id', user.id)
-    .single();
+  // Check user's college for ICPC teams and college groups
+  if ((group.type === 'icpc' || group.type === 'college') && group.college_id) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('college_id')
+      .eq('id', user.id)
+      .single();
 
-  if (!profile?.college_id || profile.college_id !== group.college_id) {
-    return NextResponse.json({ error: 'College mismatch' }, { status: 400 });
+    if (!profile?.college_id || profile.college_id !== group.college_id) {
+      return NextResponse.json(
+        {
+          error: `College mismatch. ${
+            group.type === 'icpc' ? 'ICPC teams' : 'College groups'
+          } require all members from the same college.`,
+        },
+        { status: 400 }
+      );
+    }
   }
 
-  // Check member count
   const { count } = await supabase
     .from('group_memberships')
     .select('*', { count: 'exact', head: true })
     .eq('group_id', groupId);
 
-  if (count && count >= 3)
-    return NextResponse.json({ error: 'Group is full' }, { status: 400 });
+  if (group.max_members && count && count >= group.max_members) {
+    return NextResponse.json(
+      { error: `Group is full (max ${group.max_members} members)` },
+      { status: 400 }
+    );
+  }
 
   // Add member
   const { error } = await supabase.from('group_memberships').upsert(

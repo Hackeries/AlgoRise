@@ -91,12 +91,12 @@ export async function POST(
       );
     }
 
-    // Ensure group has an invite_code
+    // Ensure group has an invite_code and link
     const getRes = await GET(req, { params: Promise.resolve({ id: groupId }) });
     if (getRes.status !== 200) return getRes;
     const { code, link } = await getRes.json();
 
-    // Persist invitation (for audit/history)
+    // Persist invitation (for audit/history) but don't block if table/policy missing
     const { error: insErr } = await supabase.from('group_invitations').insert({
       group_id: groupId,
       email,
@@ -104,8 +104,17 @@ export async function POST(
       code,
       created_by: user.id,
     });
-    if (insErr)
-      return NextResponse.json({ error: insErr.message }, { status: 500 });
+    if (insErr) {
+      // soft-fail: still return a usable link so the user can share immediately
+      console.log('[v0] group_invitations insert error:', insErr.message);
+      return NextResponse.json({
+        ok: true,
+        link,
+        code,
+        warning:
+          'Invitation not logged due to schema/policy. Link is still valid.',
+      });
+    }
 
     return NextResponse.json({
       ok: true,

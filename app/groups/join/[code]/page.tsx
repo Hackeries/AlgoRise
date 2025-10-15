@@ -53,16 +53,34 @@ export default function JoinGroupPage({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code }),
         });
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           setStatus('error');
-          setMessage(data.error || 'Failed to join group');
+          setMessage((data as any).error || 'Failed to join group');
+          return;
+        }
+
+        // Check CF verification state and guide
+        const { data: cfH } = await supabase
+          .from('cf_handles')
+          .select('verified')
+          .eq('user_id', user.id)
+          .single();
+        if (!cfH?.verified) {
+          setStatus('success');
+          setMessage(
+            `You've joined ${group.name}! One last step: verify your Codeforces handle.`
+          );
+          setTimeout(
+            () => router.replace('/profile?verify=cf&from=group-join'),
+            1500
+          );
           return;
         }
 
         setStatus('success');
         setMessage(`You've joined ${group.name}!`);
-        setTimeout(() => router.push('/groups'), 2000);
+        setTimeout(() => router.push('/groups'), 1500);
       } catch (err: any) {
         setStatus('error');
         setMessage(err.message || 'Something went wrong');

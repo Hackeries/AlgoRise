@@ -97,9 +97,9 @@ export function GroupManagement({
   const [isInviting, setIsInviting] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [copiedInvite, setCopiedInvite] = useState(false);
-  const [addMemberHandle, setAddMemberHandle] = useState('');
-  const [isAddingMember, setIsAddingMember] = useState(false);
-  const [showAddMemberDialog, setShowAddMemberDialog] = useState(false);
+  const [addHandle, setAddHandle] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
+  const [showAddByHandleDialog, setShowAddByHandleDialog] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
@@ -311,38 +311,38 @@ export function GroupManagement({
     }
   };
 
-  const handleAddMemberByHandle = async () => {
-    if (!addMemberHandle.trim() || !canManageMembers) return;
-
-    setIsAddingMember(true);
+  const handleAddByHandle = async () => {
+    if (!addHandle.trim() || !canManageMembers) return;
+    setIsAdding(true);
     try {
       const res = await fetch(`/api/groups/add-member`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ groupId, handle: addMemberHandle.trim() }),
+        body: JSON.stringify({ groupId, handle: addHandle.trim() }),
       });
-
       const data = await safeJson(res);
-      if (!res.ok) {
+      if (!res.ok)
         throw new Error((data as any).error || 'Failed to add member');
-      }
 
       toast({
         title: 'Member added',
-        description: `Added ${addMemberHandle.trim()} to the group`,
+        description: `${addHandle} has been added to the group${
+          (data as any).needsVerification
+            ? ". They'll need to verify their CF handle."
+            : '.'
+        }`,
       });
-
-      setAddMemberHandle('');
-      setShowAddMemberDialog(false);
+      setAddHandle('');
+      setShowAddByHandleDialog(false);
       mutate(`/api/groups/${groupId}/members`);
     } catch (error: any) {
       toast({
         title: 'Failed to add member',
-        description: error.message || 'Please check the handle or try again',
+        description: error.message || 'Please try again',
         variant: 'destructive',
       });
     } finally {
-      setIsAddingMember(false);
+      setIsAdding(false);
     }
   };
 
@@ -350,7 +350,11 @@ export function GroupManagement({
     if (!inviteCode || !inviteLink) {
       await generateInviteCode();
     }
-    if (!inviteCode || !inviteLink) {
+    let inviteUrl = inviteLink;
+    if (!inviteUrl && inviteCode) {
+      inviteUrl = `${window.location.origin}/groups/join/${inviteCode}`; // fallback if server didn't return link
+    }
+    if (!inviteUrl) {
       toast({
         title: 'Failed to generate invite link',
         description: 'Please try again',
@@ -358,8 +362,6 @@ export function GroupManagement({
       });
       return;
     }
-    const inviteUrl = inviteLink!;
-
     try {
       await navigator.clipboard.writeText(inviteUrl);
       setCopiedInvite(true);
@@ -368,7 +370,7 @@ export function GroupManagement({
         description: 'Share this link to invite members to your group',
       });
       setTimeout(() => setCopiedInvite(false), 2000);
-    } catch (error) {
+    } catch {
       toast({
         title: 'Failed to copy link',
         description: 'Please try again or copy manually',
@@ -472,8 +474,8 @@ export function GroupManagement({
               </Button>
 
               <Dialog
-                open={showAddMemberDialog}
-                onOpenChange={setShowAddMemberDialog}
+                open={showAddByHandleDialog}
+                onOpenChange={setShowAddByHandleDialog}
               >
                 <DialogTrigger asChild>
                   <Button
@@ -508,17 +510,18 @@ export function GroupManagement({
                       </label>
                       <Input
                         placeholder='e.g., tourist, Benq, Errichto'
-                        value={addMemberHandle}
-                        onChange={e => setAddMemberHandle(e.target.value)}
+                        value={addHandle}
+                        onChange={e => setAddHandle(e.target.value)}
                         onKeyDown={e => {
-                          if (e.key === 'Enter' && addMemberHandle.trim()) {
-                            handleAddMemberByHandle();
+                          if (e.key === 'Enter' && addHandle.trim()) {
+                            handleAddByHandle();
                           }
                         }}
                       />
                       <p className='text-xs text-muted-foreground'>
-                        The user must have a verified Codeforces handle on
-                        AlgoRise
+                        No verification required to add. If their Codeforces
+                        handle isn’t verified yet, they’ll be prompted to verify
+                        after joining.
                       </p>
                     </div>
                   </div>
@@ -526,15 +529,15 @@ export function GroupManagement({
                   <DialogFooter>
                     <Button
                       variant='outline'
-                      onClick={() => setShowAddMemberDialog(false)}
+                      onClick={() => setShowAddByHandleDialog(false)}
                     >
                       Cancel
                     </Button>
                     <Button
-                      onClick={handleAddMemberByHandle}
-                      disabled={!addMemberHandle.trim() || isAddingMember}
+                      onClick={handleAddByHandle}
+                      disabled={!addHandle.trim() || isAdding}
                     >
-                      {isAddingMember ? 'Adding...' : 'Add Member'}
+                      {isAdding ? 'Adding...' : 'Add Member'}
                     </Button>
                   </DialogFooter>
                 </DialogContent>

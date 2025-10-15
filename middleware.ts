@@ -1,12 +1,12 @@
-import { updateSession } from "@/lib/supabase/middleware"
-import type { NextRequest } from "next/server"
+import { updateSession } from '@/lib/supabase/middleware';
+import type { NextRequest } from 'next/server';
 
 export default async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  return await updateSession(request);
 }
 
 // Also export as named export for compatibility
-export { middleware }
+export { middleware };
 
 export const config = {
   matcher: [
@@ -19,6 +19,6 @@ export const config = {
      * - exclude auth callback to avoid PKCE interference
      * - exclude /api and common public assets/extensions from middleware
      */
-    "/((?!_next/static|_next/image|favicon.ico|auth/callback|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|webmanifest)$).*)",
+    '/((?!_next/static|_next/image|favicon.ico|auth/callback|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|webmanifest)$).*)',
   ],
-}
+};

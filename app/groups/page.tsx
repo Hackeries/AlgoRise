@@ -62,6 +62,14 @@ export default function GroupsPage() {
   const [discoverTab, setDiscoverTab] = useState<
     'all' | 'top-icpc' | 'college' | 'friends' | 'recent'
   >('all');
+  const [tab, setTab] = useState<
+    | 'overview'
+    | 'leaderboard'
+    | 'members'
+    | 'practice'
+    | 'contests'
+    | 'analytics'
+  >('overview');
 
   const sortGroups = (groups: Membership[]) => {
     const copy = [...groups];
@@ -285,7 +293,11 @@ export default function GroupsPage() {
           </div>
         </div>
 
-        <Tabs defaultValue='overview' className='space-y-6'>
+        <Tabs
+          value={tab}
+          onValueChange={v => setTab(v as any)}
+          className='space-y-6'
+        >
           <TabsList className='flex flex-wrap'>
             <TabsTrigger value='overview' className='flex items-center gap-2'>
               Overview
@@ -364,9 +376,28 @@ export default function GroupsPage() {
                   {selectedGroup.group.type === 'icpc' ? 'team' : 'group'}.
                 </p>
                 <div className='flex flex-wrap gap-3'>
+                  {/* Invite teammates should switch to Members tab, scroll, and open invite dialog */}
                   <Button
                     variant='secondary'
-                    onClick={() => (window.location.hash = '#members')}
+                    onClick={() => {
+                      setTab('members');
+                      // update URL hash and scroll
+                      window.history.replaceState(null, '', '#members');
+                      setTimeout(() => {
+                        document
+                          .getElementById('members')
+                          ?.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start',
+                          });
+                        // notify GroupManagement to open the invite dialog
+                        window.dispatchEvent(
+                          new CustomEvent('algorise:open-invite', {
+                            detail: { groupId: selectedGroup.group.id },
+                          })
+                        );
+                      }, 50);
+                    }}
                   >
                     Invite teammates
                   </Button>

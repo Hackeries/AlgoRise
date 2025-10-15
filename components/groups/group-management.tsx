@@ -71,6 +71,17 @@ interface GroupManagementProps {
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
+// helper below imports
+const safeJson = async (res: Response) => {
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {};
+  }
+};
+
 export function GroupManagement({
   groupId,
   groupName,
@@ -111,6 +122,23 @@ export function GroupManagement({
   const canManageMembers = userRole === 'admin';
 
   useEffect(() => {
+    const handler = (e: any) => {
+      if (e?.detail?.groupId === groupId) {
+        setShowInviteDialog(true);
+        setTimeout(() => {
+          const el = document.getElementById(
+            'invite-email-input'
+          ) as HTMLInputElement | null;
+          el?.focus();
+        }, 75);
+      }
+    };
+    window.addEventListener('algorise:open-invite', handler as any);
+    return () =>
+      window.removeEventListener('algorise:open-invite', handler as any);
+  }, [groupId]);
+
+  useEffect(() => {
     if (canInvite && !inviteCode) {
       generateInviteCode();
     }
@@ -122,17 +150,23 @@ export function GroupManagement({
       const res = await fetch(`/api/groups/${groupId}/invite`, {
         method: 'GET',
       });
-
-      const data = await res.json();
+      const data = await safeJson(res);
 
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to generate invite code');
+        throw new Error(
+          (data as any).error || 'Failed to generate invite code'
+        );
       }
 
-      setInviteCode(data.code);
-      setInviteLink(data.link || null);
+      setInviteCode((data as any).code);
+      setInviteLink((data as any).link || null);
     } catch (error: any) {
-      console.error('[v0] Failed to generate invite code:', error);
+      toast({
+        title: 'Failed to generate invite link',
+        description: error.message || 'Please try again',
+        variant: 'destructive',
+      });
+      console.log('[v0] invite code error', error?.message);
     } finally {
       setIsGeneratingCode(false);
     }
@@ -144,6 +178,7 @@ export function GroupManagement({
     if (!inviteCode || !inviteLink) {
       await generateInviteCode();
     }
+    if (!inviteCode || !inviteLink) return;
 
     setIsInviting(true);
     try {
@@ -153,25 +188,25 @@ export function GroupManagement({
         body: JSON.stringify({
           email: inviteEmail.trim(),
           role: inviteRole,
-          code: inviteCode, // server also persists the invite and returns link
+          code: inviteCode,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to send invitation');
-      }
+      const data = await safeJson(res);
+      if (!res.ok)
+        throw new Error((data as any).error || 'Failed to send invitation');
+
       const linkToShare =
-        data.link ||
+        (data as any).link ||
         inviteLink ||
         (inviteCode
           ? `${window.location.origin}/groups/join/${inviteCode}`
           : '');
 
-      // Try Web Share API; if not available, open a mailto link
       const subject = `You're invited to join ${groupName} on AlgoRise`;
       const body =
         `Hi,\n\nYou've been invited to join the group "${groupName}".\n\nJoin link: ${linkToShare}\n\n` +
         `Role: ${inviteRole}\n\nSee you on AlgoRise!`;
+
       if ((navigator as any).share) {
         try {
           await (navigator as any).share({
@@ -180,7 +215,7 @@ export function GroupManagement({
             url: linkToShare,
           });
         } catch {
-          // ignore if user cancels
+          // user cancelled share sheet
         }
       } else {
         const mailto = `mailto:${encodeURIComponent(
@@ -193,7 +228,7 @@ export function GroupManagement({
 
       toast({
         title: 'Invitation ready to share',
-        description: `We generated a join link for ${inviteEmail}. Share via email or chat.`,
+        description: `We generated a join link for ${inviteEmail}.`,
       });
 
       setInviteEmail('');
@@ -202,7 +237,7 @@ export function GroupManagement({
     } catch (error: any) {
       toast({
         title: 'Failed to send invitation',
-        description: error.message,
+        description: error.message || 'Please try again',
         variant: 'destructive',
       });
     } finally {
@@ -283,9 +318,9 @@ export function GroupManagement({
         body: JSON.stringify({ handle: addMemberHandle.trim() }),
       });
 
-      const data = await res.json();
+      const data = await safeJson(res);
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to add member');
+        throw new Error((data as any).error || 'Failed to add member');
       }
 
       toast({
@@ -299,7 +334,7 @@ export function GroupManagement({
     } catch (error: any) {
       toast({
         title: 'Failed to add member',
-        description: error.message,
+        description: error.message || 'Please check the handle or try again',
         variant: 'destructive',
       });
     } finally {
@@ -535,6 +570,7 @@ export function GroupManagement({
                         Email Address
                       </label>
                       <Input
+                        id='invite-email-input'
                         type='email'
                         placeholder='teammate@example.com'
                         value={inviteEmail}

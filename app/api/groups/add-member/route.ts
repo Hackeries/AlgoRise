@@ -64,8 +64,8 @@ export async function POST(req: Request) {
 
   const { data: targetProfile } = await supabase
     .from('profiles')
-    .select('id, college_id')
-    .eq('id', cfHandle.user_id)
+    .select('college_id')
+    .eq('user_id', cfHandle.user_id)
     .single();
 
   if (!targetProfile)
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
   const { error } = await supabase.from('group_memberships').upsert(
     {
       group_id: groupId,
-      user_id: targetProfile.id,
+      user_id: cfHandle.user_id,
       role: 'member',
     },
     { onConflict: 'group_id,user_id' }

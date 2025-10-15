@@ -8,7 +8,6 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   const groupId = params.id;
-
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -21,7 +20,7 @@ export async function GET(
   if (!user)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  // Check if user is member of group
+  // Ensure caller is at least a member
   const { data: membership } = await supabase
     .from('group_memberships')
     .select('role')
@@ -32,22 +31,30 @@ export async function GET(
   if (!membership)
     return NextResponse.json({ error: 'Not a member' }, { status: 403 });
 
-  // Generate invite code
-  const inviteCode = randomUUID();
-
-  // Store in DB
-  const { error } = await supabase
+  // Read existing code, or generate then persist
+  const { data: groupRow } = await supabase
     .from('groups')
-    .update({ invite_code: inviteCode })
-    .eq('id', groupId);
+    .select('invite_code')
+    .eq('id', groupId)
+    .single();
 
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  let inviteCode = groupRow?.invite_code as string | null;
+  if (!inviteCode) {
+    inviteCode = randomUUID();
+    const { error: upErr } = await supabase
+      .from('groups')
+      .update({ invite_code: inviteCode })
+      .eq('id', groupId);
+    if (upErr)
+      return NextResponse.json(
+        { error: upErr.message || 'Failed to save invite code' },
+        { status: 500 }
+      );
+  }
 
   const inviteLink = `${
     process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   }/groups/join/${inviteCode}`;
-
   return NextResponse.json({ link: inviteLink, code: inviteCode });
 }
 
@@ -57,24 +64,69 @@ export async function POST(
 ) {
   const groupId = params.id;
   const body = await req.json().catch(() => ({}));
-  const inviteCode = body?.code as string | undefined;
-  if (!inviteCode)
-    return NextResponse.json(
-      { error: 'Invite code required' },
-      { status: 400 }
-    );
+  const email = (body?.email as string | undefined)?.trim();
+  const role = (body?.role as 'member' | 'moderator' | undefined) || 'member';
+  const inviteCode = (body?.code as string | undefined) || '';
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { cookies: await cookies() }
   );
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  // If email provided → create invitation record and return shareable link
+  if (email) {
+    // Must be admin or moderator to invite
+    const { data: membership } = await supabase
+      .from('group_memberships')
+      .select('role')
+      .eq('group_id', groupId)
+      .eq('user_id', user.id)
+      .single();
+    if (!membership || !['admin', 'moderator'].includes(membership.role)) {
+      return NextResponse.json(
+        { error: 'Not authorized to invite' },
+        { status: 403 }
+      );
+    }
+
+    // Ensure group has an invite_code
+    const getRes = await GET(req, { params });
+    if (getRes.status !== 200) return getRes;
+    const { code, link } = await getRes.json();
+
+    // Persist invitation (for audit/history)
+    const { error: insErr } = await supabase.from('group_invitations').insert({
+      group_id: groupId,
+      email,
+      role,
+      code,
+      created_by: user.id,
+    });
+    if (insErr)
+      return NextResponse.json({ error: insErr.message }, { status: 500 });
+
+    // We don't have a server-side email provider here; return a payload the client can use to share
+    return NextResponse.json({
+      ok: true,
+      link,
+      code,
+      message:
+        'Invitation created. Use the provided link to share via email or messaging. If the recipient has an AlgoRise account, they can join directly.',
+    });
+  }
+
+  // Otherwise treat as "join by code" for current user
+  if (!inviteCode)
+    return NextResponse.json(
+      { error: 'Invite code required' },
+      { status: 400 }
+    );
 
   const { data: group } = await supabase
     .from('groups')
@@ -82,24 +134,22 @@ export async function POST(
     .eq('id', groupId)
     .eq('invite_code', inviteCode)
     .single();
-
   if (!group)
     return NextResponse.json({ error: 'Invalid invite code' }, { status: 400 });
 
-  // Check user's college for ICPC teams and college groups
+  // College check for ICPC/college groups (check current user’s college)
   if ((group.type === 'icpc' || group.type === 'college') && group.college_id) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('college_id')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single();
-
     if (!profile?.college_id || profile.college_id !== group.college_id) {
       return NextResponse.json(
         {
           error: `College mismatch. ${
             group.type === 'icpc' ? 'ICPC teams' : 'College groups'
-          } require all members from the same college.`,
+          } require same college.`,
         },
         { status: 400 }
       );
@@ -110,7 +160,6 @@ export async function POST(
     .from('group_memberships')
     .select('*', { count: 'exact', head: true })
     .eq('group_id', groupId);
-
   if (group.max_members && count && count >= group.max_members) {
     return NextResponse.json(
       { error: `Group is full (max ${group.max_members} members)` },
@@ -118,16 +167,12 @@ export async function POST(
     );
   }
 
-  // Add member
-  const { error } = await supabase.from('group_memberships').upsert(
-    {
-      group_id: groupId,
-      user_id: user.id,
-      role: 'member',
-    },
-    { onConflict: 'group_id,user_id' }
-  );
-
+  const { error } = await supabase
+    .from('group_memberships')
+    .upsert(
+      { group_id: groupId, user_id: user.id, role: 'member' },
+      { onConflict: 'group_id,user_id' }
+    );
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
 

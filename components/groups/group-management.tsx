@@ -91,6 +91,7 @@ export function GroupManagement({
   const [showAddMemberDialog, setShowAddMemberDialog] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
 
   const { data: groupData, isLoading } = useSWR<{
     members: GroupMember[];
@@ -129,6 +130,7 @@ export function GroupManagement({
       }
 
       setInviteCode(data.code);
+      setInviteLink(data.link || null);
     } catch (error: any) {
       console.error('[v0] Failed to generate invite code:', error);
     } finally {
@@ -139,7 +141,7 @@ export function GroupManagement({
   const handleInvite = async () => {
     if (!inviteEmail.trim() || !canInvite) return;
 
-    if (!inviteCode) {
+    if (!inviteCode || !inviteLink) {
       await generateInviteCode();
     }
 
@@ -151,19 +153,47 @@ export function GroupManagement({
         body: JSON.stringify({
           email: inviteEmail.trim(),
           role: inviteRole,
-          code: inviteCode, // Include the invite code
+          code: inviteCode, // server also persists the invite and returns link
         }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.error || 'Failed to send invitation');
       }
+      const linkToShare =
+        data.link ||
+        inviteLink ||
+        (inviteCode
+          ? `${window.location.origin}/groups/join/${inviteCode}`
+          : '');
+
+      // Try Web Share API; if not available, open a mailto link
+      const subject = `You're invited to join ${groupName} on AlgoRise`;
+      const body =
+        `Hi,\n\nYou've been invited to join the group "${groupName}".\n\nJoin link: ${linkToShare}\n\n` +
+        `Role: ${inviteRole}\n\nSee you on AlgoRise!`;
+      if ((navigator as any).share) {
+        try {
+          await (navigator as any).share({
+            title: subject,
+            text: body,
+            url: linkToShare,
+          });
+        } catch {
+          // ignore if user cancels
+        }
+      } else {
+        const mailto = `mailto:${encodeURIComponent(
+          inviteEmail.trim()
+        )}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
+          body
+        )}`;
+        window.open(mailto, '_blank', 'noopener,noreferrer');
+      }
 
       toast({
-        title: 'Invitation sent successfully!',
-        description: `An email has been sent to ${inviteEmail} with instructions to join ${groupName}`,
+        title: 'Invitation ready to share',
+        description: `We generated a join link for ${inviteEmail}. Share via email or chat.`,
       });
 
       setInviteEmail('');
@@ -242,63 +272,25 @@ export function GroupManagement({
     }
   };
 
-  const copyInviteLink = async () => {
-    if (!inviteCode) {
-      await generateInviteCode();
-    }
-
-    if (!inviteCode) {
-      toast({
-        title: 'Failed to generate invite link',
-        description: 'Please try again',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const inviteUrl = `${window.location.origin}/groups/join/${inviteCode}`;
-
-    try {
-      await navigator.clipboard.writeText(inviteUrl);
-      setCopiedInvite(true);
-      toast({
-        title: 'Invite link copied!',
-        description: 'Share this link to invite members to your group',
-      });
-
-      setTimeout(() => setCopiedInvite(false), 2000);
-    } catch (error) {
-      toast({
-        title: 'Failed to copy link',
-        description: 'Please try again or copy manually',
-        variant: 'destructive',
-      });
-    }
-  };
-
   const handleAddMemberByHandle = async () => {
-    if (!addMemberHandle.trim() || !canInvite) return;
+    if (!addMemberHandle.trim() || !canManageMembers) return;
 
     setIsAddingMember(true);
     try {
-      const res = await fetch(`/api/groups/add-member`, {
+      const res = await fetch(`/api/groups/${groupId}/members/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          groupId,
-          handle: addMemberHandle.trim(),
-        }),
+        body: JSON.stringify({ handle: addMemberHandle.trim() }),
       });
 
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.error || 'Failed to add member');
       }
 
       toast({
-        title: 'Member added!',
-        description: `${addMemberHandle} has been added to ${groupName}`,
+        title: 'Member added',
+        description: `Added ${addMemberHandle.trim()} to the group`,
       });
 
       setAddMemberHandle('');
@@ -312,6 +304,37 @@ export function GroupManagement({
       });
     } finally {
       setIsAddingMember(false);
+    }
+  };
+
+  const copyInviteLink = async () => {
+    if (!inviteCode || !inviteLink) {
+      await generateInviteCode();
+    }
+    if (!inviteCode || !inviteLink) {
+      toast({
+        title: 'Failed to generate invite link',
+        description: 'Please try again',
+        variant: 'destructive',
+      });
+      return;
+    }
+    const inviteUrl = inviteLink!;
+
+    try {
+      await navigator.clipboard.writeText(inviteUrl);
+      setCopiedInvite(true);
+      toast({
+        title: 'Invite link copied!',
+        description: 'Share this link to invite members to your group',
+      });
+      setTimeout(() => setCopiedInvite(false), 2000);
+    } catch (error) {
+      toast({
+        title: 'Failed to copy link',
+        description: 'Please try again or copy manually',
+        variant: 'destructive',
+      });
     }
   };
 

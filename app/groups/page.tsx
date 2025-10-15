@@ -1,7 +1,7 @@
 'use client';
 
 import useSWR, { mutate } from 'swr';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,7 @@ interface Group {
   memberCount: number;
   maxMembers?: number;
   description?: string;
+  createdAt?: string; // for "Recently Formed" discover tab
 }
 
 interface Membership {
@@ -57,15 +58,27 @@ export default function GroupsPage() {
   const [filterType, setFilterType] = useState<
     'all' | 'college' | 'friends' | 'icpc'
   >('all');
-  const [sortKey, setSortKey] = useState<'name' | 'members'>('name');
+  const [sortKey, setSortKey] = useState<'name' | 'members' | 'recent'>('name');
+  const [discoverTab, setDiscoverTab] = useState<
+    'all' | 'top-icpc' | 'college' | 'friends' | 'recent'
+  >('all');
 
   const sortGroups = (groups: Membership[]) => {
+    const copy = [...groups];
     if (sortKey === 'name') {
-      return groups.sort((a, b) => a.group.name.localeCompare(b.group.name));
+      return copy.sort((a, b) => a.group.name.localeCompare(b.group.name));
     }
-    return groups.sort(
-      (a, b) => (b.group.memberCount || 0) - (a.group.memberCount || 0)
-    );
+    if (sortKey === 'members') {
+      return copy.sort(
+        (a, b) => (b.group.memberCount || 0) - (a.group.memberCount || 0)
+      );
+    }
+    // recent
+    return copy.sort((a, b) => {
+      const at = a.group.createdAt ? new Date(a.group.createdAt).getTime() : 0;
+      const bt = b.group.createdAt ? new Date(b.group.createdAt).getTime() : 0;
+      return bt - at;
+    });
   };
 
   const filterGroups = (groups: Membership[]) => {
@@ -184,6 +197,39 @@ export default function GroupsPage() {
 
   const filteredAndSortedMemberships = sortGroups(filterGroups(memberships));
 
+  const { data: lbData } = useSWR<{
+    stats?: {
+      totalMembers: number;
+      activeMembers: number;
+      avgRating: number;
+      totalProblems: number;
+    };
+  }>(
+    selectedGroup
+      ? `/api/groups/${selectedGroup.group.id}/leaderboard?range=all&sort=rating`
+      : null,
+    fetcher
+  );
+
+  useEffect(() => {
+    if (discoverTab === 'all') {
+      setFilterType('all');
+      setSortKey('name');
+    } else if (discoverTab === 'top-icpc') {
+      setFilterType('icpc');
+      setSortKey('members');
+    } else if (discoverTab === 'college') {
+      setFilterType('college');
+      setSortKey('name');
+    } else if (discoverTab === 'friends') {
+      setFilterType('friends');
+      setSortKey('members');
+    } else if (discoverTab === 'recent') {
+      setFilterType('all');
+      setSortKey('recent');
+    }
+  }, [discoverTab]);
+
   if (selectedGroup) {
     const typeBadge = getGroupTypeBadge(selectedGroup.group.type);
 
@@ -239,8 +285,11 @@ export default function GroupsPage() {
           </div>
         </div>
 
-        <Tabs defaultValue='leaderboard' className='space-y-6'>
-          <TabsList>
+        <Tabs defaultValue='overview' className='space-y-6'>
+          <TabsList className='flex flex-wrap'>
+            <TabsTrigger value='overview' className='flex items-center gap-2'>
+              Overview
+            </TabsTrigger>
             <TabsTrigger
               value='leaderboard'
               className='flex items-center gap-2'
@@ -252,7 +301,111 @@ export default function GroupsPage() {
               <Users className='h-4 w-4' />
               Members
             </TabsTrigger>
+            {/* scaffolding for future sections per blueprint */}
+            <TabsTrigger value='practice' className='hidden md:inline-flex'>
+              Practice
+            </TabsTrigger>
+            <TabsTrigger value='contests' className='hidden md:inline-flex'>
+              Contests
+            </TabsTrigger>
+            <TabsTrigger value='analytics' className='hidden md:inline-flex'>
+              Analytics
+            </TabsTrigger>
           </TabsList>
+
+          <TabsContent value='overview' className='space-y-6'>
+            <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+              <Card>
+                <CardContent className='p-5'>
+                  <div className='text-sm text-muted-foreground'>Members</div>
+                  <div className='mt-1 text-2xl font-bold'>
+                    {lbData?.stats?.totalMembers ??
+                      selectedGroup.group.memberCount}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className='p-5'>
+                  <div className='text-sm text-muted-foreground'>Active</div>
+                  <div className='mt-1 text-2xl font-bold'>
+                    {lbData?.stats?.activeMembers ?? 0}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className='p-5'>
+                  <div className='text-sm text-muted-foreground'>
+                    Avg Rating
+                  </div>
+                  <div className='mt-1 text-2xl font-bold'>
+                    {lbData?.stats?.avgRating
+                      ? Math.round(lbData.stats.avgRating)
+                      : '—'}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className='p-5'>
+                  <div className='text-sm text-muted-foreground'>
+                    Total Solved
+                  </div>
+                  <div className='mt-1 text-2xl font-bold'>
+                    {lbData?.stats?.totalProblems ?? 0}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardContent className='p-6'>
+                <h3 className='text-lg font-semibold mb-2'>Quick Actions</h3>
+                <p className='text-sm text-muted-foreground mb-4'>
+                  Get started with your{' '}
+                  {selectedGroup.group.type === 'icpc' ? 'team' : 'group'}.
+                </p>
+                <div className='flex flex-wrap gap-3'>
+                  <Button
+                    variant='secondary'
+                    onClick={() => (window.location.hash = '#members')}
+                  >
+                    Invite teammates
+                  </Button>
+                  <Button
+                    variant='outline'
+                    onClick={() => (window.location.href = '/train')}
+                  >
+                    Generate practice plan
+                  </Button>
+                  <Button
+                    variant='outline'
+                    onClick={() => (window.location.href = '/contests')}
+                  >
+                    Browse contests
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className='p-6'>
+                <h3 className='text-lg font-semibold mb-2'>
+                  Upcoming Contests
+                </h3>
+                <p className='text-sm text-muted-foreground'>
+                  Check live and virtual contests to practice together on
+                  AlgoRise or Codeforces.
+                </p>
+                <div className='mt-3'>
+                  <Button
+                    variant='outline'
+                    onClick={() => (window.location.href = '/contests')}
+                  >
+                    View contests
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value='leaderboard' className='space-y-6'>
             <GroupLeaderboard
@@ -261,7 +414,7 @@ export default function GroupsPage() {
             />
           </TabsContent>
 
-          <TabsContent value='members' className='space-y-6'>
+          <TabsContent value='members' className='space-y-6' id='members'>
             <GroupManagement
               groupId={selectedGroup.group.id}
               groupName={selectedGroup.group.name}
@@ -269,6 +422,54 @@ export default function GroupsPage() {
               userRole={selectedGroup.role}
               maxMembers={selectedGroup.group.maxMembers}
             />
+          </TabsContent>
+
+          <TabsContent value='practice' className='space-y-6'>
+            <Card>
+              <CardContent className='p-6'>
+                <h3 className='text-lg font-semibold mb-2'>Topic Tracker</h3>
+                <p className='text-sm text-muted-foreground mb-4'>
+                  Track DP, Graphs, Number Theory and more. Use Train to
+                  generate a tailored plan.
+                </p>
+                <Button
+                  variant='outline'
+                  onClick={() => (window.location.href = '/train')}
+                >
+                  Open Train
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value='contests' className='space-y-6'>
+            <Card>
+              <CardContent className='p-6'>
+                <h3 className='text-lg font-semibold mb-2'>Mock Contests</h3>
+                <p className='text-sm text-muted-foreground mb-4'>
+                  Schedule team practice using ICPC-style contests on AlgoRise
+                  or Codeforces virtuals.
+                </p>
+                <Button
+                  variant='outline'
+                  onClick={() => (window.location.href = '/contests')}
+                >
+                  Browse Contests
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value='analytics' className='space-y-6'>
+            <Card>
+              <CardContent className='p-6'>
+                <h3 className='text-lg font-semibold mb-2'>Team Analytics</h3>
+                <p className='text-sm text-muted-foreground'>
+                  View solve counts, efficiency, and consistency. More detailed
+                  charts coming soon.
+                </p>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </main>
@@ -296,6 +497,7 @@ export default function GroupsPage() {
             >
               <option value='name'>Name</option>
               <option value='members'>Members</option>
+              <option value='recent'>Recently Formed</option>
             </select>
 
             <label className='ml-3 text-sm text-muted-foreground'>Type</label>
@@ -462,6 +664,28 @@ export default function GroupsPage() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+        </div>
+      </div>
+
+      <div className='mb-6'>
+        <div className='inline-flex rounded-lg border bg-background p-1'>
+          {[
+            { v: 'all', label: 'All' },
+            { v: 'top-icpc', label: 'Top ICPC Teams' },
+            { v: 'college', label: 'College Groups' },
+            { v: 'friends', label: 'Active DSA Circles' },
+            { v: 'recent', label: 'Recently Formed' },
+          ].map(t => (
+            <button
+              key={t.v}
+              onClick={() => setDiscoverTab(t.v as any)}
+              className={`px-3 py-1.5 text-sm rounded-md ${
+                discoverTab === t.v ? 'bg-muted' : 'hover:bg-muted/60'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
       </div>
 

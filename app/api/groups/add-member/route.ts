@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
@@ -12,11 +11,7 @@ export async function POST(req: Request) {
       { status: 400 }
     );
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: await cookies() }
-  );
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -24,7 +19,6 @@ export async function POST(req: Request) {
   if (!user)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  // Check if user is admin/moderator of group
   const { data: membership } = await supabase
     .from('group_memberships')
     .select('role')
@@ -44,21 +38,17 @@ export async function POST(req: Request) {
     .select('type, college_id, max_members')
     .eq('id', groupId)
     .single();
-
   if (!group)
     return NextResponse.json({ error: 'Group not found' }, { status: 404 });
 
-  // Find target user by handle
   const { data: cfHandle } = await supabase
     .from('cf_handles')
-    .select('user_id')
+    .select('user_id, verified')
     .eq('handle', targetHandle.trim())
-    .eq('verified', true)
     .single();
-
   if (!cfHandle)
     return NextResponse.json(
-      { error: 'User not found or handle not verified' },
+      { error: 'User not found with that handle' },
       { status: 404 }
     );
 
@@ -67,7 +57,6 @@ export async function POST(req: Request) {
     .select('college_id')
     .eq('user_id', cfHandle.user_id)
     .single();
-
   if (!targetProfile)
     return NextResponse.json(
       { error: 'User profile not found' },
@@ -91,7 +80,6 @@ export async function POST(req: Request) {
     .from('group_memberships')
     .select('*', { count: 'exact', head: true })
     .eq('group_id', groupId);
-
   if (group.max_members && count && count >= group.max_members) {
     return NextResponse.json(
       { error: `Group is full (max ${group.max_members} members)` },
@@ -99,18 +87,14 @@ export async function POST(req: Request) {
     );
   }
 
-  // Add member
-  const { error } = await supabase.from('group_memberships').upsert(
-    {
-      group_id: groupId,
-      user_id: cfHandle.user_id,
-      role: 'member',
-    },
-    { onConflict: 'group_id,user_id' }
-  );
-
+  const { error } = await supabase
+    .from('group_memberships')
+    .upsert(
+      { group_id: groupId, user_id: cfHandle.user_id, role: 'member' },
+      { onConflict: 'group_id,user_id' }
+    );
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, needsVerification: !cfHandle.verified });
 }

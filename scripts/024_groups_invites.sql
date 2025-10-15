@@ -1,48 +1,34 @@
--- 1) Ensure invite_code exists on groups (harmless if already present)
-alter table public.groups
-  add column if not exists invite_code text unique;
+-- Enable RLS on groups (safe)
+alter table if exists public.groups enable row level security;
 
--- 2) Ensure RLS is enabled on groups (no-op if already enabled)
-alter table public.groups enable row level security;
-
--- 3) Recreate update policy for group admins/moderators (safe + idempotent)
+-- Allow admins/moderators of a group to update that group's row (e.g., to set invite_code)
 do $$
 begin
-  -- drop existing policy if present
-  if exists (
-    select 1
-    from pg_policy p
-    join pg_class c on c.oid = p.polrelid
-    where p.polname = 'groups_update_admin' and c.relname = 'groups'
-  ) then
-    execute 'drop policy "groups_update_admin" on public.groups';
-  end if;
-
-  -- create policy (no IF NOT EXISTS; executed only once due to guard above)
-  execute $policy$
-    create policy "groups_update_admin"
-    on public.groups
-    for update
-    using (
-      exists (
-        select 1
-        from public.group_memberships gm
-        where gm.group_id = id
-          and gm.user_id = auth.uid()
-          and gm.role in ('admin','moderator')
-      )
+  create policy "groups_update_admin"
+  on public.groups
+  for update
+  using (
+    exists (
+      select 1 from public.group_memberships gm
+      where gm.group_id = id
+        and gm.user_id = auth.uid()
+        and gm.role in ('admin','moderator')
     )
-    with check (
-      exists (
-        select 1
-        from public.group_memberships gm
-        where gm.group_id = id
-          and gm.user_id = auth.uid()
-          and gm.role in ('admin','moderator')
-      )
+  )
+  with check (
+    exists (
+      select 1 from public.group_memberships gm
+      where gm.group_id = id
+        and gm.user_id = auth.uid()
+        and gm.role in ('admin','moderator')
     )
-  $policy$;
+  );
+exception
+  when duplicate_object then
+    -- policy already exists; do nothing
+    null;
 end $$;
 
--- 4) Helpful index for invite lookups
+-- Ensure invite_code column + index exist
+alter table public.groups add column if not exists invite_code text unique;
 create index if not exists idx_groups_invite_code on public.groups(invite_code);

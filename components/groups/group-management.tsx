@@ -153,9 +153,13 @@ export function GroupManagement({
       const data = await safeJson(res);
 
       if (!res.ok) {
-        throw new Error(
-          (data as any).error || 'Failed to generate invite code'
-        );
+        const msg =
+          res.status === 401
+            ? 'You are not logged in. Please refresh and sign in.'
+            : res.status === 403
+            ? 'Only group members can generate invite links.'
+            : (data as any).error || 'Failed to generate invite link';
+        throw new Error(msg);
       }
 
       setInviteCode((data as any).code);
@@ -312,10 +316,10 @@ export function GroupManagement({
 
     setIsAddingMember(true);
     try {
-      const res = await fetch(`/api/groups/${groupId}/members/add`, {
+      const res = await fetch(`/api/groups/add-member`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ handle: addMemberHandle.trim() }),
+        body: JSON.stringify({ groupId, handle: addMemberHandle.trim() }),
       });
 
       const data = await safeJson(res);

@@ -1,18 +1,13 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { randomUUID } from 'crypto';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const groupId = params.id;
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: await cookies() }
-  );
+  const { id: groupId } = await params;
+  const supabase = await createClient();
 
   const {
     data: { user },
@@ -32,13 +27,18 @@ export async function GET(
     return NextResponse.json({ error: 'Not a member' }, { status: 403 });
 
   // Read existing code, or generate then persist
-  const { data: groupRow } = await supabase
+  const { data: groupRow, error: selErr } = await supabase
     .from('groups')
     .select('invite_code')
     .eq('id', groupId)
     .single();
+  if (selErr)
+    return NextResponse.json(
+      { error: selErr.message || 'Failed to read group' },
+      { status: 500 }
+    );
 
-  let inviteCode = groupRow?.invite_code as string | null;
+  let inviteCode = (groupRow?.invite_code as string | null) || null;
   if (!inviteCode) {
     inviteCode = randomUUID();
     const { error: upErr } = await supabase
@@ -52,27 +52,23 @@ export async function GET(
       );
   }
 
-  const inviteLink = `${
-    process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-  }/groups/join/${inviteCode}`;
+  const base = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const inviteLink = `${base}/groups/join/${inviteCode}`;
   return NextResponse.json({ link: inviteLink, code: inviteCode });
 }
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const groupId = params.id;
+  const { id: groupId } = await params;
+  const supabase = await createClient();
+
   const body = await req.json().catch(() => ({}));
   const email = (body?.email as string | undefined)?.trim();
   const role = (body?.role as 'member' | 'moderator' | undefined) || 'member';
   const inviteCode = (body?.code as string | undefined) || '';
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: await cookies() }
-  );
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -96,7 +92,7 @@ export async function POST(
     }
 
     // Ensure group has an invite_code
-    const getRes = await GET(req, { params });
+    const getRes = await GET(req, { params: Promise.resolve({ id: groupId }) });
     if (getRes.status !== 200) return getRes;
     const { code, link } = await getRes.json();
 
@@ -111,7 +107,6 @@ export async function POST(
     if (insErr)
       return NextResponse.json({ error: insErr.message }, { status: 500 });
 
-    // We don't have a server-side email provider here; return a payload the client can use to share
     return NextResponse.json({
       ok: true,
       link,
@@ -137,7 +132,7 @@ export async function POST(
   if (!group)
     return NextResponse.json({ error: 'Invalid invite code' }, { status: 400 });
 
-  // College check for ICPC/college groups (check current user’s college)
+  // College check for ICPC/college groups
   if ((group.type === 'icpc' || group.type === 'college') && group.college_id) {
     const { data: profile } = await supabase
       .from('profiles')

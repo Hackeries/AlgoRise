@@ -10,7 +10,10 @@ export interface NotificationData {
     | 'achievement'
     | 'system_announcement'
     | 'friend_request'
-    | 'mention';
+    | 'mention'
+    | 'daily_problem_reminder'
+    | 'rating_change'
+    | 'friend_joined_contest';
   title: string;
   message: string;
   data?: Record<string, any>;

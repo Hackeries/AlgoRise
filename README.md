@@ -31,6 +31,7 @@ npm start
 - **Progress Analytics** - Detailed performance tracking
 - **Group Competitions** - Team contests and leaderboards
 - **Streak Tracking** - Daily practice motivation
+- **Smart Notifications** - Timely alerts for daily problems, contests, rating changes, and friend activity
 
 ## 🔧 Tech Stack
 
@@ -45,6 +46,7 @@ npm start
 - **`CLIENT_HANDOVER.md`** - Complete handover documentation
 - **`DEPLOYMENT_CHECKLIST.md`** - Pre-launch checklist
 - **`DATABASE_SETUP_GUIDE.md`** - Database configuration guide
+- **`SMART_NOTIFICATIONS.md`** - Smart notifications implementation guide
 
 ## 🐛 Issues Fixed
 

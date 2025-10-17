@@ -27,6 +27,7 @@ import {
   CreditCard,
   HelpCircle,
   Sword,
+  Trophy,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
@@ -326,6 +327,15 @@ export function Header() {
           >
             <Sword className='h-5 w-5' />
             <span className='hidden md:inline'>Battle Arena 🎮</span>
+          </Button>
+        </Link>
+        <Link href='/battle-arena/leaderboard'>
+          <Button
+            variant='ghost'
+            className='text-muted-foreground hover:text-foreground gap-2'
+          >
+            <Trophy className='h-5 w-5' />
+            <span className='hidden md:inline'>Leaderboard</span>
           </Button>
         </Link>
         <Link href='/faqs'>

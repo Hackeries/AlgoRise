@@ -2,7 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { RealTimeNotificationManager } from '@/lib/realtime-notifications';
-import { simulateRatings } from '@/lib/contest-sim';
+import { simulateRatings, type RankRow, type RatingRow } from '@/lib/contest-sim';
+import CodeExecutionService from '@/lib/code-execution-service';
 
 export interface BattleRound {
   id: string;
@@ -33,10 +34,12 @@ export interface BattleSubmission {
 export class BattleService {
   private supabase: any;
   private rtManager: RealTimeNotificationManager;
+  private codeExecutor: CodeExecutionService;
 
   constructor() {
     this.supabase = createClient();
     this.rtManager = RealTimeNotificationManager.getInstance();
+    this.codeExecutor = CodeExecutionService.getInstance();
   }
 
   // Start a battle
@@ -75,6 +78,9 @@ export class BattleService {
           battleId,
           message: 'Battle started! First round beginning now.'
         });
+
+        // Set up real-time channel for battle updates
+        this.setupBattleChannel(battleId, userIds);
       }
 
       return { success: true, message: 'Battle started successfully' };
@@ -150,6 +156,110 @@ export class BattleService {
     }
   }
 
+  // Set up real-time channel for battle updates
+  private async setupBattleChannel(battleId: string, userIds: string[]): Promise<void> {
+    try {
+      // Create a channel for this battle
+      const channel = this.supabase.channel(`battle:${battleId}`);
+      
+      // Listen for battle updates
+      channel
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'battles',
+            filter: `id=eq.${battleId}`
+          },
+          (payload: any) => {
+            // Notify all participants of battle updates
+            this.rtManager.sendToUsers(userIds, {
+              type: 'battle_updated',
+              battleId,
+              data: payload.new,
+              message: 'Battle status updated'
+            });
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'battle_rounds',
+            filter: `battle_id=eq.${battleId}`
+          },
+          (payload: any) => {
+            // Notify all participants of new round
+            this.rtManager.sendToUsers(userIds, {
+              type: 'battle_round_started',
+              battleId,
+              round: payload.new,
+              message: `Round ${payload.new.round_number} started`
+            });
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'battle_rounds',
+            filter: `battle_id=eq.${battleId}`
+          },
+          (payload: any) => {
+            // Notify all participants of round updates
+            this.rtManager.sendToUsers(userIds, {
+              type: 'battle_round_updated',
+              battleId,
+              round: payload.new,
+              message: `Round ${payload.new.round_number} updated`
+            });
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'battle_submissions',
+            filter: `battle_id=eq.${battleId}`
+          },
+          (payload: any) => {
+            // Notify all participants of new submission
+            this.rtManager.sendToUsers(userIds, {
+              type: 'battle_submission_created',
+              battleId,
+              submission: payload.new,
+              message: 'New submission received'
+            });
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'battle_submissions',
+            filter: `battle_id=eq.${battleId}`
+          },
+          (payload: any) => {
+            // Notify all participants of submission updates
+            this.rtManager.sendToUsers(userIds, {
+              type: 'battle_submission_updated',
+              battleId,
+              submission: payload.new,
+              message: 'Submission updated'
+            });
+          }
+        )
+        .subscribe();
+    } catch (error) {
+      console.error('Error setting up battle channel:', error);
+    }
+  }
+
   // Submit solution for a battle round
   async submitSolution(
     battleId: string,
@@ -194,10 +304,8 @@ export class BattleService {
           .eq('id', submission.id);
       }
 
-      // Simulate code execution (in a real implementation, this would connect to a judge system)
-      setTimeout(async () => {
-        await this.processSubmission(submission.id);
-      }, 2000);
+      // Process submission asynchronously to avoid blocking
+      this.processSubmissionAsync(submission.id);
 
       // Notify user that submission is being processed
       await this.rtManager.sendToUser(userId, {
@@ -215,6 +323,14 @@ export class BattleService {
     }
   }
 
+  // Process a submission asynchronously (non-blocking)
+  private async processSubmissionAsync(submissionId: string): Promise<void> {
+    // Use setTimeout to process in next tick, making it non-blocking
+    setTimeout(async () => {
+      await this.processSubmission(submissionId);
+    }, 0);
+  }
+
   // Process a submission (simulate judging)
   private async processSubmission(submissionId: string): Promise<void> {
     try {
@@ -230,19 +346,24 @@ export class BattleService {
         return;
       }
 
-      // Simulate judging - randomly determine if solution is correct
-      const isCorrect = Math.random() > 0.3; // 70% chance of correct solution
-      const status = isCorrect ? 'solved' : 'failed';
-      const executionTime = Math.floor(Math.random() * 1000) + 50; // 50-1050ms
-      const memory = Math.floor(Math.random() * 10000) + 1000; // 1000-11000KB
+      // Execute code using the code execution service
+      const executionResult = await this.codeExecutor.executeCode({
+        sourceCode: submission.code_text,
+        language: submission.language,
+        timeLimit: 5, // 5 seconds
+        memoryLimit: 256 // 256 MB
+      });
 
       // Update submission with results
       const { error: updateError } = await this.supabase
         .from('battle_submissions')
         .update({
-          status,
-          execution_time_ms: executionTime,
-          memory_kb: memory
+          status: executionResult.status,
+          execution_time_ms: executionResult.executionTimeMs,
+          memory_kb: executionResult.memoryUsedKb,
+          stdout: executionResult.stdout,
+          stderr: executionResult.stderr,
+          compile_output: executionResult.compileOutput
         })
         .eq('id', submissionId);
 
@@ -257,20 +378,31 @@ export class BattleService {
         submissionId,
         battleId: submission.battle_id,
         roundId: submission.round_id,
-        status,
-        executionTime,
-        memory,
-        message: isCorrect 
+        status: executionResult.status,
+        executionTime: executionResult.executionTimeMs,
+        memory: executionResult.memoryUsedKb,
+        stdout: executionResult.stdout,
+        stderr: executionResult.stderr,
+        message: executionResult.success 
           ? 'Solution accepted! Well done.' 
-          : 'Solution failed. Try again.'
+          : `Solution failed: ${executionResult.message}`
       });
 
       // If solution is correct, check if round is complete
-      if (isCorrect) {
+      if (executionResult.success) {
         await this.checkRoundCompletion(submission.battle_id, submission.round_id);
       }
     } catch (error) {
       console.error('Error processing submission:', error);
+      
+      // Update submission with internal error status
+      await this.supabase
+        .from('battle_submissions')
+        .update({
+          status: 'internal_error',
+          stderr: 'Internal error occurred during code execution'
+        })
+        .eq('id', submissionId);
     }
   }
 
@@ -471,22 +603,22 @@ export class BattleService {
       }
 
       // Calculate rating changes using ELO system
-      const ratings = participants.map((p: any) => ({
+      const ratings: RatingRow[] = participants.map((p: any) => ({
         user_id: p.user_id,
         rating: p.rating_before
       }));
 
       // Create rank rows (winner gets rank 1, others get rank 2)
-      const ranks = participants.map((p: any) => ({
+      const ranks: RankRow[] = participants.map((p: any) => ({
         user_id: p.user_id,
         score: p.user_id === winnerUserId ? 1 : 0,
         penalty_s: 0
       }));
 
       // Sort ranks by score (descending)
-      ranks.sort((a: any, b: any) => b.score - a.score);
+      ranks.sort((a, b) => b.score - a.score);
 
-      // Calculate rating deltas
+      // Calculate rating deltas with K=32 factor
       const deltas = simulateRatings({ ranks, ratings, K: 32 });
 
       // Update participant records with new ratings
@@ -584,6 +716,236 @@ export class BattleService {
     } catch (error) {
       console.error('Error getting battle:', error);
       return null;
+    }
+  }
+
+  // Add a spectator to a battle
+  async addSpectator(battleId: string, userId: string): Promise<{ success: boolean; message: string }> {
+    try {
+      // Check if battle exists and is public
+      const { data: battle, error: battleError } = await this.supabase
+        .from('battles')
+        .select('is_public, status')
+        .eq('id', battleId)
+        .single();
+
+      if (battleError) {
+        console.error('Error fetching battle:', battleError);
+        return { success: false, message: 'Battle not found' };
+      }
+
+      // Check if battle is public
+      if (!battle.is_public) {
+        return { success: false, message: 'This battle is not public' };
+      }
+
+      // Check if battle is in progress or completed
+      if (battle.status === 'waiting') {
+        return { success: false, message: 'Battle has not started yet' };
+      }
+
+      // Check if user is already a participant
+      const { data: participant, error: participantError } = await this.supabase
+        .from('battle_participants')
+        .select('id')
+        .eq('battle_id', battleId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (participantError) {
+        console.error('Error checking participant:', participantError);
+        return { success: false, message: 'Failed to check participant status' };
+      }
+
+      if (participant) {
+        return { success: false, message: 'You are already a participant in this battle' };
+      }
+
+      // Check if user is already a spectator
+      const { data: spectator, error: spectatorError } = await this.supabase
+        .from('battle_spectators')
+        .select('id')
+        .eq('battle_id', battleId)
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (spectatorError) {
+        console.error('Error checking spectator:', spectatorError);
+        return { success: false, message: 'Failed to check spectator status' };
+      }
+
+      if (spectator) {
+        return { success: false, message: 'You are already spectating this battle' };
+      }
+
+      // Add user as spectator
+      const { error: insertError } = await this.supabase
+        .from('battle_spectators')
+        .insert({
+          battle_id: battleId,
+          user_id: userId
+        });
+
+      if (insertError) {
+        console.error('Error adding spectator:', insertError);
+        return { success: false, message: 'Failed to join as spectator' };
+      }
+
+      // Notify the user
+      await this.rtManager.sendToUser(userId, {
+        type: 'battle_spectator_joined',
+        battleId,
+        message: 'You are now spectating this battle'
+      });
+
+      // Notify all participants and spectators about new spectator
+      const { data: participants, error: participantsError } = await this.supabase
+        .from('battle_participants')
+        .select('user_id')
+        .eq('battle_id', battleId);
+
+      const { data: spectators, error: spectatorsError } = await this.supabase
+        .from('battle_spectators')
+        .select('user_id')
+        .eq('battle_id', battleId);
+
+      if (!participantsError && !spectatorsError) {
+        const allUsers = [
+          ...participants.map((p: any) => p.user_id),
+          ...spectators.map((s: any) => s.user_id)
+        ];
+        
+        // Remove the new spectator from the list to avoid notifying them
+        const otherUsers = allUsers.filter(id => id !== userId);
+        
+        await this.rtManager.sendToUsers(otherUsers, {
+          type: 'battle_spectator_added',
+          battleId,
+          spectatorId: userId,
+          message: 'A new spectator has joined the battle'
+        });
+      }
+
+      return { success: true, message: 'Successfully joined as spectator' };
+    } catch (error) {
+      console.error('Error adding spectator:', error);
+      return { success: false, message: 'Internal server error' };
+    }
+  }
+
+  // Remove a spectator from a battle
+  async removeSpectator(battleId: string, userId: string): Promise<{ success: boolean; message: string }> {
+    try {
+      // Remove user as spectator
+      const { error: deleteError } = await this.supabase
+        .from('battle_spectators')
+        .delete()
+        .eq('battle_id', battleId)
+        .eq('user_id', userId);
+
+      if (deleteError) {
+        console.error('Error removing spectator:', deleteError);
+        return { success: false, message: 'Failed to leave spectator mode' };
+      }
+
+      // Notify the user
+      await this.rtManager.sendToUser(userId, {
+        type: 'battle_spectator_left',
+        battleId,
+        message: 'You are no longer spectating this battle'
+      });
+
+      return { success: true, message: 'Successfully left spectator mode' };
+    } catch (error) {
+      console.error('Error removing spectator:', error);
+      return { success: false, message: 'Internal server error' };
+    }
+  }
+
+  // Get battle spectators
+  async getBattleSpectators(battleId: string): Promise<any[]> {
+    try {
+      const { data: spectators, error } = await this.supabase
+        .from('battle_spectators')
+        .select(`
+          user_id,
+          joined_at,
+          users(email)
+        `)
+        .eq('battle_id', battleId)
+        .order('joined_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching spectators:', error);
+        return [];
+      }
+
+      return spectators || [];
+    } catch (error) {
+      console.error('Error getting battle spectators:', error);
+      return [];
+    }
+  }
+
+  // Set battle visibility (public/private)
+  async setBattleVisibility(battleId: string, isPublic: boolean, userId: string): Promise<{ success: boolean; message: string }> {
+    try {
+      // Verify user is the host of this battle
+      const { data: battle, error: battleError } = await this.supabase
+        .from('battles')
+        .select('host_user_id')
+        .eq('id', battleId)
+        .single();
+
+      if (battleError) {
+        console.error('Error fetching battle:', battleError);
+        return { success: false, message: 'Battle not found' };
+      }
+
+      if (battle.host_user_id !== userId) {
+        return { success: false, message: 'Only the host can change battle visibility' };
+      }
+
+      // Update battle visibility
+      const { error: updateError } = await this.supabase
+        .from('battles')
+        .update({ is_public: isPublic })
+        .eq('id', battleId);
+
+      if (updateError) {
+        console.error('Error updating battle visibility:', updateError);
+        return { success: false, message: 'Failed to update battle visibility' };
+      }
+
+      // Notify all participants and spectators
+      const { data: participants, error: participantsError } = await this.supabase
+        .from('battle_participants')
+        .select('user_id')
+        .eq('battle_id', battleId);
+
+      const { data: spectators, error: spectatorsError } = await this.supabase
+        .from('battle_spectators')
+        .select('user_id')
+        .eq('battle_id', battleId);
+
+      if (!participantsError && !spectatorsError) {
+        const allUsers = [
+          ...participants.map((p: any) => p.user_id),
+          ...spectators.map((s: any) => s.user_id)
+        ];
+        
+        await this.rtManager.sendToUsers(allUsers, {
+          type: 'battle_visibility_changed',
+          battleId,
+          isPublic,
+          message: `Battle is now ${isPublic ? 'public' : 'private'}`
+        });
+      }
+
+      return { success: true, message: `Battle is now ${isPublic ? 'public' : 'private'}` };
+    } catch (error) {
+      console.error('Error setting battle visibility:', error);
+      return { success: false, message: 'Internal server error' };
     }
   }
 }

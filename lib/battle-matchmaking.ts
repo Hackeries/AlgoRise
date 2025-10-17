@@ -302,6 +302,40 @@ class BattleMatchmakingService {
       return 1200;
     }
   }
+
+  // Periodic cleanup of stale queue entries (call this periodically)
+  cleanupStaleQueueEntries(maxWaitTimeMinutes: number = 30): void {
+    const maxWaitTimeMs = maxWaitTimeMinutes * 60 * 1000;
+    const now = new Date().getTime();
+    
+    const staleEntries = this.queue.filter(
+      entry => (now - entry.joinedAt.getTime()) > maxWaitTimeMs
+    );
+    
+    // Remove stale entries
+    this.queue = this.queue.filter(
+      entry => (now - entry.joinedAt.getTime()) <= maxWaitTimeMs
+    );
+    
+    // Notify stale users
+    if (staleEntries.length > 0) {
+      const rtManager = RealTimeNotificationManager.getInstance();
+      staleEntries.forEach(entry => {
+        rtManager.sendToUser(entry.userId, {
+          type: 'battle_queue_timeout',
+          message: 'You have been removed from the queue due to inactivity'
+        });
+      });
+    }
+    
+    console.log(`Cleaned up ${staleEntries.length} stale queue entries`);
+  }
 }
+
+// Set up periodic cleanup (every 5 minutes)
+setInterval(() => {
+  const matchmakingService = BattleMatchmakingService.getInstance();
+  matchmakingService.cleanupStaleQueueEntries(30);
+}, 5 * 60 * 1000);
 
 export default BattleMatchmakingService;

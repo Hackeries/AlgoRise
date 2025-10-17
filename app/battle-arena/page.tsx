@@ -22,7 +22,9 @@ import {
   Plus,
   Search,
   Crown,
-  Star
+  Star,
+  Menu,
+  X
 } from "lucide-react";
 
 export default function BattleArenaPage() {
@@ -35,6 +37,7 @@ export default function BattleArenaPage() {
   });
   const [userBattles, setUserBattles] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
   const supabase = createClient();
   const { toast } = useToast();
@@ -166,9 +169,76 @@ export default function BattleArenaPage() {
 
   return (
     <div className="container py-8">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+      {/* Mobile menu button */}
+      <div className="lg:hidden mb-4 flex justify-between items-center">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <Sword className="h-6 w-6 text-blue-500" />
+          Code Battle Arena
+        </h1>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        >
+          {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </Button>
+      </div>
+
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden mb-6 p-4 bg-card border rounded-lg">
+          <div className="flex flex-col gap-4">
+            <Button 
+              variant={activeTab === "queue" ? "default" : "outline"}
+              onClick={() => {
+                setActiveTab("queue");
+                setMobileMenuOpen(false);
+              }}
+              className="w-full justify-start"
+            >
+              <Play className="h-4 w-4 mr-2" />
+              Join Queue
+            </Button>
+            <Button 
+              variant={activeTab === "private" ? "default" : "outline"}
+              onClick={() => {
+                setActiveTab("private");
+                setMobileMenuOpen(false);
+              }}
+              className="w-full justify-start"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Private Battle
+            </Button>
+            <Button 
+              variant={activeTab === "history" ? "default" : "outline"}
+              onClick={() => {
+                setActiveTab("history");
+                setMobileMenuOpen(false);
+              }}
+              className="w-full justify-start"
+            >
+              <Clock className="h-4 w-4 mr-2" />
+              Battle History
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => {
+                router.push('/battle-arena/leaderboard');
+                setMobileMenuOpen(false);
+              }}
+              className="w-full justify-start"
+            >
+              <Trophy className="h-4 w-4 mr-2" />
+              Leaderboard
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
+          <h1 className="text-3xl font-bold hidden lg:flex items-center gap-2">
             <Sword className="h-8 w-8 text-blue-500" />
             Code Battle Arena
           </h1>
@@ -177,23 +247,28 @@ export default function BattleArenaPage() {
           </p>
         </div>
         
-        <div className="mt-4 md:mt-0">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <Button variant="outline" onClick={() => router.push('/battle-arena/leaderboard')} className="w-full sm:w-auto">
+            <Trophy className="h-4 w-4 mr-2" />
+            Leaderboard
+          </Button>
+          
           <div className="bg-card border rounded-lg p-4 flex items-center gap-4">
             <div className="text-center">
               <div className="text-2xl font-bold">{userRating}</div>
               <div className={`text-sm ${tier.color}`}>{tier.label}</div>
             </div>
-            <Separator orientation="vertical" className="h-12" />
+            <Separator orientation="vertical" className="h-12 hidden sm:block" />
             <div className="flex items-center gap-2">
               <Trophy className="h-5 w-5 text-yellow-500" />
-              <span className="font-medium">Battle Rating</span>
+              <span className="font-medium hidden sm:block">Battle Rating</span>
             </div>
           </div>
         </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 hidden lg:grid">
           <TabsTrigger value="queue" className="flex items-center gap-2">
             <Play className="h-4 w-4" />
             Join Queue
@@ -209,7 +284,7 @@ export default function BattleArenaPage() {
         </TabsList>
 
         <TabsContent value="queue" className="mt-6">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -221,7 +296,7 @@ export default function BattleArenaPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <Button 
                     onClick={() => joinQueue('best_of_1')}
                     disabled={isLoading}

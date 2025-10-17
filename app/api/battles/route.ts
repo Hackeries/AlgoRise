@@ -58,7 +58,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { action, format = "best_of_3" } = body;
+    const { action, format = "best_of_3", isPublic = false } = body;
 
     if (action === "join_queue") {
       // Join matchmaking queue
@@ -94,7 +94,8 @@ export async function POST(req: Request) {
           host_user_id: user.id,
           guest_user_id: guestUserId,
           status: "waiting",
-          format
+          format,
+          is_public: isPublic
         })
         .select()
         .single();
@@ -132,6 +133,30 @@ export async function POST(req: Request) {
         message: "Private battle created", 
         battleId: battle.id 
       });
+    } else if (action === "spectate") {
+      // Join as spectator
+      const { battleId } = body;
+      
+      if (!battleId) {
+        return NextResponse.json({ error: "Battle ID required" }, { status: 400 });
+      }
+      
+      const battleService = new BattleService();
+      const result = await battleService.addSpectator(battleId, user.id);
+      
+      return NextResponse.json(result);
+    } else if (action === "set_visibility") {
+      // Set battle visibility
+      const { battleId, isPublic } = body;
+      
+      if (!battleId) {
+        return NextResponse.json({ error: "Battle ID required" }, { status: 400 });
+      }
+      
+      const battleService = new BattleService();
+      const result = await battleService.setBattleVisibility(battleId, isPublic, user.id);
+      
+      return NextResponse.json(result);
     } else {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }

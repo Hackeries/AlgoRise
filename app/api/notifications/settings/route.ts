@@ -37,11 +37,17 @@ export async function GET(req: NextRequest) {
     if (!settings) {
       const defaultSettings = {
         user_id: user.id,
+        email_daily_problem_reminder: true,
         email_contest_starting: true,
+        email_rating_change: true,
+        email_friend_joined_contest: true,
         email_group_invites: true,
         email_achievements: true,
         email_system_announcements: true,
+        push_daily_problem_reminder: true,
         push_contest_starting: true,
+        push_rating_change: true,
+        push_friend_joined_contest: true,
         push_group_invites: true,
         push_achievements: true,
         push_system_announcements: false,
@@ -79,11 +85,17 @@ export async function PUT(req: NextRequest) {
 
     const body = await req.json();
     const {
+      email_daily_problem_reminder,
       email_contest_starting,
+      email_rating_change,
+      email_friend_joined_contest,
       email_group_invites,
       email_achievements,
       email_system_announcements,
+      push_daily_problem_reminder,
       push_contest_starting,
+      push_rating_change,
+      push_friend_joined_contest,
       push_group_invites,
       push_achievements,
       push_system_announcements,
@@ -112,11 +124,17 @@ export async function PUT(req: NextRequest) {
       .from('notification_settings')
       .upsert({
         user_id: user.id,
+        email_daily_problem_reminder,
         email_contest_starting,
+        email_rating_change,
+        email_friend_joined_contest,
         email_group_invites,
         email_achievements,
         email_system_announcements,
+        push_daily_problem_reminder,
         push_contest_starting,
+        push_rating_change,
+        push_friend_joined_contest,
         push_group_invites,
         push_achievements,
         push_system_announcements,

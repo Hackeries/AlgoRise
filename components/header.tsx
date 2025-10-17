@@ -29,6 +29,8 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import { AuthModal } from '@/components/auth/auth-modal';
 
 interface Notification {
   id: number;
@@ -42,6 +44,15 @@ export function Header() {
   const userInitials = user?.email?.charAt(0).toUpperCase() || 'U';
   const { theme, setTheme, resolvedTheme } = useTheme();
   const effectiveTheme = theme === 'system' ? resolvedTheme || 'light' : theme;
+  const [isMounted, setIsMounted] = useState(false);
+  const pathname = usePathname();
+  const showLandingAuth = pathname === '/';
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const toggleTheme = () =>
     setTheme(effectiveTheme === 'dark' ? 'light' : 'dark');
@@ -167,7 +178,8 @@ export function Header() {
 
   // ------------------- JSX -------------------
   return (
-    <header className='h-16 flex items-center justify-between px-6 bg-card border-b border-border backdrop-blur z-50'>
+    <>
+      <header className='h-16 flex items-center justify-between px-6 bg-card border-b border-border backdrop-blur z-50'>
       {/* Left: Logo */}
       <div className='flex items-center gap-4'>
         <Link href='/' className='flex-shrink-0'>
@@ -333,11 +345,11 @@ export function Header() {
           className='text-muted-foreground hover:text-foreground'
           onClick={toggleTheme}
         >
-          {effectiveTheme === 'dark' ? (
-            <Sun className='h-5 w-5' />
-          ) : (
-            <Moon className='h-5 w-5' />
-          )}
+          {isMounted
+            ? effectiveTheme === 'dark'
+              ? <Sun className='h-5 w-5' />
+              : <Moon className='h-5 w-5' />
+            : <Sun className='h-5 w-5' />}
         </Button>
 
         {/* Notifications */}
@@ -398,19 +410,45 @@ export function Header() {
           <div className='w-8 h-8 bg-white/10 rounded-full animate-pulse' />
         ) : !user ? (
           <>
-            <Link href='/auth/login'>
-              <Button
-                variant='ghost'
-                className='text-foreground hover:text-primary'
-              >
-                Sign In
-              </Button>
-            </Link>
-            <Link href='/auth/sign-up'>
-              <Button className='bg-primary text-primary-foreground hover:bg-primary/90'>
-                Sign Up
-              </Button>
-            </Link>
+            {showLandingAuth ? (
+              <>
+                <Button
+                  variant='ghost'
+                  className='text-foreground hover:text-primary'
+                  onClick={() => {
+                    setAuthMode('signin');
+                    setAuthModalOpen(true);
+                  }}
+                >
+                  Sign In
+                </Button>
+                <Button
+                  className='bg-primary text-primary-foreground hover:bg-primary/90'
+                  onClick={() => {
+                    setAuthMode('signup');
+                    setAuthModalOpen(true);
+                  }}
+                >
+                  Sign Up
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link href='/auth/login'>
+                  <Button
+                    variant='ghost'
+                    className='text-foreground hover:text-primary'
+                  >
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href='/auth/sign-up'>
+                  <Button className='bg-primary text-primary-foreground hover:bg-primary/90'>
+                    Sign Up
+                  </Button>
+                </Link>
+              </>
+            )}
           </>
         ) : (
           <DropdownMenu>
@@ -475,5 +513,14 @@ export function Header() {
         )}
       </div>
     </header>
+    {showLandingAuth && !user && (
+      <AuthModal
+        open={authModalOpen}
+        mode={authMode}
+        onModeChange={setAuthMode}
+        onOpenChange={setAuthModalOpen}
+      />
+    )}
+    </>
   );
 }

@@ -21,6 +21,16 @@ export function createClient() {
           error: new Error('Supabase disabled'),
         }),
         signOut: async () => ({ error: new Error('Supabase disabled') }),
+        onAuthStateChange: () => ({
+          data: {
+            subscription: {
+              unsubscribe: () => {
+                /* no-op */
+              },
+            },
+          },
+          error: new Error('Supabase disabled'),
+        }),
       },
       from: () => {
         const builder: any = {

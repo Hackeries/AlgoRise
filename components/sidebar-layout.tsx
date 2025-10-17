@@ -211,10 +211,10 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className='flex min-h-screen bg-background text-foreground'>
       <AnimatePresence>
-        {/* Mobile Overlay */}
+        {/* Mobile Overlay - Removed blur for better performance */}
         {isMobile && isOpen && (
           <motion.div 
-            className="fixed inset-0 bg-black/60 z-40 md:hidden backdrop-blur-sm" 
+            className="fixed inset-0 bg-black/40 z-40 md:hidden" 
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
             initial={{ opacity: 0 }}

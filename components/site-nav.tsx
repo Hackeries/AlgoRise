@@ -14,7 +14,7 @@ const links = [
   { href: '/paths', label: 'Learning Paths' },
   { href: '/adaptive-sheet', label: 'Adaptive Sheet' },
   { href: '/contests', label: 'Contests' },
-  { href: '/battle-arena', label: 'Battle Arena' },
+  { href: '/battle-arena', label: 'Battle Arena 🎮' },
   { href: '/groups', label: 'Groups' },
   { href: '/analytics', label: 'Analytics' },
   { href: '/visualizers', label: 'Visualizers' },
@@ -28,7 +28,7 @@ export function SiteNav() {
   return (
     <header className='sticky top-0 z-50 w-full border-b border-white/10 bg-[#0B1020]/80 backdrop-blur supports-[backdrop-filter]:bg-[#0B1020]/60'>
       <div className='mx-auto flex h-14 max-w-6xl items-center justify-between px-4'>
-        {/* Logo */}
+        {/* Logo */ }
         <Link
           href='/'
           className='font-bold text-lg tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent hover:scale-105 transition-transform'
@@ -37,7 +37,7 @@ export function SiteNav() {
           <span className='sr-only'>AlgoRise Home</span>
         </Link>
 
-        {/* Desktop Nav */}
+        {/* Desktop Nav */ }
         <nav className='hidden md:flex items-center gap-6'>
           {links.map(l => {
             const active = pathname?.startsWith(l.href);
@@ -62,7 +62,7 @@ export function SiteNav() {
           })}
         </nav>
 
-        {/* Right Side */}
+        {/* Right Side */ }
         <div className='flex items-center gap-3'>
           {isVerified && verificationData && (
             <span
@@ -80,7 +80,7 @@ export function SiteNav() {
           </Button>
           <AuthButton />
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Menu Button */ }
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className='md:hidden text-white'
@@ -91,7 +91,7 @@ export function SiteNav() {
         </div>
       </div>
 
-      {/* Mobile Nav */}
+      {/* Mobile Nav */ }
       {menuOpen && (
         <div className='md:hidden bg-[#0B1020] border-t border-white/10 p-4 space-y-3'>
           {links.map(l => (

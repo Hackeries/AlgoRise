@@ -66,12 +66,12 @@ export default function ModernLanding() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* ✨ Decorative Background Shapes */}
-      <div className="absolute top-[-100px] left-[-100px] w-[300px] h-[300px] bg-purple-400 rounded-full opacity-20 blur-3xl animate-blob" />
-      <div className="absolute bottom-[-80px] right-[-120px] w-[400px] h-[400px] bg-blue-400 rounded-full opacity-20 blur-3xl animate-blob animation-delay-2000" />
+      {/* ✨ Decorative Background Shapes - Responsive */}
+      <div className="absolute top-[-50px] left-[-50px] sm:top-[-100px] sm:left-[-100px] w-[200px] h-[200px] sm:w-[300px] sm:h-[300px] bg-purple-400 rounded-full opacity-20 blur-3xl animate-blob" />
+      <div className="absolute bottom-[-40px] right-[-60px] sm:bottom-[-80px] sm:right-[-120px] w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] bg-blue-400 rounded-full opacity-20 blur-3xl animate-blob animation-delay-2000" />
 
-      <section className="relative pt-10 pb-16 px-4 z-10">
-        <div className="max-w-6xl mx-auto text-center mb-10">
+      <section className="relative pt-6 sm:pt-10 pb-8 sm:pb-16 px-3 sm:px-4 z-10">
+        <div className="max-w-6xl mx-auto text-center mb-6 sm:mb-10">
           {/* Banner */}
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <BannerLanding />
@@ -79,7 +79,7 @@ export default function ModernLanding() {
 
           {/* CF Verification */}
           <motion.div
-            className="max-w-md mx-auto mt-12 mb-8"
+            className="max-w-md mx-auto mt-8 sm:mt-12 mb-6 sm:mb-8 px-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -96,7 +96,7 @@ export default function ModernLanding() {
 
           {/* Input */}
           <motion.div
-            className="max-w-md mx-auto mb-12 flex gap-2"
+            className="max-w-md mx-auto mb-8 sm:mb-12 flex flex-col sm:flex-row gap-2 px-2"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
@@ -106,16 +106,20 @@ export default function ModernLanding() {
               value={userHandle}
               onChange={(e) => setUserHandle(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && fetchUserStats()}
-              className="flex-1"
+              className="flex-1 h-11 sm:h-10"
             />
-            <Button onClick={() => fetchUserStats()} disabled={userLoading}>
+            <Button 
+              onClick={() => fetchUserStats()} 
+              disabled={userLoading}
+              className="h-11 sm:h-10 sm:w-auto w-full"
+            >
               {userLoading ? (
                 <motion.div
                   className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"
                   aria-label="Loading"
                 />
               ) : (
-                "Get Stats"
+                <span className="sm:inline">Get Stats</span>
               )}
             </Button>
           </motion.div>
@@ -128,10 +132,10 @@ export default function ModernLanding() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="max-w-3xl mx-auto mb-8"
+                className="max-w-3xl mx-auto mb-6 sm:mb-8 px-2"
               >
                 <Card className="bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 shadow-sm">
-                  <CardContent className="p-4 text-center text-red-600 dark:text-red-400 font-medium">
+                  <CardContent className="p-3 sm:p-4 text-center text-red-600 dark:text-red-400 font-medium text-sm">
                     {userError}
                   </CardContent>
                 </Card>
@@ -147,20 +151,20 @@ export default function ModernLanding() {
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, type: "spring" }}
-                className="max-w-4xl mx-auto mb-12"
+                className="max-w-4xl mx-auto mb-8 sm:mb-12 px-2"
               >
                 <Card className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-border/30 shadow-xl">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 justify-center text-xl font-semibold">
-                      <Trophy className="h-5 w-5 text-yellow-500" />
-                      <span className="bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
+                  <CardHeader className="pb-4 sm:pb-6">
+                    <CardTitle className="flex items-center gap-2 justify-center text-lg sm:text-xl font-semibold">
+                      <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+                      <span className="bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent break-all">
                         {userHandle}'s Profile
                       </span>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-0">
                     <motion.div
-                      className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                      className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6"
                       initial="hidden"
                       animate="visible"
                       variants={{
@@ -191,12 +195,12 @@ export default function ModernLanding() {
                             hidden: { opacity: 0, y: 15 },
                             visible: { opacity: 1, y: 0 },
                           }}
-                          className="text-center"
+                          className="text-center py-2"
                         >
-                          <div className={`text-3xl font-bold ${color}`}>
+                          <div className={`text-2xl sm:text-3xl font-bold ${color}`}>
                             <AnimatedCounter value={value} />
                           </div>
-                          <div className="text-gray-600 dark:text-gray-400 mt-1">{label}</div>
+                          <div className="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">{label}</div>
                         </motion.div>
                       ))}
                     </motion.div>

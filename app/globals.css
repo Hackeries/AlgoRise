@@ -154,6 +154,20 @@
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+  }
+  html {
+    overflow-x: hidden;
+  }
+  
+  /* Prevent horizontal scrolling in sidebar components */
+  [data-sidebar] {
+    overflow-x: hidden !important;
+  }
+  
+  [data-sidebar] * {
+    max-width: 100%;
+    box-sizing: border-box;
   }
 }
 
@@ -248,4 +262,35 @@
 }
 .hover-glow:hover {
   animation: glow 1.5s infinite ease-in-out;
+}
+
+/* Notification animations */
+@keyframes notification-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes notification-ping {
+  75%, 100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.notification-pulse {
+  animation: notification-pulse 2s ease-in-out infinite;
+}
+
+.notification-ping {
+  animation: notification-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
 }

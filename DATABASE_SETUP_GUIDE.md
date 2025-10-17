@@ -33,6 +33,11 @@ The OAuth endpoints were failing because:
 - `public.streaks` - User streak tracking
 - `public.cf_handles` - Codeforces handle verification (CRITICAL for OAuth)
 - `public.cf_snapshots` - Codeforces user data snapshots
+- `public.battles` - Code Battle Arena battles
+- `public.battle_participants` - Battle participants
+- `public.battle_rounds` - Battle rounds
+- `public.battle_submissions` - Battle code submissions
+- `public.battle_ratings` - Battle ELO ratings
 
 ## Next Steps
 

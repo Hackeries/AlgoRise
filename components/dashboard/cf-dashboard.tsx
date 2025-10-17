@@ -363,13 +363,16 @@ export function CFDashboard() {
           </CardHeader>
           <CardContent className='space-y-3'>
             <Button asChild className='w-full'>
-              <a href='/adaptive-sheets'>🎯 Start Practice</a>
+              <a href='/adaptive-sheet'>🎯 Start Practice</a>
             </Button>
             <Button asChild className='w-full'>
               <a href='/contests'>⚡ Virtual Contest</a>
             </Button>
             <Button asChild className='w-full'>
-              <a href='/learning-path'>📚 Study Plan</a>
+              <a href='/battle-arena'>⚔️ Battle Arena</a>
+            </Button>
+            <Button asChild className='w-full'>
+              <a href='/paths'>📚 Study Plan</a>
             </Button>
           </CardContent>
         </Card>

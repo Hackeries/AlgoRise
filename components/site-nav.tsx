@@ -7,13 +7,14 @@ import { cn } from '@/lib/utils';
 import { AuthButton } from '@/components/auth/auth-button';
 import { useCFVerification } from '@/lib/context/cf-verification';
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sword } from 'lucide-react';
 
 const links = [
   { href: '/train', label: 'Train' },
   { href: '/paths', label: 'Learning Paths' },
   { href: '/adaptive-sheet', label: 'Adaptive Sheet' },
   { href: '/contests', label: 'Contests' },
+  { href: '/battle-arena', label: 'Battle Arena' },
   { href: '/groups', label: 'Groups' },
   { href: '/analytics', label: 'Analytics' },
   { href: '/visualizers', label: 'Visualizers' },
@@ -49,6 +50,9 @@ export function SiteNav() {
                   active && 'text-white font-medium'
                 )}
               >
+                {l.href === '/battle-arena' && (
+                  <Sword className="inline h-4 w-4 mr-1" />
+                )}
                 {l.label}
                 {active && (
                   <span className='absolute -bottom-1 left-0 h-[2px] w-full bg-gradient-to-r from-blue-400 to-purple-400 rounded-full animate-pulse'></span>
@@ -100,6 +104,9 @@ export function SiteNav() {
                 pathname?.startsWith(l.href) && 'text-white font-medium'
               )}
             >
+              {l.href === '/battle-arena' && (
+                <Sword className="inline h-4 w-4 mr-1" />
+              )}
               {l.label}
             </Link>
           ))}

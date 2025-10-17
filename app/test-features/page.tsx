@@ -442,6 +442,10 @@ export default function TestFeaturesPage() {
               5. <strong>Test Notifications</strong> - Visit /test-features/notifications
               to test smart notification features
             </p>
+            <p>
+              6. <strong>Test Battle Arena</strong> - Visit /test-features/battle-arena
+              to test the new Code Battle Arena feature
+            </p>
           </div>
 
           <div className='flex flex-wrap gap-2 pt-4'>
@@ -474,6 +478,12 @@ export default function TestFeaturesPage() {
               className='border-yellow-500/30 text-yellow-300'
             >
               notifications
+            </Badge>
+            <Badge
+              variant='outline'
+              className='border-red-500/30 text-red-300'
+            >
+              battle-arena
             </Badge>
           </div>
         </CardContent>

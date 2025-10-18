@@ -226,9 +226,7 @@ export default function Page() {
       };
 
       const origin = getBaseUrl();
-      const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(
-        '/profile'
-      )}`;
+      const redirectTo = `${origin}/auth/callback`;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider,

@@ -37,7 +37,7 @@ class BattleMatchmakingService {
     return BattleMatchmakingService.instance;
   }
 
-  // Add user to matchmaking queue
+  // Add user to matchmaking queue with acceptance handshake
   async joinQueue(
     userId: string,
     rating: number,
@@ -103,7 +103,7 @@ class BattleMatchmakingService {
     }
   }
 
-  // Find a suitable opponent for the user
+  // Find a suitable opponent for the user with acceptance handshake
   private async findMatch(
     userId: string,
     userRating: number
@@ -132,17 +132,9 @@ class BattleMatchmakingService {
       entry => entry.userId !== userId && entry.userId !== bestMatch.userId
     );
 
-    // Create battle
-    const battleResult = await this.createBattle(userId, bestMatch.userId);
+    // Create battle with acceptance handshake
+    const battleResult = await this.createBattleWithHandshake(userId, bestMatch.userId);
     if (battleResult.success && battleResult.battleId) {
-      // Notify both players
-      const rtManager = RealTimeNotificationManager.getInstance();
-      await rtManager.sendToUsers([userId, bestMatch.userId], {
-        type: 'battle_matched',
-        message: 'Found opponent! Battle starting soon...',
-        battleId: battleResult.battleId
-      });
-
       return {
         success: true,
         message: 'Match found',
@@ -153,8 +145,8 @@ class BattleMatchmakingService {
     return { success: false, message: 'Failed to create battle' };
   }
 
-  // Create a new battle between two players
-  private async createBattle(
+  // Create a new battle between two players with acceptance handshake
+  private async createBattleWithHandshake(
     hostUserId: string,
     guestUserId: string
   ): Promise<{ success: boolean; message: string; battleId?: string }> {
@@ -223,6 +215,54 @@ class BattleMatchmakingService {
         status: 'waiting',
         format: 'best_of_3'
       });
+
+      // Send match invitation to both players with 30-second timeout
+      const rtManager = RealTimeNotificationManager.getInstance();
+      
+      // Notify host
+      await rtManager.sendToUser(hostUserId, {
+        type: 'battle_matched',
+        message: 'Found opponent! Waiting for guest to accept...',
+        battleId: battle.id,
+        opponentId: guestUserId
+      });
+      
+      // Notify guest with acceptance request
+      await rtManager.sendToUser(guestUserId, {
+        type: 'battle_invite',
+        message: 'You have been challenged to a code battle!',
+        battleId: battle.id,
+        hostId: hostUserId,
+        timeout: 30 // seconds
+      });
+
+      // Set timeout for acceptance
+      setTimeout(async () => {
+        // Check if battle is still waiting
+        const { data: battleStatus, error } = await this.supabase
+          .from('battles')
+          .select('status')
+          .eq('id', battle.id)
+          .single();
+        
+        if (!error && battleStatus && battleStatus.status === 'waiting') {
+          // Cancel battle due to timeout
+          await this.supabase
+            .from('battles')
+            .update({ 
+              status: 'cancelled',
+              ended_at: new Date().toISOString()
+            })
+            .eq('id', battle.id);
+          
+          // Notify both players
+          await rtManager.sendToUsers([hostUserId, guestUserId], {
+            type: 'battle_cancelled',
+            battleId: battle.id,
+            message: 'Battle cancelled due to timeout'
+          });
+        }
+      }, 30000); // 30 seconds timeout
 
       return { success: true, message: 'Battle created', battleId: battle.id };
     } catch (error) {

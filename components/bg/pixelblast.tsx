@@ -77,7 +77,9 @@ const createTouchTexture = () => {
     else
       intensity = easeOutQuad(1 - (p.age - maxAge * 0.3) / (maxAge * 0.7)) || 0;
     intensity *= p.force;
-    const color = `${((p.vx + 1) / 2) * 255}, ${((p.vy + 1) / 2) * 255}, ${intensity * 255}`;
+    const color = `${((p.vx + 1) / 2) * 255}, ${((p.vy + 1) / 2) * 255}, ${
+      intensity * 255
+    }`;
     const offset = size * 5;
     ctx.shadowOffsetX = offset;
     ctx.shadowOffsetY = offset;
@@ -343,7 +345,7 @@ const MAX_CLICKS = 10;
 const PixelBlast: React.FC<PixelBlastProps> = ({
   variant = 'square',
   pixelSize = 3,
-  color = '#B19EEF',
+  color = '#63EDA1',
   className,
   style,
   antialias = true,
@@ -367,6 +369,29 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const visibilityRef = useRef({ visible: true });
   const speedRef = useRef(speed);
+  const [themeColor, setThemeColor] = React.useState(color);
+
+  React.useEffect(() => {
+    const updateThemeColor = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark && color === '#63EDA1') {
+        setThemeColor('#63EDA1');
+      } else if (!isDark && color === '#63EDA1') {
+        setThemeColor('#3B82F6');
+      } else {
+        setThemeColor(color);
+      }
+    };
+
+    updateThemeColor();
+    const observer = new MutationObserver(updateThemeColor);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, [color]);
 
   const threeRef = useRef<{
     renderer: THREE.WebGLRenderer;
@@ -445,7 +470,7 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
       const uniforms = {
         uResolution: { value: new THREE.Vector2(0, 0) },
         uTime: { value: 0 },
-        uColor: { value: new THREE.Color(color) },
+        uColor: { value: new THREE.Color(themeColor) },
         uClickPos: {
           value: Array.from(
             { length: MAX_CLICKS },
@@ -626,7 +651,7 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
       const t = threeRef.current!;
       t.uniforms.uShapeType.value = SHAPE_MAP[variant] ?? 0;
       t.uniforms.uPixelSize.value = pixelSize * t.renderer.getPixelRatio();
-      t.uniforms.uColor.value.set(color);
+      t.uniforms.uColor.value.set(themeColor);
       t.uniforms.uScale.value = patternScale;
       t.uniforms.uDensity.value = patternDensity;
       t.uniforms.uPixelJitter.value = pixelSizeJitter;
@@ -679,7 +704,7 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
     liquidWobbleSpeed,
     autoPauseOffscreen,
     variant,
-    color,
+    themeColor,
     speed,
   ]);
 

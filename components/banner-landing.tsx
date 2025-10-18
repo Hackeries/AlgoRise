@@ -45,25 +45,25 @@ export default function BannerLanding() {
         transition={{ duration: 1, delay: 0.2 }}
         className='text-sm sm:text-base md:text-lg lg:text-xl shadow-glow mb-8 sm:mb-10 md:mb-12 max-w-2xl sm:max-w-3xl mx-auto leading-relaxed px-2 sm:px-4'
       >
-        <span className='bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 dark:from-gray-300 dark:via-gray-200 dark:to-gray-300 bg-clip-text text-transparent'>
+        <span className='bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 dark:from-gray-200 dark:via-gray-100 dark:to-gray-200 bg-clip-text text-transparent font-medium'>
           Level up your competitive programming with{' '}
         </span>
-        <span className='font-semibold bg-gradient-to-r from-blue-700 via-blue-600 to-blue-700 dark:from-blue-400 dark:via-blue-300 dark:to-blue-400 bg-clip-text text-transparent hover:from-blue-800 hover:via-blue-700 hover:to-blue-800 dark:hover:from-blue-300 dark:hover:via-blue-200 dark:hover:to-blue-300 transition-all duration-300 cursor-default font-[Bricolage_Grotesque]'>
+        <span className='font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 dark:from-blue-400 dark:via-cyan-400 dark:to-blue-400 bg-clip-text text-transparent hover:from-blue-700 hover:via-blue-600 hover:to-cyan-600 dark:hover:from-blue-300 dark:hover:via-cyan-300 dark:hover:to-blue-300 transition-all duration-300 cursor-default font-[Bricolage_Grotesque]'>
           adaptive practice
         </span>
-        <span className='bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 dark:from-gray-300 dark:via-gray-200 dark:to-gray-300 bg-clip-text text-transparent'>
+        <span className='bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 dark:from-gray-200 dark:via-gray-100 dark:to-gray-200 bg-clip-text text-transparent font-medium'>
           ,{' '}
         </span>
-        <span className='font-semibold bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-700 dark:from-indigo-400 dark:via-indigo-300 dark:to-indigo-400 bg-clip-text text-transparent whitespace-nowrap hover:from-indigo-800 hover:via-indigo-700 hover:to-indigo-800 dark:hover:from-indigo-300 dark:hover:via-indigo-200 dark:hover:to-indigo-300 transition-all duration-300 cursor-default font-[Bricolage_Grotesque]'>
+        <span className='font-bold bg-gradient-to-r from-indigo-600 via-purple-500 to-pink-500 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent whitespace-nowrap hover:from-indigo-700 hover:via-purple-600 hover:to-pink-600 dark:hover:from-indigo-300 dark:hover:via-purple-300 dark:hover:to-pink-300 transition-all duration-300 cursor-default font-[Bricolage_Grotesque]'>
           real-time contest tracking
         </span>
-        <span className='bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 dark:from-gray-300 dark:via-gray-200 dark:to-gray-300 bg-clip-text text-transparent'>
+        <span className='bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 dark:from-gray-200 dark:via-gray-100 dark:to-gray-200 bg-clip-text text-transparent font-medium'>
           , and{' '}
         </span>
-        <span className='font-semibold bg-gradient-to-r from-purple-700 via-purple-600 to-purple-700 dark:from-purple-400 dark:via-purple-300 dark:to-purple-400 bg-clip-text text-transparent whitespace-nowrap hover:from-purple-800 hover:via-purple-700 hover:to-purple-800 dark:hover:from-purple-300 dark:hover:via-purple-200 dark:hover:to-purple-300 transition-all duration-300 cursor-default font-[Bricolage_Grotesque]'>
+        <span className='font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 dark:from-purple-400 dark:via-pink-400 dark:to-rose-400 bg-clip-text text-transparent whitespace-nowrap hover:from-purple-700 hover:via-pink-600 hover:to-rose-600 dark:hover:from-purple-300 dark:hover:via-pink-300 dark:hover:to-rose-300 transition-all duration-300 cursor-default font-[Bricolage_Grotesque]'>
           progress analytics
         </span>
-        <span className='bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 dark:from-gray-300 dark:via-gray-200 dark:to-gray-300 bg-clip-text text-transparent'>
+        <span className='bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 dark:from-gray-200 dark:via-gray-100 dark:to-gray-200 bg-clip-text text-transparent font-medium'>
           .
         </span>
       </motion.p>

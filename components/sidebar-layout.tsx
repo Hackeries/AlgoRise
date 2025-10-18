@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
@@ -85,17 +86,25 @@ const SidebarItem = ({
     href={href}
     title={!isOpen ? label : undefined}
     className={cn(
-      "relative flex items-center p-2 rounded-lg transition-all duration-150 cursor-pointer group",
+      "relative flex items-center rounded-lg transition-all duration-200 cursor-pointer group w-full overflow-hidden",
+      // Enhanced mobile touch targets
+      isOpen ? "p-3 justify-start gap-3" : "p-2 justify-center",
       isActive
         ? "bg-[#2563EB]/40 text-[#2563EB] shadow-glow"
-        : "text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105",
-      isOpen ? "justify-start gap-3" : "justify-center",
+        : "text-white/70 hover:text-white hover:bg-[#2563EB]/20 hover:scale-105 active:scale-95",
     )}
-    style={{ transitionDelay: `${delay}ms` }}
+    style={{ 
+      transitionDelay: `${delay}ms`,
+      maxWidth: '100%'
+    }}
     aria-current={isActive ? "page" : undefined}
   >
     <Icon className="h-5 w-5 flex-shrink-0" />
-    {isOpen && <span className="text-sm font-medium transition-opacity duration-150">{label}</span>}
+    {isOpen && (
+      <span className="text-sm font-medium transition-opacity duration-200 select-none truncate flex-1">
+        {label}
+      </span>
+    )}
   </Link>
 )
 
@@ -111,21 +120,21 @@ const SidebarFooter = ({
   return (
     <div
       className={cn(
-        'cursor-pointer transition-transform duration-150 hover:scale-105 flex items-center',
-        isOpen ? 'gap-2' : 'justify-center w-full' // <- full width so icon aligns correctly
+        'cursor-pointer transition-transform duration-150 hover:scale-105 flex items-center w-full overflow-hidden',
+        isOpen ? 'gap-2' : 'justify-center' 
       )}
       title={`${cfData.handle} (${cfData.rating})`}
     >
       {isOpen ? (
-        <div className={`p-3 rounded-xl border ${tier.bg} ${tier.color}`}>
-          <p className='text-sm font-bold'>{cfData.handle}</p>
-          <p className='text-xs'>
+        <div className={`p-3 rounded-xl border ${tier.bg} ${tier.color} w-full overflow-hidden`}>
+          <p className='text-sm font-bold truncate'>{cfData.handle}</p>
+          <p className='text-xs truncate'>
             {tier.label} · {cfData.rating}
           </p>
         </div>
       ) : (
         <div
-          className={`w-12 h-12 flex items-center justify-center rounded-full border ${tier.bg} ${tier.color} text-[10px] font-bold`}
+          className={`w-12 h-12 flex items-center justify-center rounded-full border ${tier.bg} ${tier.color} text-[10px] font-bold flex-shrink-0`}
         >
           {tier.label.split(' ')[0]}
         </div>
@@ -139,8 +148,27 @@ const SidebarFooter = ({
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const { isVerified, verificationData } = useCFVerification()
-  const [isOpen, setIsOpen] = useState(true)
+  const [isOpen, setIsOpen] = useState(false) // Start closed on mobile
+  const [isMobile, setIsMobile] = useState(false)
   const [cfData, setCfData] = useState(verificationData)
+
+  // Handle mobile detection and responsive behavior
+  useEffect(() => {
+    const checkIfMobile = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobile(mobile)
+      // Auto-close sidebar on mobile, auto-open on desktop
+      if (mobile) {
+        setIsOpen(false)
+      } else {
+        setIsOpen(true)
+      }
+    }
+    
+    checkIfMobile()
+    window.addEventListener('resize', checkIfMobile)
+    return () => window.removeEventListener('resize', checkIfMobile)
+  }, [])
 
   useEffect(() => {
     const fetchLatestCFData = async () => {
@@ -165,24 +193,85 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     fetchLatestCFData()
   }, [verificationData])
 
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isMobile && isOpen) {
+        const sidebar = document.querySelector('[data-sidebar]')
+        if (sidebar && !sidebar.contains(event.target as Node)) {
+          setIsOpen(false)
+        }
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [isMobile, isOpen])
+
   return (
     <div className='flex min-h-screen bg-background text-foreground'>
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          'fixed top-0 left-0 z-50 h-full flex flex-col bg-card border-r border-border shadow-lg transition-all duration-150 overflow-hidden',
-          isOpen ? 'w-64' : 'w-16'
+      <AnimatePresence>
+        {/* Mobile Overlay - Removed blur for better performance */}
+        {isMobile && isOpen && (
+          <motion.div 
+            className="fixed inset-0 bg-black/40 z-40 md:hidden" 
+            onClick={() => setIsOpen(false)}
+            aria-hidden="true"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          />
         )}
+      </AnimatePresence>
+      
+      {/* Sidebar */}
+      <motion.aside
+        data-sidebar
+        className={cn(
+          'fixed top-0 left-0 z-50 h-screen flex flex-col bg-card/95 backdrop-blur-md border-r border-border/50 shadow-2xl',
+          // Enhanced mobile styling
+          isMobile 
+            ? 'w-72' // Slightly wider on mobile for better touch targets
+            : isOpen 
+              ? 'w-64' 
+              : 'w-16'
+        )}
+        initial={isMobile ? { x: -288 } : false}
+        animate={
+          isMobile 
+            ? { x: isOpen ? 0 : -288 }
+            : { width: isOpen ? 256 : 64 }
+        }
+        transition={{ 
+          type: "spring", 
+          stiffness: 300, 
+          damping: 30,
+          duration: 0.3 
+        }}
+        style={{
+          overflowX: 'hidden',
+          overflowY: 'hidden'
+        }}
       >
-        {/* Hamburger */}
+        {/* Hamburger - Enhanced for mobile */}
         <div
           className={cn(
-            'flex items-center p-4 border-b border-border',
-            isOpen ? 'justify-start' : 'justify-center'
+            'flex items-center p-4 border-b border-border/30',
+            isOpen ? 'justify-between' : 'justify-center'
           )}
         >
+          {isOpen && isMobile && (
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                <span className="text-primary font-bold text-sm">AR</span>
+              </div>
+              <span className="font-semibold text-foreground">AlgoRise</span>
+            </div>
+          )}
+          
           <button
-            className='flex items-center justify-center w-8 h-8 rounded-md hover:bg-muted transition'
+            className='flex items-center justify-center w-8 h-8 rounded-md hover:bg-muted transition-colors duration-200'
             onClick={() => setIsOpen(!isOpen)}
             aria-label='Toggle sidebar'
           >
@@ -190,8 +279,16 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           </button>
         </div>
 
-        {/* Menu */}
-        <nav className='flex-1 mt-4 overflow-y-auto px-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30 space-y-2'>
+        {/* Menu - Enhanced spacing for mobile */}
+        <nav className={cn(
+          'flex-1 mt-4 overflow-x-hidden overflow-y-auto',
+          isMobile ? 'px-3 space-y-1' : 'px-4 space-y-2'
+        )}
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent'
+        }}
+        >
           {menuItems.map((item, idx) => (
             <SidebarItem
               key={item.href}
@@ -208,21 +305,45 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
 
         {/* Footer */}
         {isVerified && (
-          <div className='p-4 border-t border-border flex flex-col items-start'>
-            <SidebarFooter cfData={cfData} isOpen={isOpen} />
+          <div className={cn(
+            'border-t border-border/30 flex flex-col items-start overflow-hidden',
+            isMobile ? 'p-3' : 'p-4'
+          )}>
+            <div className="w-full overflow-hidden">
+              <SidebarFooter cfData={cfData} isOpen={isOpen} />
+            </div>
+            
+            {/* Mobile hint */}
+            {isMobile && isOpen && (
+              <motion.div 
+                className="w-full mt-3 text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
+                <div className="text-xs text-muted-foreground/60 flex items-center justify-center gap-1">
+                  <span>Tap outside to close</span>
+                </div>
+              </motion.div>
+            )}
           </div>
         )}
-      </aside>
+      </motion.aside>
 
       {/* Main Content */}
       <div
         className={cn(
-          'flex-1 flex flex-col min-h-screen transition-all duration-150',
-          isOpen ? 'ml-64' : 'ml-16'
+          'flex-1 flex flex-col min-h-screen transition-all duration-300',
+          // Mobile: no margin (sidebar overlays), Desktop: margin based on sidebar state
+          isMobile 
+            ? 'ml-0' 
+            : isOpen 
+              ? 'ml-64' 
+              : 'ml-16'
         )}
       >
-        <Header />
-        <main className='flex-1 overflow-y-auto p-4'>{children}</main>
+        <Header onMobileMenuToggle={() => setIsOpen(!isOpen)} isMobile={isMobile} />
+        <main className='flex-1 overflow-y-auto p-2 sm:p-4'>{children}</main>
         <Footer />
       </div>
     </div>

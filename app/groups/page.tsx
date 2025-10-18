@@ -3,7 +3,7 @@
 import useSWR, { mutate } from 'swr';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,7 +20,19 @@ import {
 } from '@/components/ui/dialog';
 import { GroupLeaderboard } from '@/components/groups/group-leaderboard';
 import { GroupManagement } from '@/components/groups/group-management';
-import { Users, Plus, Trophy, Crown, Shield, User, Award } from 'lucide-react';
+import {
+  Users,
+  Plus,
+  Trophy,
+  Crown,
+  Shield,
+  User,
+  Award,
+  TrendingUp,
+  Zap,
+  Target,
+  Flame,
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
@@ -32,7 +44,7 @@ interface Group {
   memberCount: number;
   maxMembers?: number;
   description?: string;
-  createdAt?: string; // for "Recently Formed" discover tab
+  createdAt?: string;
 }
 
 interface Membership {
@@ -71,6 +83,20 @@ export default function GroupsPage() {
     | 'analytics'
   >('overview');
 
+  const { data: lbData } = useSWR<{
+    stats?: {
+      totalMembers: number;
+      activeMembers: number;
+      avgRating: number;
+      totalProblems: number;
+    };
+  }>(
+    selectedGroup
+      ? `/api/groups/${selectedGroup.group.id}/leaderboard?range=all&sort=rating`
+      : null,
+    fetcher
+  );
+
   const sortGroups = (groups: Membership[]) => {
     const copy = [...groups];
     if (sortKey === 'name') {
@@ -81,7 +107,6 @@ export default function GroupsPage() {
         (a, b) => (b.group.memberCount || 0) - (a.group.memberCount || 0)
       );
     }
-    // recent
     return copy.sort((a, b) => {
       const at = a.group.createdAt ? new Date(a.group.createdAt).getTime() : 0;
       const bt = b.group.createdAt ? new Date(b.group.createdAt).getTime() : 0;
@@ -193,31 +218,33 @@ export default function GroupsPage() {
           variant: 'default' as const,
           icon: <Award className='h-3 w-3 mr-1' />,
           label: 'ICPC Team',
+          color: 'from-purple-500/20 to-purple-600/20 border-purple-500/30',
         };
       case 'college':
-        return { variant: 'secondary' as const, icon: null, label: 'College' };
+        return {
+          variant: 'secondary' as const,
+          icon: null,
+          label: 'College',
+          color: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
+        };
       case 'friends':
-        return { variant: 'outline' as const, icon: null, label: 'Friends' };
+        return {
+          variant: 'outline' as const,
+          icon: null,
+          label: 'Friends',
+          color: 'from-green-500/20 to-green-600/20 border-green-500/30',
+        };
       default:
-        return { variant: 'outline' as const, icon: null, label: type };
+        return {
+          variant: 'outline' as const,
+          icon: null,
+          label: type,
+          color: 'from-gray-500/20 to-gray-600/20 border-gray-500/30',
+        };
     }
   };
 
   const filteredAndSortedMemberships = sortGroups(filterGroups(memberships));
-
-  const { data: lbData } = useSWR<{
-    stats?: {
-      totalMembers: number;
-      activeMembers: number;
-      avgRating: number;
-      totalProblems: number;
-    };
-  }>(
-    selectedGroup
-      ? `/api/groups/${selectedGroup.group.id}/leaderboard?range=all&sort=rating`
-      : null,
-    fetcher
-  );
 
   useEffect(() => {
     if (discoverTab === 'all') {
@@ -243,8 +270,8 @@ export default function GroupsPage() {
 
     return (
       <main className='mx-auto max-w-7xl px-4 py-6'>
-        <div className='flex items-center justify-between mb-6'>
-          <div className='flex items-center gap-3'>
+        <div className='flex items-center justify-between mb-8'>
+          <div className='flex items-center gap-4'>
             <Button
               variant='ghost'
               onClick={() => setSelectedGroup(null)}
@@ -253,8 +280,8 @@ export default function GroupsPage() {
               ← Back
             </Button>
             <div>
-              <h1 className='text-3xl font-bold'>{selectedGroup.group.name}</h1>
-              <div className='flex items-center gap-2 mt-1'>
+              <h1 className='text-4xl font-bold'>{selectedGroup.group.name}</h1>
+              <div className='flex items-center gap-3 mt-2'>
                 <Badge
                   variant={typeBadge.variant}
                   className='flex items-center'
@@ -275,7 +302,7 @@ export default function GroupsPage() {
                 </span>
               </div>
               {selectedGroup.group.description && (
-                <p className='text-sm text-muted-foreground mt-2'>
+                <p className='text-sm text-muted-foreground mt-3'>
                   {selectedGroup.group.description}
                 </p>
               )}
@@ -291,6 +318,52 @@ export default function GroupsPage() {
               Leave Group
             </Button>
           </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className='grid gap-4 md:grid-cols-4 mb-8'>
+          <Card className='border-l-4 border-l-blue-500'>
+            <CardContent className='p-5'>
+              <div className='text-sm text-muted-foreground font-medium'>
+                Total Members
+              </div>
+              <div className='mt-2 text-3xl font-bold'>
+                {lbData?.stats?.totalMembers ?? selectedGroup.group.memberCount}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className='border-l-4 border-l-green-500'>
+            <CardContent className='p-5'>
+              <div className='text-sm text-muted-foreground font-medium'>
+                Active Members
+              </div>
+              <div className='mt-2 text-3xl font-bold'>
+                {lbData?.stats?.activeMembers ?? 0}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className='border-l-4 border-l-yellow-500'>
+            <CardContent className='p-5'>
+              <div className='text-sm text-muted-foreground font-medium'>
+                Avg Rating
+              </div>
+              <div className='mt-2 text-3xl font-bold'>
+                {lbData?.stats?.avgRating
+                  ? Math.round(lbData.stats.avgRating)
+                  : '—'}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className='border-l-4 border-l-purple-500'>
+            <CardContent className='p-5'>
+              <div className='text-sm text-muted-foreground font-medium'>
+                Total Solved
+              </div>
+              <div className='mt-2 text-3xl font-bold'>
+                {lbData?.stats?.totalProblems ?? 0}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <Tabs
@@ -313,7 +386,6 @@ export default function GroupsPage() {
               <Users className='h-4 w-4' />
               Members
             </TabsTrigger>
-            {/* scaffolding for future sections per blueprint */}
             <TabsTrigger value='practice' className='hidden md:inline-flex'>
               Practice
             </TabsTrigger>
@@ -326,71 +398,29 @@ export default function GroupsPage() {
           </TabsList>
 
           <TabsContent value='overview' className='space-y-6'>
-            <div className='grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-              <Card>
-                <CardContent className='p-5'>
-                  <div className='text-sm text-muted-foreground'>Members</div>
-                  <div className='mt-1 text-2xl font-bold'>
-                    {lbData?.stats?.totalMembers ??
-                      selectedGroup.group.memberCount}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className='p-5'>
-                  <div className='text-sm text-muted-foreground'>Active</div>
-                  <div className='mt-1 text-2xl font-bold'>
-                    {lbData?.stats?.activeMembers ?? 0}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className='p-5'>
-                  <div className='text-sm text-muted-foreground'>
-                    Avg Rating
-                  </div>
-                  <div className='mt-1 text-2xl font-bold'>
-                    {lbData?.stats?.avgRating
-                      ? Math.round(lbData.stats.avgRating)
-                      : '—'}
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className='p-5'>
-                  <div className='text-sm text-muted-foreground'>
-                    Total Solved
-                  </div>
-                  <div className='mt-1 text-2xl font-bold'>
-                    {lbData?.stats?.totalProblems ?? 0}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card>
-              <CardContent className='p-6'>
-                <h3 className='text-lg font-semibold mb-2'>Quick Actions</h3>
-                <p className='text-sm text-muted-foreground mb-4'>
+            <Card className='border-l-4 border-l-primary'>
+              <CardHeader>
+                <CardTitle className='text-lg flex items-center gap-2'>
+                  <Zap className='h-5 w-5 text-primary' />
+                  Quick Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className='space-y-3'>
+                <p className='text-sm text-muted-foreground'>
                   Get started with your{' '}
                   {selectedGroup.group.type === 'icpc' ? 'team' : 'group'}.
                 </p>
                 <div className='flex flex-wrap gap-3'>
-                  {/* Invite teammates should switch to Members tab, scroll, and open invite dialog */}
                   <Button
                     variant='secondary'
                     onClick={() => {
                       setTab('members');
-                      // update URL hash and scroll
                       window.history.replaceState(null, '', '#members');
                       setTimeout(() => {
-                        document
-                          .getElementById('members')
-                          ?.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start',
-                          });
-                        // notify GroupManagement to open the invite dialog
+                        document.getElementById('members')?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'start',
+                        });
                         window.dispatchEvent(
                           new CustomEvent('algorise:open-invite', {
                             detail: { groupId: selectedGroup.group.id },
@@ -417,23 +447,24 @@ export default function GroupsPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardContent className='p-6'>
-                <h3 className='text-lg font-semibold mb-2'>
+            <Card className='border-l-4 border-l-green-500'>
+              <CardHeader>
+                <CardTitle className='text-lg flex items-center gap-2'>
+                  <Target className='h-5 w-5 text-green-500' />
                   Upcoming Contests
-                </h3>
-                <p className='text-sm text-muted-foreground'>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className='text-sm text-muted-foreground mb-4'>
                   Check live and virtual contests to practice together on
                   AlgoRise or Codeforces.
                 </p>
-                <div className='mt-3'>
-                  <Button
-                    variant='outline'
-                    onClick={() => (window.location.href = '/contests')}
-                  >
-                    View contests
-                  </Button>
-                </div>
+                <Button
+                  variant='outline'
+                  onClick={() => (window.location.href = '/contests')}
+                >
+                  View contests
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -457,8 +488,13 @@ export default function GroupsPage() {
 
           <TabsContent value='practice' className='space-y-6'>
             <Card>
-              <CardContent className='p-6'>
-                <h3 className='text-lg font-semibold mb-2'>Topic Tracker</h3>
+              <CardHeader>
+                <CardTitle className='text-lg flex items-center gap-2'>
+                  <Flame className='h-5 w-5 text-orange-500' />
+                  Topic Tracker
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
                 <p className='text-sm text-muted-foreground mb-4'>
                   Track DP, Graphs, Number Theory and more. Use Train to
                   generate a tailored plan.
@@ -475,8 +511,13 @@ export default function GroupsPage() {
 
           <TabsContent value='contests' className='space-y-6'>
             <Card>
-              <CardContent className='p-6'>
-                <h3 className='text-lg font-semibold mb-2'>Mock Contests</h3>
+              <CardHeader>
+                <CardTitle className='text-lg flex items-center gap-2'>
+                  <Trophy className='h-5 w-5 text-yellow-500' />
+                  Mock Contests
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
                 <p className='text-sm text-muted-foreground mb-4'>
                   Schedule team practice using ICPC-style contests on AlgoRise
                   or Codeforces virtuals.
@@ -493,8 +534,13 @@ export default function GroupsPage() {
 
           <TabsContent value='analytics' className='space-y-6'>
             <Card>
-              <CardContent className='p-6'>
-                <h3 className='text-lg font-semibold mb-2'>Team Analytics</h3>
+              <CardHeader>
+                <CardTitle className='text-lg flex items-center gap-2'>
+                  <TrendingUp className='h-5 w-5 text-blue-500' />
+                  Team Analytics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
                 <p className='text-sm text-muted-foreground'>
                   View solve counts, efficiency, and consistency. More detailed
                   charts coming soon.
@@ -508,216 +554,212 @@ export default function GroupsPage() {
   }
 
   return (
-    <main className='mx-auto max-w-6xl px-4 py-10'>
-      <div className='flex items-center justify-between mb-6'>
+    <main className='mx-auto max-w-7xl px-4 py-10'>
+      <div className='flex items-center justify-between mb-8'>
         <div>
-          <h1 className='text-3xl font-bold'>Groups</h1>
-          <p className='text-muted-foreground mt-1'>
+          <h1 className='text-4xl font-bold'>Groups & Teams</h1>
+          <p className='text-muted-foreground mt-2 text-lg'>
             Join groups to compete with friends and classmates, or form ICPC
-            teams
+            teams for official competitions
           </p>
         </div>
 
-        <div className='flex items-center gap-3'>
-          <div className='hidden sm:flex items-center gap-2'>
-            <label className='text-sm text-muted-foreground'>Sort</label>
-            <select
-              className='h-9 rounded-md border bg-background px-2 text-sm'
-              value={sortKey}
-              onChange={e => setSortKey(e.target.value as any)}
+        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+          <DialogTrigger asChild>
+            <Button size='lg' className='gap-2'>
+              <Plus className='h-5 w-5' />
+              Create Group
+            </Button>
+          </DialogTrigger>
+          <DialogContent className='max-w-2xl'>
+            <DialogHeader>
+              <DialogTitle className='text-2xl'>Create a Group</DialogTitle>
+              <DialogDescription>
+                Choose between creating a Friends Group for casual competition
+                or an ICPC Team for official competitions.
+              </DialogDescription>
+            </DialogHeader>
+
+            <Tabs
+              value={groupType}
+              onValueChange={v => setGroupType(v as any)}
+              className='w-full'
             >
-              <option value='name'>Name</option>
-              <option value='members'>Members</option>
-              <option value='recent'>Recently Formed</option>
-            </select>
+              <TabsList className='grid w-full grid-cols-2'>
+                <TabsTrigger
+                  value='friends'
+                  className='flex items-center gap-2'
+                >
+                  <Users className='h-4 w-4' />
+                  Friends Group
+                </TabsTrigger>
+                <TabsTrigger value='icpc' className='flex items-center gap-2'>
+                  <Award className='h-4 w-4' />
+                  ICPC Team
+                </TabsTrigger>
+              </TabsList>
 
-            <label className='ml-3 text-sm text-muted-foreground'>Type</label>
-            <select
-              className='h-9 rounded-md border bg-background px-2 text-sm'
-              value={filterType}
-              onChange={e => setFilterType(e.target.value as any)}
-            >
-              <option value='all'>All</option>
-              <option value='college'>College</option>
-              <option value='friends'>Friends</option>
-              <option value='icpc'>ICPC Teams</option>
-            </select>
-          </div>
-
-          <Input
-            placeholder='Search groups...'
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            className='w-40 sm:w-56 md:w-64'
-          />
-
-          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className='h-4 w-4 mr-2' />
-                Create Group
-              </Button>
-            </DialogTrigger>
-            <DialogContent className='max-w-2xl'>
-              <DialogHeader>
-                <DialogTitle>Create a Group</DialogTitle>
-                <DialogDescription>
-                  Choose between creating a Friends Group for casual competition
-                  or an ICPC Team for official competitions.
-                </DialogDescription>
-              </DialogHeader>
-
-              <Tabs
-                value={groupType}
-                onValueChange={v => setGroupType(v as any)}
-                className='w-full'
-              >
-                <TabsList className='grid w-full grid-cols-2'>
-                  <TabsTrigger
-                    value='friends'
-                    className='flex items-center gap-2'
-                  >
-                    <Users className='h-4 w-4' />
+              <TabsContent value='friends' className='space-y-4 mt-4'>
+                <div className='bg-gradient-to-r from-green-500/10 to-green-600/10 p-4 rounded-lg space-y-2 border border-green-500/20'>
+                  <h4 className='font-semibold flex items-center gap-2'>
+                    <Users className='h-4 w-4 text-green-600' />
                     Friends Group
-                  </TabsTrigger>
-                  <TabsTrigger value='icpc' className='flex items-center gap-2'>
-                    <Award className='h-4 w-4' />
+                  </h4>
+                  <p className='text-sm text-muted-foreground'>
+                    Create a flexible group to compete with friends. No size
+                    limits, open to anyone you invite. Perfect for study groups,
+                    practice sessions, and friendly competitions.
+                  </p>
+                </div>
+
+                <div className='space-y-3'>
+                  <div>
+                    <Label htmlFor='friends-name' className='font-medium'>
+                      Group Name
+                    </Label>
+                    <Input
+                      id='friends-name'
+                      placeholder='e.g., Weekend Warriors, Study Squad'
+                      value={groupName}
+                      onChange={e => setGroupName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor='friends-desc' className='font-medium'>
+                      Description (Optional)
+                    </Label>
+                    <Textarea
+                      id='friends-desc'
+                      placeholder="What's your group about?"
+                      value={groupDescription}
+                      onChange={e => setGroupDescription(e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value='icpc' className='space-y-4 mt-4'>
+                <div className='bg-gradient-to-r from-purple-500/10 to-purple-600/10 p-4 rounded-lg space-y-2 border border-purple-500/20'>
+                  <h4 className='font-semibold flex items-center gap-2'>
+                    <Award className='h-4 w-4 text-purple-600' />
                     ICPC Team
-                  </TabsTrigger>
-                </TabsList>
+                  </h4>
+                  <p className='text-sm text-muted-foreground'>
+                    Form an official ICPC team with{' '}
+                    <strong>exactly 3 members from the same college</strong>.
+                    Follows ICPC rules and regulations for competitive
+                    programming contests.
+                  </p>
+                  <ul className='text-sm text-muted-foreground list-disc list-inside space-y-1'>
+                    <li>Strictly 3 members maximum</li>
+                    <li>All members must be from the same college</li>
+                    <li>
+                      Ideal for ICPC regional and world finals preparation
+                    </li>
+                  </ul>
+                </div>
 
-                <TabsContent value='friends' className='space-y-4 mt-4'>
-                  <div className='bg-muted/50 p-4 rounded-lg space-y-2'>
-                    <h4 className='font-semibold flex items-center gap-2'>
-                      <Users className='h-4 w-4' />
-                      Friends Group
-                    </h4>
-                    <p className='text-sm text-muted-foreground'>
-                      Create a flexible group to compete with friends. No size
-                      limits, open to anyone you invite. Perfect for study
-                      groups, practice sessions, and friendly competitions.
-                    </p>
+                <div className='space-y-3'>
+                  <div>
+                    <Label htmlFor='icpc-name' className='font-medium'>
+                      Team Name
+                    </Label>
+                    <Input
+                      id='icpc-name'
+                      placeholder='e.g., AlgoRise Champions, Code Ninjas'
+                      value={groupName}
+                      onChange={e => setGroupName(e.target.value)}
+                    />
                   </div>
-
-                  <div className='space-y-3'>
-                    <div>
-                      <Label htmlFor='friends-name'>Group Name</Label>
-                      <Input
-                        id='friends-name'
-                        placeholder='e.g., Weekend Warriors, Study Squad'
-                        value={groupName}
-                        onChange={e => setGroupName(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor='friends-desc'>
-                        Description (Optional)
-                      </Label>
-                      <Textarea
-                        id='friends-desc'
-                        placeholder="What's your group about?"
-                        value={groupDescription}
-                        onChange={e => setGroupDescription(e.target.value)}
-                        rows={3}
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor='icpc-desc' className='font-medium'>
+                      Team Description (Optional)
+                    </Label>
+                    <Textarea
+                      id='icpc-desc'
+                      placeholder="Describe your team's goals and strategy"
+                      value={groupDescription}
+                      onChange={e => setGroupDescription(e.target.value)}
+                      rows={3}
+                    />
                   </div>
-                </TabsContent>
+                </div>
+              </TabsContent>
+            </Tabs>
 
-                <TabsContent value='icpc' className='space-y-4 mt-4'>
-                  <div className='bg-muted/50 p-4 rounded-lg space-y-2'>
-                    <h4 className='font-semibold flex items-center gap-2'>
-                      <Award className='h-4 w-4' />
-                      ICPC Team
-                    </h4>
-                    <p className='text-sm text-muted-foreground'>
-                      Form an official ICPC team with{' '}
-                      <strong>exactly 3 members from the same college</strong>.
-                      Follows ICPC rules and regulations for competitive
-                      programming contests.
-                    </p>
-                    <ul className='text-sm text-muted-foreground list-disc list-inside space-y-1'>
-                      <li>Strictly 3 members maximum</li>
-                      <li>All members must be from the same college</li>
-                      <li>
-                        Ideal for ICPC regional and world finals preparation
-                      </li>
-                    </ul>
-                  </div>
+            <DialogFooter>
+              <Button
+                variant='outline'
+                onClick={() => {
+                  setShowCreateDialog(false);
+                  setGroupName('');
+                  setGroupDescription('');
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={createGroup}
+                disabled={creating || !groupName.trim()}
+              >
+                {creating
+                  ? 'Creating...'
+                  : `Create ${
+                      groupType === 'icpc' ? 'ICPC Team' : 'Friends Group'
+                    }`}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
 
-                  <div className='space-y-3'>
-                    <div>
-                      <Label htmlFor='icpc-name'>Team Name</Label>
-                      <Input
-                        id='icpc-name'
-                        placeholder='e.g., AlgoRise Champions, Code Ninjas'
-                        value={groupName}
-                        onChange={e => setGroupName(e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor='icpc-desc'>
-                        Team Description (Optional)
-                      </Label>
-                      <Textarea
-                        id='icpc-desc'
-                        placeholder="Describe your team's goals and strategy"
-                        value={groupDescription}
-                        onChange={e => setGroupDescription(e.target.value)}
-                        rows={3}
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-              </Tabs>
-
-              <DialogFooter>
-                <Button
-                  variant='outline'
-                  onClick={() => {
-                    setShowCreateDialog(false);
-                    setGroupName('');
-                    setGroupDescription('');
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={createGroup}
-                  disabled={creating || !groupName.trim()}
-                >
-                  {creating
-                    ? 'Creating...'
-                    : `Create ${
-                        groupType === 'icpc' ? 'ICPC Team' : 'Friends Group'
-                      }`}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+      {/* Discover Tabs */}
+      <div className='mb-8'>
+        <div className='inline-flex rounded-lg border bg-background p-1 gap-1'>
+          {[
+            { v: 'all', label: 'All Groups', icon: Users },
+            { v: 'top-icpc', label: 'Top ICPC Teams', icon: Trophy },
+            { v: 'college', label: 'College Groups', icon: Users },
+            { v: 'friends', label: 'Active DSA Circles', icon: Flame },
+            { v: 'recent', label: 'Recently Formed', icon: Zap },
+          ].map(t => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.v}
+                onClick={() => setDiscoverTab(t.v as any)}
+                className={`px-4 py-2 text-sm rounded-md font-medium transition-all flex items-center gap-2 ${
+                  discoverTab === t.v
+                    ? 'bg-primary text-primary-foreground'
+                    : 'hover:bg-muted/60'
+                }`}
+              >
+                <Icon className='h-4 w-4' />
+                {t.label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      <div className='mb-6'>
-        <div className='inline-flex rounded-lg border bg-background p-1'>
-          {[
-            { v: 'all', label: 'All' },
-            { v: 'top-icpc', label: 'Top ICPC Teams' },
-            { v: 'college', label: 'College Groups' },
-            { v: 'friends', label: 'Active DSA Circles' },
-            { v: 'recent', label: 'Recently Formed' },
-          ].map(t => (
-            <button
-              key={t.v}
-              onClick={() => setDiscoverTab(t.v as any)}
-              className={`px-3 py-1.5 text-sm rounded-md ${
-                discoverTab === t.v ? 'bg-muted' : 'hover:bg-muted/60'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+      {/* Search & Filter */}
+      <div className='flex gap-4 mb-8'>
+        <Input
+          placeholder='Search groups...'
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          className='flex-1 max-w-md'
+        />
+        <select
+          className='h-10 rounded-md border bg-background px-3 text-sm'
+          value={sortKey}
+          onChange={e => setSortKey(e.target.value as any)}
+        >
+          <option value='name'>Sort by Name</option>
+          <option value='members'>Sort by Members</option>
+          <option value='recent'>Sort by Recent</option>
+        </select>
       </div>
 
       {isLoading ? (
@@ -734,9 +776,9 @@ export default function GroupsPage() {
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
           {filteredAndSortedMemberships.length === 0 ? (
             <Card className='col-span-full'>
-              <CardContent className='p-6 text-center'>
-                <Users className='h-12 w-12 mx-auto text-muted-foreground mb-3' />
-                <p className='text-muted-foreground'>
+              <CardContent className='p-12 text-center'>
+                <Users className='h-16 w-16 mx-auto text-muted-foreground mb-4' />
+                <p className='text-muted-foreground text-lg'>
                   {query.trim() || filterType !== 'all'
                     ? 'No groups match your filters.'
                     : "You haven't joined any groups yet. Create one to get started!"}
@@ -751,15 +793,15 @@ export default function GroupsPage() {
                   key={m.group.id}
                   role='button'
                   onClick={() => setSelectedGroup(m)}
-                  className='hover:bg-muted/50 transition-colors cursor-pointer'
+                  className={`hover:shadow-lg transition-all cursor-pointer border-l-4 bg-gradient-to-br ${typeBadge.color}`}
                 >
                   <CardContent className='p-6'>
-                    <div className='flex flex-col gap-3'>
+                    <div className='flex flex-col gap-4'>
                       <div>
                         <h3 className='text-lg font-semibold truncate'>
                           {m.group.name}
                         </h3>
-                        <div className='mt-2 flex flex-wrap items-center gap-2'>
+                        <div className='mt-3 flex flex-wrap items-center gap-2'>
                           <Badge
                             variant={typeBadge.variant}
                             className='flex items-center'
@@ -783,7 +825,7 @@ export default function GroupsPage() {
                           </Badge>
                         </div>
                         {m.group.description && (
-                          <p className='mt-2 text-sm text-muted-foreground line-clamp-2'>
+                          <p className='mt-3 text-sm text-muted-foreground line-clamp-2'>
                             {m.group.description}
                           </p>
                         )}

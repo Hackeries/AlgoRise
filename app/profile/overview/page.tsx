@@ -40,34 +40,49 @@ function formatDegreeType(degreeType: string | null): string {
 }
 
 function calculateProfileStrength(data: any): number {
-  const checks = [
-    // Core requirements (60% weight)
-    { check: !!data?.cf_verified, weight: 20 }, // CF verification is critical
-    { check: !!data?.status, weight: 10 }, // Status selected
+  let totalWeight = 0;
+  let earnedWeight = 0;
 
-    // Status-specific requirements (30% weight)
-    ...(data?.status === 'student'
-      ? [
-          { check: !!data?.degree_type, weight: 10 },
-          { check: !!data?.college_id, weight: 10 },
-          { check: !!data?.year, weight: 10 },
-        ]
-      : data?.status === 'working'
-      ? [{ check: !!data?.company_id, weight: 30 }]
-      : [{ check: false, weight: 30 }]),
+  // Core: CF Verification (25%)
+  if (data?.cf_verified) {
+    earnedWeight += 25;
+  }
+  totalWeight += 25;
 
-    // Optional enhancements (10% weight - 2.5% each)
-    { check: !!data?.leetcode_handle, weight: 2.5 },
-    { check: !!data?.codechef_handle, weight: 2.5 },
-    { check: !!data?.atcoder_handle, weight: 2.5 },
-    { check: !!data?.gfg_handle, weight: 2.5 },
-  ];
+  // Core: Status (15%)
+  if (data?.status) {
+    earnedWeight += 15;
+  }
+  totalWeight += 15;
 
-  const totalWeight = checks.reduce(
-    (sum, item) => sum + (item.check ? item.weight : 0),
-    0
-  );
-  return Math.round(totalWeight);
+  // Status-specific requirements (35%)
+  if (data?.status === 'student') {
+    // Student requirements
+    if (data?.degree_type) earnedWeight += 8;
+    if (data?.college_id) earnedWeight += 9;
+    if (data?.year) earnedWeight += 9;
+    totalWeight += 26;
+  } else if (data?.status === 'working') {
+    // Working requirements
+    if (data?.company_id) earnedWeight += 26;
+    totalWeight += 26;
+  } else {
+    totalWeight += 26;
+  }
+
+  // Coding profiles (25%)
+  const codingProfiles = [
+    data?.leetcode_handle,
+    data?.codechef_handle,
+    data?.atcoder_handle,
+    data?.gfg_handle,
+  ].filter(Boolean).length;
+
+  const profilesWeight = (codingProfiles / 4) * 25;
+  earnedWeight += profilesWeight;
+  totalWeight += 25;
+
+  return Math.round((earnedWeight / totalWeight) * 100);
 }
 
 // Fetch profile data from API (SSR-safe)
@@ -132,35 +147,82 @@ export default async function ProfileOverviewPage() {
 
   const completion = calculateProfileStrength(data);
 
+  const getStrengthLevel = (score: number) => {
+    if (score >= 90)
+      return {
+        label: 'Excellent',
+        color: 'text-green-600',
+        bg: 'bg-green-50 dark:bg-green-950',
+      };
+    if (score >= 70)
+      return {
+        label: 'Good',
+        color: 'text-blue-600',
+        bg: 'bg-blue-50 dark:bg-blue-950',
+      };
+    if (score >= 50)
+      return {
+        label: 'Fair',
+        color: 'text-yellow-600',
+        bg: 'bg-yellow-50 dark:bg-yellow-950',
+      };
+    return {
+      label: 'Incomplete',
+      color: 'text-orange-600',
+      bg: 'bg-orange-50 dark:bg-orange-950',
+    };
+  };
+
+  const strengthLevel = getStrengthLevel(completion);
+
   return (
     <main className='min-h-screen w-full bg-gradient-to-b from-background to-muted/20'>
-      <div className='mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8 space-y-6'>
-        <div className='flex items-center justify-between mb-4'>
+      <div className='mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 space-y-8'>
+        <div className='flex items-center justify-between mb-6'>
           <div>
-            <h1 className='text-3xl font-bold tracking-tight'>
+            <h1 className='text-4xl font-bold tracking-tight'>
               Profile Overview
             </h1>
-            <p className='text-muted-foreground mt-1'>
-              View and manage your profile information
+            <p className='text-muted-foreground mt-2'>
+              Manage your profile and track your competitive programming journey
             </p>
           </div>
-          {/* <ReportBugButton variant="outline" section="Profile" /> */}
         </div>
 
-        {/* Progress / Strength */}
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-xl'>
-              Profile Strength: {completion}%
-            </CardTitle>
+        {/* Profile Strength Card */}
+        <Card className={`border-2 ${strengthLevel.bg}`}>
+          <CardHeader className='pb-3'>
+            <div className='flex items-center justify-between'>
+              <div>
+                <CardTitle className='text-2xl'>Profile Strength</CardTitle>
+                <p
+                  className={`text-sm mt-1 font-semibold ${strengthLevel.color}`}
+                >
+                  {strengthLevel.label}
+                </p>
+              </div>
+              <div className='text-right'>
+                <div className={`text-4xl font-bold ${strengthLevel.color}`}>
+                  {completion}%
+                </div>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div
-              className='h-2 w-full rounded bg-muted overflow-hidden'
+              className='h-3 w-full rounded-full bg-muted overflow-hidden'
               aria-label='Profile completion progress'
             >
               <div
-                className='h-full bg-primary transition-all'
+                className={`h-full ${
+                  completion >= 90
+                    ? 'bg-green-600'
+                    : completion >= 70
+                    ? 'bg-blue-600'
+                    : completion >= 50
+                    ? 'bg-yellow-600'
+                    : 'bg-orange-600'
+                } transition-all duration-500`}
                 style={{ width: `${completion}%` }}
                 role='progressbar'
                 aria-valuenow={completion}
@@ -168,42 +230,53 @@ export default async function ProfileOverviewPage() {
                 aria-valuemax={100}
               />
             </div>
-            <p className='mt-3 text-sm text-muted-foreground'>
+            <p className='mt-4 text-sm text-muted-foreground'>
               {completion >= 100
-                ? "Profile Complete! You're all set to connect, learn, and shine."
+                ? 'Perfect! Your profile is complete and ready to shine.'
                 : completion >= 90
-                ? 'Almost there! Add more coding profiles to reach 100%.'
-                : completion >= 60
-                ? 'Good progress! Complete your profile details to unlock full potential.'
+                ? 'Almost perfect! Add more coding profiles to reach 100%.'
+                : completion >= 70
+                ? 'Great progress! Complete your profile details to unlock full potential.'
+                : completion >= 50
+                ? 'Good start! Add more information to improve your profile.'
                 : 'Complete your profile to unlock personalized recommendations.'}
             </p>
           </CardContent>
         </Card>
 
-        {/* About + Quick Actions */}
-        <div className='grid gap-6 md:grid-cols-3'>
-          <Card className='md:col-span-2'>
-            <CardHeader className='flex flex-row items-center justify-between'>
-              <CardTitle className='text-2xl'>{name}</CardTitle>
+        {/* Main Profile Info + Quick Actions */}
+        <div className='grid gap-6 lg:grid-cols-3'>
+          <Card className='lg:col-span-2 border-l-4 border-l-primary'>
+            <CardHeader className='flex flex-row items-center justify-between pb-4'>
+              <div>
+                <CardTitle className='text-3xl'>{name}</CardTitle>
+                <p className='text-muted-foreground mt-1'>
+                  Competitive Programmer
+                </p>
+              </div>
               <Link href='/profile'>
                 <Button variant='outline' size='sm'>
                   Edit Profile
                 </Button>
               </Link>
             </CardHeader>
-            <CardContent className='space-y-3'>
-              <div className='grid gap-3 sm:grid-cols-2'>
-                <div className='space-y-1'>
-                  <div className='text-sm text-muted-foreground'>Status</div>
-                  <div className='font-medium capitalize'>{status || '—'}</div>
+            <CardContent className='space-y-6'>
+              <div className='grid gap-4 sm:grid-cols-2'>
+                <div className='space-y-2 p-3 rounded-lg bg-muted/50'>
+                  <div className='text-sm text-muted-foreground font-medium'>
+                    Status
+                  </div>
+                  <div className='font-semibold text-lg capitalize'>
+                    {status || '—'}
+                  </div>
                 </div>
 
-                <div className='space-y-1'>
-                  <div className='text-sm text-muted-foreground'>
+                <div className='space-y-2 p-3 rounded-lg bg-muted/50'>
+                  <div className='text-sm text-muted-foreground font-medium'>
                     Codeforces
                   </div>
                   <div className='flex items-center gap-2'>
-                    <span className='font-medium'>{cf || '—'}</span>
+                    <span className='font-semibold text-lg'>{cf || '—'}</span>
                     {cf ? (
                       cfVerified ? (
                         <Badge className='bg-green-600 hover:bg-green-600'>
@@ -219,60 +292,81 @@ export default async function ProfileOverviewPage() {
                 </div>
 
                 {status === 'student' && degreeType && (
-                  <div className='space-y-1'>
-                    <div className='text-sm text-muted-foreground'>Degree</div>
-                    <div className='font-medium'>
+                  <div className='space-y-2 p-3 rounded-lg bg-muted/50'>
+                    <div className='text-sm text-muted-foreground font-medium'>
+                      Degree
+                    </div>
+                    <div className='font-semibold text-lg'>
                       {formatDegreeType(degreeType)}
                     </div>
                   </div>
                 )}
 
                 {status === 'student' && (
-                  <div className='space-y-1'>
-                    <div className='text-sm text-muted-foreground'>College</div>
-                    <div className='font-medium'>{college || '—'}</div>
+                  <div className='space-y-2 p-3 rounded-lg bg-muted/50'>
+                    <div className='text-sm text-muted-foreground font-medium'>
+                      College
+                    </div>
+                    <div className='font-semibold text-lg'>
+                      {college || '—'}
+                    </div>
                   </div>
                 )}
 
                 {status === 'working' && (
-                  <div className='space-y-1'>
-                    <div className='text-sm text-muted-foreground'>Company</div>
-                    <div className='font-medium'>{company || '—'}</div>
+                  <div className='space-y-2 p-3 rounded-lg bg-muted/50'>
+                    <div className='text-sm text-muted-foreground font-medium'>
+                      Company
+                    </div>
+                    <div className='font-semibold text-lg'>
+                      {company || '—'}
+                    </div>
                   </div>
                 )}
 
                 {status === 'student' && (
-                  <div className='space-y-1'>
-                    <div className='text-sm text-muted-foreground'>Year</div>
-                    <div className='font-medium'>{formatYear(year)}</div>
+                  <div className='space-y-2 p-3 rounded-lg bg-muted/50'>
+                    <div className='text-sm text-muted-foreground font-medium'>
+                      Year
+                    </div>
+                    <div className='font-semibold text-lg'>
+                      {formatYear(year)}
+                    </div>
                   </div>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Quick actions */}
-          <Card>
+          {/* Quick Actions */}
+          <Card className='border-l-4 border-l-green-500'>
             <CardHeader>
               <CardTitle className='text-lg'>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className='flex flex-col gap-3'>
-              <Link href='/adaptive-sheet'>
-                <Button className='w-full'>Open Adaptive Sheet</Button>
+              <Link href='/adaptive-sheet' className='w-full'>
+                <Button className='w-full bg-primary hover:bg-primary/90'>
+                  Open Adaptive Sheet
+                </Button>
               </Link>
-              <Link href='/paths'>
+              <Link href='/paths' className='w-full'>
                 <Button variant='secondary' className='w-full'>
                   Browse Learning Paths
+                </Button>
+              </Link>
+              <Link href='/contests' className='w-full'>
+                <Button variant='outline' className='w-full'>
+                  View Contests
                 </Button>
               </Link>
             </CardContent>
           </Card>
         </div>
 
-        {/* Coding Profiles / Links */}
+        {/* Coding Profiles */}
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between'>
-            <CardTitle className='text-lg'>Coding Profiles</CardTitle>
+          <CardHeader className='flex flex-row items-center justify-between pb-4'>
+            <CardTitle className='text-xl'>Coding Profiles</CardTitle>
             <LinksEditor
               defaultValues={{
                 leetcode: lc || '',
@@ -282,83 +376,94 @@ export default async function ProfileOverviewPage() {
               }}
             />
           </CardHeader>
-          <CardContent className='flex flex-wrap gap-2'>
-            {/* Codeforces */}
-            {cf ? (
-              <a
-                href={`https://codeforces.com/profile/${encodeURIComponent(
-                  cf
-                )}`}
-                target='_blank'
-                rel='noopener noreferrer'
-                className='inline-flex items-center gap-1 rounded-full px-3 py-1 bg-muted hover:bg-muted/80 transition'
-              >
-                <span className='font-medium'>Codeforces</span>
-                <ExternalLink className='h-3 w-3' />
-              </a>
-            ) : (
-              <Badge variant='outline'>Add Codeforces</Badge>
-            )}
+          <CardContent>
+            <div className='flex flex-wrap gap-3'>
+              {cf ? (
+                <a
+                  href={`https://codeforces.com/profile/${encodeURIComponent(
+                    cf
+                  )}`}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500/20 to-blue-600/20 hover:from-blue-500/30 hover:to-blue-600/30 transition-colors border border-blue-500/30'
+                >
+                  <span className='font-semibold text-blue-600 dark:text-blue-400'>
+                    Codeforces
+                  </span>
+                  <ExternalLink className='h-4 w-4' />
+                </a>
+              ) : (
+                <Badge variant='outline'>Add Codeforces</Badge>
+              )}
 
-            {lc ? (
-              <a
-                href={`https://leetcode.com/${encodeURIComponent(lc)}/`}
-                target='_blank'
-                rel='noopener noreferrer'
-                className='inline-flex items-center gap-1 rounded-full px-3 py-1 bg-muted hover:bg-muted/80 transition'
-              >
-                <span className='font-medium'>LeetCode</span>
-                <ExternalLink className='h-3 w-3' />
-              </a>
-            ) : (
-              <Badge variant='outline'>Add LeetCode</Badge>
-            )}
+              {lc ? (
+                <a
+                  href={`https://leetcode.com/${encodeURIComponent(lc)}/`}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 hover:from-yellow-500/30 hover:to-yellow-600/30 transition-colors border border-yellow-500/30'
+                >
+                  <span className='font-semibold text-yellow-600 dark:text-yellow-400'>
+                    LeetCode
+                  </span>
+                  <ExternalLink className='h-4 w-4' />
+                </a>
+              ) : (
+                <Badge variant='outline'>Add LeetCode</Badge>
+              )}
 
-            {cc ? (
-              <a
-                href={`https://www.codechef.com/users/${encodeURIComponent(
-                  cc
-                )}`}
-                target='_blank'
-                rel='noopener noreferrer'
-                className='inline-flex items-center gap-1 rounded-full px-3 py-1 bg-muted hover:bg-muted/80 transition'
-              >
-                <span className='font-medium'>CodeChef</span>
-                <ExternalLink className='h-3 w-3' />
-              </a>
-            ) : (
-              <Badge variant='outline'>Add CodeChef</Badge>
-            )}
+              {cc ? (
+                <a
+                  href={`https://www.codechef.com/users/${encodeURIComponent(
+                    cc
+                  )}`}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500/20 to-orange-600/20 hover:from-orange-500/30 hover:to-orange-600/30 transition-colors border border-orange-500/30'
+                >
+                  <span className='font-semibold text-orange-600 dark:text-orange-400'>
+                    CodeChef
+                  </span>
+                  <ExternalLink className='h-4 w-4' />
+                </a>
+              ) : (
+                <Badge variant='outline'>Add CodeChef</Badge>
+              )}
 
-            {ac ? (
-              <a
-                href={`https://atcoder.jp/users/${encodeURIComponent(ac)}`}
-                target='_blank'
-                rel='noopener noreferrer'
-                className='inline-flex items-center gap-1 rounded-full px-3 py-1 bg-muted hover:bg-muted/80 transition'
-              >
-                <span className='font-medium'>AtCoder</span>
-                <ExternalLink className='h-3 w-3' />
-              </a>
-            ) : (
-              <Badge variant='outline'>Add AtCoder</Badge>
-            )}
+              {ac ? (
+                <a
+                  href={`https://atcoder.jp/users/${encodeURIComponent(ac)}`}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500/20 to-purple-600/20 hover:from-purple-500/30 hover:to-purple-600/30 transition-colors border border-purple-500/30'
+                >
+                  <span className='font-semibold text-purple-600 dark:text-purple-400'>
+                    AtCoder
+                  </span>
+                  <ExternalLink className='h-4 w-4' />
+                </a>
+              ) : (
+                <Badge variant='outline'>Add AtCoder</Badge>
+              )}
 
-            {gfg ? (
-              <a
-                href={`https://auth.geeksforgeeks.org/user/${encodeURIComponent(
-                  gfg
-                )}/`}
-                target='_blank'
-                rel='noopener noreferrer'
-                className='inline-flex items-center gap-1 rounded-full px-3 py-1 bg-muted hover:bg-muted/80 transition'
-              >
-                <span className='font-medium'>GfG</span>
-                <ExternalLink className='h-3 w-3' />
-              </a>
-            ) : (
-              <Badge variant='outline'>Add GfG</Badge>
-            )}
+              {gfg ? (
+                <a
+                  href={`https://auth.geeksforgeeks.org/user/${encodeURIComponent(
+                    gfg
+                  )}/`}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-green-500/20 to-green-600/20 hover:from-green-500/30 hover:to-green-600/30 transition-colors border border-green-500/30'
+                >
+                  <span className='font-semibold text-green-600 dark:text-green-400'>
+                    GeeksforGeeks
+                  </span>
+                  <ExternalLink className='h-4 w-4' />
+                </a>
+              ) : (
+                <Badge variant='outline'>Add GeeksforGeeks</Badge>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

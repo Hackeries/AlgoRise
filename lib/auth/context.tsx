@@ -69,17 +69,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get initial session
     refreshUser().finally(() => setLoading(false));
 
-    if (!supabase) return;
+    if (!supabase || typeof supabase.auth?.onAuthStateChange !== 'function') {
+      return undefined;
+    }
 
     // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const { data, error } = supabase.auth.onAuthStateChange(
+      async (_event: any, session: any) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
 
-    return () => subscription.unsubscribe();
+    if (error) {
+      console.warn('Supabase auth subscription error:', error);
+    }
+
+    return () => data?.subscription?.unsubscribe();
   }, [supabase]);
 
   return (

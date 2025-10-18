@@ -72,6 +72,7 @@ export default function RootLayout({
   return (
     <html
       lang='en'
+      suppressHydrationWarning
       className={`${inter.variable} ${jetbrainsMono.variable} ${bricolage.variable} antialiased`}
     >
       <head>
@@ -87,7 +88,10 @@ export default function RootLayout({
           content='#0a0a0a'
         />
       </head>
-      <body className='min-h-dvh bg-background text-foreground font-sans theme-transition'>
+      <body
+        suppressHydrationWarning
+        className='min-h-dvh bg-background text-foreground font-sans theme-transition'
+      >
         <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
           <AuthProvider>
             <CFVerificationProvider>

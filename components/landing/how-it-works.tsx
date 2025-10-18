@@ -36,10 +36,9 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className='relative z-10 py-24 px-4 overflow-hidden'>
-      {/* 🎨 Background Blobs */}
-      <div className='absolute top-[-150px] left-[-100px] w-[350px] h-[350px] bg-purple-500/10 rounded-full blur-3xl animate-blob' />
-      <div className='absolute bottom-[-120px] right-[-80px] w-[400px] h-[400px] bg-green-400/10 rounded-full blur-3xl animate-blob animation-delay-2000' />
+    <section className='relative z-10 py-12 sm:py-16 lg:py-24 px-3 sm:px-4 lg:px-6 overflow-hidden'>
+      <div className='absolute top-[-100px] left-[-80px] sm:top-[-120px] sm:left-[-100px] lg:top-[-150px] lg:left-[-100px] w-[250px] h-[250px] sm:w-[300px] sm:h-[300px] lg:w-[350px] lg:h-[350px] bg-purple-500/10 dark:bg-purple-600/15 rounded-full blur-3xl animate-blob' />
+      <div className='absolute bottom-[-80px] right-[-60px] sm:bottom-[-100px] sm:right-[-80px] lg:bottom-[-120px] lg:right-[-80px] w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] lg:w-[400px] lg:h-[400px] bg-green-400/10 dark:bg-green-600/15 rounded-full blur-3xl animate-blob animation-delay-2000' />
 
       <div className='max-w-6xl mx-auto relative'>
         {/* Section Header */}
@@ -48,19 +47,19 @@ export default function HowItWorks() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className='text-center mb-20'
+          className='text-center mb-8 sm:mb-12 lg:mb-20'
         >
-          <h2 className='text-4xl md:text-5xl font-bold mb-6 text-white'>
+          <h2 className='text-2xl sm:text-3xl lg:text-5xl font-bold mb-3 sm:mb-4 lg:mb-6 text-foreground'>
             How It Works
           </h2>
-          <p className='text-lg text-white/80 max-w-2xl mx-auto leading-relaxed'>
+          <p className='text-sm sm:text-base lg:text-lg text-foreground/70 dark:text-foreground/80 max-w-2xl mx-auto leading-relaxed'>
             Get started in minutes and begin your journey to competitive
             programming mastery
           </p>
         </motion.div>
 
         {/* Steps */}
-        <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-8 relative'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 relative'>
           {steps.map((step, index) => (
             <motion.div
               key={step.title}
@@ -72,31 +71,31 @@ export default function HowItWorks() {
             >
               {/* Connecting line */}
               {index < steps.length - 1 && (
-                <div className='hidden lg:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-white/20 to-transparent -translate-x-1/2 z-0' />
+                <div className='hidden lg:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-white/20 dark:from-white/20 to-transparent -translate-x-1/2 z-0' />
               )}
 
               <motion.div
                 whileHover={{ scale: 1.05 }}
-                className='relative bg-black/40 dark:bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-6 hover:border-[#63EDA1]/50 transition-all duration-300 shadow-lg'
+                className='relative bg-white/50 dark:bg-black/40 backdrop-blur-xl border border-border/30 dark:border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-6 hover:border-primary/50 dark:hover:border-[#63EDA1]/50 transition-all duration-300 shadow-lg'
               >
                 {/* Step number */}
-                <div className='absolute -top-4 -right-4 w-12 h-12 rounded-full bg-gradient-to-br from-[#63EDA1] to-green-600 flex items-center justify-center text-white font-bold text-lg shadow-xl animate-pulse'>
+                <div className='absolute -top-3 -right-3 sm:-top-4 sm:-right-4 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-[#63EDA1] to-green-600 flex items-center justify-center text-white font-bold text-sm sm:text-lg shadow-xl animate-pulse'>
                   {step.step}
                 </div>
 
                 {/* Icon */}
                 <motion.div
                   whileHover={{ scale: 1.15 }}
-                  className='inline-flex p-4 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 mb-6 transition-transform duration-300'
+                  className='inline-flex p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 dark:from-blue-500/30 dark:to-purple-500/30 mb-4 sm:mb-6 transition-transform duration-300'
                 >
-                  <step.icon className='h-8 w-8 text-[#63EDA1]' />
+                  <step.icon className='h-6 w-6 sm:h-8 sm:w-8 text-[#63EDA1]' />
                 </motion.div>
 
                 {/* Content */}
-                <h3 className='text-xl font-semibold text-white mb-3 hover:text-[#63EDA1] transition-colors'>
+                <h3 className='text-base sm:text-lg lg:text-xl font-semibold text-foreground dark:text-white mb-2 sm:mb-3 hover:text-primary dark:hover:text-[#63EDA1] transition-colors'>
                   {step.title}
                 </h3>
-                <p className='text-white/70 leading-relaxed text-sm'>
+                <p className='text-foreground/70 dark:text-white/70 leading-relaxed text-xs sm:text-sm lg:text-base'>
                   {step.description}
                 </p>
               </motion.div>

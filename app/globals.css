@@ -253,7 +253,7 @@
 
   /* Sidebar hover improvements for light theme */
   .light [class*="bg-"][class*="/40"]:hover {
-    @apply bg-opacity-80 transition-all duration-200;
+    @apply opacity-80 transition-all duration-200;
   }
 
   /* CF section styling improvements */

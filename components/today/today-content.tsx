@@ -128,8 +128,8 @@ export function TodayContent() {
       {/* Today's Problems */}
       <section className='flex flex-col gap-4'>
         <h3 className='text-sm font-medium text-gray-200'>
-          Today’s CP picks
-          <span className='ml-2 rounded-full bg-gray-800 px-2 py-0.5 text-xs text-gray-300'>
+          Today's CP picks
+          <span className='ml-2 rounded-full bg-black border border-gray-800 px-2 py-0.5 text-xs text-gray-300'>
             {isLoading ? '…' : todaySlice.length}
           </span>
         </h3>
@@ -157,7 +157,7 @@ export function TodayContent() {
                     {p.title}
                   </a>
                   <div className='mt-1 flex flex-wrap gap-2 text-xs text-gray-300'>
-                    <span className='rounded-full bg-gray-800 px-2 py-0.5'>
+                    <span className='rounded-full bg-black border border-gray-800 px-2 py-0.5'>
                       Rating {p.rating}
                     </span>
                     <span className='rounded-full bg-amber-500/15 px-2 py-0.5 text-amber-400'>
@@ -166,7 +166,7 @@ export function TodayContent() {
                     {p.tags?.slice(0, 3).map(t => (
                       <span
                         key={t}
-                        className='rounded-full bg-gray-800 px-2 py-0.5'
+                        className='rounded-full bg-black border border-gray-800 px-2 py-0.5'
                       >
                         {t}
                       </span>

@@ -3,10 +3,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { getVisualizer } from '@/lib/visualizers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { SortingVisualizer } from '@/components/visualizers/sorting-visualizer';
-import { GraphVisualizer } from '@/components/visualizers/graph-visualizer';
-import { TreeVisualizer } from '@/components/visualizers/tree-visualizer';
-import { AlgorithmVisualizer } from '@/components/visualizers/algorithm-visualizer';
+import { ProductionVisualizer } from '@/components/visualizers/production-visualizer';
 
 export default async function VisualizerDetailPage({
   params,
@@ -17,35 +14,12 @@ export default async function VisualizerDetailPage({
   const v = getVisualizer(slug);
   if (!v) return notFound();
 
-  const renderVisualizer = () => {
-    switch (slug) {
-      case 'sorting':
-        return <SortingVisualizer />;
-      case 'graphs':
-        return <GraphVisualizer />;
-      case 'trees':
-        return <TreeVisualizer />;
-      case 'algorithms':
-        return <AlgorithmVisualizer />;
-      default:
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle>Coming Soon</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className='text-muted-foreground'>
-                Interactive visualizer for {v.title} is under development. Check
-                out the resources below to learn more about this topic.
-              </p>
-            </CardContent>
-          </Card>
-        );
-    }
-  };
+  // 🧩 Unified visualizer (you can later expand if you add topic-specific ones)
+  const renderVisualizer = () => <ProductionVisualizer topic={slug} />;
 
   return (
     <main className='mx-auto max-w-7xl px-4 py-10'>
+      {/* Back button */}
       <Link
         href='/visualizers'
         className='text-sm text-muted-foreground hover:underline inline-flex items-center gap-2 mb-6'
@@ -53,16 +27,18 @@ export default async function VisualizerDetailPage({
         <ArrowLeft size={16} /> Back to Visualizers
       </Link>
 
+      {/* Page Header */}
       <header className='mb-8'>
         <h1 className='text-3xl font-bold mb-2'>{v.title}</h1>
         <p className='text-muted-foreground text-lg'>{v.summary}</p>
       </header>
 
+      {/* Main Visualizer + Resources */}
       <div className='space-y-8'>
         {/* Interactive Visualizer */}
         <section>{renderVisualizer()}</section>
 
-        {/* Resources */}
+        {/* Learning Resources */}
         <section>
           <h2 className='text-2xl font-semibold mb-4'>Learning Resources</h2>
           <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>

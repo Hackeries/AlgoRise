@@ -345,7 +345,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error('[v0] Error fetching curated problems:', error);
+    console.error('Error fetching curated problems:', error);
     return NextResponse.json(
       { error: 'Failed to fetch curated problems' },
       { status: 500 }

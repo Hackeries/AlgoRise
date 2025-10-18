@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  Line,
   BarChart,
   Bar,
   PieChart,
@@ -115,11 +114,11 @@ function getDivTier(rating: number): { div: string; color: string } {
 
 function getProblemDifficultyColor(rating?: number): string {
   if (!rating) return '#6b7280';
-  if (rating < 1200) return '#10b981'; // Easy - Green
-  if (rating < 1400) return '#3b82f6'; // Medium - Blue
-  if (rating < 1600) return '#f59e0b'; // Hard - Orange
-  if (rating < 1900) return '#ef4444'; // Very Hard - Red
-  return '#8b5cf6'; // Expert - Purple
+  if (rating < 1200) return '#10b981';
+  if (rating < 1400) return '#3b82f6';
+  if (rating < 1600) return '#f59e0b';
+  if (rating < 1900) return '#ef4444';
+  return '#8b5cf6';
 }
 
 export function CPAnalyticsDashboard({ handle }: DashboardProps) {
@@ -135,27 +134,49 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
   const fetchAnalytics = async () => {
     try {
       setRefreshing(true);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
       const response = await fetch(
-        `/api/analytics/cp-profile?handle=${handle}`
+        `/api/analytics/cp-profile?handle=${encodeURIComponent(handle)}`,
+        {
+          signal: controller.signal,
+        }
       );
-      if (!response.ok) throw new Error('Failed to fetch analytics');
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch analytics: ${response.status}`);
+      }
+
       const analytics = await response.json();
+
+      if (!analytics || typeof analytics !== 'object') {
+        throw new Error('Invalid analytics data received');
+      }
+
       setData(analytics);
 
-      if (analytics.ratingHistory && analytics.ratingHistory.length > 0) {
+      if (
+        analytics.ratingHistory &&
+        Array.isArray(analytics.ratingHistory) &&
+        analytics.ratingHistory.length > 0
+      ) {
         const lastContest =
           analytics.ratingHistory[analytics.ratingHistory.length - 1];
         setLastRatingChange({
-          change: lastContest.ratingChange,
+          change: lastContest.ratingChange || 0,
           timestamp: new Date(lastContest.date * 1000).toLocaleDateString(),
         });
       }
 
       setError(null);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Failed to fetch analytics'
-      );
+      console.error('[v0] Analytics fetch error:', err);
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to fetch analytics';
+      setError(errorMessage);
+      setData(null);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -163,9 +184,11 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
   };
 
   useEffect(() => {
-    fetchAnalytics();
-    const interval = setInterval(fetchAnalytics, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    if (handle) {
+      fetchAnalytics();
+      const interval = setInterval(fetchAnalytics, 5 * 60 * 1000);
+      return () => clearInterval(interval);
+    }
   }, [handle]);
 
   if (loading) {
@@ -189,17 +212,19 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
       <Card className='border-destructive/50 bg-destructive/5'>
         <CardContent className='p-6 flex items-center gap-3'>
           <AlertCircle className='h-5 w-5 text-destructive' />
-          <div>
+          <div className='flex-1'>
             <p className='font-semibold text-destructive'>
               Error Loading Analytics
             </p>
-            <p className='text-sm text-muted-foreground'>{error}</p>
+            <p className='text-sm text-muted-foreground'>
+              {error || 'Unknown error'}
+            </p>
           </div>
           <Button
             onClick={fetchAnalytics}
             variant='outline'
             size='sm'
-            className='ml-auto bg-transparent'
+            className='ml-auto bg-transparent flex-shrink-0'
           >
             Retry
           </Button>
@@ -208,29 +233,36 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
     );
   }
 
-  const ratingChartData = data.ratingHistory.slice(-20).map(r => ({
-    name: r.contestName,
-    rating: r.rating,
-    change: r.ratingChange,
-    div: getDivTier(r.rating).div,
-    divColor: getDivTier(r.rating).color,
-  }));
+  const ratingChartData = (data.ratingHistory || [])
+    .slice(-20)
+    .map(r => ({
+      name: r.contestName || `Contest ${r.contestId}`,
+      rating: r.rating || 0,
+      change: r.ratingChange || 0,
+      div: getDivTier(r.rating || 0).div,
+      divColor: getDivTier(r.rating || 0).color,
+    }))
+    .filter(item => item.rating > 0);
 
-  const topicChartData = Object.entries(data.topicStats)
-    .sort((a, b) => b[1].solved - a[1].solved)
+  const topicChartData = Object.entries(data.topicStats || {})
+    .sort((a, b) => (b[1]?.solved || 0) - (a[1]?.solved || 0))
     .slice(0, 10)
     .map(([topic, stats]) => ({
       topic,
-      solved: stats.solved,
-      attempted: stats.attempted,
-      accuracy: stats.accuracy,
+      solved: stats?.solved || 0,
+      attempted: stats?.attempted || 0,
+      accuracy: stats?.accuracy || 0,
     }));
 
   const difficultyChartData = [
-    { name: 'Easy', value: data.difficultyStats.easy, color: '#10b981' },
-    { name: 'Medium', value: data.difficultyStats.medium, color: '#3b82f6' },
-    { name: 'Hard', value: data.difficultyStats.hard, color: '#f59e0b' },
-  ];
+    { name: 'Easy', value: data.difficultyStats?.easy || 0, color: '#10b981' },
+    {
+      name: 'Medium',
+      value: data.difficultyStats?.medium || 0,
+      color: '#3b82f6',
+    },
+    { name: 'Hard', value: data.difficultyStats?.hard || 0, color: '#f59e0b' },
+  ].filter(item => item.value > 0);
 
   const divWiseData = ratingChartData.map(item => ({
     ...item,
@@ -242,7 +274,7 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
       <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8'>
         <div>
           <h2 className='text-2xl font-bold'>
-            CP Analytics for {data.user.handle}
+            CP Analytics for {data.user?.handle || 'User'}
           </h2>
           <p className='text-sm text-muted-foreground'>
             Real-time competitive programming statistics
@@ -271,10 +303,10 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
                   Problems Solved
                 </p>
                 <p className='text-3xl font-bold mt-2'>
-                  {data.stats.totalSolved}
+                  {data.stats?.totalSolved || 0}
                 </p>
                 <p className='text-xs text-muted-foreground mt-1'>
-                  Acceptance: {data.stats.acceptanceRate}%
+                  Acceptance: {data.stats?.acceptanceRate || 0}%
                 </p>
               </div>
               <Target className='h-8 w-8 text-primary opacity-50 group-hover:opacity-100 transition-opacity' />
@@ -290,7 +322,7 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
                   Current Rating
                 </p>
                 <p className='text-3xl font-bold mt-2'>
-                  {data.stats.currentRating}
+                  {data.stats?.currentRating || 0}
                 </p>
                 <div className='flex items-center gap-1 mt-1'>
                   {lastRatingChange && lastRatingChange.change !== 0 ? (
@@ -328,9 +360,11 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
                 <p className='text-sm text-muted-foreground group-hover:text-primary transition-colors'>
                   Contests
                 </p>
-                <p className='text-3xl font-bold mt-2'>{data.stats.contests}</p>
+                <p className='text-3xl font-bold mt-2'>
+                  {data.stats?.contests || 0}
+                </p>
                 <p className='text-xs text-muted-foreground mt-1'>
-                  Rank: {data.stats.rank}
+                  Rank: {data.stats?.rank || 'unrated'}
                 </p>
               </div>
               <Zap className='h-8 w-8 text-blue-500 opacity-50 group-hover:opacity-100 transition-opacity' />
@@ -346,10 +380,10 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
                   Max Rating
                 </p>
                 <p className='text-3xl font-bold mt-2'>
-                  {data.stats.maxRating}
+                  {data.stats?.maxRating || 0}
                 </p>
                 <p className='text-xs text-muted-foreground mt-1'>
-                  Rank: {data.stats.maxRank}
+                  Rank: {data.stats?.maxRank || 'unrated'}
                 </p>
               </div>
               <Award className='h-8 w-8 text-orange-500 opacity-50 group-hover:opacity-100 transition-opacity' />
@@ -386,7 +420,6 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
           </TabsTrigger>
         </TabsList>
 
-        {/* Overview Tab - Div-wise breakdown */}
         <TabsContent value='overview' className='space-y-4'>
           <Card className='section-hover'>
             <CardHeader>
@@ -455,14 +488,6 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
                         strokeWidth={2}
                         name='Rating'
                       />
-                      <Line
-                        type='monotone'
-                        dataKey='change'
-                        stroke='#10b981'
-                        strokeWidth={2}
-                        name='Change'
-                        yAxisId='right'
-                      />
                     </ComposedChart>
                   </ResponsiveContainer>
 
@@ -501,7 +526,6 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
           </Card>
         </TabsContent>
 
-        {/* Topics Tab - Improved layout without duplicates */}
         <TabsContent value='topics' className='space-y-4'>
           <Card className='section-hover'>
             <CardHeader>
@@ -572,95 +596,107 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
           </div>
         </TabsContent>
 
-        {/* Difficulty Tab */}
         <TabsContent value='difficulty' className='space-y-4'>
           <Card className='section-hover'>
             <CardHeader>
               <CardTitle>Problems by Difficulty</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width='100%' height={300}>
-                <PieChart>
-                  <Pie
-                    data={difficultyChartData}
-                    cx='50%'
-                    cy='50%'
-                    labelLine={false}
-                    label={({ name, value }) => `${name}: ${value}`}
-                    outerRadius={80}
-                    fill='#8884d8'
-                    dataKey='value'
-                  >
-                    {difficultyChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1f2937',
-                      border: '1px solid #374151',
-                      borderRadius: '0.5rem',
-                    }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+              {difficultyChartData.length > 0 ? (
+                <ResponsiveContainer width='100%' height={300}>
+                  <PieChart>
+                    <Pie
+                      data={difficultyChartData}
+                      cx='50%'
+                      cy='50%'
+                      labelLine={false}
+                      label={({ name, value }) => `${name}: ${value}`}
+                      outerRadius={80}
+                      fill='#8884d8'
+                      dataKey='value'
+                    >
+                      {difficultyChartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#1f2937',
+                        border: '1px solid #374151',
+                        borderRadius: '0.5rem',
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <p className='text-center text-muted-foreground py-8'>
+                  No difficulty data available
+                </p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Recent Submissions Tab - Limited to 15 items, improved styling */}
         <TabsContent value='recent' className='space-y-4'>
           <Card className='section-hover'>
             <CardHeader>
               <CardTitle>Recent Submissions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className='space-y-2 max-h-96 overflow-y-auto scrollbar-thin'>
-                {data.recentSubmissions.slice(0, 15).map(submission => (
-                  <div
-                    key={submission.id}
-                    className='flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted hover:shadow-md hover:border-primary/50 transition-all duration-200 cursor-pointer group border border-transparent'
-                  >
-                    <div className='flex-1 min-w-0'>
-                      <p className='font-semibold text-sm group-hover:text-primary transition-colors truncate'>
-                        {submission.problem.name}
-                      </p>
-                      <p className='text-xs text-muted-foreground truncate'>
-                        {submission.problem.tags.slice(0, 3).join(', ')}
-                        {submission.problem.tags.length > 3 &&
-                          ` +${submission.problem.tags.length - 3}`}
-                      </p>
-                    </div>
-                    <div className='flex items-center gap-2 flex-shrink-0 ml-2'>
-                      {submission.problem.rating && (
+              {data.recentSubmissions && data.recentSubmissions.length > 0 ? (
+                <div className='space-y-2 max-h-96 overflow-y-auto scrollbar-thin'>
+                  {data.recentSubmissions.slice(0, 15).map(submission => (
+                    <div
+                      key={submission.id}
+                      className='flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted hover:shadow-md hover:border-primary/50 transition-all duration-200 cursor-pointer group border border-transparent'
+                    >
+                      <div className='flex-1 min-w-0'>
+                        <p className='font-semibold text-sm group-hover:text-primary transition-colors truncate'>
+                          {submission.problem?.name || 'Unknown Problem'}
+                        </p>
+                        <p className='text-xs text-muted-foreground truncate'>
+                          {submission.problem?.tags?.slice(0, 3).join(', ') ||
+                            'No tags'}
+                          {submission.problem?.tags &&
+                            submission.problem.tags.length > 3 &&
+                            ` +${submission.problem.tags.length - 3}`}
+                        </p>
+                      </div>
+                      <div className='flex items-center gap-2 flex-shrink-0 ml-2'>
+                        {submission.problem?.rating && (
+                          <Badge
+                            variant='outline'
+                            style={{
+                              backgroundColor: getProblemDifficultyColor(
+                                submission.problem.rating
+                              ),
+                              color: 'white',
+                              borderColor: getProblemDifficultyColor(
+                                submission.problem.rating
+                              ),
+                            }}
+                          >
+                            {submission.problem.rating}
+                          </Badge>
+                        )}
                         <Badge
-                          variant='outline'
-                          style={{
-                            backgroundColor: getProblemDifficultyColor(
-                              submission.problem.rating
-                            ),
-                            color: 'white',
-                            borderColor: getProblemDifficultyColor(
-                              submission.problem.rating
-                            ),
-                          }}
+                          variant={
+                            submission.verdict === 'OK'
+                              ? 'default'
+                              : 'destructive'
+                          }
                         >
-                          {submission.problem.rating}
+                          {submission.verdict}
                         </Badge>
-                      )}
-                      <Badge
-                        variant={
-                          submission.verdict === 'OK'
-                            ? 'default'
-                            : 'destructive'
-                        }
-                      >
-                        {submission.verdict}
-                      </Badge>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className='text-center text-muted-foreground py-8'>
+                  No recent submissions
+                </p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

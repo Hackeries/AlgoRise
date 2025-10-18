@@ -1,51 +1,35 @@
 'use client';
-
-import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Trophy, Target, Flame, BarChart3, User, LogIn } from 'lucide-react';
-import { SummaryCards } from '@/components/analytics/summary-cards';
 import CFVerificationTrigger from '@/components/auth/cf-verification-trigger';
 import { useCFVerification } from '@/lib/context/cf-verification';
 import { useAuth } from '@/lib/auth/context';
-import useSWR from 'swr';
 import Link from 'next/link';
-import { CPDashboard } from '@/components/analytics/cp-dashboard';
-
-const fetcher = (url: string) => fetch(url).then(r => r.json());
+import { CPAnalyticsDashboard } from '@/components/analytics/cp-analytics-dashboard';
 
 export default function AnalyticsPageClient() {
   const { user, loading } = useAuth();
   const { isVerified, verificationData } = useCFVerification();
-  const [range, setRange] = useState<'7d' | '30d'>('7d');
 
-  const { data: summary, isLoading: summaryLoading } = useSWR(
-    isVerified && verificationData
-      ? `/api/analytics/summary?range=${range}&handle=${verificationData.handle}`
-      : null,
-    fetcher
-  );
-
-  // Show loading state
   if (loading) {
     return (
       <div className='flex items-center justify-center h-full p-6 space-y-6'>
         <div className='flex items-center justify-center h-64'>
-          <div className='text-white/70'>Loading...</div>
+          <div className='text-muted-foreground'>Loading...</div>
         </div>
       </div>
     );
   }
 
-  // Show login prompt if user is not authenticated
   if (!user) {
     return (
       <div className='flex items-center justify-center h-full p-6 space-y-6'>
         <div className='flex flex-col items-center justify-center h-64 space-y-4'>
           <LogIn className='h-16 w-16 text-blue-400' />
-          <h2 className='text-2xl font-bold text-white'>Please Sign In</h2>
-          <p className='text-white/70 text-center max-w-md'>
+          <h2 className='text-2xl font-bold'>Please Sign In</h2>
+          <p className='text-muted-foreground text-center max-w-md'>
             You need to sign in to view your analytics and track your
             competitive programming progress.
           </p>
@@ -138,40 +122,12 @@ export default function AnalyticsPageClient() {
                 <Badge variant='secondary'>{verificationData?.handle}</Badge>
               </p>
             </div>
-            <div className='flex items-center space-x-2'>
-              <Button
-                size='sm'
-                variant={range === '7d' ? 'default' : 'outline'}
-                onClick={() => setRange('7d')}
-              >
-                7 Days
-              </Button>
-              <Button
-                size='sm'
-                variant={range === '30d' ? 'default' : 'outline'}
-                onClick={() => setRange('30d')}
-              >
-                30 Days
-              </Button>
-            </div>
           </div>
-
-          {summaryLoading ? (
-            <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
-              {[1, 2, 3, 4].map(i => (
-                <Card key={i}>
-                  <CardContent className='p-6'>
-                    <div className='h-16 bg-muted animate-pulse rounded' />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <SummaryCards summary={summary} />
-          )}
         </div>
 
-        <CPDashboard />
+        {verificationData?.handle && (
+          <CPAnalyticsDashboard handle={verificationData.handle} />
+        )}
       </div>
     </main>
   );

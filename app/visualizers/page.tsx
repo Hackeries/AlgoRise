@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VISUALIZERS } from '@/lib/visualizers';
-import { ComprehensiveVisualizer } from '@/components/visualizers/comprehensive-visualizer';
+import { ProductionVisualizer } from '@/components/visualizers/production-visualizer';
 
 export default function VisualizersPage() {
   return (
@@ -10,17 +10,17 @@ export default function VisualizersPage() {
         <h1 className='text-3xl font-bold mb-2'>Algorithm Visualizers</h1>
         <p className='text-muted-foreground leading-relaxed'>
           Master competitive programming algorithms with interactive
-          step-by-step visualizations. Learn sorting, recursion, dynamic
-          programming, graphs, and more.
+          step-by-step visualizations. Learn sorting, searching, dynamic
+          programming, graphs, and more with real-time animations.
         </p>
       </div>
 
-      {/* Comprehensive Visualizer */}
+      {/* Production Visualizer */}
       <div className='mb-12'>
         <h2 className='text-2xl font-bold mb-4'>
           Interactive Algorithm Visualizer
         </h2>
-        <ComprehensiveVisualizer />
+        <ProductionVisualizer />
       </div>
 
       {/* Quick Links */}

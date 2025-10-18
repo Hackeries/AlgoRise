@@ -192,7 +192,7 @@ export function AuthModal({ open, mode, onModeChange, onOpenChange }: AuthModalP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton
-        className='max-w-xs border border-border/20 bg-gradient-to-br from-background/95 via-background/90 to-background/95 p-0 backdrop-blur-2xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.25)] ring-1 ring-border/10'
+        className='w-[90vw] max-w-xs mx-auto border border-border/20 bg-gradient-to-br from-background/95 via-background/90 to-background/95 p-0 backdrop-blur-2xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.25)] ring-1 ring-border/10'
       >
         <VisuallyHidden>
           <DialogTitle>Authentication</DialogTitle>

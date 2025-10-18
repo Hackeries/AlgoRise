@@ -107,6 +107,56 @@ const InputWithIcon = ({
   </div>
 );
 
+const OAuthModal = ({
+  isOpen,
+  onClose,
+  provider,
+  isLoading,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  provider: 'google' | 'github' | null;
+  isLoading: boolean;
+}) => {
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'oauth_complete') {
+        onClose();
+        window.location.href =
+          '/auth/callback?next=' + encodeURIComponent('/profile');
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50'>
+      <Card className='w-full max-w-md'>
+        <CardHeader>
+          <CardTitle>
+            {provider === 'google' ? 'Google Login' : 'GitHub Login'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className='flex flex-col items-center gap-4'>
+          <div className='animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full' />
+          <p className='text-sm text-gray-600'>
+            {isLoading ? 'Completing login...' : 'Opening login window...'}
+          </p>
+          <Button onClick={onClose} variant='outline'>
+            Cancel
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 export default function Page() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -117,6 +167,7 @@ export default function Page() {
     'google' | 'github' | null
   >(null);
   const [isConfigured, setIsConfigured] = useState(true);
+  const [oauthModalOpen, setOAuthModalOpen] = useState(false);
   const router = useRouter();
   const { refreshUser } = useAuth();
 
@@ -147,7 +198,7 @@ export default function Page() {
       });
       if (error) throw error;
       await refreshUser();
-      router.push('/profile'); // Redirect email/password flow to profile
+      router.push('/profile');
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : 'An unexpected error occurred'
@@ -160,6 +211,8 @@ export default function Page() {
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
     setError(null);
     setIsOAuthLoading(provider);
+    setOAuthModalOpen(true);
+
     try {
       const supabase = createClient();
 
@@ -173,10 +226,9 @@ export default function Page() {
       };
 
       const origin = getBaseUrl();
-      const nextPath = '/profile';
       const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(
-        nextPath
-      )}&o=${encodeURIComponent(origin)}`;
+        '/profile'
+      )}`;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
@@ -189,6 +241,7 @@ export default function Page() {
       if (error) throw error;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'OAuth login failed');
+      setOAuthModalOpen(false);
     } finally {
       setIsOAuthLoading(null);
     }
@@ -207,6 +260,12 @@ export default function Page() {
 
   return (
     <div className='flex h-screen w-full items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden'>
+      <OAuthModal
+        isOpen={oauthModalOpen}
+        onClose={() => setOAuthModalOpen(false)}
+        provider={isOAuthLoading}
+        isLoading={!!isOAuthLoading}
+      />
       <div className='w-full max-w-md'>
         <Card className='shadow-xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl transform transition duration-300 max-h-[90vh] overflow-y-auto'>
           <CardHeader className='text-center'>

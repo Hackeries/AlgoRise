@@ -1,5 +1,7 @@
 'use client';
 
+import type React from 'react';
+
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -105,6 +107,56 @@ const InputWithIcon = ({
   </div>
 );
 
+const OAuthModal = ({
+  isOpen,
+  onClose,
+  provider,
+  isLoading,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  provider: 'google' | 'github' | null;
+  isLoading: boolean;
+}) => {
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'oauth_complete') {
+        onClose();
+        window.location.href =
+          '/auth/callback?next=' + encodeURIComponent('/profile');
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50'>
+      <Card className='w-full max-w-md'>
+        <CardHeader>
+          <CardTitle>
+            {provider === 'google' ? 'Google Sign Up' : 'GitHub Sign Up'}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className='flex flex-col items-center gap-4'>
+          <div className='animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full' />
+          <p className='text-sm text-gray-600'>
+            {isLoading ? 'Completing sign up...' : 'Opening sign up window...'}
+          </p>
+          <Button onClick={onClose} variant='outline'>
+            Cancel
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 export default function SignUpPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -117,6 +169,7 @@ export default function SignUpPage() {
     'google' | 'github' | null
   >(null);
   const [isConfigured, setIsConfigured] = useState(true);
+  const [oauthModalOpen, setOAuthModalOpen] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -157,30 +210,30 @@ export default function SignUpPage() {
   const handleOAuthSignIn = async (provider: 'google' | 'github') => {
     setError(null);
     setIsOAuthLoading(provider);
+    setOAuthModalOpen(true);
 
     try {
       const supabase = createClient();
-
-      // Ensure redirectTo matches the current domain exactly
       const origin =
         typeof window !== 'undefined'
           ? window.location.origin
           : 'http://localhost:3000';
-      const redirectTo = `${origin}/auth/callback`;
+      const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(
+        '/profile'
+      )}`;
 
-      // Start OAuth sign-in
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo,
           queryParams: { prompt: 'select_account' },
-          // flowType: 'pkce',
         },
       });
 
       if (error) throw error;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'OAuth sign in failed');
+      setOAuthModalOpen(false);
     } finally {
       setIsOAuthLoading(null);
     }
@@ -198,6 +251,12 @@ export default function SignUpPage() {
 
   return (
     <div className='flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6 md:p-10'>
+      <OAuthModal
+        isOpen={oauthModalOpen}
+        onClose={() => setOAuthModalOpen(false)}
+        provider={isOAuthLoading}
+        isLoading={!!isOAuthLoading}
+      />
       <div className='w-full max-w-md'>
         <Card className='shadow-xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl transform hover:scale-105 transition duration-300'>
           <CardHeader className='text-center'>

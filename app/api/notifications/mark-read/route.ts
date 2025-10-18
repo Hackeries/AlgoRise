@@ -14,14 +14,16 @@ export async function POST(req: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'You need to be signed in to manage notifications' },
+        { status: 401 }
+      );
     }
 
     const body = await req.json();
     const { notificationIds, markAll = false } = body;
 
     if (markAll) {
-      // Mark all notifications as read
       const { data: affectedCount } = await supabase.rpc(
         'mark_all_notifications_read',
         { target_user_id: user.id }
@@ -44,7 +46,7 @@ export async function POST(req: NextRequest) {
       if (error) {
         console.error('Error marking notifications as read:', error);
         return NextResponse.json(
-          { error: 'Failed to mark notifications as read' },
+          { error: 'Unable to update notifications. Please try again.' },
           { status: 500 }
         );
       }
@@ -56,14 +58,17 @@ export async function POST(req: NextRequest) {
       });
     } else {
       return NextResponse.json(
-        { error: 'Either set markAll=true or provide notificationIds array' },
+        {
+          error:
+            'Invalid request. Please provide notification IDs or set markAll to true.',
+        },
         { status: 400 }
       );
     }
   } catch (error) {
     console.error('Error in mark-read API:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Something went wrong updating notifications' },
       { status: 500 }
     );
   }
@@ -79,7 +84,10 @@ export async function GET(req: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'You need to be signed in to view notifications' },
+        { status: 401 }
+      );
     }
 
     // Get unread count
@@ -94,7 +102,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('Error getting unread count:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Unable to load notification count' },
       { status: 500 }
     );
   }

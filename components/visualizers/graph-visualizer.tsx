@@ -340,7 +340,9 @@ export function GraphVisualizer() {
         nodes: nodesCopy.map(n => ({ ...n })),
         edges: edges.map(e => ({ ...e, highlighted: false })),
         currentNode: currentNode.id,
-        message: `Selected node ${currentNode.id} with distance ${currentNode.distance === Infinity ? '∞' : currentNode.distance}`,
+        message: `Selected node ${currentNode.id} with distance ${
+          currentNode.distance === Infinity ? '∞' : currentNode.distance
+        }`,
       });
 
       if (currentNode.id === endNode) {
@@ -414,12 +416,9 @@ export function GraphVisualizer() {
   // Animation control
   useEffect(() => {
     if (isPlaying && !isPaused && currentStep < steps.length - 1) {
-      intervalRef.current = setTimeout(
-        () => {
-          setCurrentStep(prev => prev + 1);
-        },
-        1100 - speed * 10
-      );
+      intervalRef.current = setTimeout(() => {
+        setCurrentStep(prev => prev + 1);
+      }, 1100 - speed * 10);
     } else if (currentStep >= steps.length - 1 && isPlaying) {
       setIsPlaying(false);
     }
@@ -485,14 +484,10 @@ export function GraphVisualizer() {
       ctx.arc(node.x, node.y, 20, 0, 2 * Math.PI);
 
       let fillColor = '#3b82f6'; // Default blue
-      if (node.isStart)
-        fillColor = '#10b981'; // Green for start
-      else if (node.isEnd)
-        fillColor = '#ef4444'; // Red for end
-      else if (node.visited)
-        fillColor = '#8b5cf6'; // Purple for visited
-      else if (node.inQueue)
-        fillColor = '#f59e0b'; // Orange for in queue
+      if (node.isStart) fillColor = '#10b981'; // Green for start
+      else if (node.isEnd) fillColor = '#ef4444'; // Red for end
+      else if (node.visited) fillColor = '#8b5cf6'; // Purple for visited
+      else if (node.inQueue) fillColor = '#f59e0b'; // Orange for in queue
       else if (currentStepData?.currentNode === node.id) fillColor = '#ec4899'; // Pink for current
 
       ctx.fillStyle = fillColor;
@@ -756,8 +751,8 @@ export function GraphVisualizer() {
                 {algorithm === 'bfs'
                   ? 'Queue Status'
                   : algorithm === 'dfs'
-                    ? 'Stack Status'
-                    : 'Statistics'}
+                  ? 'Stack Status'
+                  : 'Statistics'}
               </CardTitle>
             </CardHeader>
             <CardContent className='text-sm space-y-2'>

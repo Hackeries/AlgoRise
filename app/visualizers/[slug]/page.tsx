@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { SortingVisualizer } from '@/components/visualizers/sorting-visualizer';
 import { GraphVisualizer } from '@/components/visualizers/graph-visualizer';
 import { TreeVisualizer } from '@/components/visualizers/tree-visualizer';
+import { AlgorithmVisualizer } from '@/components/visualizers/algorithm-visualizer';
 
 export default async function VisualizerDetailPage({
   params,
@@ -24,6 +25,8 @@ export default async function VisualizerDetailPage({
         return <GraphVisualizer />;
       case 'trees':
         return <TreeVisualizer />;
+      case 'algorithms':
+        return <AlgorithmVisualizer />;
       default:
         return (
           <Card>

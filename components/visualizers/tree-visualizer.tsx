@@ -320,19 +320,16 @@ export function TreeVisualizer() {
       setTimeout(() => {
         setIsPlaying(true);
         setIsPaused(false);
-        intervalRef.current = setInterval(
-          () => {
-            setCurrentStep(prev => {
-              if (prev >= steps.length - 1) {
-                setIsPlaying(false);
-                clearInterval(intervalRef.current!);
-                return prev;
-              }
-              return prev + 1;
-            });
-          },
-          1000 - speed * 10
-        );
+        intervalRef.current = setInterval(() => {
+          setCurrentStep(prev => {
+            if (prev >= steps.length - 1) {
+              setIsPlaying(false);
+              clearInterval(intervalRef.current!);
+              return prev;
+            }
+            return prev + 1;
+          });
+        }, 1000 - speed * 10);
       }, 100);
       return;
     }
@@ -340,19 +337,16 @@ export function TreeVisualizer() {
     setIsPlaying(true);
     setIsPaused(false);
 
-    intervalRef.current = setInterval(
-      () => {
-        setCurrentStep(prev => {
-          if (prev >= steps.length - 1) {
-            setIsPlaying(false);
-            clearInterval(intervalRef.current!);
-            return prev;
-          }
-          return prev + 1;
-        });
-      },
-      1000 - speed * 10
-    );
+    intervalRef.current = setInterval(() => {
+      setCurrentStep(prev => {
+        if (prev >= steps.length - 1) {
+          setIsPlaying(false);
+          clearInterval(intervalRef.current!);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 1000 - speed * 10);
   };
 
   // Pause animation

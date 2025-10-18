@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Play, Pause, Square, RotateCcw, Shuffle } from 'lucide-react';
+import { Play, Pause, Square, RotateCcw, Shuffle, Code } from 'lucide-react';
 
 type SortingAlgorithm =
   | 'bubble'
@@ -30,6 +30,114 @@ interface AnimationStep {
   message?: string;
 }
 
+const ALGORITHM_CODE: Record<SortingAlgorithm, string> = {
+  bubble: `function bubbleSort(arr) {
+  for (let i = 0; i < arr.length - 1; i++) {
+    for (let j = 0; j < arr.length - i - 1; j++) {
+      if (arr[j] > arr[j + 1]) {
+        [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+      }
+    }
+  }
+  return arr;
+}`,
+  selection: `function selectionSort(arr) {
+  for (let i = 0; i < arr.length - 1; i++) {
+    let minIdx = i;
+    for (let j = i + 1; j < arr.length; j++) {
+      if (arr[j] < arr[minIdx]) minIdx = j;
+    }
+    [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+  }
+  return arr;
+}`,
+  insertion: `function insertionSort(arr) {
+  for (let i = 1; i < arr.length; i++) {
+    let key = arr[i];
+    let j = i - 1;
+    while (j >= 0 && arr[j] > key) {
+      arr[j + 1] = arr[j];
+      j--;
+    }
+    arr[j + 1] = key;
+  }
+  return arr;
+}`,
+  merge: `function mergeSort(arr) {
+  if (arr.length <= 1) return arr;
+  const mid = Math.floor(arr.length / 2);
+  const left = mergeSort(arr.slice(0, mid));
+  const right = mergeSort(arr.slice(mid));
+  return merge(left, right);
+}`,
+  quick: `function quickSort(arr, low = 0, high = arr.length - 1) {
+  if (low < high) {
+    const pi = partition(arr, low, high);
+    quickSort(arr, low, pi - 1);
+    quickSort(arr, pi + 1, high);
+  }
+  return arr;
+}`,
+  heap: `function heapSort(arr) {
+  for (let i = Math.floor(arr.length / 2) - 1; i >= 0; i--) {
+    heapify(arr, arr.length, i);
+  }
+  for (let i = arr.length - 1; i > 0; i--) {
+    [arr[0], arr[i]] = [arr[i], arr[0]];
+    heapify(arr, i, 0);
+  }
+  return arr;
+}`,
+};
+
+const ALGORITHM_INFO: Record<
+  SortingAlgorithm,
+  { time: string; space: string; stable: boolean; description: string }
+> = {
+  bubble: {
+    time: 'O(n²)',
+    space: 'O(1)',
+    stable: true,
+    description:
+      'Repeatedly compares adjacent elements and swaps them if they are in the wrong order. Simple but inefficient for large datasets.',
+  },
+  selection: {
+    time: 'O(n²)',
+    space: 'O(1)',
+    stable: false,
+    description:
+      'Finds the minimum element and places it at the beginning, then repeats for the remaining array.',
+  },
+  insertion: {
+    time: 'O(n²)',
+    space: 'O(1)',
+    stable: true,
+    description:
+      'Builds the sorted array one item at a time by inserting elements into their correct position.',
+  },
+  merge: {
+    time: 'O(n log n)',
+    space: 'O(n)',
+    stable: true,
+    description:
+      'Divides the array in half, recursively sorts each half, then merges them back together.',
+  },
+  quick: {
+    time: 'O(n log n) avg, O(n²) worst',
+    space: 'O(log n)',
+    stable: false,
+    description:
+      'Divides array around a pivot, recursively sorts smaller and larger elements.',
+  },
+  heap: {
+    time: 'O(n log n)',
+    space: 'O(1)',
+    stable: false,
+    description:
+      'Builds a max heap and repeatedly extracts the maximum element to build the sorted array.',
+  },
+};
+
 export function SortingVisualizer() {
   const [array, setArray] = useState<number[]>([]);
   const [arraySize, setArraySize] = useState(20);
@@ -40,6 +148,7 @@ export function SortingVisualizer() {
   const [currentStep, setCurrentStep] = useState(0);
   const [steps, setSteps] = useState<AnimationStep[]>([]);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [showCode, setShowCode] = useState(false);
 
   const intervalRef = useRef<NodeJS.Timeout>();
 
@@ -62,7 +171,281 @@ export function SortingVisualizer() {
     generateRandomArray();
   }, [arraySize]);
 
-  // Bubble Sort Algorithm
+  const insertionSort = (arr: number[]): AnimationStep[] => {
+    const steps: AnimationStep[] = [
+      { array: [...arr], message: 'Starting Insertion Sort...' },
+    ];
+    const workingArray: number[] = [...arr];
+
+    for (let i = 1; i < workingArray.length; i++) {
+      const key = workingArray[i]!;
+      let j = i - 1;
+
+      steps.push({
+        array: [...workingArray],
+        comparing: [i],
+        message: `Inserting element ${key} at position ${i}`,
+      });
+
+      while (j >= 0 && workingArray[j]! > key) {
+        steps.push({
+          array: [...workingArray],
+          comparing: [j, j + 1],
+          message: `${workingArray[j]} > ${key}, shifting right`,
+        });
+
+        workingArray[j + 1] = workingArray[j]!;
+        j--;
+
+        steps.push({
+          array: [...workingArray],
+          message: `Shifted element at position ${j + 1}`,
+        });
+      }
+
+      workingArray[j + 1] = key;
+
+      steps.push({
+        array: [...workingArray],
+        sorted: Array.from({ length: i + 1 }, (_, idx) => idx),
+        message: `Element ${key} inserted. First ${i + 1} elements are sorted.`,
+      });
+    }
+
+    steps.push({
+      array: [...workingArray],
+      sorted: workingArray.map((_, idx) => idx),
+      message: 'Insertion Sort completed!',
+    });
+
+    return steps;
+  };
+
+  const mergeSort = (arr: number[]): AnimationStep[] => {
+    const steps: AnimationStep[] = [
+      { array: [...arr], message: 'Starting Merge Sort...' },
+    ];
+    const workingArray: number[] = [...arr];
+
+    const merge = (left: number, mid: number, right: number) => {
+      const leftArr = workingArray.slice(left, mid + 1);
+      const rightArr = workingArray.slice(mid + 1, right + 1);
+      let i = 0,
+        j = 0,
+        k = left;
+
+      while (i < leftArr.length && j < rightArr.length) {
+        steps.push({
+          array: [...workingArray],
+          comparing: [left + i, mid + 1 + j],
+          message: `Comparing ${leftArr[i]} and ${rightArr[j]}`,
+        });
+
+        if (leftArr[i]! <= rightArr[j]!) {
+          workingArray[k] = leftArr[i]!;
+          i++;
+        } else {
+          workingArray[k] = rightArr[j]!;
+          j++;
+        }
+        k++;
+
+        steps.push({
+          array: [...workingArray],
+          message: `Merged elements`,
+        });
+      }
+
+      while (i < leftArr.length) {
+        workingArray[k] = leftArr[i]!;
+        i++;
+        k++;
+      }
+
+      while (j < rightArr.length) {
+        workingArray[k] = rightArr[j]!;
+        j++;
+        k++;
+      }
+
+      steps.push({
+        array: [...workingArray],
+        sorted: Array.from(
+          { length: right - left + 1 },
+          (_, idx) => left + idx
+        ),
+        message: `Merged range [${left}, ${right}]`,
+      });
+    };
+
+    const mergeSortRecursive = (left: number, right: number) => {
+      if (left < right) {
+        const mid = Math.floor((left + right) / 2);
+        mergeSortRecursive(left, mid);
+        mergeSortRecursive(mid + 1, right);
+        merge(left, mid, right);
+      }
+    };
+
+    mergeSortRecursive(0, workingArray.length - 1);
+
+    steps.push({
+      array: [...workingArray],
+      sorted: workingArray.map((_, idx) => idx),
+      message: 'Merge Sort completed!',
+    });
+
+    return steps;
+  };
+
+  const heapSort = (arr: number[]): AnimationStep[] => {
+    const steps: AnimationStep[] = [
+      { array: [...arr], message: 'Starting Heap Sort...' },
+    ];
+    const workingArray: number[] = [...arr];
+
+    const heapify = (n: number, i: number) => {
+      let largest = i;
+      const left = 2 * i + 1;
+      const right = 2 * i + 2;
+
+      if (left < n && workingArray[left]! > workingArray[largest]!) {
+        largest = left;
+      }
+
+      if (right < n && workingArray[right]! > workingArray[largest]!) {
+        largest = right;
+      }
+
+      if (largest !== i) {
+        steps.push({
+          array: [...workingArray],
+          swapping: [i, largest],
+          message: `Swapping ${workingArray[i]} and ${workingArray[largest]}`,
+        });
+
+        const temp = workingArray[i]!;
+        workingArray[i] = workingArray[largest]!;
+        workingArray[largest] = temp;
+
+        heapify(n, largest);
+      }
+    };
+
+    // Build max heap
+    for (let i = Math.floor(workingArray.length / 2) - 1; i >= 0; i--) {
+      heapify(workingArray.length, i);
+    }
+
+    steps.push({
+      array: [...workingArray],
+      message: 'Max heap built',
+    });
+
+    // Extract elements from heap
+    for (let i = workingArray.length - 1; i > 0; i--) {
+      steps.push({
+        array: [...workingArray],
+        swapping: [0, i],
+        message: `Moving root ${workingArray[0]} to position ${i}`,
+      });
+
+      const temp = workingArray[0]!;
+      workingArray[0] = workingArray[i]!;
+      workingArray[i] = temp;
+
+      steps.push({
+        array: [...workingArray],
+        sorted: Array.from(
+          { length: workingArray.length - i },
+          (_, idx) => i + idx
+        ),
+        message: `Heapifying remaining elements`,
+      });
+
+      heapify(i, 0);
+    }
+
+    steps.push({
+      array: [...workingArray],
+      sorted: workingArray.map((_, idx) => idx),
+      message: 'Heap Sort completed!',
+    });
+
+    return steps;
+  };
+
+  // Start sorting animation
+  const startSorting = () => {
+    let sortSteps: AnimationStep[] = [];
+
+    switch (algorithm) {
+      case 'bubble':
+        sortSteps = bubbleSort(array);
+        break;
+      case 'selection':
+        sortSteps = selectionSort(array);
+        break;
+      case 'insertion':
+        sortSteps = insertionSort(array);
+        break;
+      case 'merge':
+        sortSteps = mergeSort(array);
+        break;
+      case 'quick':
+        sortSteps = quickSort(array);
+        break;
+      case 'heap':
+        sortSteps = heapSort(array);
+        break;
+      default:
+        sortSteps = bubbleSort(array);
+    }
+
+    setSteps(sortSteps);
+    setCurrentStep(0);
+    setIsPlaying(true);
+    setIsPaused(false);
+    setIsCompleted(false);
+  };
+
+  // Animation control
+  useEffect(() => {
+    if (isPlaying && !isPaused && currentStep < steps.length - 1) {
+      intervalRef.current = setTimeout(() => {
+        setCurrentStep(prev => prev + 1);
+      }, 1000 - speed * 9);
+    } else if (currentStep >= steps.length - 1 && isPlaying) {
+      setIsPlaying(false);
+      setIsCompleted(true);
+    }
+
+    return () => {
+      if (intervalRef.current) clearTimeout(intervalRef.current);
+    };
+  }, [isPlaying, isPaused, currentStep, steps.length, speed]);
+
+  const pause = () => {
+    setIsPaused(!isPaused);
+  };
+
+  const stop = () => {
+    setIsPlaying(false);
+    setIsPaused(false);
+    setCurrentStep(0);
+    setIsCompleted(false);
+  };
+
+  const reset = () => {
+    stop();
+    generateRandomArray();
+  };
+
+  const currentStepData = steps[currentStep] || {
+    array,
+    message: 'Ready to sort',
+  };
+
   const bubbleSort = (arr: number[]): AnimationStep[] => {
     const steps: AnimationStep[] = [
       { array: [...arr], message: 'Starting Bubble Sort...' },
@@ -72,7 +455,6 @@ export function SortingVisualizer() {
 
     for (let i = 0; i < n - 1; i++) {
       for (let j = 0; j < n - i - 1; j++) {
-        // Comparing elements
         steps.push({
           array: [...workingArray],
           comparing: [j, j + 1],
@@ -80,7 +462,6 @@ export function SortingVisualizer() {
         });
 
         if (workingArray[j]! > workingArray[j + 1]!) {
-          // Swapping elements
           steps.push({
             array: [...workingArray],
             swapping: [j, j + 1],
@@ -98,13 +479,14 @@ export function SortingVisualizer() {
         }
       }
 
-      // Mark element as sorted
       steps.push({
         array: [...workingArray],
         sorted: workingArray
           .map((_, idx) => (idx >= n - i - 1 ? idx : -1))
           .filter(idx => idx !== -1),
-        message: `Element at position ${n - i - 1} is now in its final position`,
+        message: `Element at position ${
+          n - i - 1
+        } is now in its final position`,
       });
     }
 
@@ -117,7 +499,6 @@ export function SortingVisualizer() {
     return steps;
   };
 
-  // Selection Sort Algorithm
   const selectionSort = (arr: number[]): AnimationStep[] => {
     const steps: AnimationStep[] = [
       { array: [...arr], message: 'Starting Selection Sort...' },
@@ -179,7 +560,6 @@ export function SortingVisualizer() {
     return steps;
   };
 
-  // Quick Sort Algorithm
   const quickSort = (arr: number[]): AnimationStep[] => {
     const steps: AnimationStep[] = [
       { array: [...arr], message: 'Starting Quick Sort...' },
@@ -263,71 +643,6 @@ export function SortingVisualizer() {
     return steps;
   };
 
-  // Start sorting animation
-  const startSorting = () => {
-    let sortSteps: AnimationStep[] = [];
-
-    switch (algorithm) {
-      case 'bubble':
-        sortSteps = bubbleSort(array);
-        break;
-      case 'selection':
-        sortSteps = selectionSort(array);
-        break;
-      case 'quick':
-        sortSteps = quickSort(array);
-        break;
-      default:
-        sortSteps = bubbleSort(array);
-    }
-
-    setSteps(sortSteps);
-    setCurrentStep(0);
-    setIsPlaying(true);
-    setIsPaused(false);
-    setIsCompleted(false);
-  };
-
-  // Animation control
-  useEffect(() => {
-    if (isPlaying && !isPaused && currentStep < steps.length - 1) {
-      intervalRef.current = setTimeout(
-        () => {
-          setCurrentStep(prev => prev + 1);
-        },
-        1000 - speed * 9
-      );
-    } else if (currentStep >= steps.length - 1 && isPlaying) {
-      setIsPlaying(false);
-      setIsCompleted(true);
-    }
-
-    return () => {
-      if (intervalRef.current) clearTimeout(intervalRef.current);
-    };
-  }, [isPlaying, isPaused, currentStep, steps.length, speed]);
-
-  const pause = () => {
-    setIsPaused(!isPaused);
-  };
-
-  const stop = () => {
-    setIsPlaying(false);
-    setIsPaused(false);
-    setCurrentStep(0);
-    setIsCompleted(false);
-  };
-
-  const reset = () => {
-    stop();
-    generateRandomArray();
-  };
-
-  const currentStepData = steps[currentStep] || {
-    array,
-    message: 'Ready to sort',
-  };
-
   return (
     <Card className='w-full'>
       <CardHeader>
@@ -343,13 +658,16 @@ export function SortingVisualizer() {
               onValueChange={(value: SortingAlgorithm) => setAlgorithm(value)}
               disabled={isPlaying}
             >
-              <SelectTrigger className='w-32'>
+              <SelectTrigger className='w-40'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='bubble'>Bubble Sort</SelectItem>
                 <SelectItem value='selection'>Selection Sort</SelectItem>
+                <SelectItem value='insertion'>Insertion Sort</SelectItem>
+                <SelectItem value='merge'>Merge Sort</SelectItem>
                 <SelectItem value='quick'>Quick Sort</SelectItem>
+                <SelectItem value='heap'>Heap Sort</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -384,7 +702,7 @@ export function SortingVisualizer() {
         </div>
 
         {/* Action Buttons */}
-        <div className='flex gap-2'>
+        <div className='flex gap-2 flex-wrap'>
           {!isPlaying ? (
             <Button onClick={startSorting} className='flex items-center gap-2'>
               <Play className='w-4 h-4' />
@@ -428,6 +746,15 @@ export function SortingVisualizer() {
             <Shuffle className='w-4 h-4' />
             Shuffle
           </Button>
+
+          <Button
+            onClick={() => setShowCode(!showCode)}
+            variant='outline'
+            className='flex items-center gap-2'
+          >
+            <Code className='w-4 h-4' />
+            {showCode ? 'Hide' : 'Show'} Code
+          </Button>
         </div>
 
         {/* Status Message */}
@@ -441,6 +768,18 @@ export function SortingVisualizer() {
             </p>
           )}
         </div>
+
+        {/* Code Display */}
+        {showCode && (
+          <div className='bg-muted/10 rounded-lg p-4 border border-muted/30'>
+            <p className='text-xs font-semibold text-muted-foreground mb-2'>
+              Algorithm Code
+            </p>
+            <pre className='text-xs overflow-x-auto font-mono text-foreground/80'>
+              <code>{ALGORITHM_CODE[algorithm]}</code>
+            </pre>
+          </div>
+        )}
 
         {/* Visualization */}
         <div className='bg-muted/10 rounded-lg p-4'>
@@ -478,7 +817,7 @@ export function SortingVisualizer() {
             })}
           </div>
 
-          <div className='mt-4 flex gap-4 text-xs'>
+          <div className='mt-4 flex gap-4 text-xs flex-wrap'>
             <div className='flex items-center gap-1'>
               <div className='w-3 h-3 bg-blue-500 rounded'></div>
               <span>Unsorted</span>
@@ -509,59 +848,22 @@ export function SortingVisualizer() {
               <CardTitle className='text-lg'>Algorithm Info</CardTitle>
             </CardHeader>
             <CardContent className='text-sm space-y-2'>
-              {algorithm === 'bubble' && (
-                <>
-                  <p>
-                    <strong>Time Complexity:</strong> O(n²)
-                  </p>
-                  <p>
-                    <strong>Space Complexity:</strong> O(1)
-                  </p>
-                  <p>
-                    <strong>Stable:</strong> Yes
-                  </p>
-                  <p>
-                    <strong>Description:</strong> Repeatedly compares adjacent
-                    elements and swaps them if they're in wrong order.
-                  </p>
-                </>
-              )}
-              {algorithm === 'selection' && (
-                <>
-                  <p>
-                    <strong>Time Complexity:</strong> O(n²)
-                  </p>
-                  <p>
-                    <strong>Space Complexity:</strong> O(1)
-                  </p>
-                  <p>
-                    <strong>Stable:</strong> No
-                  </p>
-                  <p>
-                    <strong>Description:</strong> Finds minimum element and
-                    places it at the beginning, then repeats for remaining
-                    array.
-                  </p>
-                </>
-              )}
-              {algorithm === 'quick' && (
-                <>
-                  <p>
-                    <strong>Time Complexity:</strong> O(n log n) average, O(n²)
-                    worst
-                  </p>
-                  <p>
-                    <strong>Space Complexity:</strong> O(log n)
-                  </p>
-                  <p>
-                    <strong>Stable:</strong> No
-                  </p>
-                  <p>
-                    <strong>Description:</strong> Divides array around a pivot,
-                    recursively sorts smaller and larger elements.
-                  </p>
-                </>
-              )}
+              <p>
+                <strong>Time Complexity:</strong>{' '}
+                {ALGORITHM_INFO[algorithm].time}
+              </p>
+              <p>
+                <strong>Space Complexity:</strong>{' '}
+                {ALGORITHM_INFO[algorithm].space}
+              </p>
+              <p>
+                <strong>Stable:</strong>{' '}
+                {ALGORITHM_INFO[algorithm].stable ? 'Yes' : 'No'}
+              </p>
+              <p>
+                <strong>Description:</strong>{' '}
+                {ALGORITHM_INFO[algorithm].description}
+              </p>
             </CardContent>
           </Card>
 
@@ -584,10 +886,10 @@ export function SortingVisualizer() {
                 {isCompleted
                   ? 'Completed'
                   : isPlaying
-                    ? isPaused
-                      ? 'Paused'
-                      : 'Running'
-                    : 'Ready'}
+                  ? isPaused
+                    ? 'Paused'
+                    : 'Running'
+                  : 'Ready'}
               </p>
             </CardContent>
           </Card>

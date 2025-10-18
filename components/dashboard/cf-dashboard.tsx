@@ -11,14 +11,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCFVerification } from '@/lib/context/cf-verification';
-import {
-  TrendingUp,
-  Trophy,
-  Flame,
-  Activity,
-  Calendar,
-  StickyNote,
-} from 'lucide-react';
+import { TrendingUp, Trophy, Flame, Activity } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Radar } from 'react-chartjs-2';
 
@@ -158,7 +151,7 @@ export function CFDashboard() {
 
   const loadStreak = () => {
     const stored = localStorage.getItem('cf_daily_streak');
-    setCurrentStreak(stored ? parseInt(stored) : 0);
+    setCurrentStreak(stored ? Number.parseInt(stored) : 0);
   };
 
   const loadNotes = () => {
@@ -246,17 +239,16 @@ export function CFDashboard() {
     v === 'OK'
       ? 'text-green-400'
       : v?.includes('WRONG')
-        ? 'text-red-500'
-        : 'text-yellow-400';
+      ? 'text-red-500'
+      : 'text-yellow-400';
 
   return (
-    <div className='space-y-6 px-4 py-6'>
-      {/* Performance Header */}
-      <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-        <Card className='hover:scale-105 transition-transform'>
-          <CardHeader className='flex justify-between'>
-            <CardTitle>Rating</CardTitle>
-            <TrendingUp />
+    <div className='section-spacing content-padding'>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 card-spacing'>
+        <Card className='stat-card'>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Rating</CardTitle>
+            <TrendingUp className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold text-blue-400'>
@@ -268,10 +260,10 @@ export function CFDashboard() {
           </CardContent>
         </Card>
 
-        <Card className='hover:scale-105 transition-transform'>
-          <CardHeader className='flex justify-between'>
-            <CardTitle>Max Rating</CardTitle>
-            <Trophy />
+        <Card className='stat-card'>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Max Rating</CardTitle>
+            <Trophy className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold text-green-400'>
@@ -280,10 +272,10 @@ export function CFDashboard() {
           </CardContent>
         </Card>
 
-        <Card className='hover:scale-105 transition-transform'>
-          <CardHeader className='flex justify-between'>
-            <CardTitle>Streak</CardTitle>
-            <Flame />
+        <Card className='stat-card'>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Streak</CardTitle>
+            <Flame className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold text-orange-400'>
@@ -292,10 +284,10 @@ export function CFDashboard() {
           </CardContent>
         </Card>
 
-        <Card className='hover:scale-105 transition-transform'>
-          <CardHeader className='flex justify-between'>
-            <CardTitle>Today's Solved</CardTitle>
-            <Activity />
+        <Card className='stat-card'>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Today Solved</CardTitle>
+            <Activity className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold text-purple-400'>
@@ -305,22 +297,21 @@ export function CFDashboard() {
         </Card>
       </div>
 
-      {/* Main Grid */}
-      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+      <div className='grid grid-cols-1 lg:grid-cols-3 card-spacing'>
         {/* Recommended Problems */}
-        <Card>
+        <Card className='card-hover section-hover'>
           <CardHeader>
-            <CardTitle>🧠 Recommended Problems</CardTitle>
+            <CardTitle>Recommended Problems</CardTitle>
             <CardDescription>
               Based on your current rating & weak tags
             </CardDescription>
           </CardHeader>
-          <CardContent className='space-y-2 max-h-96 overflow-y-auto'>
+          <CardContent className='space-y-2 max-h-96 overflow-y-auto scrollbar-thin'>
             {recommendedProblems.length ? (
               recommendedProblems.map((p, i) => (
                 <div
                   key={i}
-                  className='flex justify-between items-center p-3 border rounded hover:bg-neutral-800 transition'
+                  className='flex justify-between items-center p-3 border rounded transition-all duration-200 hover:bg-primary/5 hover:border-primary/50 cursor-pointer'
                 >
                   <div>
                     <div className='font-medium'>{p.name}</div>
@@ -338,8 +329,9 @@ export function CFDashboard() {
                   </div>
                   <a
                     target='_blank'
+                    rel='noopener noreferrer'
                     href={`https://codeforces.com/contest/${p.contestId}/problem/${p.index}`}
-                    className='text-sm text-blue-400 hover:underline'
+                    className='text-sm text-blue-400 hover:underline transition-colors'
                   >
                     CF
                   </a>
@@ -354,34 +346,36 @@ export function CFDashboard() {
         </Card>
 
         {/* Quick Actions */}
-        <Card className='flex flex-col justify-between'>
+        <Card className='card-hover section-hover flex flex-col justify-between'>
           <CardHeader>
-            <CardTitle>⚡ Quick Actions</CardTitle>
+            <CardTitle>Quick Actions</CardTitle>
             <CardDescription>
               Jump to adaptive sheets, contests, or study plans
             </CardDescription>
           </CardHeader>
           <CardContent className='space-y-3'>
-            <Button asChild className='w-full'>
-              <a href='/adaptive-sheets'>🎯 Start Practice</a>
+            <Button asChild className='w-full btn-hover'>
+              <a href='/adaptive-sheet'>Start Practice</a>
             </Button>
-            <Button asChild className='w-full'>
-              <a href='/contests'>⚡ Virtual Contest</a>
+            <Button asChild className='w-full btn-hover'>
+              <a href='/contests'>Virtual Contest</a>
             </Button>
-            <Button asChild className='w-full'>
-              <a href='/learning-path'>📚 Study Plan</a>
+            <Button asChild className='w-full btn-hover'>
+              <a href='/paths'>Study Plan</a>
             </Button>
           </CardContent>
         </Card>
 
         {/* Radar Tag Analytics */}
-        <Card>
+        <Card className='card-hover section-hover'>
           <CardHeader>
-            <CardTitle>🔥 Weak Tags</CardTitle>
+            <CardTitle>Weak Tags</CardTitle>
             <CardDescription>Tags where your accuracy is low</CardDescription>
           </CardHeader>
           <CardContent>
-            {dailyStats && dailyStats.tags ? (
+            {dailyStats &&
+            dailyStats.tags &&
+            Object.keys(dailyStats.tags).length > 0 ? (
               <Radar
                 data={{
                   labels: Object.keys(dailyStats.tags),

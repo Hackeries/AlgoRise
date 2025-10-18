@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Timer, Calendar, ArrowRight } from 'lucide-react';
+import { Timer, Calendar, Trophy, Zap, Target } from 'lucide-react';
 import { CardHeader, Card, CardTitle, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
@@ -20,22 +20,35 @@ interface Contest {
   type: string;
 }
 
-// Badge colors by type
 const getBadgeClass = (type: string) => {
   switch (true) {
+    case type.includes('Div. 1'):
+      return 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/50';
     case type.includes('Div. 2'):
-      return 'bg-blue-500/20 text-blue-400';
+      return 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/50';
     case type.includes('Div. 3'):
-      return 'bg-green-500/20 text-green-400';
+      return 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/50';
     case type.includes('Div. 4'):
-      return 'bg-teal-500/20 text-teal-400';
+      return 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg shadow-green-500/50';
     case type.includes('Global'):
-      return 'bg-yellow-500/20 text-yellow-400';
+      return 'bg-gradient-to-r from-yellow-600 to-yellow-500 text-black shadow-lg shadow-yellow-500/50';
     case type.includes('Educational'):
-      return 'bg-purple-500/20 text-purple-400';
+      return 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-lg shadow-cyan-500/50';
     default:
-      return 'bg-gray-500/20 text-gray-400';
+      return 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-lg shadow-gray-500/50';
   }
+};
+
+const getDifficultyIndicator = (type: string) => {
+  if (type.includes('Div. 1'))
+    return { level: 'Expert', color: 'text-red-400', icon: '⚡⚡⚡' };
+  if (type.includes('Div. 2'))
+    return { level: 'Advanced', color: 'text-blue-400', icon: '⚡⚡' };
+  if (type.includes('Div. 3'))
+    return { level: 'Intermediate', color: 'text-purple-400', icon: '⚡' };
+  if (type.includes('Div. 4'))
+    return { level: 'Beginner', color: 'text-green-400', icon: '✓' };
+  return { level: 'Mixed', color: 'text-cyan-400', icon: '◆' };
 };
 
 // Countdown component
@@ -49,7 +62,7 @@ function Countdown({ startTime }: { startTime: number }) {
     return () => clearInterval(interval);
   }, [startTime]);
 
-  return <span>{timeLeft}</span>;
+  return <span className='font-mono font-bold'>{timeLeft}</span>;
 }
 
 // Countdown formatter
@@ -170,20 +183,25 @@ export default function ContestSection() {
 
   return (
     <section className='py-16 px-4 mb-8 mt-5'>
-      <div className='max-w-6xl mx-auto'>
+      <div className='max-w-7xl mx-auto'>
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className='text-center mb-12'
+          className='text-center mb-16'
         >
-          <h2 className='text-3xl font-bold mb-4 text-[#EDEB99] drop-shadow-md'>
+          <div className='inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full bg-primary/10 border border-primary/30'>
+            <Trophy className='w-4 h-4 text-primary' />
+            <span className='text-sm font-semibold text-primary'>
+              LIVE CONTESTS
+            </span>
+          </div>
+          <h2 className='text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent'>
             Upcoming Contests
           </h2>
-          <p className='text-gray-600 dark:text-gray-400'>
-            Stay updated with the latest Codeforces contests —{' '}
-            <span className='font-semibold text-sky-500'>live countdowns</span>{' '}
-            refresh in real-time.
+          <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>
+            Compete in real-time contests with live countdowns. Choose your
+            division and challenge yourself against the community.
           </p>
         </motion.div>
 
@@ -193,6 +211,7 @@ export default function ContestSection() {
               const now = Math.floor(Date.now() / 1000);
               const timeDiff = contest.startTimeSeconds - now;
               const urgent = timeDiff < 3600; // <1 hour
+              const difficulty = getDifficultyIndicator(contest.type);
 
               return (
                 <motion.div
@@ -212,59 +231,99 @@ export default function ContestSection() {
                   )}`}
                 >
                   <motion.div
-                    whileHover={{ scale: 1.05, rotateX: 3, rotateY: -3 }}
-                    transition={{ type: 'spring', stiffness: 250, damping: 15 }}
-                    className={`rounded-2xl shadow-lg h-full cursor-pointer border border-white/30 dark:border-gray-700/30 backdrop-blur-md ${
+                    whileHover={{ scale: 1.02, y: -8 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                    className={`rounded-xl h-full cursor-pointer overflow-hidden group relative ${
                       urgent
-                        ? 'animate-pulse border-red-500/40 shadow-red-400/30'
-                        : 'hover:shadow-[0_0_25px_rgba(56,189,248,0.5)]'
-                    }`}
+                        ? 'border-2 border-red-500/60 shadow-2xl shadow-red-500/30'
+                        : 'border border-border/50 shadow-lg hover:shadow-2xl'
+                    } transition-all duration-300`}
                   >
-                    <Card className='bg-white/20 dark:bg-gray-800/20 rounded-2xl h-full'>
-                      <CardHeader>
-                        <div className='flex justify-between items-start'>
-                          <CardTitle className='text-lg line-clamp-2'>
-                            {contest.name}
-                          </CardTitle>
+                    <div className='absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+
+                    {urgent && (
+                      <div className='absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/20 via-transparent to-red-500/20 animate-pulse' />
+                    )}
+
+                    <Card className='bg-card/80 backdrop-blur-sm border-0 rounded-xl h-full relative z-10'>
+                      <CardHeader className='pb-3'>
+                        <div className='flex justify-between items-start gap-3 mb-2'>
+                          <div className='flex-1'>
+                            <CardTitle className='text-lg line-clamp-2 group-hover:text-primary transition-colors'>
+                              {contest.name}
+                            </CardTitle>
+                          </div>
                           <Badge
-                            className={getBadgeClass(contest.type)}
+                            className={`${getBadgeClass(
+                              contest.type
+                            )} whitespace-nowrap flex-shrink-0 text-xs font-bold`}
                             variant='secondary'
                           >
                             {contest.type}
                           </Badge>
                         </div>
+
+                        <div
+                          className={`text-xs font-semibold ${difficulty.color} flex items-center gap-1`}
+                        >
+                          <span>{difficulty.icon}</span>
+                          <span>{difficulty.level}</span>
+                        </div>
                       </CardHeader>
 
-                      <CardContent>
-                        <div className='space-y-2'>
-                          <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'>
-                            <Timer className='h-4 w-4' />
+                      <CardContent className='space-y-4'>
+                        <div className='bg-primary/10 rounded-lg p-3 border border-primary/20'>
+                          <div className='flex items-center gap-2 mb-1'>
+                            <Zap className='h-4 w-4 text-primary' />
+                            <span className='text-xs font-semibold text-muted-foreground uppercase tracking-wide'>
+                              Starts in
+                            </span>
+                          </div>
+                          <div className='text-2xl font-mono font-bold text-primary'>
                             <Countdown startTime={contest.startTimeSeconds} />
                           </div>
-                          <div className='flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400'>
-                            <Calendar className='h-4 w-4' />
-                            <span>
+                        </div>
+
+                        <div className='space-y-2'>
+                          <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                            <Calendar className='h-4 w-4 flex-shrink-0' />
+                            <span className='truncate'>
                               {new Date(
                                 contest.startTimeSeconds * 1000
                               ).toLocaleString()}
                             </span>
                           </div>
-
-                          <Button
-                            asChild
-                            className='w-full mt-4 text-white bg-sky-500/50 hover:bg-sky-900'
-                            onClick={e => e.stopPropagation()}
-                          >
-                            <a
-                              href={`https://codeforces.com/contest/${contest.id}`}
-                              target='_blank'
-                              rel='noopener noreferrer'
-                            >
-                              View Contest
-                              <ArrowRight className='ml-2 h-4 w-4' />
-                            </a>
-                          </Button>
+                          <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                            <Timer className='h-4 w-4 flex-shrink-0' />
+                            <span>
+                              {Math.floor(contest.durationSeconds / 3600)}h{' '}
+                              {Math.floor(
+                                (contest.durationSeconds % 3600) / 60
+                              )}
+                              m duration
+                            </span>
+                          </div>
                         </div>
+
+                        <Button
+                          asChild
+                          className={`w-full mt-4 font-semibold transition-all duration-300 ${
+                            urgent
+                              ? 'bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 shadow-lg shadow-red-500/50'
+                              : 'bg-gradient-to-r from-primary to-accent hover:shadow-lg'
+                          }`}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          <a
+                            href={`https://codeforces.com/contest/${contest.id}`}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='flex items-center justify-center gap-2'
+                          >
+                            <Target className='h-4 w-4' />
+                            {urgent ? 'Register Now' : 'View Contest'}
+                          </a>
+                        </Button>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -272,15 +331,16 @@ export default function ContestSection() {
               );
             })
           ) : (
-            <div className='col-span-full text-center py-12'>
-              <p className='text-gray-600 dark:text-gray-400'>
-                No upcoming contests found
+            <div className='col-span-full text-center py-16'>
+              <Trophy className='w-16 h-16 text-muted-foreground/30 mx-auto mb-4' />
+              <p className='text-lg text-muted-foreground'>
+                No upcoming contests found. Check back soon!
               </p>
             </div>
           )}
         </div>
       </div>
-      <hr className='border-gray-800 dark:border-white-800 m-10' />
+      <hr className='border-border/30 dark:border-border/20 m-10' />
     </section>
   );
 }

@@ -194,7 +194,7 @@
     background-color: hsl(var(--foreground) / 0.3);
   }
 
-  /* 3D Card Effects */
+  /* Enhanced card hover effects with smooth transitions */
   .card-3d {
     @apply transition-all duration-300 ease-out;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -207,6 +207,41 @@
 
   .dark .card-3d:hover {
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  }
+
+  /* New interactive card hover state */
+  .card-hover {
+    @apply transition-all duration-200 ease-out cursor-pointer;
+  }
+
+  .card-hover:hover {
+    @apply border-primary/50 bg-card/80 shadow-lg;
+  }
+
+  .dark .card-hover:hover {
+    @apply border-primary/40 bg-card/60;
+  }
+
+  /* Section hover effects */
+  .section-hover {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  .section-hover:hover {
+    @apply shadow-md border-primary/30;
+  }
+
+  /* Button hover enhancements */
+  .btn-hover {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  .btn-hover:hover {
+    @apply scale-105 shadow-lg;
+  }
+
+  .btn-hover:active {
+    @apply scale-95;
   }
 
   /* Glow animation for cards */
@@ -234,6 +269,19 @@
     border: 1px solid transparent;
   }
 
+  /* Spacing utilities for consistent layout */
+  .section-spacing {
+    @apply space-y-6;
+  }
+
+  .card-spacing {
+    @apply gap-4 md:gap-6;
+  }
+
+  .content-padding {
+    @apply p-4 sm:p-6 md:p-8;
+  }
+
   /* Light theme text visibility improvements */
   .light .text-white\/80 {
     @apply text-foreground/70;
@@ -259,5 +307,42 @@
   /* CF section styling improvements */
   .light .border-border\/30 {
     @apply border-border/50;
+  }
+
+  /* Stat card hover effect */
+  .stat-card {
+    @apply transition-all duration-300 ease-out border border-border/50;
+  }
+
+  .stat-card:hover {
+    @apply border-primary/50 bg-primary/5 shadow-md;
+  }
+
+  .dark .stat-card:hover {
+    @apply border-primary/40 bg-primary/10;
+  }
+
+  /* Grid item hover effect */
+  .grid-item-hover {
+    @apply transition-all duration-200 ease-out;
+  }
+
+  .grid-item-hover:hover {
+    @apply scale-102 shadow-lg;
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-in {
+    animation: slideInUp 0.3s ease-out;
   }
 }

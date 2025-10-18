@@ -35,7 +35,7 @@ export default async function ProtectedPage() {
         </div>
 
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-          <Card>
+          <Card className='card-hover stat-card'>
             <CardHeader>
               <CardTitle>Daily Training</CardTitle>
               <CardDescription>
@@ -43,13 +43,13 @@ export default async function ProtectedPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button asChild className='w-full'>
+              <Button asChild className='w-full btn-hover'>
                 <Link href='/train'>Start Training</Link>
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className='card-hover stat-card'>
             <CardHeader>
               <CardTitle>Adaptive Sheet</CardTitle>
               <CardDescription>
@@ -60,14 +60,14 @@ export default async function ProtectedPage() {
               <Button
                 asChild
                 variant='outline'
-                className='w-full bg-transparent'
+                className='w-full bg-transparent btn-hover'
               >
                 <Link href='/adaptive-sheet'>Open Sheet</Link>
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className='card-hover stat-card'>
             <CardHeader>
               <CardTitle>Analytics</CardTitle>
               <CardDescription>
@@ -78,14 +78,14 @@ export default async function ProtectedPage() {
               <Button
                 asChild
                 variant='outline'
-                className='w-full bg-transparent'
+                className='w-full bg-transparent btn-hover'
               >
                 <Link href='/analytics'>View Analytics</Link>
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className='card-hover stat-card'>
             <CardHeader>
               <CardTitle>Contests</CardTitle>
               <CardDescription>
@@ -96,14 +96,14 @@ export default async function ProtectedPage() {
               <Button
                 asChild
                 variant='outline'
-                className='w-full bg-transparent'
+                className='w-full bg-transparent btn-hover'
               >
                 <Link href='/contests'>Browse Contests</Link>
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className='card-hover stat-card'>
             <CardHeader>
               <CardTitle>Groups</CardTitle>
               <CardDescription>
@@ -114,14 +114,14 @@ export default async function ProtectedPage() {
               <Button
                 asChild
                 variant='outline'
-                className='w-full bg-transparent'
+                className='w-full bg-transparent btn-hover'
               >
                 <Link href='/groups'>My Groups</Link>
               </Button>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className='card-hover stat-card'>
             <CardHeader>
               <CardTitle>Visualizers</CardTitle>
               <CardDescription>
@@ -132,7 +132,7 @@ export default async function ProtectedPage() {
               <Button
                 asChild
                 variant='outline'
-                className='w-full bg-transparent'
+                className='w-full bg-transparent btn-hover'
               >
                 <Link href='/visualizers'>Open Visualizers</Link>
               </Button>
@@ -141,7 +141,7 @@ export default async function ProtectedPage() {
         </div>
 
         <div className='mt-8'>
-          <Card>
+          <Card className='card-hover stat-card'>
             <CardHeader>
               <CardTitle>Account Information</CardTitle>
             </CardHeader>

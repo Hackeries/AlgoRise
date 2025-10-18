@@ -15,6 +15,8 @@ export interface JudgeRequest {
 }
 
 export interface JudgeResult extends CodeExecutionResult {
+  sourceCode: string;
+  language: string;
   problemId: string;
   userId: string;
   contestId?: string;
@@ -49,6 +51,8 @@ export class JudgeService {
 
       const judgeResult: JudgeResult = {
         ...executionResult,
+        sourceCode: request.sourceCode,
+        language: request.language,
         problemId: request.problemId,
         userId: request.userId,
         contestId: request.contestId,
@@ -65,6 +69,8 @@ export class JudgeService {
         success: false,
         status: 'internal_error',
         message: 'Internal error occurred during judging',
+        sourceCode: request.sourceCode,
+        language: request.language,
         problemId: request.problemId,
         userId: request.userId,
         contestId: request.contestId,
@@ -88,7 +94,7 @@ export class JudgeService {
           problem_id: result.problemId,
           status: result.status,
           language: result.language || 'cpp',
-          code_text: result.sourceCode,
+          code_text: result.sourceCode || '',
           execution_time_ms: result.executionTimeMs,
           memory_kb: result.memoryUsedKb,
           stdout: result.stdout,

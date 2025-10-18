@@ -5,60 +5,64 @@ export function AlgoRiseLogo({
 }) {
   return (
     <svg
-      viewBox='0 0 200 56'
+      viewBox='0 0 280 64'
       className={className}
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
     >
-      {/* Gradient definitions */}
       <defs>
-        <linearGradient id='logoGradient' x1='0%' y1='0%' x2='100%' y2='100%'>
-          <stop offset='0%' stopColor='currentColor' stopOpacity='1' />
-          <stop offset='100%' stopColor='currentColor' stopOpacity='0.8' />
+        <linearGradient id='arGradient' x1='0%' y1='0%' x2='100%' y2='100%'>
+          <stop offset='0%' stopColor='currentColor' />
+          <stop offset='100%' stopColor='currentColor' stopOpacity='0.85' />
         </linearGradient>
+        <filter id='glow'>
+          <feGaussianBlur stdDeviation='1' result='coloredBlur' />
+          <feMerge>
+            <feMergeNode in='coloredBlur' />
+            <feMergeNode in='SourceGraphic' />
+          </feMerge>
+        </filter>
       </defs>
 
-      {/* Logo Mark - Geometric Algorithm Symbol */}
+      {/* AR Logo Mark - Geometric Design */}
       <g>
-        {/* Outer circle */}
-        <circle
-          cx='20'
-          cy='28'
-          r='16'
-          stroke='currentColor'
-          strokeWidth='1.5'
-          opacity='0.3'
-        />
+        {/* Background circle with subtle glow */}
+        <circle cx='32' cy='32' r='28' fill='currentColor' opacity='0.08' />
 
-        {/* Inner geometric pattern - represents algorithm/data structure */}
+        {/* Letter A - Left triangle */}
         <path
-          d='M 20 12 L 28 20 L 20 28 L 12 20 Z'
-          fill='url(#logoGradient)'
-          opacity='0.9'
+          d='M 16 48 L 24 16 L 28 16 L 36 48 M 20 36 L 32 36'
+          stroke='url(#arGradient)'
+          strokeWidth='3.5'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          fill='none'
         />
 
-        {/* Top accent */}
-        <circle cx='20' cy='12' r='2' fill='currentColor' opacity='0.6' />
+        {/* Letter R - Right side */}
+        <path
+          d='M 40 16 L 40 48 M 40 16 L 52 16 Q 56 16 56 22 Q 56 28 52 28 L 40 28 M 52 28 L 60 48'
+          stroke='url(#arGradient)'
+          strokeWidth='3.5'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          fill='none'
+        />
 
-        {/* Right accent */}
-        <circle cx='28' cy='20' r='2' fill='currentColor' opacity='0.6' />
-
-        {/* Bottom accent */}
-        <circle cx='20' cy='28' r='2' fill='currentColor' opacity='0.6' />
-
-        {/* Left accent */}
-        <circle cx='12' cy='20' r='2' fill='currentColor' opacity='0.6' />
+        {/* Accent dots */}
+        <circle cx='24' cy='12' r='2.5' fill='currentColor' opacity='0.6' />
+        <circle cx='56' cy='52' r='2.5' fill='currentColor' opacity='0.6' />
       </g>
 
       {/* Text: AlgoRise */}
       <text
-        x='48'
-        y='36'
-        fontFamily='Inter, sans-serif'
-        fontSize='24'
+        x='80'
+        y='42'
+        fontFamily="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+        fontSize='32'
         fontWeight='700'
         fill='currentColor'
-        letterSpacing='-0.5'
+        letterSpacing='-0.8'
       >
         AlgoRise
       </text>

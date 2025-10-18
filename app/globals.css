@@ -6,9 +6,9 @@
 :root {
   /* Simplified color system with semantic naming */
   /* Neutrals */
-  --background: 0 0% 99.5%;
+  --background: 0 0% 97%;
   --foreground: 0 0% 8%;
-  --card: var(--background);
+  --card: 0 0% 100%;
   --card-foreground: var(--foreground);
   --popover: var(--background);
   --popover-foreground: var(--foreground);

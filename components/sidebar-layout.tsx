@@ -22,6 +22,17 @@ import {
 } from 'lucide-react';
 
 // ------------------ CF Rating System ------------------
+const getRatingAbbreviation = (label: string): string => {
+  const abbreviations: { [key: string]: string } = {
+    'Candidate Master': 'CM',
+    'International Master': 'IM',
+    'International GM': 'IGM',
+    'Legendary GM': 'LGM',
+    Grandmaster: 'GM',
+  };
+  return abbreviations[label] || label.split(' ')[0];
+};
+
 const getCFTier = (rating: number) => {
   if (rating < 1200)
     return { label: 'Newbie', color: 'text-gray-400', bg: 'bg-gray-800' };
@@ -131,17 +142,19 @@ const SidebarFooter = ({
 }) => {
   if (!cfData) return null;
   const tier = getCFTier(cfData.rating);
+  const displayLabel = isOpen ? tier.label : getRatingAbbreviation(tier.label);
+
   return (
     <div
       className={cn(
         'cursor-pointer transition-transform duration-150 hover:scale-105 flex items-center w-full overflow-hidden',
         isOpen ? 'gap-2' : 'justify-center'
       )}
-      title={`${cfData.handle} (${cfData.rating})`}
+      title={`${cfData.handle} (${cfData.rating}) - ${tier.label}`}
     >
       {isOpen ? (
         <div
-          className={`p-3 rounded-xl border ${tier.bg} ${tier.color} w-full overflow-hidden`}
+          className={`p-3 rounded-xl border ${tier.bg} ${tier.color} w-full overflow-hidden hover:bg-opacity-80 transition-all duration-200`}
         >
           <p className='text-sm font-bold truncate'>{cfData.handle}</p>
           <p className='text-xs truncate'>
@@ -150,9 +163,10 @@ const SidebarFooter = ({
         </div>
       ) : (
         <div
-          className={`w-12 h-12 flex items-center justify-center rounded-full border ${tier.bg} ${tier.color} text-[10px] font-bold flex-shrink-0`}
+          className={`w-12 h-12 flex items-center justify-center rounded-full border ${tier.bg} ${tier.color} text-[10px] font-bold flex-shrink-0 hover:bg-opacity-80 transition-all duration-200`}
+          title={tier.label}
         >
-          {tier.label.split(' ')[0]}
+          {displayLabel}
         </div>
       )}
     </div>

@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
@@ -79,14 +79,18 @@ export default function CFLevels() {
           transition={{ duration: 0.8 }}
           className='text-center mb-16'
         >
-          <h2 className='text-4xl md:text-5xl font-bold mb-4 text-white'>
+          <h2 className='text-4xl md:text-5xl font-bold mb-4 text-foreground dark:text-white'>
             Codeforces Level-Up Roadmap
           </h2>
-          <p className='text-lg text-white/80 max-w-3xl mx-auto leading-relaxed'>
+          <p className='text-lg text-foreground/80 dark:text-white/80 max-w-3xl mx-auto leading-relaxed'>
             Follow the proven roadmap from{' '}
-            <span className='font-bold font-mono text-gray-400'>Newbie</span>{' '}
-            <span className='font-bold font-mono text-white'>→</span>{' '}
-            <span className='font-bold font-mono text-purple-400'> 
+            <span className='font-bold font-mono text-muted-foreground dark:text-gray-400'>
+              Newbie
+            </span>{' '}
+            <span className='font-bold font-mono text-foreground dark:text-white'>
+              →
+            </span>{' '}
+            <span className='font-bold font-mono text-primary dark:text-purple-400'>
               Candidate Master
             </span>
             . Master one level at a time with curated topics, key data

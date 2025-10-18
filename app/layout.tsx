@@ -52,11 +52,17 @@ export const metadata: Metadata = {
   referrer: 'strict-origin-when-cross-origin',
   icons: {
     icon: [
-      { url: '/ar-favicon.jpg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', type: 'image/x-icon' },
+      {
+        url: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stopColor='%2300D9FF'/><stop offset='100%' stopColor='%2300B8D4'/></linearGradient></defs><path d='M 12 48 L 28 12 L 32 12 L 48 48 M 20 32 L 40 32' stroke='url(%23g)' strokeWidth='3.5' strokeLinecap='round' strokeLinejoin='round' fill='none'/><path d='M 36 12 L 52 12 Q 56 12 56 18 Q 56 24 52 24 L 36 24 M 52 24 L 56 48' stroke='url(%23g)' strokeWidth='3.5' strokeLinecap='round' strokeLinejoin='round' fill='none'/><circle cx='20' cy='56' r='2' fill='url(%23g)'/><circle cx='44' cy='56' r='2' fill='url(%23g)'/></svg>",
+        type: 'image/svg+xml',
+      },
     ],
-    apple: [{ url: '/apple-icon.jpg', sizes: '180x180' }],
-    shortcut: [{ url: '/ar-favicon.jpg' }],
+    apple: [
+      {
+        url: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><defs><linearGradient id='g' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stopColor='%2300D9FF'/><stop offset='100%' stopColor='%2300B8D4'/></linearGradient></defs><path d='M 12 48 L 28 12 L 32 12 L 48 48 M 20 32 L 40 32' stroke='url(%23g)' strokeWidth='3.5' strokeLinecap='round' strokeLinejoin='round' fill='none'/><path d='M 36 12 L 52 12 Q 56 12 56 18 Q 56 24 52 24 L 36 24 M 52 24 L 56 48' stroke='url(%23g)' strokeWidth='3.5' strokeLinecap='round' strokeLinejoin='round' fill='none'/><circle cx='20' cy='56' r='2' fill='url(%23g)'/><circle cx='44' cy='56' r='2' fill='url(%23g)'/></svg>",
+        sizes: '180x180',
+      },
+    ],
   },
   manifest: '/manifest.json',
   applicationName: 'AlgoRise',

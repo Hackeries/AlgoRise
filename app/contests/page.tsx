@@ -608,8 +608,8 @@ export default function ContestsPage() {
     <main className='mx-auto max-w-6xl px-4 py-10'>
       <div className='flex items-center justify-between mb-6'>
         <div>
-          <h1 className='text-2xl font-semibold'>Contests</h1>
-          <p className='mt-2 text-white/80 leading-relaxed'>
+          <h1 className='text-2xl font-semibold text-foreground'>Contests</h1>
+          <p className='mt-2 text-foreground/70 leading-relaxed'>
             Host or join private training contests. After the contest, view
             rating simulation and get a recovery set.
           </p>
@@ -969,24 +969,24 @@ export default function ContestsPage() {
 
       {loading ? (
         <div className='text-center py-12'>
-          <div className='inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white/60'></div>
-          <p className='mt-2 text-white/60'>Loading contests...</p>
+          <div className='inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-foreground/60'></div>
+          <p className='mt-2 text-foreground/60'>Loading contests...</p>
         </div>
       ) : (
         <div className='space-y-8'>
           {/* Upcoming Codeforces Contests */}
           <section>
             <div className='flex items-center gap-2 mb-4'>
-              <h2 className='text-xl font-semibold'>
+              <h2 className='text-xl font-semibold text-foreground'>
                 Upcoming Codeforces Contests
               </h2>
               <Badge variant='secondary'>{upcomingCfContests.length}</Badge>
             </div>
 
             {upcomingCfContests.length === 0 ? (
-              <Card>
+              <Card className='card-3d'>
                 <CardContent className='p-6'>
-                  <p className='text-white/60 text-center'>
+                  <p className='text-foreground/60 text-center'>
                     No upcoming Codeforces contests found.
                   </p>
                 </CardContent>
@@ -996,7 +996,7 @@ export default function ContestsPage() {
                 {upcomingCfContests.slice(0, 6).map(contest => (
                   <Card
                     key={contest.id}
-                    className='hover:bg-white/5 transition-colors cursor-pointer'
+                    className='card-3d hover:shadow-lg cursor-pointer transition-all'
                     onClick={() =>
                       handleCodeforcesContestClick(
                         contest.id,
@@ -1007,10 +1007,10 @@ export default function ContestsPage() {
                   >
                     <CardHeader className='pb-3'>
                       <div className='flex items-start justify-between'>
-                        <CardTitle className='text-sm font-medium leading-tight'>
+                        <CardTitle className='text-sm font-medium leading-tight text-foreground'>
                           {contest.name}
                         </CardTitle>
-                        <ExternalLinkIcon className='w-4 h-4 text-white/40 flex-shrink-0 ml-2 hover:text-white/60 transition-colors' />
+                        <ExternalLinkIcon className='w-4 h-4 text-foreground/40 flex-shrink-0 ml-2 hover:text-foreground/60 transition-colors' />
                       </div>
                       <div className='flex items-center gap-2'>
                         <Badge variant='outline' className='text-xs'>
@@ -1024,18 +1024,20 @@ export default function ContestsPage() {
                     <CardContent className='pt-0'>
                       <div className='space-y-2 text-sm'>
                         {contest.startTimeSeconds && (
-                          <div className='flex items-center gap-2 text-white/70'>
+                          <div className='flex items-center gap-2 text-foreground/70'>
                             <CalendarIcon className='w-4 h-4' />
                             <span>{formatTime(contest.startTimeSeconds)}</span>
                           </div>
                         )}
-                        <div className='flex items-center gap-2 text-white/70'>
+                        <div className='flex items-center gap-2 text-foreground/70'>
                           <ClockIcon className='w-4 h-4' />
                           <span>{formatDuration(contest.durationSeconds)}</span>
                         </div>
                         {contest.startTimeSeconds && (
                           <div className='flex items-center justify-between'>
-                            <span className='text-white/60'>Starts in:</span>
+                            <span className='text-foreground/60'>
+                              Starts in:
+                            </span>
                             <Badge variant='default' className='text-xs'>
                               {getTimeUntilStart(contest.startTimeSeconds)}
                             </Badge>
@@ -1052,16 +1054,18 @@ export default function ContestsPage() {
           {/* Private Contests */}
           <section>
             <div className='flex items-center gap-2 mb-4'>
-              <h2 className='text-xl font-semibold'>Private Contests</h2>
+              <h2 className='text-xl font-semibold text-foreground'>
+                Private Contests
+              </h2>
               <Badge variant='secondary'>{privateContests.length}</Badge>
             </div>
 
             {privateContests.length === 0 ? (
-              <Card>
+              <Card className='card-3d'>
                 <CardContent className='p-6'>
                   <div className='text-center'>
-                    <UsersIcon className='w-12 h-12 text-white/20 mx-auto mb-4' />
-                    <p className='text-white/60 mb-4'>
+                    <UsersIcon className='w-12 h-12 text-foreground/20 mx-auto mb-4' />
+                    <p className='text-foreground/60 mb-4'>
                       No private contests yet.
                     </p>
                     <Button onClick={() => setCreateDialogOpen(true)}>
@@ -1076,13 +1080,13 @@ export default function ContestsPage() {
                 {privateContests.map(contest => (
                   <Card
                     key={contest.id}
-                    className='hover:bg-white/5 transition-colors'
+                    className='card-3d hover:shadow-lg transition-all'
                   >
                     <CardHeader className='pb-3'>
-                      <CardTitle className='text-sm font-medium'>
+                      <CardTitle className='text-sm font-medium text-foreground'>
                         {contest.name}
                       </CardTitle>
-                      <CardDescription className='text-xs'>
+                      <CardDescription className='text-xs text-foreground/60'>
                         {contest.visibility === 'public' ? 'Public' : 'Private'}{' '}
                         • Created by {contest.isHost ? 'You' : 'Others'}
                       </CardDescription>
@@ -1183,7 +1187,7 @@ export default function ContestsPage() {
                       </div>
 
                       {contest.starts_at && (
-                        <div className='mt-3 text-xs text-white/70 space-y-2'>
+                        <div className='mt-3 text-xs text-foreground/70 space-y-2'>
                           <div className='flex items-center gap-2'>
                             <CalendarIcon className='w-3 h-3' />
                             <span>
@@ -1191,11 +1195,11 @@ export default function ContestsPage() {
                             </span>
                           </div>
                           {contest.description && (
-                            <div className='text-white/60'>
+                            <div className='text-foreground/60'>
                               {contest.description}
                             </div>
                           )}
-                          <div className='flex flex-wrap items-center gap-3 text-white/60'>
+                          <div className='flex flex-wrap items-center gap-3 text-foreground/60'>
                             <span>{contest.problem_count} problems</span>
                             <span>{contest.duration_minutes} min</span>
                             <span>Mode: {contest.contest_mode}</span>

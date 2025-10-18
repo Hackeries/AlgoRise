@@ -211,37 +211,58 @@ const ProductionVisualizer: React.FC<ProductionVisualizerProps> = ({
   };
 
   return (
-    <div className='w-full max-w-6xl mx-auto p-4 space-y-6'>
+    <div className='w-full max-w-6xl mx-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6'>
       <Card>
-        <CardHeader>
-          <CardTitle>Algorithm Visualizer</CardTitle>
-          <CardDescription>
+        <CardHeader className='pb-3 sm:pb-4'>
+          <CardTitle className='text-xl sm:text-2xl'>
+            Algorithm Visualizer
+          </CardTitle>
+          <CardDescription className='text-xs sm:text-sm'>
             Interactive step-by-step visualization of classical algorithms
           </CardDescription>
         </CardHeader>
-        <CardContent className='space-y-6'>
+        <CardContent className='space-y-4 sm:space-y-6'>
           {/* Category and Algorithm Selection */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4'>
             <div>
-              <label className='text-sm font-medium mb-2 block'>Category</label>
+              <label className='text-xs sm:text-sm font-medium mb-2 block'>
+                Category
+              </label>
               <Tabs value={category} onValueChange={handleCategoryChange}>
-                <TabsList className='grid w-full grid-cols-4'>
-                  <TabsTrigger value='sorting'>Sorting</TabsTrigger>
-                  <TabsTrigger value='searching'>Search</TabsTrigger>
-                  <TabsTrigger value='dp'>DP</TabsTrigger>
-                  <TabsTrigger value='graphs'>Graphs</TabsTrigger>
+                <TabsList className='grid w-full grid-cols-4 h-auto'>
+                  <TabsTrigger
+                    value='sorting'
+                    className='text-xs sm:text-sm py-2'
+                  >
+                    Sorting
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value='searching'
+                    className='text-xs sm:text-sm py-2'
+                  >
+                    Search
+                  </TabsTrigger>
+                  <TabsTrigger value='dp' className='text-xs sm:text-sm py-2'>
+                    DP
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value='graphs'
+                    className='text-xs sm:text-sm py-2'
+                  >
+                    Graphs
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
 
             <div>
-              <label className='text-sm font-medium mb-2 block'>
+              <label className='text-xs sm:text-sm font-medium mb-2 block'>
                 Algorithm
               </label>
               <Tabs value={algorithm} onValueChange={handleAlgorithmChange}>
-                <TabsList className='grid w-full grid-cols-3'>
+                <TabsList className='grid w-full grid-cols-3 h-auto'>
                   {Object.entries(ALGORITHMS[category]).map(([key, algo]) => (
-                    <TabsTrigger key={key} value={key} className='text-xs'>
+                    <TabsTrigger key={key} value={key} className='text-xs py-2'>
                       {algo.name.split(' ')[0]}
                     </TabsTrigger>
                   ))}
@@ -251,8 +272,8 @@ const ProductionVisualizer: React.FC<ProductionVisualizerProps> = ({
           </div>
 
           {/* Visualization Area */}
-          <Card className='bg-slate-50 dark:bg-slate-900 p-6'>
-            <div className='flex items-end justify-center gap-2 h-64'>
+          <Card className='bg-slate-50 dark:bg-slate-900 p-4 sm:p-6'>
+            <div className='flex items-end justify-center gap-1 sm:gap-2 h-48 sm:h-56 md:h-64'>
               {currentStepData.array?.map((value: number, idx: number) => (
                 <div
                   key={idx}
@@ -272,40 +293,47 @@ const ProductionVisualizer: React.FC<ProductionVisualizerProps> = ({
                     width: `${100 / (currentStepData.array?.length || 1)}%`,
                   }}
                 >
-                  <span className='text-xs font-bold text-white'>{value}</span>
+                  <span className='text-xs font-bold text-white hidden sm:inline'>
+                    {value}
+                  </span>
                 </div>
               ))}
             </div>
-            <p className='text-center mt-4 text-sm font-medium'>
+            <p className='text-center mt-3 sm:mt-4 text-xs sm:text-sm font-medium text-foreground/80'>
               {currentStepData.message}
             </p>
           </Card>
 
           {/* Algorithm Info */}
-          <div className='grid grid-cols-2 gap-4'>
-            <div className='p-3 bg-blue-50 dark:bg-blue-900/20 rounded'>
+          <div className='grid grid-cols-2 gap-2 sm:gap-4'>
+            <div className='p-2 sm:p-3 bg-blue-50 dark:bg-blue-900/20 rounded'>
               <p className='text-xs text-gray-600 dark:text-gray-400'>
                 Time Complexity
               </p>
-              <p className='font-mono font-bold'>
+              <p className='font-mono font-bold text-sm sm:text-base'>
                 {currentAlgorithm?.complexity.time}
               </p>
             </div>
-            <div className='p-3 bg-purple-50 dark:bg-purple-900/20 rounded'>
+            <div className='p-2 sm:p-3 bg-purple-50 dark:bg-purple-900/20 rounded'>
               <p className='text-xs text-gray-600 dark:text-gray-400'>
                 Space Complexity
               </p>
-              <p className='font-mono font-bold'>
+              <p className='font-mono font-bold text-sm sm:text-base'>
                 {currentAlgorithm?.complexity.space}
               </p>
             </div>
           </div>
 
           {/* Controls */}
-          <div className='space-y-4'>
+          <div className='space-y-3 sm:space-y-4'>
             <div className='flex gap-2 flex-wrap'>
-              <Button onClick={handlePlay} disabled={isPlaying} size='sm'>
-                <Play className='w-4 h-4 mr-2' />
+              <Button
+                onClick={handlePlay}
+                disabled={isPlaying}
+                size='sm'
+                className='text-xs sm:text-sm'
+              >
+                <Play className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
                 Play
               </Button>
               <Button
@@ -313,8 +341,9 @@ const ProductionVisualizer: React.FC<ProductionVisualizerProps> = ({
                 disabled={!isPlaying}
                 size='sm'
                 variant='outline'
+                className='text-xs sm:text-sm'
               >
-                <Pause className='w-4 h-4 mr-2' />
+                <Pause className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
                 Pause
               </Button>
               <Button
@@ -322,18 +351,26 @@ const ProductionVisualizer: React.FC<ProductionVisualizerProps> = ({
                 disabled={isPlaying}
                 size='sm'
                 variant='outline'
+                className='text-xs sm:text-sm'
               >
-                <StepForward className='w-4 h-4 mr-2' />
+                <StepForward className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
                 Step
               </Button>
-              <Button onClick={handleReset} size='sm' variant='outline'>
-                <RotateCcw className='w-4 h-4 mr-2' />
+              <Button
+                onClick={handleReset}
+                size='sm'
+                variant='outline'
+                className='text-xs sm:text-sm'
+              >
+                <RotateCcw className='w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2' />
                 Reset
               </Button>
             </div>
 
             <div className='space-y-2'>
-              <label className='text-sm font-medium'>Speed: {speed}x</label>
+              <label className='text-xs sm:text-sm font-medium'>
+                Speed: {speed}x
+              </label>
               <Slider
                 value={[speed]}
                 onValueChange={value => setSpeed(value[0])}
@@ -345,7 +382,7 @@ const ProductionVisualizer: React.FC<ProductionVisualizerProps> = ({
             </div>
 
             <div className='space-y-2'>
-              <label className='text-sm font-medium'>
+              <label className='text-xs sm:text-sm font-medium'>
                 Step: {currentStep + 1} / {steps.length}
               </label>
               <Slider

@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 
 export default function BannerLanding() {
   return (
-    <section className='relative flex flex-col justify-center items-center text-center overflow-hidden min-h-[320px] md:min-h-[520px] px-4'>
+    <section className='relative flex flex-col justify-center items-center text-center overflow-hidden min-h-[280px] sm:min-h-[380px] md:min-h-[480px] px-3 sm:px-4 md:px-6 py-8 sm:py-12 md:py-16'>
       {/* Background */}
       <div className='absolute inset-0 -z-10 w-full h-full'>
         <PixelBlast />
@@ -16,14 +16,14 @@ export default function BannerLanding() {
 
       {/* Floating particles */}
       <motion.div
-        className='absolute top-20 left-10 w-6 h-6 rounded-full bg-sky-200/20 blur-xl'
+        className='absolute top-12 sm:top-16 md:top-20 left-4 sm:left-8 md:left-10 w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 rounded-full bg-sky-200/20 blur-xl'
         animate={{ y: [0, 20, 0], opacity: [0.5, 1, 0.5] }}
-        transition={{ repeat: Infinity, duration: 6 }}
+        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 6 }}
       />
       <motion.div
-        className='absolute bottom-24 right-16 w-10 h-10 rounded-full bg-indigo-200/20 blur-2xl'
+        className='absolute bottom-16 sm:bottom-20 md:bottom-24 right-4 sm:right-8 md:right-16 w-8 sm:w-9 md:w-10 h-8 sm:h-9 md:h-10 rounded-full bg-indigo-200/20 blur-2xl'
         animate={{ y: [0, -20, 0], opacity: [0.5, 1, 0.5] }}
-        transition={{ repeat: Infinity, duration: 8 }}
+        transition={{ repeat: Number.POSITIVE_INFINITY, duration: 8 }}
       />
 
       {/* Heading */}
@@ -31,7 +31,7 @@ export default function BannerLanding() {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className='text-5xl md:text-7xl font-extrabold leading-tight font-[Bricolage_Grotesque] mb-6 
+        className='text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight font-[Bricolage_Grotesque] mb-4 sm:mb-6 md:mb-8
           bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 
           bg-clip-text text-transparent animate-gradient-x'
       >
@@ -43,51 +43,54 @@ export default function BannerLanding() {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, delay: 0.2 }}
-        className='text-lg md:text-xl text-gray-600 dark:text-gray-300 shadow-glow mb-12 max-w-3xl mx-auto leading-relaxed px-4'
+        className='text-sm sm:text-base md:text-lg lg:text-xl text-gray-600 dark:text-gray-300 shadow-glow mb-8 sm:mb-10 md:mb-12 max-w-2xl sm:max-w-3xl mx-auto leading-relaxed px-2 sm:px-4'
       >
         Level up your competitive programming with{' '}
-        <span className='font-semibold text-foreground hover:text-blue-500 transition-colors duration-300 cursor-default font-[Bricolage_Grotesque]'>adaptive practice</span>,{' '}
+        <span className='font-semibold text-foreground hover:text-blue-500 transition-colors duration-300 cursor-default font-[Bricolage_Grotesque]'>
+          adaptive practice
+        </span>
+        ,{' '}
         <span className='font-semibold text-foreground whitespace-nowrap hover:text-indigo-500 transition-colors duration-300 cursor-default font-[Bricolage_Grotesque]'>
           real-time contest tracking
-        </span>, and{' '}
+        </span>
+        , and{' '}
         <span className='font-semibold text-foreground whitespace-nowrap hover:text-purple-500 transition-colors duration-300 cursor-default font-[Bricolage_Grotesque]'>
           progress analytics
-        </span>.
+        </span>
+        .
+      </motion.p>
 
-      </motion.p>  
+      {/* CTA Buttons */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 0.4 }}
+        className='flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-6 justify-center items-center w-full max-w-2xl sm:max-w-3xl mx-auto'
+      >
+        <Link href='/adaptive-sheet' className='w-full sm:w-auto'>
+          <Button className='w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-blue-500/50 shadow-blue-500/25 relative group text-sm sm:text-base'>
+            <div className='absolute inset-0 rounded-lg bg-blue-500/50 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10' />
+            <Target className='mr-2 h-4 sm:h-5 w-4 sm:w-5 flex-shrink-0' />
+            <span>Start Adaptive Practice</span>
+          </Button>
+        </Link>
 
+        <Link href='/contests' className='w-full sm:w-auto'>
+          <Button className='w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-gray-500/50 shadow-gray-500/25 relative group text-sm sm:text-base'>
+            <div className='absolute inset-0 rounded-lg bg-gray-400/50 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10' />
+            <Calendar className='mr-2 h-4 sm:h-5 w-4 sm:w-5 flex-shrink-0' />
+            <span>View Contests</span>
+          </Button>
+        </Link>
 
-        {/* CTA Buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.4 }}
-          className='flex flex-col sm:flex-row gap-6 justify-center items-center max-w-4xl mx-auto '
-        >
-          <Link href='/adaptive-sheet' className='w-full sm:w-auto'>
-            <Button className='w-full sm:w-auto px-8 py-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-blue-500/50 shadow-blue-500/25 relative group'>
-          <div className='absolute inset-0 rounded-lg bg-blue-500/50 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10' />
-          <Target className='mr-2 h-5 w-5' />
-          Start Adaptive Practice
-            </Button>
-          </Link>
-
-          <Link href='/contests' className='w-full sm:w-auto'>
-            <Button className='w-full sm:w-auto px-8 py-4 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-medium rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-gray-500/50 shadow-gray-500/25 relative group'>
-          <div className='absolute inset-0 rounded-lg bg-gray-400/50 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10' />
-          <Calendar className='mr-2 h-5 w-5' />
-          View Contests
-            </Button>
-          </Link>
-
-          <Link href='/paths' className='w-full sm:w-auto'>
-            <Button className='w-full sm:w-auto px-8 py-4 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-green-500/50 shadow-green-500/25 relative group'>
-          <div className='absolute inset-0 rounded-lg bg-green-400/50 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10' />
-          <BookOpen className='mr-2 h-5 w-5' />
-          Explore Learning Paths
-            </Button>
-          </Link>
-        </motion.div>
+        <Link href='/paths' className='w-full sm:w-auto'>
+          <Button className='w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-green-500 text-white font-medium rounded-lg hover:bg-green-600 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl hover:shadow-green-500/50 shadow-green-500/25 relative group text-sm sm:text-base'>
+            <div className='absolute inset-0 rounded-lg bg-green-400/50 blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10' />
+            <BookOpen className='mr-2 h-4 sm:h-5 w-4 sm:w-5 flex-shrink-0' />
+            <span>Explore Learning Paths</span>
+          </Button>
+        </Link>
+      </motion.div>
     </section>
   );
 }

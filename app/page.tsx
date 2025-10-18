@@ -13,22 +13,22 @@ export default function VisualizersPage() {
       </div>
 
       {/* Hero Section */}
-      <section className='relative z-5 py-1 w-full' aria-label='Hero Section'>
+      <section className='relative z-5 w-full' aria-label='Hero Section'>
         <ModernLanding />
       </section>
 
       {/* Codeforces Levels Section */}
-      <section className='relative z-5 py-1 w-full' aria-label='Codeforces Levels'>
+      <section className='relative z-5 w-full' aria-label='Codeforces Levels'>
         <CFLevels />
       </section>
 
       {/* How It Works Section */}
-      <section className='relative z-5 py-1 w-full' aria-label='How It Works'>
+      <section className='relative z-5 w-full' aria-label='How It Works'>
         <HowItWorks />
       </section>
 
       {/* Platform Features Section */}
-      <section className='relative z-5 py-1 w-full' aria-label='Platform Features'>
+      <section className='relative z-5 w-full' aria-label='Platform Features'>
         <PlatformFeatures />
       </section>
     </main>

@@ -37,6 +37,8 @@ import {
   UsersIcon,
   PlusIcon,
   ExternalLinkIcon,
+  Zap,
+  Trophy,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
@@ -605,11 +607,13 @@ export default function ContestsPage() {
   }, [privateContests, notifiedContestIds, toast]);
 
   return (
-    <main className='mx-auto max-w-6xl px-4 py-10'>
-      <div className='flex items-center justify-between mb-6'>
+    <main className='mx-auto max-w-7xl px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-10'>
+      <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8'>
         <div>
-          <h1 className='text-2xl font-semibold text-foreground'>Contests</h1>
-          <p className='mt-2 text-foreground/70 leading-relaxed'>
+          <h1 className='text-2xl sm:text-3xl font-semibold text-foreground'>
+            Contests
+          </h1>
+          <p className='mt-2 text-sm sm:text-base text-foreground/70 leading-relaxed max-w-2xl'>
             Host or join private training contests. After the contest, view
             rating simulation and get a recovery set.
           </p>
@@ -617,7 +621,7 @@ export default function ContestsPage() {
 
         <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className='w-full sm:w-auto'>
               <PlusIcon className='w-4 h-4 mr-2' />
               Create Contest
             </Button>
@@ -977,10 +981,13 @@ export default function ContestsPage() {
           {/* Upcoming Codeforces Contests */}
           <section>
             <div className='flex items-center gap-2 mb-4'>
-              <h2 className='text-xl font-semibold text-foreground'>
+              <h2 className='text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2'>
+                <Trophy className='w-5 h-5 text-yellow-500' />
                 Upcoming Codeforces Contests
               </h2>
-              <Badge variant='secondary'>{upcomingCfContests.length}</Badge>
+              <Badge variant='secondary' className='text-xs sm:text-sm'>
+                {upcomingCfContests.length}
+              </Badge>
             </div>
 
             {upcomingCfContests.length === 0 ? (
@@ -992,11 +999,11 @@ export default function ContestsPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+              <div className='grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3'>
                 {upcomingCfContests.slice(0, 6).map(contest => (
                   <Card
                     key={contest.id}
-                    className='card-3d hover:shadow-lg cursor-pointer transition-all'
+                    className='card-3d hover:shadow-lg cursor-pointer transition-all border-l-4 border-l-yellow-500 dark:border-l-yellow-600'
                     onClick={() =>
                       handleCodeforcesContestClick(
                         contest.id,
@@ -1005,14 +1012,14 @@ export default function ContestsPage() {
                       )
                     }
                   >
-                    <CardHeader className='pb-3'>
-                      <div className='flex items-start justify-between'>
-                        <CardTitle className='text-sm font-medium leading-tight text-foreground'>
+                    <CardHeader className='pb-2 sm:pb-3'>
+                      <div className='flex items-start justify-between gap-2'>
+                        <CardTitle className='text-sm sm:text-base font-semibold leading-tight text-foreground line-clamp-2'>
                           {contest.name}
                         </CardTitle>
-                        <ExternalLinkIcon className='w-4 h-4 text-foreground/40 flex-shrink-0 ml-2 hover:text-foreground/60 transition-colors' />
+                        <ExternalLinkIcon className='w-4 h-4 text-foreground/40 flex-shrink-0 hover:text-foreground/60 transition-colors' />
                       </div>
-                      <div className='flex items-center gap-2'>
+                      <div className='flex items-center gap-2 flex-wrap mt-2'>
                         <Badge variant='outline' className='text-xs'>
                           {contest.type}
                         </Badge>
@@ -1022,23 +1029,28 @@ export default function ContestsPage() {
                       </div>
                     </CardHeader>
                     <CardContent className='pt-0'>
-                      <div className='space-y-2 text-sm'>
+                      <div className='space-y-2 text-xs sm:text-sm'>
                         {contest.startTimeSeconds && (
                           <div className='flex items-center gap-2 text-foreground/70'>
-                            <CalendarIcon className='w-4 h-4' />
-                            <span>{formatTime(contest.startTimeSeconds)}</span>
+                            <CalendarIcon className='w-4 h-4 flex-shrink-0' />
+                            <span className='truncate'>
+                              {formatTime(contest.startTimeSeconds)}
+                            </span>
                           </div>
                         )}
                         <div className='flex items-center gap-2 text-foreground/70'>
-                          <ClockIcon className='w-4 h-4' />
+                          <ClockIcon className='w-4 h-4 flex-shrink-0' />
                           <span>{formatDuration(contest.durationSeconds)}</span>
                         </div>
                         {contest.startTimeSeconds && (
-                          <div className='flex items-center justify-between'>
-                            <span className='text-foreground/60'>
+                          <div className='flex items-center justify-between pt-2 border-t border-border/50'>
+                            <span className='text-foreground/60 text-xs'>
                               Starts in:
                             </span>
-                            <Badge variant='default' className='text-xs'>
+                            <Badge
+                              variant='default'
+                              className='text-xs bg-blue-600 hover:bg-blue-700'
+                            >
                               {getTimeUntilStart(contest.startTimeSeconds)}
                             </Badge>
                           </div>
@@ -1054,10 +1066,13 @@ export default function ContestsPage() {
           {/* Private Contests */}
           <section>
             <div className='flex items-center gap-2 mb-4'>
-              <h2 className='text-xl font-semibold text-foreground'>
+              <h2 className='text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2'>
+                <Zap className='w-5 h-5 text-purple-500' />
                 Private Contests
               </h2>
-              <Badge variant='secondary'>{privateContests.length}</Badge>
+              <Badge variant='secondary' className='text-xs sm:text-sm'>
+                {privateContests.length}
+              </Badge>
             </div>
 
             {privateContests.length === 0 ? (
@@ -1076,36 +1091,100 @@ export default function ContestsPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-                {privateContests.map(contest => (
-                  <Card
-                    key={contest.id}
-                    className='card-3d hover:shadow-lg transition-all'
-                  >
-                    <CardHeader className='pb-3'>
-                      <CardTitle className='text-sm font-medium text-foreground'>
-                        {contest.name}
-                      </CardTitle>
-                      <CardDescription className='text-xs text-foreground/60'>
-                        {contest.visibility === 'public' ? 'Public' : 'Private'}{' '}
-                        • Created by {contest.isHost ? 'You' : 'Others'}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className='pt-0'>
-                      <div className='flex items-center justify-between mb-3'>
-                        <Badge
-                          variant={
-                            computeDisplayStatus(contest) === 'live'
-                              ? 'default'
-                              : computeDisplayStatus(contest) === 'ended'
-                              ? 'secondary'
-                              : 'outline'
-                          }
-                          className='text-xs'
-                        >
-                          {computeDisplayStatus(contest)}
-                        </Badge>
-                        <div className='flex gap-2'>
+              <div className='grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3'>
+                {privateContests.map(contest => {
+                  const status = computeDisplayStatus(contest);
+                  const borderColor =
+                    status === 'live'
+                      ? 'border-l-green-500 dark:border-l-green-600'
+                      : status === 'ended'
+                      ? 'border-l-gray-500 dark:border-l-gray-600'
+                      : 'border-l-blue-500 dark:border-l-blue-600';
+
+                  return (
+                    <Card
+                      key={contest.id}
+                      className={`card-3d hover:shadow-lg transition-all border-l-4 ${borderColor}`}
+                    >
+                      <CardHeader className='pb-2 sm:pb-3'>
+                        <div className='flex items-start justify-between gap-2'>
+                          <div className='flex-1 min-w-0'>
+                            <CardTitle className='text-sm sm:text-base font-semibold text-foreground line-clamp-2'>
+                              {contest.name}
+                            </CardTitle>
+                            <CardDescription className='text-xs text-foreground/60 mt-1'>
+                              {contest.visibility === 'public'
+                                ? 'Public'
+                                : 'Private'}{' '}
+                              •{' '}
+                              {contest.isHost
+                                ? 'Hosted by You'
+                                : 'Hosted by Others'}
+                            </CardDescription>
+                          </div>
+                        </div>
+                        <div className='flex items-center gap-2 flex-wrap mt-2'>
+                          <Badge
+                            variant={
+                              status === 'live'
+                                ? 'default'
+                                : status === 'ended'
+                                ? 'secondary'
+                                : 'outline'
+                            }
+                            className={`text-xs ${
+                              status === 'live'
+                                ? 'bg-green-600 hover:bg-green-700'
+                                : ''
+                            }`}
+                          >
+                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                          </Badge>
+                          <Badge variant='outline' className='text-xs'>
+                            {contest.contest_mode === 'icpc'
+                              ? 'ICPC'
+                              : 'Practice'}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className='pt-0'>
+                        <div className='space-y-2 text-xs sm:text-sm'>
+                          {contest.starts_at && (
+                            <div className='flex items-center gap-2 text-foreground/70'>
+                              <CalendarIcon className='w-4 h-4 flex-shrink-0' />
+                              <span className='truncate'>
+                                {new Date(contest.starts_at).toLocaleString()}
+                              </span>
+                            </div>
+                          )}
+                          <div className='flex items-center gap-2 text-foreground/70'>
+                            <ClockIcon className='w-4 h-4 flex-shrink-0' />
+                            <span>{contest.duration_minutes} minutes</span>
+                          </div>
+                          {contest.description && (
+                            <p className='text-foreground/60 line-clamp-2 pt-1'>
+                              {contest.description}
+                            </p>
+                          )}
+                          <div className='flex flex-wrap items-center gap-2 text-foreground/60 pt-2 border-t border-border/50'>
+                            <span className='text-xs'>
+                              {contest.problem_count} problems
+                            </span>
+                            <span className='text-xs'>•</span>
+                            <span className='text-xs'>
+                              Rating {contest.rating_min}-{contest.rating_max}
+                            </span>
+                            {contest.allow_late_join && (
+                              <>
+                                <span className='text-xs'>•</span>
+                                <span className='text-xs'>Late join</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Action Button */}
+                        <div className='mt-3 pt-3 border-t border-border/50'>
                           {(() => {
                             const now = Date.now();
                             const startsAt = contest.starts_at
@@ -1120,13 +1199,12 @@ export default function ContestsPage() {
                             const hasEnded = !!(endsAt && now >= endsAt);
                             const hasStarted = !!(startsAt && now >= startsAt);
 
-                            // Hide action when ended
                             if (hasEnded || contest.status === 'ended') {
                               return (
                                 <Button
                                   size='sm'
                                   variant='outline'
-                                  className='h-8 px-2 text-xs bg-transparent'
+                                  className='w-full text-xs'
                                   onClick={() =>
                                     window.open(
                                       `/contests/${contest.id}`,
@@ -1139,21 +1217,10 @@ export default function ContestsPage() {
                               );
                             }
 
-                            // Allow register/join for both participants and host
                             const label = contest.isRegistered
                               ? hasStarted
                                 ? 'Join Now'
-                                : `Registered • ${
-                                    contest.starts_at
-                                      ? getTimeUntilStart(
-                                          Math.floor(
-                                            new Date(
-                                              contest.starts_at
-                                            ).getTime() / 1000
-                                          )
-                                        )
-                                      : ''
-                                  }`
+                                : `Registered`
                               : 'Register';
 
                             const disabled = contest.isRegistered
@@ -1163,61 +1230,25 @@ export default function ContestsPage() {
                             return (
                               <Button
                                 size='sm'
-                                className={`h-8 px-2 text-xs ${
+                                className={`w-full text-xs font-medium ${
                                   hasStarted
                                     ? 'bg-green-600 hover:bg-green-700'
-                                    : ''
+                                    : 'bg-blue-600 hover:bg-blue-700'
                                 }`}
                                 onClick={() =>
                                   handleJoinPrivateContest(contest)
                                 }
                                 disabled={disabled}
-                                aria-disabled={disabled}
-                                title={
-                                  contest.isHost && !contest.isRegistered
-                                    ? 'Register as participant (host)'
-                                    : undefined
-                                }
                               >
                                 {label}
                               </Button>
                             );
                           })()}
                         </div>
-                      </div>
-
-                      {contest.starts_at && (
-                        <div className='mt-3 text-xs text-foreground/70 space-y-2'>
-                          <div className='flex items-center gap-2'>
-                            <CalendarIcon className='w-3 h-3' />
-                            <span>
-                              {new Date(contest.starts_at).toLocaleString()}
-                            </span>
-                          </div>
-                          {contest.description && (
-                            <div className='text-foreground/60'>
-                              {contest.description}
-                            </div>
-                          )}
-                          <div className='flex flex-wrap items-center gap-3 text-foreground/60'>
-                            <span>{contest.problem_count} problems</span>
-                            <span>{contest.duration_minutes} min</span>
-                            <span>Mode: {contest.contest_mode}</span>
-                            {contest.allow_late_join && (
-                              <span>• Late join</span>
-                            )}
-                            {contest.isHost && (
-                              <span>
-                                • Rating {contest.rating_min}-
-                                {contest.rating_max}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </section>

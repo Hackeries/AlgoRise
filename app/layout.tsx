@@ -1,33 +1,34 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Suspense } from "react"
-import { Analytics } from "@vercel/analytics/next"
-import { SidebarLayout } from "@/components/sidebar-layout"
-import { FloatingBugReport } from "@/components/floating-bug-report"
-import { Inter, JetBrains_Mono, Bricolage_Grotesque } from "next/font/google"
-import "./globals.css"
-import { Toaster } from "@/components/ui/toaster"
-import { PWARegister } from "@/components/pwa/register"
-import { AuthProvider } from "@/lib/auth/context"
-import { CFVerificationProvider } from "@/lib/context/cf-verification"
-import { ThemeProvider } from "@/components/theme-provider"
+import type React from 'react';
+import type { Metadata } from 'next';
+import { Suspense } from 'react';
+import { Analytics } from '@vercel/analytics/next';
+import { SidebarLayout } from '@/components/sidebar-layout';
+import { FloatingBugReport } from '@/components/floating-bug-report';
+import { Inter, JetBrains_Mono, Bricolage_Grotesque } from 'next/font/google';
+import './globals.css';
+import { Toaster } from '@/components/ui/toaster';
+import { PWARegister } from '@/components/pwa/register';
+import { AuthProvider } from '@/lib/auth/context';
+import { CFVerificationProvider } from '@/lib/context/cf-verification';
+import { ThemeProvider } from '@/components/theme-provider';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 // Google Fonts
 const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-sans",
-})
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+});
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-mono",
-})
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-mono',
+});
 const bricolage = Bricolage_Grotesque({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-bricolage",
-})
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-bricolage',
+});
 
 export const metadata: Metadata = {
   title: 'AlgoRise - Master Competitive Programming & Algorithms',
@@ -118,59 +119,72 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html
-      lang="en"
+      lang='en'
       suppressHydrationWarning
       className={`${inter.variable} ${jetbrainsMono.variable} ${bricolage.variable} antialiased`}
     >
       <head>
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="canonical" href="https://myalgorise.in" />
-        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#0084FF" />
-        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0a" />
+        <link rel='manifest' href='/manifest.json' />
+        <link rel='canonical' href='https://myalgorise.in' />
+        <meta
+          name='theme-color'
+          media='(prefers-color-scheme: light)'
+          content='#0084FF'
+        />
+        <meta
+          name='theme-color'
+          media='(prefers-color-scheme: dark)'
+          content='#0a0a0a'
+        />
         <script
-          type="application/ld+json"
+          type='application/ld+json'
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "WebApplication",
-              name: "AlgoRise",
+              '@context': 'https://schema.org',
+              '@type': 'WebApplication',
+              name: 'AlgoRise',
               description:
-                "Master competitive programming with adaptive practice, real-time contests, and AI-powered analytics.",
-              url: "https://myalgorise.in",
-              applicationCategory: "EducationalApplication",
+                'Master competitive programming with adaptive practice, real-time contests, and AI-powered analytics.',
+              url: 'https://myalgorise.in',
+              applicationCategory: 'EducationalApplication',
               offers: {
-                "@type": "Offer",
-                price: "0",
-                priceCurrency: "USD",
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD',
               },
               aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: "4.8",
-                ratingCount: "1250",
+                '@type': 'AggregateRating',
+                ratingValue: '4.8',
+                ratingCount: '1250',
               },
             }),
           }}
         />
       </head>
-      <body suppressHydrationWarning className="min-h-dvh bg-background text-foreground font-sans theme-transition">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AuthProvider>
-            <CFVerificationProvider>
-              <SidebarLayout>
-                <Suspense fallback={null}>{children}</Suspense>
-              </SidebarLayout>
-              <FloatingBugReport />
-              <Toaster />
-              <PWARegister />
-              <Analytics />
-            </CFVerificationProvider>
-          </AuthProvider>
-        </ThemeProvider>
+      <body
+        suppressHydrationWarning
+        className='min-h-dvh bg-background text-foreground font-sans theme-transition'
+      >
+        <ErrorBoundary>
+          <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
+            <AuthProvider>
+              <CFVerificationProvider>
+                <SidebarLayout>
+                  <Suspense fallback={null}>{children}</Suspense>
+                </SidebarLayout>
+                <FloatingBugReport />
+                <Toaster />
+                <PWARegister />
+                <Analytics />
+              </CFVerificationProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
-  )
+  );
 }

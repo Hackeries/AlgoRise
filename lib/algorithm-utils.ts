@@ -62,9 +62,113 @@ export function* bubbleSortGenerator(arr: number[]) {
   };
 }
 
+export function* selectionSortGenerator(arr: number[]) {
+  const n = arr.length;
+  const workingArray = [...arr];
+
+  yield {
+    array: [...workingArray],
+    message: 'Starting Selection Sort...',
+  };
+
+  for (let i = 0; i < n - 1; i++) {
+    let minIdx = i;
+    yield {
+      array: [...workingArray],
+      highlight: [i],
+      message: `Finding minimum from position ${i}`,
+    };
+
+    for (let j = i + 1; j < n; j++) {
+      yield {
+        array: [...workingArray],
+        comparing: [minIdx, j],
+        message: `Comparing ${workingArray[minIdx]} and ${workingArray[j]}`,
+      };
+
+      if (workingArray[j] < workingArray[minIdx]) {
+        minIdx = j;
+      }
+    }
+
+    if (minIdx !== i) {
+      [workingArray[i], workingArray[minIdx]] = [
+        workingArray[minIdx],
+        workingArray[i],
+      ];
+      yield {
+        array: [...workingArray],
+        swapping: [i, minIdx],
+        message: `Swapped ${workingArray[minIdx]} and ${workingArray[i]}`,
+      };
+    }
+
+    yield {
+      array: [...workingArray],
+      sorted: Array.from({ length: i + 1 }, (_, idx) => idx),
+      message: `Element at position ${i} is in final position`,
+    };
+  }
+
+  yield {
+    array: [...workingArray],
+    sorted: Array.from({ length: n }, (_, idx) => idx),
+    message: 'Selection Sort completed!',
+  };
+}
+
+export function* insertionSortGenerator(arr: number[]) {
+  const n = arr.length;
+  const workingArray = [...arr];
+
+  yield {
+    array: [...workingArray],
+    message: 'Starting Insertion Sort...',
+  };
+
+  for (let i = 1; i < n; i++) {
+    const key = workingArray[i];
+    let j = i - 1;
+
+    yield {
+      array: [...workingArray],
+      highlight: [i],
+      message: `Inserting ${key} into sorted portion`,
+    };
+
+    while (j >= 0 && workingArray[j] > key) {
+      yield {
+        array: [...workingArray],
+        comparing: [j, j + 1],
+        message: `Comparing ${workingArray[j]} and ${key}`,
+      };
+
+      workingArray[j + 1] = workingArray[j];
+      j--;
+
+      yield {
+        array: [...workingArray],
+        message: `Shifted ${workingArray[j + 1]}`,
+      };
+    }
+
+    workingArray[j + 1] = key;
+    yield {
+      array: [...workingArray],
+      sorted: Array.from({ length: i + 1 }, (_, idx) => idx),
+      message: `${key} inserted in correct position`,
+    };
+  }
+
+  yield {
+    array: [...workingArray],
+    sorted: Array.from({ length: n }, (_, idx) => idx),
+    message: 'Insertion Sort completed!',
+  };
+}
+
 export function* quickSortGenerator(arr: number[]) {
   const workingArray = [...arr];
-  const steps: AlgorithmStep[] = [];
 
   yield {
     array: [...workingArray],
@@ -217,6 +321,84 @@ export function* mergeSortGenerator(arr: number[]) {
     array: [...workingArray],
     sorted: Array.from({ length: workingArray.length }, (_, idx) => idx),
     message: 'Merge Sort completed!',
+  };
+}
+
+// Searching Algorithms
+export function* linearSearchGenerator(arr: number[], target: number) {
+  yield {
+    array: [...arr],
+    message: `Searching for ${target}...`,
+  };
+
+  for (let i = 0; i < arr.length; i++) {
+    yield {
+      array: [...arr],
+      comparing: [i],
+      message: `Checking index ${i}: ${arr[i]}`,
+    };
+
+    if (arr[i] === target) {
+      yield {
+        array: [...arr],
+        sorted: [i],
+        message: `Found ${target} at index ${i}!`,
+      };
+      return;
+    }
+  }
+
+  yield {
+    array: [...arr],
+    message: `${target} not found in array`,
+  };
+}
+
+export function* binarySearchGenerator(arr: number[], target: number) {
+  yield {
+    array: [...arr],
+    message: `Binary search for ${target}...`,
+  };
+
+  let left = 0,
+    right = arr.length - 1;
+
+  while (left <= right) {
+    const mid = Math.floor((left + right) / 2);
+
+    yield {
+      array: [...arr],
+      comparing: [mid],
+      message: `Checking middle: ${arr[mid]}`,
+    };
+
+    if (arr[mid] === target) {
+      yield {
+        array: [...arr],
+        sorted: [mid],
+        message: `Found ${target} at index ${mid}!`,
+      };
+      return;
+    }
+
+    if (arr[mid] < target) {
+      left = mid + 1;
+      yield {
+        array: [...arr],
+        message: `${target} > ${arr[mid]}, search right half`,
+      };
+    } else {
+      right = mid - 1;
+      yield {
+        array: [...arr],
+        message: `${target} < ${arr[mid]}, search left half`,
+      };
+    }
+  }
+
+  yield {
+    array: [...arr],
+    message: `${target} not found in array`,
   };
 }
 

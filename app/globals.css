@@ -7,7 +7,7 @@
   /* Simplified color system with semantic naming */
   /* Neutrals */
   --background: 0 0% 99.5%;
-  --foreground: 0 0% 2%;
+  --foreground: 0 0% 8%;
   --card: var(--background);
   --card-foreground: var(--foreground);
   --popover: var(--background);
@@ -17,7 +17,7 @@
   --primary: 264.4 100% 62%;
   --primary-foreground: 0 0% 99.5%;
   --secondary: 0 0% 96.5%;
-  --secondary-foreground: var(--foreground);
+  --secondary-foreground: 0 0% 12%;
 
   /* Accents & States */
   --muted: 0 0% 97.2%;

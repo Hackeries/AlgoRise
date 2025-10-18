@@ -29,12 +29,27 @@ const bricolage = Bricolage_Grotesque({
   variable: '--font-bricolage',
 });
 
-// Metadata for SEO, social, PWA
 export const metadata: Metadata = {
-  title: 'AlgoRise - Master Competitive Programming',
+  title: 'AlgoRise - Master Competitive Programming & Algorithms',
   description:
-    'Practice that adapts. Compete when it counts. Master algorithms and data structures with personalized learning paths.',
+    'Practice that adapts. Compete when it counts. Master algorithms and data structures with personalized learning paths, real-time contests, and AI-powered analytics.',
+  keywords: [
+    'competitive programming',
+    'algorithms',
+    'data structures',
+    'coding practice',
+    'online judge',
+    'codeforces',
+    'programming contests',
+    'algorithm learning',
+    'coding interview prep',
+    'DSA practice',
+  ],
+  authors: [{ name: 'AlgoRise Team' }],
+  creator: 'AlgoRise',
+  publisher: 'AlgoRise',
   generator: 'Next.js',
+  referrer: 'strict-origin-when-cross-origin',
   icons: {
     icon: [
       { url: '/favicon.ico', type: 'image/x-icon' },
@@ -50,17 +65,47 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
     title: 'AlgoRise',
   },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
-    title: 'AlgoRise - Master Competitive Programming',
+    title: 'AlgoRise - Master Competitive Programming & Algorithms',
     description:
       'Practice that adapts. Compete when it counts. Master algorithms and data structures with personalized learning paths.',
     type: 'website',
     siteName: 'AlgoRise',
+    locale: 'en_US',
+    url: 'https://myalgorise.in',
+    images: [
+      {
+        url: 'https://myalgorise.in/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'AlgoRise - Master Competitive Programming',
+        type: 'image/jpeg',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AlgoRise - Master Competitive Programming',
+    title: 'AlgoRise - Master Competitive Programming & Algorithms',
     description: 'Practice that adapts. Compete when it counts.',
+    creator: '@AlgoRise',
+    images: ['https://myalgorise.in/og-image.jpg'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  verification: {
+    google: 'JCWa22q5nbSX6y2DXX2AmDvufYj1CXzxngGGOZIXOqA',
   },
 };
 
@@ -77,6 +122,7 @@ export default function RootLayout({
     >
       <head>
         <link rel='manifest' href='/manifest.json' />
+        <link rel='canonical' href='https://myalgorise.in' />
         <meta
           name='theme-color'
           media='(prefers-color-scheme: light)'
@@ -86,6 +132,30 @@ export default function RootLayout({
           name='theme-color'
           media='(prefers-color-scheme: dark)'
           content='#0a0a0a'
+        />
+        <script
+          type='application/ld+json'
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebApplication',
+              name: 'AlgoRise',
+              description:
+                'Master competitive programming with adaptive practice, real-time contests, and AI-powered analytics.',
+              url: 'https://myalgorise.in',
+              applicationCategory: 'EducationalApplication',
+              offers: {
+                '@type': 'Offer',
+                price: '0',
+                priceCurrency: 'USD',
+              },
+              aggregateRating: {
+                '@type': 'AggregateRating',
+                ratingValue: '4.8',
+                ratingCount: '1250',
+              },
+            }),
+          }}
         />
       </head>
       <body

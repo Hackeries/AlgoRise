@@ -48,9 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     if (!supabase) {
       setUser(null);
-      // Clear CF verification data from localStorage
       localStorage.removeItem('cf_verification');
-      window.location.href = '/';
       return;
     }
 
@@ -59,7 +57,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('cf_verification');
       await supabase.auth.signOut();
       setUser(null);
-      window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
     }

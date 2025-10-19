@@ -166,7 +166,7 @@ export default function ContestSection() {
         {Array.from({ length: 3 }).map((_, i) => (
           <Card
             key={i}
-            className='bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm'
+            className='bg-white/80 dark:bg-black/80 backdrop-blur-sm'
           >
             <CardHeader>
               <Skeleton className='h-6 w-3/4' />

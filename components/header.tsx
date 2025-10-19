@@ -187,7 +187,7 @@ export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
   // ------------------- JSX -------------------
   return (
     <>
-      <header className='h-16 flex items-center justify-between px-3 sm:px-6 bg-card border-b border-border backdrop-blur z-50 w-full'>
+      <header className='h-16 flex items-center justify-between px-3 sm:px-6 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-900 backdrop-blur z-50 w-full'>
         {/* Left: Mobile Menu + Logo */}
         <div className='flex items-center gap-2 sm:gap-4 flex-shrink-0'>
           {/* Mobile Menu Button */}

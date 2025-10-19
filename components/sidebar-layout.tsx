@@ -35,7 +35,7 @@ const getRatingAbbreviation = (label: string): string => {
 
 const getCFTier = (rating: number) => {
   if (rating < 1200)
-    return { label: 'Newbie', color: 'text-gray-400', bg: 'bg-gray-800' };
+    return { label: 'Newbie', color: 'text-gray-400', bg: 'bg-black dark:border dark:border-gray-800' };
   if (rating < 1400)
     return { label: 'Pupil', color: 'text-green-400', bg: 'bg-green-900/40' };
   if (rating < 1600)
@@ -260,7 +260,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       <motion.aside
         data-sidebar
         className={cn(
-          'fixed top-0 left-0 z-50 h-screen flex flex-col bg-card/95 backdrop-blur-md border-r border-border/50 shadow-2xl',
+          'fixed top-0 left-0 z-50 h-screen flex flex-col bg-white dark:bg-black backdrop-blur-md border-r border-gray-200 dark:border-gray-900 shadow-2xl',
           // Enhanced mobile styling
           isMobile
             ? 'w-72' // Slightly wider on mobile for better touch targets
@@ -286,7 +286,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         {/* Hamburger - Enhanced for mobile */}
         <div
           className={cn(
-            'flex items-center p-4 border-b border-border/30',
+            'flex items-center p-4 border-b border-gray-200 dark:border-gray-900',
             isOpen ? 'justify-between' : 'justify-center'
           )}
         >

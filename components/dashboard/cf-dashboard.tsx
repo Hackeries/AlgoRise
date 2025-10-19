@@ -11,14 +11,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCFVerification } from '@/lib/context/cf-verification';
-import {
-  TrendingUp,
-  Trophy,
-  Flame,
-  Activity,
-  Calendar,
-  StickyNote,
-} from 'lucide-react';
+import { TrendingUp, Trophy, Flame, Activity } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Radar } from 'react-chartjs-2';
 
@@ -158,7 +151,7 @@ export function CFDashboard() {
 
   const loadStreak = () => {
     const stored = localStorage.getItem('cf_daily_streak');
-    setCurrentStreak(stored ? parseInt(stored) : 0);
+    setCurrentStreak(stored ? Number.parseInt(stored) : 0);
   };
 
   const loadNotes = () => {
@@ -226,15 +219,15 @@ export function CFDashboard() {
   if (!isMounted) return <div className='text-center py-6'>Loading...</div>;
   if (!isVerified)
     return (
-      <div className='flex items-center justify-center min-h-[400px]'>
-        <Card className='w-full max-w-md text-center'>
+      <div className='flex items-center justify-center min-h-[400px] bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-transparent dark:via-transparent dark:to-transparent rounded-2xl p-6'>
+        <Card className='glass-card w-full max-w-md text-center'>
           <CardHeader>
-            <Trophy className='mx-auto h-12 w-12 text-yellow-400 mb-2' />
+            <Trophy className='mx-auto h-12 w-12 text-yellow-500 mb-2' />
             <CardTitle>Connect Your CF Account</CardTitle>
             <CardDescription>Verify to see your CP dashboard</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button className='w-full' asChild>
+            <Button className='w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white' asChild>
               <a href='/settings'>Verify Now</a>
             </Button>
           </CardContent>
@@ -246,20 +239,23 @@ export function CFDashboard() {
     v === 'OK'
       ? 'text-green-400'
       : v?.includes('WRONG')
-        ? 'text-red-500'
-        : 'text-yellow-400';
+      ? 'text-red-500'
+      : 'text-yellow-400';
 
   return (
-    <div className='space-y-6 px-4 py-6'>
-      {/* Performance Header */}
-      <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-        <Card className='hover:scale-105 transition-transform'>
-          <CardHeader className='flex justify-between'>
-            <CardTitle>Rating</CardTitle>
-            <TrendingUp />
+    <div className='section-spacing content-padding bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-transparent dark:via-transparent dark:to-transparent rounded-2xl p-6'>
+      {/* Animated background blobs */}
+      <div className='absolute top-[-50px] left-[-50px] w-[250px] h-[250px] bg-purple-400/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-blob pointer-events-none' />
+      <div className='absolute bottom-[-50px] right-[-50px] w-[300px] h-[300px] bg-cyan-400/20 dark:bg-cyan-500/10 rounded-full blur-3xl animate-blob animation-delay-2000 pointer-events-none' />
+
+      <div className='relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 card-spacing'>
+        <Card className='glass-card glass-card-hover stat-card'>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Rating</CardTitle>
+            <TrendingUp className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold text-blue-400'>
+            <div className='text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-300 bg-clip-text text-transparent'>
               {verificationData?.rating || 0}
             </div>
             <p className='text-xs text-muted-foreground'>
@@ -268,59 +264,58 @@ export function CFDashboard() {
           </CardContent>
         </Card>
 
-        <Card className='hover:scale-105 transition-transform'>
-          <CardHeader className='flex justify-between'>
-            <CardTitle>Max Rating</CardTitle>
-            <Trophy />
+        <Card className='glass-card glass-card-hover stat-card'>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Max Rating</CardTitle>
+            <Trophy className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold text-green-400'>
+            <div className='text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-400 dark:from-green-400 dark:to-emerald-300 bg-clip-text text-transparent'>
               {verificationData?.maxRating || 0}
             </div>
           </CardContent>
         </Card>
 
-        <Card className='hover:scale-105 transition-transform'>
-          <CardHeader className='flex justify-between'>
-            <CardTitle>Streak</CardTitle>
-            <Flame />
+        <Card className='glass-card glass-card-hover stat-card'>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Streak</CardTitle>
+            <Flame className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold text-orange-400'>
+            <div className='text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-400 dark:from-orange-400 dark:to-red-300 bg-clip-text text-transparent'>
               {currentStreak}
             </div>
           </CardContent>
         </Card>
 
-        <Card className='hover:scale-105 transition-transform'>
-          <CardHeader className='flex justify-between'>
-            <CardTitle>Today's Solved</CardTitle>
-            <Activity />
+        <Card className='glass-card glass-card-hover stat-card'>
+          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardTitle className='text-sm font-medium'>Today Solved</CardTitle>
+            <Activity className='h-4 w-4 text-muted-foreground' />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold text-purple-400'>
+            <div className='text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-400 dark:from-purple-400 dark:to-pink-300 bg-clip-text text-transparent'>
               {dailyStats?.problemsSolved || 0}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Grid */}
-      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+      <div className='relative z-10 grid grid-cols-1 lg:grid-cols-3 card-spacing'>
         {/* Recommended Problems */}
-        <Card>
+        <Card className='glass-card glass-card-hover card-hover section-hover'>
           <CardHeader>
-            <CardTitle>🧠 Recommended Problems</CardTitle>
+            <CardTitle>Recommended Problems</CardTitle>
             <CardDescription>
               Based on your current rating & weak tags
             </CardDescription>
           </CardHeader>
-          <CardContent className='space-y-2 max-h-96 overflow-y-auto'>
+          <CardContent className='space-y-2 max-h-96 overflow-y-auto scrollbar-thin'>
             {recommendedProblems.length ? (
               recommendedProblems.map((p, i) => (
                 <div
                   key={i}
-                  className='flex justify-between items-center p-3 border rounded hover:bg-neutral-800 transition'
+                  className='flex justify-between items-center p-3 glass-card rounded-lg transition-all duration-200 hover:bg-primary/5 hover:border-primary/50 cursor-pointer'
                 >
                   <div>
                     <div className='font-medium'>{p.name}</div>
@@ -330,7 +325,10 @@ export function CFDashboard() {
                     </div>
                     <div className='flex gap-1 mt-1'>
                       {p.tags?.slice(0, 3).map(tag => (
-                        <Badge key={tag} className='text-xs'>
+                        <Badge
+                          key={tag}
+                          className='text-xs bg-gradient-to-r from-blue-500/20 to-purple-500/20 dark:from-blue-500/10 dark:to-purple-500/10 border-blue-500/30'
+                        >
                           {tag}
                         </Badge>
                       ))}
@@ -338,8 +336,9 @@ export function CFDashboard() {
                   </div>
                   <a
                     target='_blank'
+                    rel='noopener noreferrer'
                     href={`https://codeforces.com/contest/${p.contestId}/problem/${p.index}`}
-                    className='text-sm text-blue-400 hover:underline'
+                    className='text-sm bg-gradient-to-r from-blue-600 to-blue-500 dark:from-blue-400 dark:to-blue-300 bg-clip-text text-transparent hover:underline transition-colors font-semibold'
                   >
                     CF
                   </a>
@@ -352,39 +351,46 @@ export function CFDashboard() {
             )}
           </CardContent>
         </Card>
-
         {/* Quick Actions */}
-        <Card className='flex flex-col justify-between'>
+        <Card className='glass-card glass-card-hover card-hover section-hover flex flex-col justify-between'>
           <CardHeader>
-            <CardTitle>⚡ Quick Actions</CardTitle>
+            <CardTitle>Quick Actions</CardTitle>
             <CardDescription>
               Jump to adaptive sheets, contests, or study plans
             </CardDescription>
           </CardHeader>
           <CardContent className='space-y-3'>
-            <Button asChild className='w-full'>
-              <a href='/adaptive-sheet'>🎯 Start Practice</a>
+            <Button
+              asChild
+              className='w-full btn-hover bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all'
+            >
+              <a href='/adaptive-sheet'>Start Practice</a>
             </Button>
-            <Button asChild className='w-full'>
-              <a href='/contests'>⚡ Virtual Contest</a>
+            <Button
+              asChild
+              className='w-full btn-hover bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all'
+            >
+              <a href='/contests'>Virtual Contest</a>
             </Button>
-            <Button asChild className='w-full'>
-              <a href='/battle-arena'>⚔️ Battle Arena</a>
-            </Button>
-            <Button asChild className='w-full'>
-              <a href='/paths'>📚 Study Plan</a>
+            <Button
+              asChild
+              className='w-full btn-hover bg-gradient-to-r from-emerald-600 to-cyan-500 hover:from-emerald-700 hover:to-cyan-600 text-white shadow-lg hover:shadow-xl transition-all'
+            >
+              <a href='/paths'>Study Plan</a>
             </Button>
           </CardContent>
         </Card>
 
         {/* Radar Tag Analytics */}
-        <Card>
+        <Card className='glass-card glass-card-hover card-hover section-hover'>
           <CardHeader>
-            <CardTitle>🔥 Weak Tags</CardTitle>
+            <CardTitle>Weak Tags</CardTitle>
             <CardDescription>Tags where your accuracy is low</CardDescription>
           </CardHeader>
           <CardContent>
-            {dailyStats && dailyStats.tags ? (
+            {dailyStats &&
+            dailyStats.tags &&
+            Object.keys(dailyStats.tags).length > 0 ? (
               <Radar
                 data={{
                   labels: Object.keys(dailyStats.tags),

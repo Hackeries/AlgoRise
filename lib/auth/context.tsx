@@ -48,9 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     if (!supabase) {
       setUser(null);
-      // Clear CF verification data from localStorage
       localStorage.removeItem('cf_verification');
-      window.location.href = '/';
       return;
     }
 
@@ -59,7 +57,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('cf_verification');
       await supabase.auth.signOut();
       setUser(null);
-      window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -69,17 +66,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Get initial session
     refreshUser().finally(() => setLoading(false));
 
-    if (!supabase) return;
+    if (!supabase || typeof supabase.auth?.onAuthStateChange !== 'function') {
+      return undefined;
+    }
 
     // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event: any, session: any) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const { data, error } = supabase.auth.onAuthStateChange(
+      async (_event: any, session: any) => {
+        setUser(session?.user ?? null);
+        setLoading(false);
+      }
+    );
 
-    return () => subscription.unsubscribe();
+    if (error) {
+      console.warn('Supabase auth subscription error:', error);
+    }
+
+    return () => data?.subscription?.unsubscribe();
   }, [supabase]);
 
   return (

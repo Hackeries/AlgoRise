@@ -6,29 +6,29 @@ import CFLevels from '@/components/landing/cf-levels';
 
 export default function VisualizersPage() {
   return (
-    <main className='relative w-full min-h-screen overflow-hidden'>
+    <main className='relative w-full min-h-screen overflow-x-hidden'>
       {/* Background Animation */}
       <div className='absolute inset-0 -z-10'>
         <PixelBlast color='#63EDA1' />
       </div>
 
       {/* Hero Section */}
-      <section className='relative z-5 py-1' aria-label='Hero Section'>
+      <section className='relative z-5 w-full' aria-label='Hero Section'>
         <ModernLanding />
       </section>
 
       {/* Codeforces Levels Section */}
-      <section className='relative z-5 py-1' aria-label='Codeforces Levels'>
+      <section className='relative z-5 w-full' aria-label='Codeforces Levels'>
         <CFLevels />
       </section>
 
       {/* How It Works Section */}
-      <section className='relative z-5 py-1' aria-label='How It Works'>
+      <section className='relative z-5 w-full' aria-label='How It Works'>
         <HowItWorks />
       </section>
 
       {/* Platform Features Section */}
-      <section className='relative z-5 py-1' aria-label='Platform Features'>
+      <section className='relative z-5 w-full' aria-label='Platform Features'>
         <PlatformFeatures />
       </section>
     </main>

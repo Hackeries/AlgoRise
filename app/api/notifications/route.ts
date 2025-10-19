@@ -6,6 +6,69 @@ import RealTimeNotificationManager from '@/lib/realtime-notifications';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET(req: NextRequest) {
+  try {
+    const supabase = await createClient();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (!user || authError) {
+      console.log('[v0] Notifications GET - Unauthorized', {
+        error: authError?.message || 'Auth session missing!',
+        hasEnvVars: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Get recent notifications for the user
+    const { data: recentNotifications, error: notifError } = await supabase
+      .from('notifications')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (notifError) {
+      console.error('Error fetching notifications:', notifError);
+      return NextResponse.json(
+        { error: 'Failed to fetch notifications' },
+        { status: 500 }
+      );
+    }
+
+    // Get unread count
+    const { data: unreadCount, error: countError } = await supabase.rpc(
+      'get_unread_notification_count',
+      {
+        target_user_id: user.id,
+      }
+    );
+
+    if (countError) {
+      console.error('Error getting unread count:', countError);
+    }
+
+    return NextResponse.json({
+      status: 'ok',
+      notifications: recentNotifications || [],
+      unreadCount: unreadCount || 0,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error in GET /api/notifications:', error);
+    return NextResponse.json(
+      {
+        error: 'Failed to get notifications',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
+  }
+}
+
 // POST /api/notifications/test - Test notification system
 export async function POST(req: NextRequest) {
   try {
@@ -62,7 +125,9 @@ export async function POST(req: NextRequest) {
         result = await notificationService.createNotification(user.id, {
           type: 'contest_starting',
           title: 'Contest Starting Soon!',
-          message: `${contestName} will start at ${new Date(startTime).toLocaleString()}`,
+          message: `${contestName} will start at ${new Date(
+            startTime
+          ).toLocaleString()}`,
           priority: 3,
           data: { contestName, startTime },
         });
@@ -147,60 +212,6 @@ export async function POST(req: NextRequest) {
         error: 'Test failed',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
-    );
-  }
-}
-
-// GET /api/notifications/test - Get test status and stats
-export async function GET(req: NextRequest) {
-  try {
-    const supabase = await createClient();
-
-    // Authentication check
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const rtManager = RealTimeNotificationManager.getInstance();
-
-    // Get recent notifications for the user
-    const { data: recentNotifications } = await supabase
-      .from('notifications')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(5);
-
-    // Get unread count
-    const { data: unreadCount } = await supabase.rpc(
-      'get_unread_notification_count',
-      { target_user_id: user.id }
-    );
-
-    return NextResponse.json({
-      status: 'ok',
-      user: {
-        id: user.id,
-        email: user.email,
-      },
-      notifications: {
-        recent: recentNotifications || [],
-        unreadCount: unreadCount || 0,
-      },
-      realTime: {
-        activeUsers: rtManager.getActiveUsersCount(),
-        totalConnections: rtManager.getTotalConnectionsCount(),
-      },
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error('Error getting test status:', error);
-    return NextResponse.json(
-      { error: 'Failed to get status' },
       { status: 500 }
     );
   }

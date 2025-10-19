@@ -1,17 +1,22 @@
 'use client';
-import RazorpayCheckoutButton from '@/components/payments/razorpay-checkout-button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from '@/components/ui/card';
+import type React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { InfoIcon, CheckCircle2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  InfoIcon,
+  CheckCircle2,
+  Zap,
+  Trophy,
+  ArrowRight,
+  Flame,
+  Skull,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { FlipPricingCard } from '@/components/landing/flip-pricing-card';
+import { InteractiveToggle } from '@/components/landing/interactive-toggle';
 
 type PricePlan = {
   name: string;
@@ -21,163 +26,178 @@ type PricePlan = {
   kind: 'one_time' | 'subscription';
   description?: string;
   gradient?: string;
-
-  // New fields
-  level?: string; // CF level / rating
-  benefits?: string[]; // list of short bullets
-  popular?: boolean; // whether most popular
-  ctaLabel?: string; // button text
-  cfRatingColor?: string; // CF rating color for UI
+  level?: string;
+  benefits?: string[];
+  popular?: boolean;
+  ctaLabel?: string;
+  cfRatingColor?: string;
+  icon?: React.ReactNode;
+  cardContent?: {
+    topics: string[];
+    divProblems: Record<string, number>;
+    atcoderProblems: number;
+    leetcodeProblems: Record<string, number>;
+  };
 };
-
 
 const PLANS: PricePlan[] = [
   {
-    name: 'Intro Pack',
+    name: 'Entry Gate',
     subtitle: 'Newbie → Pupil',
-    amountInr: 29,
+    amountInr: 49,
     kind: 'one_time',
     description:
-      'Basics · I/O · Math-1 · Arrays · STL · Two Pointers · Prefix Sum',
+      'Master the fundamentals. Arrays, STL, Two Pointers, Math basics. Build your foundation.',
     gradient: 'from-gray-400 to-green-500',
     level: 'newbie',
     benefits: [
+      '80+ curated problems',
+      'Editorial links & detailed tags',
+      'Progress tracker',
       'Lifetime access',
-      'Editorial links & tags',
-      'Built-in revision tracker',
     ],
     popular: false,
-    ctaLabel: 'Buy Now',
+    ctaLabel: 'Start the Grind',
     cfRatingColor: 'bg-gray-400',
+    cardContent: {
+      topics: ['Arrays', 'STL Basics', 'Two Pointers', 'Math-1', 'Strings'],
+      divProblems: { 'Div2 A': 25, 'Div2 B': 8 },
+      atcoderProblems: 32,
+      leetcodeProblems: { Easy: 30, Medium: 5 },
+    },
   },
   {
-    name: 'Level 1 Sheet',
+    name: 'Core Builder',
     subtitle: 'Pupil → Specialist',
-    amountInr: 79,
-    kind: 'one_time',
-    description:
-      'Sorting/Greedy · Binary Search · Hashing · Stacks/Queues · Brute-Force Patterns',
-    gradient: 'from-green-500 to-cyan-400',
-    level: 'pupil',
-    benefits: [
-      'Lifetime access',
-      'Editorial links & tags',
-      'Built-in revision tracker',
-    ],
-    popular: false,
-    ctaLabel: 'Buy Now',
-    cfRatingColor: 'bg-green-500',
-  },
-  {
-    name: 'Level 2 Sheet',
-    subtitle: 'Specialist → Expert',
     amountInr: 99,
     kind: 'one_time',
     description:
-      'Graphs (BFS/DFS) · Shortest Paths · Intro DP · Number Theory-1 · Implementation',
+      'Sorting, Greedy, Binary Search, Hashmaps, Stacks/Queues. Master core CF patterns.',
+    gradient: 'from-green-500 to-cyan-400',
+    level: 'pupil',
+    benefits: [
+      '120+ CF/AtCoder mid-level problems',
+      'Mini-contests & speed tracking',
+      'Editorial solutions',
+      'Lifetime access',
+    ],
+    popular: false,
+    ctaLabel: 'Unlock Level 1',
+    cfRatingColor: 'bg-green-500',
+    cardContent: {
+      topics: [
+        'Sorting',
+        'Greedy',
+        'Binary Search',
+        'Hashmaps',
+        'Stacks/Queues',
+      ],
+      divProblems: { 'Div2 B': 40, 'Div2 C': 22, 'Div3 A': 12 },
+      atcoderProblems: 38,
+      leetcodeProblems: { Easy: 15, Medium: 45 },
+    },
+  },
+  {
+    name: 'Algorithmic Ascend',
+    subtitle: 'Specialist → Expert',
+    amountInr: 169,
+    kind: 'one_time',
+    description:
+      'Graphs, Shortest Paths, Intro DP, Number Theory I, Implementation. Stop random problem solving.',
     gradient: 'from-cyan-400 to-blue-500',
     level: 'specialist',
     benefits: [
+      '150+ problems with hints',
+      'Endurance tracker & leaderboard',
+      'Topic mastery analytics',
       'Lifetime access',
-      'Editorial links & tags',
-      'Built-in revision tracker',
     ],
-    popular: true, // mark as most popular
-    ctaLabel: 'Buy Now',
+    popular: true,
+    ctaLabel: 'Enter the Arena',
     cfRatingColor: 'bg-cyan-400',
+    cardContent: {
+      topics: ['Graphs', 'Dijkstra', 'BFS/DFS', 'Intro DP', 'Number Theory I'],
+      divProblems: { 'Div2 C': 65, 'Div2 D': 25, 'Div3 B': 22 },
+      atcoderProblems: 42,
+      leetcodeProblems: { Medium: 35, Hard: 18 },
+    },
   },
   {
-    name: 'Level 3 Sheet',
+    name: 'Competitive Forge',
     subtitle: 'Expert → Candidate Master',
-    amountInr: 199,
+    amountInr: 259,
     kind: 'one_time',
     description:
-      'Advanced DP · Combinatorics · Trees/LCA · Bitmasking · Math-2 · Segment Trees',
+      'Advanced DP, Trees, Bitmasking, Combinatorics II, Segment Trees. Feel the pain, love the grind.',
     gradient: 'from-blue-500 to-purple-500',
     level: 'expert',
     benefits: [
+      '150+ ICPC/CF Div1 problems',
+      'Topic mastery analytics',
+      'Private elite forum',
       'Lifetime access',
-      'Editorial links & tags',
-      'Built-in revision tracker',
     ],
     popular: false,
-    ctaLabel: 'Buy Now',
+    ctaLabel: 'Enter Div 1',
     cfRatingColor: 'bg-blue-500',
+    cardContent: {
+      topics: [
+        'Advanced DP',
+        'Trees',
+        'Bitmasking',
+        'Combinatorics II',
+        'Segment Trees',
+      ],
+      divProblems: { 'Div2 D': 60, 'Div2 E': 45, 'Div3 C': 35 },
+      atcoderProblems: 48,
+      leetcodeProblems: { Hard: 45, Medium: 30 },
+    },
   },
   {
-    name: 'Level 4 Sheet',
+    name: 'Master Craft',
     subtitle: 'Candidate Master → Master',
-    amountInr: 349,
+    amountInr: 419,
     kind: 'one_time',
     description:
-      'Challenge archive mixing all advanced CF patterns for final polishing.',
+      'Flows, DP on Graphs, Matrix Expo, Lazy Segtrees, Heavy Math. Train like ICPC World Finalists.',
     gradient: 'from-purple-500 to-orange-500',
     level: 'candidate-master',
     benefits: [
+      '200+ elite problems',
+      'Live analysis & No-Editorial Mode',
+      'Private elite forum',
       'Lifetime access',
-      'Editorial links & tags',
-      'Built-in revision tracker',
     ],
     popular: false,
-    ctaLabel: 'Buy Now',
+    ctaLabel: 'Bleed Ratings',
     cfRatingColor: 'bg-purple-500',
-  },
-  {
-    name: 'Subscription Pack',
-    subtitle: 'Weekly 20–30 curated problems',
-    amountInr: 149,
-    kind: 'subscription',
-    recurring: 'month',
-    description:
-      'Stay consistent with fresh, handpicked problems each week — sharpen your rating steadily.',
-    gradient: 'from-rose-400 to-red-500',
-    level: 'subscription',
-    benefits: [
-      '20–30 curated problems weekly',
-      'Smart streak + progress tracking',
-      'Priority updates and revisions',
-    ],
-    popular: true,
-    ctaLabel: 'Subscribe Now',
-    cfRatingColor: 'bg-rose-400',
+    cardContent: {
+      topics: [
+        'Max Flow',
+        'DP on Graphs',
+        'Matrix Exponentiation',
+        'Lazy Segtrees',
+        'Heavy Math',
+      ],
+      divProblems: { 'Div2 E': 55, 'Div2 F': 45, 'Div3 D': 38 },
+      atcoderProblems: 52,
+      leetcodeProblems: { Hard: 40, Medium: 35 },
+    },
   },
 ];
 
 function sheetCodeFor(name: string): string | undefined {
   const key = name.toLowerCase();
-  if (key.includes('intro')) return 'intro-pack';
-  if (key.includes('level 1')) return 'level-1';
-  if (key.includes('level 2')) return 'level-2';
-  if (key.includes('level 3')) return 'level-3';
-  if (key.includes('level 4')) return 'level-4';
+  if (key.includes('entry')) return 'entry-gate';
+  if (key.includes('core')) return 'core-builder';
+  if (key.includes('algorithmic')) return 'algorithmic-ascend';
+  if (key.includes('competitive')) return 'competitive-forge';
+  if (key.includes('master')) return 'master-craft';
   return undefined;
 }
 
 function bulletsForPlan(p: PricePlan): string[] {
-  if (p.kind === 'subscription') {
-    return [
-      '20–30 curated problems weekly',
-      'Smart streak + progress tracking',
-      'Priority updates and revisions',
-    ];
-  }
-  return [
-    'Lifetime access to the sheet',
-    'Editorial links & tags',
-    'Built‑in revision tracker',
-  ];
-}
-
-// CF rating color for each plan
-function cfColorForPlan(name: string) {
-  const key = name.toLowerCase();
-  if (key.includes('intro')) return 'bg-gray-400';
-  if (key.includes('level 1')) return 'bg-green-500';
-  if (key.includes('level 2')) return 'bg-cyan-400';
-  if (key.includes('level 3')) return 'bg-blue-500';
-  if (key.includes('level 4')) return 'bg-purple-500';
-  if (key.includes('subscription')) return 'bg-rose-400';
-  return 'bg-gray-400';
+  return p.benefits || [];
 }
 
 export default function PricingPage() {
@@ -198,178 +218,305 @@ export default function PricingPage() {
         if (active) setPaymentsEnabled(false);
       }
     })();
+
     return () => {
       active = false;
     };
   }, []);
 
   return (
-    <main className='container mx-auto max-w-6xl px-6 py-20'>
-      {/* Header Section */}
-      <section className='text-center mb-16'>
-        <h1 className='text-4xl md:text-5xl font-bold tracking-tight'>
-          Codeforces Level-Up Roadmap ⚡
-        </h1>
-        <p className='text-muted-foreground mt-4 text-lg max-w-2xl mx-auto leading-relaxed'>
-          Progress from <span className='font-bold font-mono'>Newbie</span>
-          {' → '}
-          <span className='font-bold font-mono'>Candidate Master</span> one
-          stage at a time with curated topic sheets.
-        </p>
-
-        {/* Inline curation overview */}
-        <div className='mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-left'>
-          <div className='rounded-lg border p-4'>
-            <h3 className='font-semibold mb-2'>How we curate</h3>
-            <p className='text-sm text-muted-foreground'>
-              We analyze thousands of CF problems, cluster by pattern and
-              difficulty, then hand-pick balanced sets for each level.
-            </p>
-          </div>
-          <div className='rounded-lg border p-4'>
-            <h3 className='font-semibold mb-2'>What you practice</h3>
-            <p className='text-sm text-muted-foreground'>
-              From basics (I/O, arrays, math) up to advanced topics (DP, graphs,
-              number theory, segment trees, LCA, bitmasking).
-            </p>
-          </div>
-          <div className='rounded-lg border p-4'>
-            <h3 className='font-semibold mb-2'>Weekly subscription</h3>
-            <p className='text-sm text-muted-foreground'>
-              20–30 fresh problems every week so you keep momentum and steadily
-              raise rating.
-            </p>
-          </div>
+    <main className='min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'>
+      {/* Hero Section */}
+      <section className='relative overflow-hidden px-6 py-20 md:py-32'>
+        <div className='absolute inset-0 overflow-hidden'>
+          <div className='absolute -top-40 -right-40 h-80 w-80 rounded-full bg-red-500/10 blur-3xl' />
+          <div className='absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-orange-500/10 blur-3xl' />
         </div>
 
-        {/* Global Alert if payments are disabled */}
-        {paymentsEnabled === false && (
-          <Alert className='mt-6 max-w-2xl mx-auto border-yellow-500/50 bg-yellow-500/10'>
-            <InfoIcon className='h-4 w-4 text-yellow-500' />
-            <AlertDescription className='text-sm text-yellow-200'>
-              Payments are currently disabled. Please contact support to enable
-              checkout and purchase problem sheets.
-            </AlertDescription>
-          </Alert>
-        )}
+        <div className='relative mx-auto max-w-4xl'>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <Badge className='mb-4 bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30 flex w-fit mx-auto'>
+              <Flame className='h-3 w-3 mr-2' />
+              No Sugar. No Fake Confidence. Just Grind.
+            </Badge>
+            <h1 className='text-5xl md:text-7xl font-black tracking-tight mb-6 bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent text-center'>
+              Stop Wasting Time.
+              <br />
+              Start Bleeding Ratings.
+            </h1>
+            <p className='text-xl text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed text-center'>
+              For coders who refuse easy wins. For coders who want CM → Master →
+              ICPC glory.
+              <br />
+              <span className='text-red-300 font-bold'>
+                Most platforms give you fake dopamine. We give you problems that
+                hurt.
+              </span>
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className='grid grid-cols-3 gap-4 md:gap-8 mb-12'
+          >
+            <motion.div className='text-center' whileHover={{ scale: 1.05 }}>
+              <motion.div className='text-3xl md:text-4xl font-black text-red-400'>
+                5
+              </motion.div>
+              <div className='text-sm text-slate-400'>Tier Levels</div>
+            </motion.div>
+            <motion.div className='text-center' whileHover={{ scale: 1.05 }}>
+              <div className='text-3xl md:text-4xl font-black text-orange-400'>
+                1800+
+              </div>
+              <div className='text-sm text-slate-400'>Problem Ratings</div>
+            </motion.div>
+            <motion.div className='text-center' whileHover={{ scale: 1.05 }}>
+              <motion.div className='text-3xl md:text-4xl font-black text-yellow-400'>
+                ∞
+              </motion.div>
+              <div className='text-sm text-slate-400'>Lifetime Access</div>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className='mb-12 p-6 bg-slate-800/50 border border-slate-700/50 rounded-lg text-center'
+          >
+            <p className='text-lg text-slate-200'>
+              Each tier includes{' '}
+              <span className='font-bold text-orange-400'>
+                curated problem sets
+              </span>{' '}
+              from Codeforces, AtCoder, and LeetCode.
+              <br />
+              <span className='text-sm text-slate-400 mt-2 block'>
+                Hover on cards to see exactly what you get.
+              </span>
+            </p>
+          </motion.div>
+
+          {paymentsEnabled === false && (
+            <Alert className='max-w-2xl mx-auto border-yellow-500/50 bg-yellow-500/10 mb-8'>
+              <InfoIcon className='h-4 w-4 text-yellow-500' />
+              <AlertDescription className='text-sm text-yellow-200'>
+                Payments are currently disabled. Please contact support to
+                enable checkout.
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
       </section>
 
-      {/* Pricing Cards */}
-      <div className='grid gap-10 md:grid-cols-2 lg:grid-cols-3'>
-        {PLANS.map(p => {
-          const isPopular =
-            p.kind === 'subscription' || /level 2/i.test(p.name);
-          return (
-            <motion.div
-              key={p.name}
-              whileHover={{ scale: 1.04 }}
-              transition={{ type: 'spring', stiffness: 220, damping: 14 }}
+      {/* Pricing Cards with Flip Animation */}
+      <section className='px-6 py-20'>
+        <div className='mx-auto max-w-7xl'>
+          <div className='text-center mb-16'>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className='text-4xl md:text-5xl font-black mb-4'
             >
-              <Card className='group relative overflow-hidden border rounded-2xl bg-card shadow-sm transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 flex flex-col h-full'>
-                {/* Gradient Glow */}
-                <div
-                  className={`pointer-events-none absolute inset-0 -z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-tr ${p.gradient} rounded-2xl blur-xl`}
-                  aria-hidden='true'
-                />
-                <div
-                  className={`pointer-events-none absolute left-0 top-0 -z-10 h-full w-[5px] bg-gradient-to-b ${p.gradient}`}
-                  aria-hidden='true'
-                />
+              The Grind Levels
+            </motion.h2>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className='text-lg text-slate-400'
+            >
+              Pick your pain. Pick your growth. Pick your rating climb.{' '}
+              <span className='text-slate-300'>
+                (Hover to flip and see what's inside)
+              </span>
+            </motion.p>
+          </div>
 
-                <CardHeader className='flex flex-col gap-1'>
-                  <CardTitle className='text-xl font-semibold'>
-                    {p.name}
-                  </CardTitle>
-                  {p.subtitle && (
-                    <Badge
-                      variant='outline'
-                      className={`font-medium border-0 bg-gradient-to-r ${p.gradient} text-white shadow-md`}
-                    >
-                      {p.subtitle}
-                    </Badge>
-                  )}
-                  {isPopular && (
-                    <Badge className='absolute top-4 right-4 bg-primary text-primary-foreground'>
-                      Most Popular
-                    </Badge>
-                  )}
+          <div className='grid gap-8 md:grid-cols-2 lg:grid-cols-3'>
+            {PLANS.map(p => (
+              <FlipPricingCard
+                key={p.name}
+                name={p.name}
+                subtitle={p.subtitle}
+                amountInr={p.amountInr || 0}
+                description={p.description || ''}
+                gradient={p.gradient || ''}
+                benefits={bulletsForPlan(p)}
+                popular={p.popular}
+                ctaLabel={p.ctaLabel || 'Get Started'}
+                sheetCode={sheetCodeFor(p.name)}
+                cardContent={p.cardContent}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
 
-                  
-                </CardHeader>
+      {/* Interactive Toggle Section */}
+      <section className='px-6 py-20 bg-slate-800/30'>
+        <div className='mx-auto max-w-4xl'>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className='text-4xl font-black text-center mb-12 flex items-center justify-center gap-3'
+          >
+            <Skull className='h-8 w-8 text-red-400' />
+            The Harsh Truth
+            <Skull className='h-8 w-8 text-red-400' />
+          </motion.h2>
 
-                <CardContent className='flex flex-col flex-1'>
-                  <div
-                    className={`mt-2 text-3xl font-extrabold bg-gradient-to-r ${p.gradient} bg-clip-text text-transparent relative z-10`}
-                    style={{ textShadow: '0 0 2px rgba(0,0,0,0.6)' }}
-                  >
-                    {p.kind === 'subscription'
-                      ? `₹${p.amountInr}/mo`
-                      : `₹${p.amountInr}`}
-                  </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <InteractiveToggle
+              leftOption={{
+                title: 'What Others Give You',
+                items: [
+                  'Easy wins & fake dopamine',
+                  'Problems rated 800-1200',
+                  'No real competitive edge',
+                  'Casual learning paths',
+                  'Inflated success metrics',
+                ],
+                color: 'red',
+              }}
+              rightOption={{
+                title: 'What AlgoRise Gives You',
+                items: [
+                  'Problems that hurt (1800+)',
+                  'Elite problem sets only',
+                  'Real rating climbing',
+                  'ICPC-level training',
+                  'Honest progress tracking',
+                ],
+                color: 'green',
+              }}
+            />
+          </motion.div>
 
-                  {p.description && (
-                    <CardDescription className='mt-4 text-sm text-muted-foreground leading-relaxed'>
-                      {p.description}
-                    </CardDescription>
-                  )}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className='mt-12 p-6 bg-red-500/10 border border-red-500/30 rounded-lg'
+          >
+            <p className='text-center text-slate-200'>
+              <span className='font-bold text-red-300'>Warning:</span> Not for
+              casual coders. Only for those who want raw, unfiltered CP grind.
+              If you're looking for easy wins, go elsewhere. If you're ready to
+              bleed ratings and climb to Master, you're in the right place.
+            </p>
+          </motion.div>
+        </div>
+      </section>
 
-                  {/* Short benefit bullets */}
-                  <ul className='mt-4 space-y-2 text-sm flex-1'>
-                    {bulletsForPlan(p).map(b => (
-                      <li key={b} className='flex items-center gap-2'>
-                        <CheckCircle2
-                          className='h-4 w-4 text-primary'
-                          aria-hidden='true'
-                        />
-                        <span>{b}</span>
-                      </li>
-                    ))}
-                  </ul>
+      {/* Features Section */}
+      <section className='px-6 py-20'>
+        <div className='mx-auto max-w-4xl'>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className='text-4xl font-black text-center mb-12'
+          >
+            What Every Level Includes
+          </motion.h2>
 
-                  {/* Buy / Subscribe Button */}
-                  {paymentsEnabled ? (
-                    p.kind === 'one_time' ? (
-                      <div className='mt-6 relative z-10'>
-                        <RazorpayCheckoutButton
-                          amount={p.amountInr ?? 0}
-                          sheetCode={sheetCodeFor(p.name)}
-                          label='Buy Now'
-                        />
-                      </div>
-                    ) : (
-                      <div className='mt-6 relative z-10'>
-                        <RazorpayCheckoutButton
-                          amount={
-                            (p.amountInr ?? 0) > 0
-                              ? (p.amountInr as number)
-                              : 149
-                          }
-                          sheetCode={'subscription-monthly'}
-                          label='Subscribe Now'
-                        />
-                        <p className='mt-2 text-xs text-muted-foreground'>
-                          Cancel anytime. No hidden fees.
-                        </p>
-                      </div>
-                    )
-                  ) : (
-                    <div className='mt-6 text-center'>
-                      <p className='text-sm text-muted-foreground'>
-                        Checkout is currently disabled.
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+          <div className='grid md:grid-cols-2 gap-8'>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              className='space-y-4'
+            >
+              <h3 className='text-xl font-bold flex items-center gap-2'>
+                <Zap className='h-5 w-5 text-yellow-400' />
+                Core Features
+              </h3>
+              <ul className='space-y-2 text-slate-300'>
+                <li className='flex items-center gap-2'>
+                  <CheckCircle2 className='h-4 w-4 text-green-400' />
+                  Curated problems from CF, AtCoder, ICPC
+                </li>
+                <li className='flex items-center gap-2'>
+                  <CheckCircle2 className='h-4 w-4 text-green-400' />
+                  Editorial links & detailed tags
+                </li>
+                <li className='flex items-center gap-2'>
+                  <CheckCircle2 className='h-4 w-4 text-green-400' />
+                  Built-in revision tracker
+                </li>
+                <li className='flex items-center gap-2'>
+                  <CheckCircle2 className='h-4 w-4 text-green-400' />
+                  Progress analytics & streak tracking
+                </li>
+              </ul>
             </motion.div>
-          );
-        })}
-      </div>
 
-      {/* Trust footer */}
-      <div className='mt-12 text-center text-sm text-muted-foreground'>
-        Secured by Razorpay. 7‑day refund guarantee on eligible purchases.
-      </div>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              className='space-y-4'
+            >
+              <h3 className='text-xl font-bold flex items-center gap-2'>
+                <Trophy className='h-5 w-5 text-red-400' />
+                Elite Perks
+              </h3>
+              <ul className='space-y-2 text-slate-300'>
+                <li className='flex items-center gap-2'>
+                  <CheckCircle2 className='h-4 w-4 text-green-400' />
+                  Weekly elite problem sets
+                </li>
+                <li className='flex items-center gap-2'>
+                  <CheckCircle2 className='h-4 w-4 text-green-400' />
+                  Private forum for elite coders
+                </li>
+                <li className='flex items-center gap-2'>
+                  <CheckCircle2 className='h-4 w-4 text-green-400' />
+                  Lifetime access & revisions
+                </li>
+                <li className='flex items-center gap-2'>
+                  <CheckCircle2 className='h-4 w-4 text-green-400' />
+                  No-Editorial Mode for raw skill building
+                </li>
+              </ul>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      
+
+      {/* Footer */}
+      <footer className='border-t border-slate-700/50 px-6 py-8 text-center text-sm text-slate-400'>
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <p>
+            Secured by Razorpay. 7-day refund guarantee on eligible purchases.
+            <br />
+            <span className='text-red-300 text-xs'>
+              AlgoRise — Brutal Competitive Programming Sheets. Not for
+              casual coders.
+            </span>
+          </p>
+        </motion.div>
+      </footer>
     </main>
   );
 }

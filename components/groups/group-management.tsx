@@ -37,8 +37,10 @@ import {
   User,
   MoreVertical,
   Check,
-  Link2,
   AlertCircle,
+  Copy,
+  Send,
+  Zap,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -64,14 +66,13 @@ interface GroupMember {
 interface GroupManagementProps {
   groupId: string;
   groupName: string;
-  groupType: 'college' | 'friends' | 'icpc'; // Added groupType prop
+  groupType: 'college' | 'friends' | 'icpc';
   userRole: 'admin' | 'moderator' | 'member';
-  maxMembers?: number; // Added maxMembers prop
+  maxMembers?: number;
 }
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
-// helper below imports
 const safeJson = async (res: Response) => {
   const text = await res.text();
   if (!text) return {};
@@ -82,12 +83,61 @@ const safeJson = async (res: Response) => {
   }
 };
 
+const AdvancedToast = ({
+  title,
+  description,
+  isSuccess,
+}: {
+  title: string;
+  description: string;
+  isSuccess: boolean;
+}) => {
+  return (
+    <div className='fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300'>
+      <div
+        className={`rounded-lg shadow-2xl border-2 p-4 max-w-sm ${
+          isSuccess
+            ? 'bg-gradient-to-r from-green-900/20 to-emerald-900/20 border-green-500/50'
+            : 'bg-gradient-to-r from-red-900/20 to-rose-900/20 border-red-500/50'
+        }`}
+      >
+        <div className='flex items-start gap-3'>
+          <div
+            className={`mt-0.5 ${
+              isSuccess ? 'text-green-500' : 'text-red-500'
+            }`}
+          >
+            {isSuccess ? (
+              <div className='relative'>
+                <Zap className='h-5 w-5 animate-pulse' />
+                <Check className='h-5 w-5 absolute inset-0' />
+              </div>
+            ) : (
+              <AlertCircle className='h-5 w-5 animate-pulse' />
+            )}
+          </div>
+          <div className='flex-1'>
+            <p
+              className={`font-bold text-sm ${
+                isSuccess ? 'text-green-400' : 'text-red-400'
+              }`}
+            >
+              {title}
+            </p>
+            <p className='text-xs text-foreground/70 mt-1'>{description}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export function GroupManagement({
   groupId,
   groupName,
-  groupType, // Added groupType
+  groupType,
   userRole,
-  maxMembers, // Added maxMembers
+  maxMembers,
 }: GroupManagementProps) {
   const { toast } = useToast();
   const [inviteEmail, setInviteEmail] = useState('');
@@ -103,6 +153,11 @@ export function GroupManagement({
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [advancedToast, setAdvancedToast] = useState<{
+    title: string;
+    description: string;
+    isSuccess: boolean;
+  } | null>(null);
 
   const { data: groupData, isLoading } = useSWR<{
     members: GroupMember[];
@@ -199,51 +254,24 @@ export function GroupManagement({
       if (!res.ok)
         throw new Error((data as any).error || 'Failed to send invitation');
 
-      const linkToShare =
-        (data as any).link ||
-        inviteLink ||
-        (inviteCode
-          ? `${window.location.origin}/groups/join/${inviteCode}`
-          : '');
-
-      const subject = `You're invited to join ${groupName} on AlgoRise`;
-      const body =
-        `Hi,\n\nYou've been invited to join the group "${groupName}".\n\nJoin link: ${linkToShare}\n\n` +
-        `Role: ${inviteRole}\n\nSee you on AlgoRise!`;
-
-      if ((navigator as any).share) {
-        try {
-          await (navigator as any).share({
-            title: subject,
-            text: body,
-            url: linkToShare,
-          });
-        } catch {
-          // user cancelled share sheet
-        }
-      } else {
-        const mailto = `mailto:${encodeURIComponent(
-          inviteEmail.trim()
-        )}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
-          body
-        )}`;
-        window.open(mailto, '_blank', 'noopener,noreferrer');
-      }
-
-      toast({
-        title: 'Invitation ready to share',
-        description: `We generated a join link for ${inviteEmail}.`,
+      setAdvancedToast({
+        title: 'Invitation Sent! 🚀',
+        description: `${inviteEmail} will receive a professional AlgoRise invitation to join "${groupName}". They'll be able to join directly from the email.`,
+        isSuccess: true,
       });
+
+      setTimeout(() => setAdvancedToast(null), 5000);
 
       setInviteEmail('');
       setShowInviteDialog(false);
       mutate(`/api/groups/${groupId}/members`);
     } catch (error: any) {
-      toast({
-        title: 'Failed to send invitation',
+      setAdvancedToast({
+        title: 'Failed to Send',
         description: error.message || 'Please try again',
-        variant: 'destructive',
+        isSuccess: false,
       });
+      setTimeout(() => setAdvancedToast(null), 5000);
     } finally {
       setIsInviting(false);
     }
@@ -352,7 +380,7 @@ export function GroupManagement({
     }
     let inviteUrl = inviteLink;
     if (!inviteUrl && inviteCode) {
-      inviteUrl = `${window.location.origin}/groups/join/${inviteCode}`; // fallback if server didn't return link
+      inviteUrl = `${window.location.origin}/groups/join/${inviteCode}`;
     }
     if (!inviteUrl) {
       toast({
@@ -403,8 +431,10 @@ export function GroupManagement({
 
   return (
     <div className='space-y-6'>
+      {advancedToast && <AdvancedToast {...advancedToast} />}
+
       {canInvite && (
-        <Card className='border-2'>
+        <Card className='border-2 bg-gradient-to-br from-card to-card/50'>
           <CardHeader className='pb-4'>
             <div className='flex items-start justify-between'>
               <div>
@@ -452,16 +482,16 @@ export function GroupManagement({
               <Button
                 onClick={copyInviteLink}
                 variant='outline'
-                className='h-auto py-4 flex-col gap-2 hover:bg-primary/5 hover:border-primary bg-transparent'
+                className='h-auto py-4 flex-col gap-2 hover:bg-primary/5 hover:border-primary bg-gradient-to-br from-primary/5 to-transparent border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20'
                 disabled={
                   (maxMembers ? members.length >= maxMembers : false) ||
                   isGeneratingCode
                 }
               >
                 {copiedInvite ? (
-                  <Check className='h-5 w-5 text-green-600' />
+                  <Check className='h-5 w-5 text-green-600 animate-bounce' />
                 ) : (
-                  <Link2 className='h-5 w-5 text-primary' />
+                  <Copy className='h-5 w-5 text-primary' />
                 )}
                 <div className='text-center'>
                   <div className='font-semibold'>
@@ -480,7 +510,7 @@ export function GroupManagement({
                 <DialogTrigger asChild>
                   <Button
                     variant='outline'
-                    className='h-auto py-4 flex-col gap-2 hover:bg-primary/5 hover:border-primary bg-transparent'
+                    className='h-auto py-4 flex-col gap-2 hover:bg-primary/5 hover:border-primary bg-gradient-to-br from-primary/5 to-transparent border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20'
                     disabled={maxMembers ? members.length >= maxMembers : false}
                   >
                     <UserPlus className='h-5 w-5 text-primary' />
@@ -520,7 +550,7 @@ export function GroupManagement({
                       />
                       <p className='text-xs text-muted-foreground'>
                         No verification required to add. If their Codeforces
-                        handle isn’t verified yet, they’ll be prompted to verify
+                        handle isn't verified yet, they'll be prompted to verify
                         after joining.
                       </p>
                     </div>
@@ -550,10 +580,10 @@ export function GroupManagement({
                 <DialogTrigger asChild>
                   <Button
                     variant='outline'
-                    className='h-auto py-4 flex-col gap-2 hover:bg-primary/5 hover:border-primary bg-transparent'
+                    className='h-auto py-4 flex-col gap-2 hover:bg-primary/5 hover:border-primary bg-gradient-to-br from-primary/5 to-transparent border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20'
                     disabled={maxMembers ? members.length >= maxMembers : false}
                   >
-                    <Mail className='h-5 w-5 text-primary' />
+                    <Send className='h-5 w-5 text-primary' />
                     <div className='text-center'>
                       <div className='font-semibold'>Send Invitation</div>
                       <div className='text-xs text-muted-foreground mt-0.5'>
@@ -566,8 +596,8 @@ export function GroupManagement({
                   <DialogHeader>
                     <DialogTitle>Send Email Invitation</DialogTitle>
                     <DialogDescription>
-                      Send an invitation email to add someone to {groupName}.
-                      They'll receive a link to join the group.
+                      Send a professional invitation email to add someone to{' '}
+                      {groupName}. They'll receive a link to join the group.
                     </DialogDescription>
                   </DialogHeader>
 
@@ -613,6 +643,21 @@ export function GroupManagement({
                         </Select>
                       </div>
                     )}
+
+                    <div className='bg-muted/50 rounded-lg p-3 space-y-2 border border-border/50'>
+                      <p className='text-xs font-semibold text-muted-foreground'>
+                        Email Preview:
+                      </p>
+                      <div className='text-xs space-y-1 text-foreground/80'>
+                        <p>
+                          <strong>Subject:</strong> Join {groupName} on AlgoRise
+                        </p>
+                        <p className='line-clamp-3'>
+                          <strong>Body:</strong> Professional AlgoRise
+                          invitation with group details...
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <DialogFooter>
@@ -625,7 +670,9 @@ export function GroupManagement({
                     <Button
                       onClick={handleInvite}
                       disabled={!inviteEmail.trim() || isInviting}
+                      className='gap-2'
                     >
+                      <Send className='h-4 w-4' />
                       {isInviting ? 'Sending...' : 'Send Invitation'}
                     </Button>
                   </DialogFooter>

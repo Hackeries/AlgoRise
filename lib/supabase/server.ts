@@ -74,4 +74,25 @@ export async function createClient() {
   });
 }
 
+export async function createServiceRoleClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    console.warn(
+      'Supabase service role key missing; cannot create service role client'
+    );
+    return null;
+  }
+
+  // Service role client doesn't use cookies - it's for server-to-server operations
+  return createServerClient(supabaseUrl, serviceRoleKey, {
+    cookies: {
+      get: () => undefined,
+      set: () => {},
+      remove: () => {},
+    } as any,
+  });
+}
+
 export const getSupabaseServer = createClient;

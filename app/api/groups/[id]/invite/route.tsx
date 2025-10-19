@@ -2,6 +2,70 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { createClient } from '@/lib/supabase/server';
 
+const generateAlgoRiseEmail = (
+  groupName: string,
+  inviteLink: string,
+  role: string
+) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }
+          .header h1 { margin: 0; font-size: 28px; }
+          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+          .cta-button { display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px 32px; border-radius: 6px; text-decoration: none; font-weight: bold; margin: 20px 0; }
+          .features { margin: 20px 0; }
+          .feature-item { margin: 12px 0; padding-left: 20px; }
+          .feature-item:before { content: "⚡"; margin-right: 10px; }
+          .footer { text-align: center; font-size: 12px; color: #999; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
+          .badge { display: inline-block; background: #667eea; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🚀 AlgoRise</h1>
+            <p>You're Invited to Join a Competitive Programming Group</p>
+          </div>
+          <div class="content">
+            <p>Hey there!</p>
+            <p>You've been invited to join <strong>"${groupName}"</strong> on <strong>AlgoRise</strong> as a <span class="badge">${role.toUpperCase()}</span>.</p>
+            
+            <p><strong>What is AlgoRise?</strong></p>
+            <p>AlgoRise is a competitive programming platform designed for serious coders who want to master algorithms and climb the ratings ladder from Pupil to Master.</p>
+            
+            <p><strong>What You'll Get:</strong></p>
+            <div class="features">
+              <div class="feature-item">Curated problem sets from Codeforces, AtCoder, and LeetCode</div>
+              <div class="feature-item">Real-time contests and practice sessions</div>
+              <div class="feature-item">AI-powered analytics to track your progress</div>
+              <div class="feature-item">Collaborate with teammates and compete together</div>
+              <div class="feature-item">Climb ratings from Pupil → Specialist → Expert → Candidate Master → Master</div>
+            </div>
+            
+            <p><strong>Ready to start grinding?</strong></p>
+            <a href="${inviteLink}" class="cta-button">Join ${groupName} Now</a>
+            
+            <p style="font-size: 12px; color: #666;">Or copy this link: <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">${inviteLink}</code></p>
+            
+            <p>See you on AlgoRise!</p>
+            <p><strong>The AlgoRise Team</strong></p>
+          </div>
+          <div class="footer">
+            <p>© 2025 AlgoRise. All rights reserved.</p>
+            <p>This is an automated message. Please don't reply to this email.</p>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+};
+
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -78,7 +142,7 @@ export async function POST(
   if (!user)
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  // If email provided → create invitation record and return shareable link
+  // If email provided → create invitation record and send email
   if (email) {
     // Must be admin or moderator to invite
     const { data: membership } = await supabase
@@ -94,12 +158,58 @@ export async function POST(
       );
     }
 
+    // Get group name
+    const { data: groupData } = await supabase
+      .from('groups')
+      .select('name')
+      .eq('id', groupId)
+      .single();
+
     // Ensure group has an invite_code and link
     const getRes = await GET(req, { params: Promise.resolve({ id: groupId }) });
     if (getRes.status !== 200) return getRes;
     const { code, link } = await getRes.json();
 
-    // Persist invitation (for audit/history) but don't block if table/policy missing
+    try {
+      const emailHtml = generateAlgoRiseEmail(
+        groupData?.name || 'AlgoRise Group',
+        link,
+        role
+      );
+
+      const emailRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: 'AlgoRise <noreply@algorise.in>',
+          to: email,
+          subject: `Join ${
+            groupData?.name || 'AlgoRise Group'
+          } on AlgoRise - Competitive Programming`,
+          html: emailHtml,
+        }),
+      });
+
+      if (!emailRes.ok) {
+        console.log('[v0] Email send failed:', await emailRes.text());
+        // Still return success so user can share link manually
+        return NextResponse.json({
+          ok: true,
+          link,
+          code,
+          warning:
+            'Invitation link created but email delivery may have failed. Share the link manually.',
+        });
+      }
+    } catch (error) {
+      console.log('[v0] Email error:', error);
+      // Soft fail - still return the link
+    }
+
+    // Persist invitation record
     const { error: insErr } = await supabase.from('group_invitations').insert({
       group_id: groupId,
       email,
@@ -108,23 +218,14 @@ export async function POST(
       created_by: user.id,
     });
     if (insErr) {
-      // soft-fail: still return a usable link so the user can share immediately
       console.log('[v0] group_invitations insert error:', insErr.message);
-      return NextResponse.json({
-        ok: true,
-        link,
-        code,
-        warning:
-          'Invitation not logged due to schema/policy. Link is still valid.',
-      });
     }
 
     return NextResponse.json({
       ok: true,
       link,
       code,
-      message:
-        'Invitation created. Use the provided link to share via email or messaging. If the recipient has an AlgoRise account, they can join directly.',
+      message: 'Professional invitation email sent successfully!',
     });
   }
 

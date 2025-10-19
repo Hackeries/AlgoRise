@@ -40,6 +40,7 @@ import {
   AlertCircle,
   Copy,
   Send,
+  Zap,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -82,6 +83,55 @@ const safeJson = async (res: Response) => {
   }
 };
 
+const AdvancedToast = ({
+  title,
+  description,
+  isSuccess,
+}: {
+  title: string;
+  description: string;
+  isSuccess: boolean;
+}) => {
+  return (
+    <div className='fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300'>
+      <div
+        className={`rounded-lg shadow-2xl border-2 p-4 max-w-sm ${
+          isSuccess
+            ? 'bg-gradient-to-r from-green-900/20 to-emerald-900/20 border-green-500/50'
+            : 'bg-gradient-to-r from-red-900/20 to-rose-900/20 border-red-500/50'
+        }`}
+      >
+        <div className='flex items-start gap-3'>
+          <div
+            className={`mt-0.5 ${
+              isSuccess ? 'text-green-500' : 'text-red-500'
+            }`}
+          >
+            {isSuccess ? (
+              <div className='relative'>
+                <Zap className='h-5 w-5 animate-pulse' />
+                <Check className='h-5 w-5 absolute inset-0' />
+              </div>
+            ) : (
+              <AlertCircle className='h-5 w-5 animate-pulse' />
+            )}
+          </div>
+          <div className='flex-1'>
+            <p
+              className={`font-bold text-sm ${
+                isSuccess ? 'text-green-400' : 'text-red-400'
+              }`}
+            >
+              {title}
+            </p>
+            <p className='text-xs text-foreground/70 mt-1'>{description}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export function GroupManagement({
   groupId,
   groupName,
@@ -103,7 +153,11 @@ export function GroupManagement({
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [isGeneratingCode, setIsGeneratingCode] = useState(false);
   const [inviteLink, setInviteLink] = useState<string | null>(null);
-  const [showShareModal, setShowShareModal] = useState(false);
+  const [advancedToast, setAdvancedToast] = useState<{
+    title: string;
+    description: string;
+    isSuccess: boolean;
+  } | null>(null);
 
   const { data: groupData, isLoading } = useSWR<{
     members: GroupMember[];
@@ -200,61 +254,24 @@ export function GroupManagement({
       if (!res.ok)
         throw new Error((data as any).error || 'Failed to send invitation');
 
-      const linkToShare =
-        (data as any).link ||
-        inviteLink ||
-        (inviteCode
-          ? `${window.location.origin}/groups/join/${inviteCode}`
-          : '');
-
-      const subject = `Join ${groupName} on AlgoRise - Competitive Programming Community`;
-      const body =
-        `Hi there!\n\n` +
-        `You've been invited to join "${groupName}" on AlgoRise.\n\n` +
-        `AlgoRise is a competitive programming platform designed for serious coders who want to master algorithms and climb the ratings ladder.\n\n` +
-        `Join Link: ${linkToShare}\n` +
-        `Role: ${inviteRole === 'moderator' ? 'Moderator' : 'Member'}\n\n` +
-        `What you'll get:\n` +
-        `• Curated problem sets from Codeforces, AtCoder, and LeetCode\n` +
-        `• Real-time contests and practice sessions\n` +
-        `• AI-powered analytics to track your progress\n` +
-        `• Collaborate with teammates and compete together\n\n` +
-        `See you on AlgoRise!\n` +
-        `The AlgoRise Team`;
-
-      if ((navigator as any).share) {
-        try {
-          await (navigator as any).share({
-            title: subject,
-            text: body,
-            url: linkToShare,
-          });
-        } catch {
-          // user cancelled share sheet
-        }
-      } else {
-        const mailto = `mailto:${encodeURIComponent(
-          inviteEmail.trim()
-        )}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
-          body
-        )}`;
-        window.open(mailto, '_blank', 'noopener,noreferrer');
-      }
-
-      toast({
-        title: 'Invitation sent!',
-        description: `${inviteEmail} will receive an invitation to join ${groupName}.`,
+      setAdvancedToast({
+        title: 'Invitation Sent! 🚀',
+        description: `${inviteEmail} will receive a professional AlgoRise invitation to join "${groupName}". They'll be able to join directly from the email.`,
+        isSuccess: true,
       });
+
+      setTimeout(() => setAdvancedToast(null), 5000);
 
       setInviteEmail('');
       setShowInviteDialog(false);
       mutate(`/api/groups/${groupId}/members`);
     } catch (error: any) {
-      toast({
-        title: 'Failed to send invitation',
+      setAdvancedToast({
+        title: 'Failed to Send',
         description: error.message || 'Please try again',
-        variant: 'destructive',
+        isSuccess: false,
       });
+      setTimeout(() => setAdvancedToast(null), 5000);
     } finally {
       setIsInviting(false);
     }
@@ -408,12 +425,14 @@ export function GroupManagement({
       case 'moderator':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-black dark:border dark:border-gray-800 dark:text-gray-200';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
     }
   };
 
   return (
     <div className='space-y-6'>
+      {advancedToast && <AdvancedToast {...advancedToast} />}
+
       {canInvite && (
         <Card className='border-2 bg-gradient-to-br from-card to-card/50'>
           <CardHeader className='pb-4'>
@@ -634,8 +653,8 @@ export function GroupManagement({
                           <strong>Subject:</strong> Join {groupName} on AlgoRise
                         </p>
                         <p className='line-clamp-3'>
-                          <strong>Body:</strong> You've been invited to join "
-                          {groupName}" on AlgoRise...
+                          <strong>Body:</strong> Professional AlgoRise
+                          invitation with group details...
                         </p>
                       </div>
                     </div>

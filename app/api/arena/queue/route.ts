@@ -6,7 +6,6 @@ import {
   findMatchingOpponent,
   calculateProblemRatingRange,
 } from '@/lib/battle-arena/matchmaking';
-import { broadcastQueueUpdate } from '@/hooks/use-battle-realtime';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,23 +31,31 @@ export async function POST(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Please sign in to join the queue.' },
+        { status: 401 }
+      );
     }
 
     const { mode, teamId } = await request.json();
 
     if (!['1v1', '3v3'].includes(mode)) {
-      return NextResponse.json({ error: 'Invalid mode' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid battle mode.' },
+        { status: 400 }
+      );
     }
 
-    const userCFRating = await getUserCodeforcesRating(user.id);
+    const fieldToCheck = mode === '1v1' ? 'user_id' : 'team_id';
+    const valueToCheck = mode === '1v1' ? user.id : teamId;
 
-    // Remove from queue if already queued
     await supabase
       .from('battle_queue')
       .delete()
-      .or(`user_id.eq.${user.id},team_id.eq.${teamId || null}`)
+      .eq(fieldToCheck, valueToCheck)
       .eq('mode', mode);
+
+    const userCFRating = await getUserCodeforcesRating(user.id);
 
     // Add to queue
     const { data: queueData, error: queueError } = await supabase
@@ -63,7 +70,13 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
 
-    if (queueError) throw queueError;
+    if (queueError) {
+      console.error('Queue insert error:', queueError);
+      return NextResponse.json(
+        { error: 'Failed to join queue. Please try again.' },
+        { status: 500 }
+      );
+    }
 
     const matchResult = await findMatchingOpponent(
       user.id,
@@ -92,11 +105,15 @@ export async function POST(request: NextRequest) {
         .update({ status: 'matched', matched_at: new Date() })
         .eq('id', queueData.id);
 
-      await broadcastQueueUpdate(mode as '1v1' | '3v3', {
-        type: 'match_found',
-        opponent: matchResult.opponent,
-        battleId: battleData?.id,
-      });
+      await supabase.channel(`queue:${mode}`).send({
+        type: 'broadcast' as const,
+        event: 'match_found',
+        payload: {
+          type: 'match_found',
+          opponent: matchResult.opponent,
+          battleId: battleData?.id,
+        },
+      } as any);
 
       return NextResponse.json({
         queued: true,
@@ -115,10 +132,14 @@ export async function POST(request: NextRequest) {
       .eq('mode', mode)
       .eq('status', 'waiting');
 
-    await broadcastQueueUpdate(mode as '1v1' | '3v3', {
-      type: 'queue_size',
-      queueSize: queueSize || 0,
-    });
+    await supabase.channel(`queue:${mode}`).send({
+      type: 'broadcast' as const,
+      event: 'queue_size',
+      payload: {
+        type: 'queue_size',
+        queueSize: queueSize || 0,
+      },
+    } as any);
 
     return NextResponse.json({
       queued: true,
@@ -126,8 +147,11 @@ export async function POST(request: NextRequest) {
       match: null,
     });
   } catch (error) {
-    console.error('[v0] Queue error:', error);
-    return NextResponse.json({ error: 'Queue failed' }, { status: 500 });
+    console.error('Queue error:', error);
+    return NextResponse.json(
+      { error: 'Connection error. Please check your internet and try again.' },
+      { status: 500 }
+    );
   }
 }
 

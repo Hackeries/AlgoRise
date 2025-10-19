@@ -1,6 +1,13 @@
--- Battle Arena Tables for 1v1 Duels and 3v3 ICPC-Style Battles
+-- Drop existing tables if they exist (in reverse dependency order)
+DROP TABLE IF EXISTS public.battle_queue CASCADE;
+DROP TABLE IF EXISTS public.battle_history CASCADE;
+DROP TABLE IF EXISTS public.battle_ratings CASCADE;
+DROP TABLE IF EXISTS public.battle_submissions CASCADE;
+DROP TABLE IF EXISTS public.battle_team_players CASCADE;
+DROP TABLE IF EXISTS public.battle_teams CASCADE;
+DROP TABLE IF EXISTS public.battles CASCADE;
 
--- Main battles table
+-- Recreate all tables with correct schema
 CREATE TABLE IF NOT EXISTS public.battles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   mode TEXT NOT NULL CHECK (mode IN ('1v1', '3v3')),
@@ -13,7 +20,6 @@ CREATE TABLE IF NOT EXISTS public.battles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Battle teams (for both 1v1 and 3v3)
 CREATE TABLE IF NOT EXISTS public.battle_teams (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   battle_id UUID NOT NULL REFERENCES public.battles(id) ON DELETE CASCADE,
@@ -24,7 +30,6 @@ CREATE TABLE IF NOT EXISTS public.battle_teams (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Battle team players
 CREATE TABLE IF NOT EXISTS public.battle_team_players (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   team_id UUID NOT NULL REFERENCES public.battle_teams(id) ON DELETE CASCADE,
@@ -34,7 +39,6 @@ CREATE TABLE IF NOT EXISTS public.battle_team_players (
   UNIQUE(team_id, user_id)
 );
 
--- Battle submissions
 CREATE TABLE IF NOT EXISTS public.battle_submissions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   battle_id UUID NOT NULL REFERENCES public.battles(id) ON DELETE CASCADE,
@@ -48,7 +52,6 @@ CREATE TABLE IF NOT EXISTS public.battle_submissions (
   language TEXT
 );
 
--- Battle ratings (separate ELO for 1v1 and 3v3)
 CREATE TABLE IF NOT EXISTS public.battle_ratings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   entity_id UUID NOT NULL,
@@ -62,7 +65,6 @@ CREATE TABLE IF NOT EXISTS public.battle_ratings (
   UNIQUE(entity_id, entity_type, mode)
 );
 
--- Battle history
 CREATE TABLE IF NOT EXISTS public.battle_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   battle_id UUID NOT NULL REFERENCES public.battles(id) ON DELETE CASCADE,
@@ -73,7 +75,6 @@ CREATE TABLE IF NOT EXISTS public.battle_history (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Queue for matchmaking
 CREATE TABLE IF NOT EXISTS public.battle_queue (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -82,12 +83,14 @@ CREATE TABLE IF NOT EXISTS public.battle_queue (
   status TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting', 'matched', 'accepted', 'declined')),
   current_elo INT DEFAULT 1500,
   joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  matched_at TIMESTAMP WITH TIME ZONE,
-  UNIQUE(user_id, mode) WHERE user_id IS NOT NULL,
-  UNIQUE(team_id, mode) WHERE team_id IS NOT NULL
+  matched_at TIMESTAMP WITH TIME ZONE
 );
 
--- Indexes for performance
+-- Create partial unique indexes
+CREATE UNIQUE INDEX IF NOT EXISTS idx_battle_queue_user_id_mode ON public.battle_queue(user_id, mode) WHERE user_id IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_battle_queue_team_id_mode ON public.battle_queue(team_id, mode) WHERE team_id IS NOT NULL;
+
+-- Create performance indexes
 CREATE INDEX IF NOT EXISTS idx_battles_mode_status ON public.battles(mode, status);
 CREATE INDEX IF NOT EXISTS idx_battles_created_at ON public.battles(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_battle_teams_battle_id ON public.battle_teams(battle_id);

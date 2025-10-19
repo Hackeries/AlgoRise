@@ -37,6 +37,12 @@ export async function GET(
       return NextResponse.json({ error: 'Battle not found' }, { status: 404 });
     }
 
+    const { data: problems } = await supabase
+      .from('user_problems')
+      .select('*')
+      .in('id', battle.problem_ids || [])
+      .limit(3);
+
     const { data: teams } = await supabase
       .from('battle_teams')
       .select(
@@ -55,6 +61,7 @@ export async function GET(
 
     return NextResponse.json({
       battle,
+      problems: problems || [],
       teams,
       submissions,
     });

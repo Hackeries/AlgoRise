@@ -8,7 +8,17 @@ import { Spinner } from '@/components/ui/spinner';
 import { createClient } from '@/lib/supabase/client';
 import { useQueueRealtime } from '@/hooks/use-battle-realtime';
 
-export default function QueuePage({ params }: { params: { mode: string } }) {
+export default async function QueuePage({
+  params,
+}: {
+  params: Promise<{ mode: string }>;
+}) {
+  const { mode } = await params;
+
+  return <QueuePageClient mode={mode as '1v1' | '3v3'} />;
+}
+
+function QueuePageClient({ mode }: { mode: '1v1' | '3v3' }) {
   const router = useRouter();
   const [status, setStatus] = useState<
     'queuing' | 'matched' | 'error' | 'timeout'
@@ -16,11 +26,9 @@ export default function QueuePage({ params }: { params: { mode: string } }) {
   const [queueTime, setQueueTime] = useState(0);
   const [battleId, setBattleId] = useState<string | null>(null);
   const [queueId, setQueueId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
-  const { queueUpdate, isConnected } = useQueueRealtime(
-    params.mode as '1v1' | '3v3',
-    !!queueId
-  );
+  const { queueUpdate, isConnected } = useQueueRealtime(mode, !!queueId);
 
   useEffect(() => {
     if (queueUpdate?.type === 'match_found' && queueUpdate.battleId) {
@@ -59,12 +67,23 @@ export default function QueuePage({ params }: { params: { mode: string } }) {
         const response = await fetch('/api/arena/queue', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mode: params.mode }),
+          body: JSON.stringify({ mode }),
         });
 
         const data = await response.json();
 
-        if (data.error) {
+        if (!response.ok) {
+          if (response.status === 409) {
+            setErrorMessage(
+              "You're already in the queue. Please wait for a match or leave the queue first."
+            );
+          } else if (response.status === 401) {
+            setErrorMessage('Please sign in to join the queue.');
+          } else {
+            setErrorMessage(
+              data.error || 'Unable to join queue. Please try again.'
+            );
+          }
           setStatus('error');
           return;
         }
@@ -79,13 +98,16 @@ export default function QueuePage({ params }: { params: { mode: string } }) {
           }, 2000);
         }
       } catch (error) {
-        console.error('[v0] Queue error:', error);
+        console.error('Queue error:', error);
+        setErrorMessage(
+          'Connection error. Please check your internet and try again.'
+        );
         setStatus('error');
       }
     };
 
     joinQueue();
-  }, [params.mode, router]);
+  }, [mode, router]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -94,29 +116,77 @@ export default function QueuePage({ params }: { params: { mode: string } }) {
   };
 
   const handleLeaveQueue = async () => {
-    await fetch('/api/arena/queue', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: params.mode }),
-    });
-    router.back();
+    try {
+      await fetch('/api/arena/queue', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode }),
+      });
+      router.back();
+    } catch (error) {
+      console.error('Error leaving queue:', error);
+      setErrorMessage('Failed to leave queue. Please try again.');
+    }
   };
 
   const handlePlayBot = async () => {
-    // Create bot battle
-    const supabase = createClient();
-    const { data: battle, error } = await supabase
-      .from('battles')
-      .insert({
-        mode: params.mode,
-        status: 'active',
-        is_bot_match: true,
-      })
-      .select()
-      .single();
+    try {
+      const supabase = createClient();
+      const { data: battle, error } = await supabase
+        .from('battles')
+        .insert({
+          mode: mode,
+          status: 'active',
+        })
+        .select()
+        .single();
 
-    if (!error && battle) {
-      router.push(`/battle-arena/room/${battle.id}`);
+      if (!error && battle) {
+        router.push(`/battle-arena/room/${battle.id}`);
+      } else {
+        setErrorMessage('Failed to create bot match. Please try again.');
+      }
+    } catch (error) {
+      console.error('Bot match error:', error);
+      setErrorMessage('Failed to create bot match. Please try again.');
+    }
+  };
+
+  const handleRejoinQueue = async () => {
+    setStatus('queuing');
+    setQueueTime(0);
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('/api/arena/queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(
+          data.error || 'Failed to rejoin queue. Please try again.'
+        );
+        setStatus('error');
+        return;
+      }
+
+      setQueueId(data.queueId);
+
+      if (data.match) {
+        setBattleId(data.match.battleId);
+        setStatus('matched');
+        setTimeout(() => {
+          router.push(`/battle-arena/room/${data.match.battleId}`);
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Rejoin queue error:', error);
+      setErrorMessage('Connection error. Please try again.');
+      setStatus('error');
     }
   };
 
@@ -162,8 +232,8 @@ export default function QueuePage({ params }: { params: { mode: string } }) {
               </Button>
               <Button
                 variant='outline'
-                onClick={() => setStatus('queuing')}
-                className='flex-1'
+                onClick={handleRejoinQueue}
+                className='flex-1 bg-transparent'
               >
                 Rejoin Queue
               </Button>
@@ -174,9 +244,9 @@ export default function QueuePage({ params }: { params: { mode: string } }) {
         {status === 'error' && (
           <div className='text-center space-y-4'>
             <div className='text-4xl'>❌</div>
-            <h2 className='text-2xl font-bold'>Error</h2>
+            <h2 className='text-2xl font-bold'>Queue Error</h2>
             <p className='text-muted-foreground'>
-              Failed to join queue. Please try again.
+              {errorMessage || 'Unable to join queue. Please try again.'}
             </p>
             <Button onClick={() => router.back()}>Go Back</Button>
           </div>

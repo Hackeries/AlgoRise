@@ -19,6 +19,7 @@ import {
   BarChart3,
   Cpu,
   Menu,
+  Sword,
 } from 'lucide-react';
 
 // ------------------ CF Rating System ------------------
@@ -35,7 +36,11 @@ const getRatingAbbreviation = (label: string): string => {
 
 const getCFTier = (rating: number) => {
   if (rating < 1200)
-    return { label: 'Newbie', color: 'text-gray-400', bg: 'bg-black dark:border dark:border-gray-800' };
+    return {
+      label: 'Newbie',
+      color: 'text-gray-400',
+      bg: 'bg-black dark:border dark:border-gray-800',
+    };
   if (rating < 1400)
     return { label: 'Pupil', color: 'text-green-400', bg: 'bg-green-900/40' };
   if (rating < 1600)
@@ -85,6 +90,7 @@ const menuItems = [
   { href: '/train', label: 'Train', icon: Zap },
   { href: '/adaptive-sheet', label: 'Practice Problems', icon: FileText },
   { href: '/contests', label: 'Contests', icon: Trophy },
+  { href: '/battle-arena', label: 'Battle Arena', icon: Sword },
   { href: '/paths', label: 'Learning Paths', icon: BookOpen },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/visualizers', label: 'Visualizers', icon: Cpu },

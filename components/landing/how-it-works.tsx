@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { UserPlus, Target, TrendingUp, Award } from 'lucide-react';
+import { UserPlus, Target, TrendingUp, Award, Sword } from 'lucide-react';
 
 export default function HowItWorks() {
   const steps = [
@@ -27,11 +27,18 @@ export default function HowItWorks() {
       step: '03',
     },
     {
+      icon: Sword,
+      title: 'Compete in Battle Arena',
+      description:
+        'Challenge other programmers in real-time 1v1 duels or team-based 3v3 battles with ELO ratings.',
+      step: '04',
+    },
+    {
       icon: Award,
       title: 'Compete & Excel',
       description:
         'Join contests, compete with peers, and climb the leaderboards as you master algorithms.',
-      step: '04',
+      step: '05',
     },
   ];
 
@@ -61,7 +68,7 @@ export default function HowItWorks() {
         </motion.div>
 
         {/* Steps */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 relative'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8 relative'>
           {steps.map((step, index) => (
             <motion.div
               key={step.title}

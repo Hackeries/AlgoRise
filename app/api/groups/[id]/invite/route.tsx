@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 const generateAlgoRiseEmail = (
   groupName: string,
@@ -177,48 +178,47 @@ export async function POST(
         role
       );
 
-      const emailRes = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-          from: 'AlgoRise <noreply@algorise.in>',
-          to: email,
-          subject: `Join ${
-            groupData?.name || 'AlgoRise Group'
-          } on AlgoRise - Competitive Programming`,
-          html: emailHtml,
-        }),
-      });
-
-      if (!emailRes.ok) {
-        console.log('[v0] Email send failed:', await emailRes.text());
-        // Still return success so user can share link manually
-        return NextResponse.json({
-          ok: true,
-          link,
-          code,
-          warning:
-            'Invitation link created but email delivery may have failed. Share the link manually.',
+      if (process.env.RESEND_API_KEY) {
+        const emailRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: 'AlgoRise <noreply@algorise.in>',
+            to: email,
+            subject: `Join ${
+              groupData?.name || 'AlgoRise Group'
+            } on AlgoRise - Competitive Programming`,
+            html: emailHtml,
+          }),
         });
+
+        if (!emailRes.ok) {
+          console.log('[v0] Email send failed:', await emailRes.text());
+        }
+      } else {
+        console.log('[v0] RESEND_API_KEY not configured - email not sent');
       }
     } catch (error) {
       console.log('[v0] Email error:', error);
-      // Soft fail - still return the link
     }
 
-    // Persist invitation record
-    const { error: insErr } = await supabase.from('group_invitations').insert({
-      group_id: groupId,
-      email,
-      role,
-      code,
-      created_by: user.id,
-    });
-    if (insErr) {
-      console.log('[v0] group_invitations insert error:', insErr.message);
+    const serviceRoleClient = await createServiceRoleClient();
+    if (serviceRoleClient) {
+      const { error: insErr } = await serviceRoleClient
+        .from('group_invitations')
+        .insert({
+          group_id: groupId,
+          email,
+          role,
+          code,
+          created_by: user.id,
+        });
+      if (insErr) {
+        console.log('[v0] group_invitations insert error:', insErr.message);
+      }
     }
 
     return NextResponse.json({
@@ -275,7 +275,15 @@ export async function POST(
     );
   }
 
-  const { error } = await supabase
+  const serviceRoleClient = await createServiceRoleClient();
+  if (!serviceRoleClient) {
+    return NextResponse.json(
+      { error: 'Service role not configured' },
+      { status: 500 }
+    );
+  }
+
+  const { error } = await serviceRoleClient
     .from('group_memberships')
     .upsert(
       { group_id: groupId, user_id: user.id, role: 'member' },

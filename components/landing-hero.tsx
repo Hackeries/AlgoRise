@@ -70,9 +70,11 @@ export default function ModernLanding() {
   };
 
   return (
-    <div className='min-h-screen relative overflow-hidden'>
-      <div className='absolute top-[-50px] left-[-50px] sm:top-[-80px] sm:left-[-80px] lg:top-[-100px] lg:left-[-100px] w-[150px] h-[150px] sm:w-[250px] sm:h-[250px] lg:w-[300px] lg:h-[300px] bg-purple-400 dark:bg-purple-600 rounded-full opacity-15 dark:opacity-20 blur-3xl animate-blob' />
-      <div className='absolute bottom-[-40px] right-[-40px] sm:bottom-[-60px] sm:right-[-60px] lg:bottom-[-80px] lg:right-[-120px] w-[180px] h-[180px] sm:w-[300px] sm:h-[300px] lg:w-[400px] lg:h-[400px] bg-blue-400 dark:bg-blue-600 rounded-full opacity-15 dark:opacity-20 blur-3xl animate-blob animation-delay-2000' />
+    <div className='min-h-screen relative overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-transparent dark:via-transparent dark:to-transparent'>
+      {/* Animated background blobs - enhanced for light theme */}
+      <div className='absolute top-[-50px] left-[-50px] sm:top-[-80px] sm:left-[-80px] lg:top-[-100px] lg:left-[-100px] w-[150px] h-[150px] sm:w-[250px] sm:h-[250px] lg:w-[300px] lg:h-[300px] bg-purple-500/20 dark:bg-purple-600/20 rounded-full blur-3xl animate-blob' />
+      <div className='absolute bottom-[-40px] right-[-40px] sm:bottom-[-60px] sm:right-[-60px] lg:bottom-[-80px] lg:right-[-120px] w-[180px] h-[180px] sm:w-[300px] sm:h-[300px] lg:w-[400px] lg:h-[400px] bg-blue-500/20 dark:bg-blue-600/20 rounded-full blur-3xl animate-blob animation-delay-2000' />
+      <div className='absolute top-1/3 right-1/4 w-[200px] h-[200px] sm:w-[350px] sm:h-[350px] bg-pink-500/15 dark:bg-pink-600/15 rounded-full blur-3xl animate-blob animation-delay-4000' />
 
       <section className='relative pt-4 sm:pt-8 lg:pt-10 pb-6 sm:pb-12 lg:pb-16 px-3 sm:px-4 lg:px-6 z-10'>
         <div className='max-w-6xl mx-auto text-center mb-4 sm:mb-8 lg:mb-10'>
@@ -114,12 +116,12 @@ export default function ModernLanding() {
               value={userHandle}
               onChange={e => setUserHandle(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && fetchUserStats()}
-              className='flex-1 h-10 sm:h-11 text-sm sm:text-base'
+              className='flex-1 h-10 sm:h-11 text-sm sm:text-base bg-white dark:bg-black border-gray-300 dark:border-gray-800'
             />
             <Button
               onClick={() => fetchUserStats()}
               disabled={userLoading}
-              className='h-10 sm:h-11 w-full sm:w-auto text-sm sm:text-base'
+              className='h-10 sm:h-11 w-full sm:w-auto text-sm sm:text-base bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700'
             >
               {userLoading ? (
                 <motion.div
@@ -161,11 +163,11 @@ export default function ModernLanding() {
                 transition={{ duration: 0.6, type: 'spring' }}
                 className='max-w-4xl mx-auto mb-6 sm:mb-10 lg:mb-12 px-2'
               >
-                <Card className='bg-white/90 dark:bg-card/80 backdrop-blur-md border border-border/50 dark:border-border/40 shadow-xl'>
+                <Card className='glass-card border border-gray-300 dark:border-border/40 shadow-xl'>
                   <CardHeader className='pb-3 sm:pb-4 lg:pb-6'>
                     <CardTitle className='flex items-center gap-2 justify-center text-base sm:text-lg lg:text-xl font-semibold flex-wrap'>
                       <Trophy className='h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-yellow-500' />
-                      <span className='bg-gradient-to-r from-purple-500 to-blue-500 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent break-all'>
+                      <span className='bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent break-all'>
                         {userHandle}'s Profile
                       </span>
                     </CardTitle>

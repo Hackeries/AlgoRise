@@ -397,7 +397,7 @@ export function GroupManagement({
       case 'moderator':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200';
+        return 'bg-gray-100 text-gray-800 dark:bg-black dark:border dark:border-gray-800 dark:text-gray-200';
     }
   };
 

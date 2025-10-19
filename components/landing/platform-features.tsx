@@ -51,9 +51,9 @@ export default function PlatformFeatures() {
   ];
 
   return (
-    <section className='relative z-10 py-12 sm:py-16 lg:py-24 px-3 sm:px-4 lg:px-6 overflow-hidden'>
-      <div className='absolute top-[-80px] left-[-100px] sm:top-[-120px] sm:left-[-150px] lg:top-[-150px] lg:left-[-150px] w-[250px] h-[250px] sm:w-[300px] sm:h-[300px] lg:w-[350px] lg:h-[350px] bg-purple-500/10 dark:bg-purple-600/15 rounded-full blur-3xl animate-blob' />
-      <div className='absolute bottom-[-100px] right-[-80px] sm:bottom-[-120px] sm:right-[-100px] lg:bottom-[-150px] lg:right-[-100px] w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] lg:w-[400px] lg:h-[400px] bg-green-400/10 dark:bg-green-600/15 rounded-full blur-3xl animate-blob animation-delay-2000' />
+    <section className='relative z-10 py-12 sm:py-16 lg:py-24 px-3 sm:px-4 lg:px-6 overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-transparent dark:via-transparent dark:to-transparent'>
+      <div className='absolute top-[-80px] left-[-100px] sm:top-[-120px] sm:left-[-150px] lg:top-[-150px] lg:left-[-150px] w-[250px] h-[250px] sm:w-[300px] sm:h-[300px] lg:w-[350px] lg:h-[350px] bg-purple-500/20 dark:bg-purple-600/15 rounded-full blur-3xl animate-blob' />
+      <div className='absolute bottom-[-100px] right-[-80px] sm:bottom-[-120px] sm:right-[-100px] lg:bottom-[-150px] lg:right-[-100px] w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] lg:w-[400px] lg:h-[400px] bg-green-400/20 dark:bg-green-600/15 rounded-full blur-3xl animate-blob animation-delay-2000' />
 
       <div className='max-w-7xl mx-auto relative'>
         {/* Section Header */}
@@ -64,13 +64,12 @@ export default function PlatformFeatures() {
           transition={{ duration: 0.8 }}
           className='text-center mb-8 sm:mb-12 lg:mb-16'
         >
-          <h2 className='text-2xl sm:text-3xl lg:text-5xl font-bold mb-3 sm:mb-4 lg:mb-6 text-foreground'>
-            Everything You Need to{' '}
-            <span className='bg-gradient-to-r from-[#63EDA1] via-blue-400 to-purple-400 dark:from-[#63EDA1] dark:via-blue-300 dark:to-purple-300 bg-clip-text text-transparent'>
-              Master Algorithms
+          <h2 className='text-2xl sm:text-3xl lg:text-5xl font-bold mb-3 sm:mb-4 lg:mb-6'>
+            <span className='bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 dark:from-purple-400 dark:via-pink-400 dark:to-rose-400 bg-clip-text text-transparent'>
+              Everything You Need to Master Algorithms
             </span>
           </h2>
-          <p className='text-sm sm:text-base lg:text-lg text-foreground/70 dark:text-foreground/80 max-w-3xl mx-auto leading-relaxed'>
+          <p className='text-sm sm:text-base lg:text-lg text-slate-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed'>
             MyAlgoRise combines adaptive learning, real-time contest tracking,
             and community features to create the ultimate competitive
             programming platform.
@@ -95,7 +94,7 @@ export default function PlatformFeatures() {
             >
               <motion.div
                 whileHover={{ scale: 1.05, rotateX: 2, rotateY: 2 }}
-                className='h-full bg-white/50 dark:bg-black/40 backdrop-blur-xl border border-border/30 dark:border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 hover:border-primary/50 dark:hover:border-white/30 transition-all duration-300 shadow-lg'
+                className='h-full bg-white/60 dark:bg-black/40 backdrop-blur-xl border border-gray-300 dark:border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 hover:border-blue-500/50 dark:hover:border-white/30 transition-all duration-300 shadow-lg'
               >
                 <CardContent className='p-0'>
                   {/* Icon */}
@@ -107,12 +106,12 @@ export default function PlatformFeatures() {
                   </motion.div>
 
                   {/* Title */}
-                  <h3 className='text-base sm:text-lg lg:text-xl font-semibold text-foreground dark:text-white mb-2 sm:mb-4 group-hover:text-primary dark:group-hover:text-[#63EDA1] transition-colors'>
+                  <h3 className='text-base sm:text-lg lg:text-xl font-semibold text-slate-800 dark:text-white mb-2 sm:mb-4 group-hover:text-blue-600 dark:group-hover:text-[#63EDA1] transition-colors'>
                     {feature.title}
                   </h3>
 
                   {/* Description */}
-                  <p className='text-foreground/70 dark:text-white/70 leading-relaxed text-xs sm:text-sm lg:text-base'>
+                  <p className='text-slate-600 dark:text-white/70 leading-relaxed text-xs sm:text-sm lg:text-base'>
                     {feature.description}
                   </p>
                 </CardContent>

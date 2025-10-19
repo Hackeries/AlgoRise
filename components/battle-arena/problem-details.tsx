@@ -2,17 +2,23 @@
 
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Zap } from 'lucide-react';
+import { Clock, Zap, Star } from 'lucide-react';
+import Link from 'next/link';
+import DOMPurify from 'isomorphic-dompurify';
 
 interface Problem {
   id: string;
   name: string;
-  description: string;
+  description: string; // Can be plain text or HTML
   examples: Array<{ input: string; output: string }>;
   constraints: string;
   timeLimit: number;
   memoryLimit: number;
   difficulty: 'easy' | 'medium' | 'hard';
+  rating?: number; // for CF/AtCoder
+  tags?: string[];
+  contestUrl?: string;
+  source?: 'Codeforces' | 'AtCoder';
 }
 
 interface ProblemDetailsProps {
@@ -35,15 +41,28 @@ export function ProblemDetails({ problem }: ProblemDetailsProps) {
   };
 
   return (
-    <div className='space-y-4 overflow-y-auto h-full pr-4'>
+    <div className='space-y-5 overflow-y-auto h-full pr-4'>
+      {/* Header */}
       <div>
-        <div className='flex items-center gap-2 mb-2'>
-          <h2 className='text-xl font-bold'>{problem.name}</h2>
+        <div className='flex flex-wrap items-center gap-2 mb-2'>
+          <h2 className='text-2xl font-semibold'>{problem.name}</h2>
           <Badge className={difficultyColor[problem.difficulty]}>
             {problem.difficulty}
           </Badge>
+          {problem.rating && (
+            <div className='flex items-center text-yellow-600 text-sm'>
+              <Star className='w-4 h-4 mr-1 fill-yellow-400' />
+              {problem.rating}
+            </div>
+          )}
+          {problem.source && (
+            <Badge variant='outline' className='text-xs'>
+              {problem.source}
+            </Badge>
+          )}
         </div>
-        <div className='flex gap-4 text-sm text-muted-foreground'>
+
+        <div className='flex flex-wrap gap-4 text-sm text-muted-foreground'>
           <div className='flex items-center gap-1'>
             <Clock className='w-4 h-4' />
             {problem.timeLimit}s
@@ -52,33 +71,60 @@ export function ProblemDetails({ problem }: ProblemDetailsProps) {
             <Zap className='w-4 h-4' />
             {problem.memoryLimit}MB
           </div>
+          {problem.contestUrl && (
+            <Link
+              href={problem.contestUrl}
+              target='_blank'
+              className='text-blue-600 hover:underline'
+            >
+              View Contest ↗
+            </Link>
+          )}
         </div>
       </div>
 
+      {/* Tags */}
+      {problem.tags && problem.tags.length > 0 && (
+        <div className='flex flex-wrap gap-2'>
+          {problem.tags.map((tag, i) => (
+            <Badge key={i} variant='secondary' className='text-xs'>
+              #{tag}
+            </Badge>
+          ))}
+        </div>
+      )}
+
+      {/* Description */}
       <div>
-        <h3 className='font-semibold mb-2'>Description</h3>
-        <p className='text-sm text-foreground whitespace-pre-wrap'>
-          {problem.description}
-        </p>
+        <h3 className='font-semibold mb-2 text-lg'>Description</h3>
+        <div
+          className='text-sm text-foreground leading-relaxed prose prose-sm max-w-none'
+          dangerouslySetInnerHTML={{
+            __html: DOMPurify.sanitize(problem.description),
+          }}
+        />
       </div>
 
+      {/* Examples */}
       {problem.examples.length > 0 && (
         <div>
-          <h3 className='font-semibold mb-2'>Examples</h3>
-          <div className='space-y-2'>
+          <h3 className='font-semibold mb-2 text-lg'>Examples</h3>
+          <div className='space-y-3'>
             {problem.examples.map((example, idx) => (
-              <Card key={idx} className='p-3 bg-muted'>
-                <p className='text-xs font-semibold mb-1'>Example {idx + 1}</p>
-                <div className='grid grid-cols-2 gap-2 text-xs font-mono'>
+              <Card key={idx} className='p-4 bg-muted'>
+                <p className='text-xs font-semibold mb-2 text-muted-foreground'>
+                  Example {idx + 1}
+                </p>
+                <div className='grid sm:grid-cols-2 gap-4 text-xs font-mono'>
                   <div>
                     <p className='text-muted-foreground mb-1'>Input:</p>
-                    <pre className='bg-background p-2 rounded overflow-x-auto'>
+                    <pre className='bg-background p-2 rounded overflow-x-auto border border-border'>
                       {example.input}
                     </pre>
                   </div>
                   <div>
                     <p className='text-muted-foreground mb-1'>Output:</p>
-                    <pre className='bg-background p-2 rounded overflow-x-auto'>
+                    <pre className='bg-background p-2 rounded overflow-x-auto border border-border'>
                       {example.output}
                     </pre>
                   </div>
@@ -89,12 +135,15 @@ export function ProblemDetails({ problem }: ProblemDetailsProps) {
         </div>
       )}
 
-      <div>
-        <h3 className='font-semibold mb-2'>Constraints</h3>
-        <p className='text-sm text-foreground whitespace-pre-wrap'>
-          {problem.constraints}
-        </p>
-      </div>
+      {/* Constraints */}
+      {problem.constraints && (
+        <div>
+          <h3 className='font-semibold mb-2 text-lg'>Constraints</h3>
+          <p className='text-sm text-foreground whitespace-pre-wrap leading-relaxed'>
+            {problem.constraints}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Clock, Trophy } from 'lucide-react';
+import { Clock, Trophy, CheckCircle2, Flag, Code2 } from 'lucide-react';
 import { useBattleRealtime } from '@/hooks/use-battle-realtime';
 import { CodeEditor } from '@/components/battle-arena/code-editor';
 import { ProblemDetails } from '@/components/battle-arena/problem-details';
 import { SubmissionsList } from '@/components/battle-arena/submissions-list';
+import { motion } from 'framer-motion';
 
 interface BattleRoomData {
   battle: any;
@@ -27,6 +27,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
   );
   const [submitting, setSubmitting] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(3600);
+  const [showStats, setShowStats] = useState(false);
 
   const { battleUpdate, isConnected } = useBattleRealtime(params.id);
 
@@ -106,100 +107,221 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
   };
 
   const selectedProblem = room?.problems?.find(p => p.id === selectedProblemId);
+  const timeWarning = timeRemaining < 300;
 
   if (!room) {
-    return <div className='p-8 text-center'>Loading battle room...</div>;
+    return (
+      <div className='min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center'>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{
+            duration: 2,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: 'linear',
+          }}
+          className='w-12 h-12 border-4 border-blue-500/30 border-t-blue-400 rounded-full'
+        />
+      </div>
+    );
   }
 
   return (
-    <main className='min-h-screen bg-background'>
-      {/* Top Bar */}
-      <div className='border-b border-border bg-card p-4 flex items-center justify-between sticky top-0 z-10'>
-        <div className='flex items-center gap-4'>
-          <div className='flex items-center gap-2'>
-            <Clock className='w-5 h-5 text-primary' />
-            <span className='font-mono text-lg font-bold'>
-              {formatTime(timeRemaining)}
-            </span>
-          </div>
-          <Badge variant='outline'>
-            {isConnected ? 'Connected' : 'Connecting...'}
-          </Badge>
-        </div>
-        <div className='flex items-center gap-2'>
-          <Button variant='outline' size='sm'>
-            Pause
-          </Button>
-          <Button variant='destructive' size='sm'>
-            Surrender
-          </Button>
-        </div>
-      </div>
+    <main className='min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950'>
+      <motion.div
+        className='border-b border-blue-500/20 bg-gradient-to-r from-slate-900/80 to-blue-900/80 backdrop-blur-sm p-4 sticky top-0 z-20 shadow-lg shadow-blue-500/10'
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className='max-w-7xl mx-auto flex items-center justify-between'>
+          <div className='flex items-center gap-6'>
+            {/* Timer with warning state */}
+            <motion.div
+              className={`flex items-center gap-3 px-4 py-2 rounded-lg border ${
+                timeWarning
+                  ? 'bg-red-900/30 border-red-500/50'
+                  : 'bg-blue-900/30 border-blue-500/30'
+              } backdrop-blur-sm`}
+              animate={timeWarning ? { scale: [1, 1.02, 1] } : {}}
+              transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY }}
+            >
+              <Clock
+                className={`w-5 h-5 ${
+                  timeWarning ? 'text-red-400' : 'text-cyan-400'
+                }`}
+              />
+              <span
+                className={`font-mono text-lg font-bold ${
+                  timeWarning ? 'text-red-300' : 'text-white'
+                }`}
+              >
+                {formatTime(timeRemaining)}
+              </span>
+            </motion.div>
 
-      {/* Main Content */}
-      <div className='grid grid-cols-1 lg:grid-cols-4 gap-4 p-4 h-[calc(100vh-80px)]'>
-        {/* Left: Problems */}
-        <div className='lg:col-span-1 flex flex-col gap-4 overflow-hidden'>
-          <Card className='flex-1 p-4 overflow-y-auto'>
-            <h3 className='font-bold mb-3'>Problems</h3>
+            {/* Connection Status */}
+            <motion.div
+              className='flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50'
+              animate={{
+                borderColor: isConnected
+                  ? 'rgb(34, 197, 94)'
+                  : 'rgb(239, 68, 68)',
+              }}
+            >
+              <motion.div
+                className={`w-2 h-2 rounded-full ${
+                  isConnected ? 'bg-green-400' : 'bg-red-400'
+                }`}
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
+              />
+              <span className='text-xs text-slate-300'>
+                {isConnected ? 'Connected' : 'Connecting...'}
+              </span>
+            </motion.div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className='flex items-center gap-3'>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant='outline'
+                size='sm'
+                className='border-blue-500/50 text-blue-300 hover:bg-blue-900/20 hover:border-blue-400'
+              >
+                <Flag className='w-4 h-4 mr-2' />
+                Pause
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant='destructive'
+                size='sm'
+                className='bg-red-600/80 hover:bg-red-700 text-white'
+              >
+                Surrender
+              </Button>
+            </motion.div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Main Content Grid */}
+      <div className='grid grid-cols-1 lg:grid-cols-4 gap-4 p-4 h-[calc(100vh-80px)] max-w-7xl mx-auto'>
+        {/* Left Sidebar: Problems & Scoreboard */}
+        <motion.div
+          className='lg:col-span-1 flex flex-col gap-4 overflow-hidden'
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          {/* Problems Card */}
+          <Card className='flex-1 p-4 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-blue-900/30 border-blue-500/20 backdrop-blur-sm'>
+            <h3 className='font-bold text-white mb-3 flex items-center gap-2'>
+              <Code2 className='w-4 h-4 text-cyan-400' />
+              Problems
+            </h3>
             <div className='space-y-2'>
               {room.problems.map((problem, idx) => (
-                <button
+                <motion.button
                   key={problem.id}
                   onClick={() => setSelectedProblemId(problem.id)}
-                  className={`w-full p-3 text-left rounded-lg border transition ${
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`w-full p-3 text-left rounded-lg border transition-all duration-300 ${
                     selectedProblemId === problem.id
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'border-border hover:bg-muted'
+                      ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white border-blue-400 shadow-lg shadow-blue-500/30'
+                      : 'border-blue-500/20 hover:bg-blue-900/30 hover:border-blue-400/50 text-blue-100'
                   }`}
                 >
-                  <p className='font-semibold'>
+                  <p className='font-semibold text-sm'>
                     {String.fromCharCode(65 + idx)}. {problem.name}
                   </p>
-                  <p className='text-xs opacity-75'>
+                  <p className='text-xs opacity-75 mt-1'>
                     Rating: {problem.rating || 'N/A'}
                   </p>
-                </button>
+                </motion.button>
               ))}
             </div>
           </Card>
 
-          {/* Scoreboard */}
-          <Card className='flex-1 p-4 overflow-y-auto'>
-            <h3 className='font-bold mb-3 flex items-center gap-2'>
-              <Trophy className='w-4 h-4' />
+          {/* Scoreboard Card */}
+          <Card className='flex-1 p-4 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-purple-900/30 border-purple-500/20 backdrop-blur-sm'>
+            <h3 className='font-bold text-white mb-3 flex items-center gap-2'>
+              <Trophy className='w-4 h-4 text-yellow-400' />
               Scoreboard
             </h3>
             <div className='space-y-2'>
-              {room.teams.map((team: any) => (
-                <div key={team.id} className='p-3 bg-muted rounded-lg'>
-                  <p className='font-semibold text-sm'>{team.team_name}</p>
-                  <p className='text-xs text-muted-foreground'>
-                    Score: {team.score} | Penalty: {team.penalty_time}m
-                  </p>
-                </div>
+              {room.teams.map((team: any, idx: number) => (
+                <motion.div
+                  key={team.id}
+                  className='p-3 bg-gradient-to-r from-purple-900/40 to-pink-900/40 rounded-lg border border-purple-500/20 hover:border-purple-400/50 transition-all'
+                  whileHover={{ scale: 1.02 }}
+                >
+                  <div className='flex items-center justify-between mb-1'>
+                    <p className='font-semibold text-sm text-white'>
+                      {team.team_name}
+                    </p>
+                    <motion.div
+                      className='text-xs font-bold text-yellow-400'
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{
+                        duration: 2,
+                        repeat: Number.POSITIVE_INFINITY,
+                      }}
+                    >
+                      #{idx + 1}
+                    </motion.div>
+                  </div>
+                  <div className='flex items-center justify-between text-xs text-purple-200/70'>
+                    <span>Score: {team.score}</span>
+                    <span>Penalty: {team.penalty_time}m</span>
+                  </div>
+                </motion.div>
               ))}
             </div>
           </Card>
-        </div>
+        </motion.div>
 
         {/* Middle: Problem Details */}
-        <div className='lg:col-span-1 overflow-hidden'>
-          <Card className='h-full p-4 overflow-y-auto'>
+        <motion.div
+          className='lg:col-span-1 overflow-hidden'
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Card className='h-full p-4 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-cyan-900/30 border-cyan-500/20 backdrop-blur-sm'>
             <ProblemDetails problem={selectedProblem} />
           </Card>
-        </div>
+        </motion.div>
 
         {/* Right: Editor & Submissions */}
-        <div className='lg:col-span-2 flex flex-col gap-4 overflow-hidden'>
-          <Card className='flex-1 p-4 flex flex-col overflow-hidden'>
+        <motion.div
+          className='lg:col-span-2 flex flex-col gap-4 overflow-hidden'
+          initial={{ x: 20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <Card className='flex-1 p-4 flex flex-col overflow-hidden bg-gradient-to-br from-slate-900/50 to-blue-900/30 border-blue-500/20 backdrop-blur-sm'>
             <Tabs
               defaultValue='editor'
               className='flex-1 flex flex-col overflow-hidden'
             >
-              <TabsList className='grid w-full grid-cols-2'>
-                <TabsTrigger value='editor'>Editor</TabsTrigger>
-                <TabsTrigger value='submissions'>Submissions</TabsTrigger>
+              <TabsList className='grid w-full grid-cols-2 bg-slate-800/50 border border-blue-500/20 rounded-lg p-1 mb-4'>
+                <TabsTrigger
+                  value='editor'
+                  className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 rounded-md transition-all'
+                >
+                  <Code2 className='w-4 h-4 mr-2' />
+                  Editor
+                </TabsTrigger>
+                <TabsTrigger
+                  value='submissions'
+                  className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 rounded-md transition-all'
+                >
+                  <CheckCircle2 className='w-4 h-4 mr-2' />
+                  Submissions
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value='editor' className='flex-1 overflow-hidden'>
@@ -221,7 +343,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
               </TabsContent>
             </Tabs>
           </Card>
-        </div>
+        </motion.div>
       </div>
     </main>
   );

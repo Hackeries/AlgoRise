@@ -1,6 +1,4 @@
-import { neon } from '@neondatabase/serverless';
-
-const sql = neon(process.env.DATABASE_URL!);
+import { createServiceRoleClient } from './supabase/server';
 
 export interface JudgeResult {
   verdict: 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE' | 'CE' | 'pending';
@@ -63,23 +61,27 @@ export async function storeSubmission(
   teamId?: string
 ) {
   try {
-    const result = await sql(
-      `INSERT INTO public.battle_submissions 
-       (battle_id, team_id, user_id, problem_id, code, language, verdict, penalty)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING *`,
-      [
-        battleId,
-        teamId || null,
-        userId,
-        problemId,
+    const supabase = await createServiceRoleClient();
+    if (!supabase)
+      throw new Error('Supabase service role client not available');
+
+    const { data, error } = await supabase
+      .from('battle_submissions')
+      .insert({
+        battle_id: battleId,
+        team_id: teamId || null,
+        user_id: userId,
+        problem_id: problemId,
         code,
         language,
         verdict,
         penalty,
-      ]
-    );
-    return result[0];
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   } catch (error) {
     console.error('Error storing submission:', error);
     throw error;
@@ -91,13 +93,18 @@ export async function storeSubmission(
  */
 export async function getBattleSubmissions(battleId: string) {
   try {
-    const results = await sql(
-      `SELECT * FROM public.battle_submissions 
-       WHERE battle_id = $1 
-       ORDER BY submitted_at DESC`,
-      [battleId]
-    );
-    return results;
+    const supabase = await createServiceRoleClient();
+    if (!supabase)
+      throw new Error('Supabase service role client not available');
+
+    const { data, error } = await supabase
+      .from('battle_submissions')
+      .select('*')
+      .eq('battle_id', battleId)
+      .order('submitted_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
   } catch (error) {
     console.error('Error fetching submissions:', error);
     throw error;
@@ -110,22 +117,45 @@ export async function getBattleSubmissions(battleId: string) {
  */
 export async function calculateICPCScore(battleId: string, teamId: string) {
   try {
-    const results = await sql(
-      `SELECT 
-        COUNT(DISTINCT CASE WHEN verdict = 'AC' THEN problem_id END) as problems_solved,
-        SUM(CASE WHEN verdict != 'AC' THEN 20 ELSE 0 END) as penalty_minutes,
-        MAX(EXTRACT(EPOCH FROM (submitted_at - (SELECT start_at FROM public.battles WHERE id = $1))) / 60) as max_time
-       FROM public.battle_submissions
-       WHERE battle_id = $1 AND team_id = $2`,
-      [battleId, teamId]
-    );
+    const supabase = await createServiceRoleClient();
+    if (!supabase)
+      throw new Error('Supabase service role client not available');
 
-    const row = results[0];
+    // Get all submissions for the team in this battle
+    const { data: submissions, error } = await supabase
+      .from('battle_submissions')
+      .select('*')
+      .eq('battle_id', battleId)
+      .eq('team_id', teamId);
+
+    if (error) throw error;
+
+    // Get battle start time
+    const { data: battle, error: battleError } = await supabase
+      .from('battles')
+      .select('start_at')
+      .eq('id', battleId)
+      .single();
+
+    if (battleError) throw battleError;
+
+    // Calculate ICPC score
+    const problemsSolved = new Set(
+      submissions
+        .filter((s: any) => s.verdict === 'AC')
+        .map((s: any) => s.problem_id)
+    ).size;
+
+    const penaltyTime = submissions.reduce((acc: number, s: any) => {
+      if (s.verdict !== 'AC') return acc + 20; // 20 min penalty for wrong submission
+      const submittedAt = new Date(s.submitted_at).getTime();
+      const startAt = new Date(battle.start_at).getTime();
+      return acc + Math.floor((submittedAt - startAt) / 60000); // Convert to minutes
+    }, 0);
+
     return {
-      problemsSolved: Number.parseInt(row.problems_solved) || 0,
-      penaltyTime:
-        (Number.parseInt(row.penalty_minutes) || 0) +
-        (Number.parseInt(row.max_time) || 0),
+      problemsSolved,
+      penaltyTime,
     };
   } catch (error) {
     console.error('Error calculating ICPC score:', error);

@@ -1,9 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { neon } from '@neondatabase/serverless';
-
-const sql = neon(process.env.DATABASE_URL!);
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,39 +32,59 @@ export async function POST(request: NextRequest) {
 
     const { battleId, accept } = await request.json();
 
+    // Use service role client for database operations
+    const serviceRoleClient = await createServiceRoleClient();
+    if (!serviceRoleClient) {
+      return NextResponse.json(
+        { error: 'Database connection failed' },
+        { status: 500 }
+      );
+    }
+
     if (accept) {
       // Create battle teams
-      const teamResult = await sql(
-        `INSERT INTO public.battle_teams (battle_id, team_name)
-         VALUES ($1, $2)
-         RETURNING *`,
-        [battleId, `Team ${user.id.slice(0, 8)}`]
-      );
+      const { data: team, error: teamError } = await serviceRoleClient
+        .from('battle_teams')
+        .insert({
+          battle_id: battleId,
+          team_name: `Team ${user.id.slice(0, 8)}`,
+        })
+        .select()
+        .single();
 
-      const team = teamResult[0];
+      if (teamError) throw teamError;
 
       // Add user to team
-      await sql(
-        `INSERT INTO public.battle_team_players (team_id, user_id, role)
-         VALUES ($1, $2, 'captain')`,
-        [team.id, user.id]
-      );
+      const { error: playerError } = await serviceRoleClient
+        .from('battle_team_players')
+        .insert({
+          team_id: team.id,
+          user_id: user.id,
+          role: 'captain',
+        });
+
+      if (playerError) throw playerError;
 
       // Update battle status
-      await sql(
-        `UPDATE public.battles SET status = 'active', start_at = NOW()
-         WHERE id = $1`,
-        [battleId]
-      );
+      const { error: updateError } = await serviceRoleClient
+        .from('battles')
+        .update({
+          status: 'active',
+          start_at: new Date().toISOString(),
+        })
+        .eq('id', battleId);
+
+      if (updateError) throw updateError;
 
       return NextResponse.json({ success: true, battleId, teamId: team.id });
     } else {
       // Decline match
-      await sql(
-        `UPDATE public.battles SET status = 'cancelled'
-         WHERE id = $1`,
-        [battleId]
-      );
+      const { error: declineError } = await serviceRoleClient
+        .from('battles')
+        .update({ status: 'cancelled' })
+        .eq('id', battleId);
+
+      if (declineError) throw declineError;
 
       return NextResponse.json({ success: true });
     }

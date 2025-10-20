@@ -1,49 +1,51 @@
-import { neon } from "@neondatabase/serverless"
+import { neon } from '@neondatabase/serverless';
 
-const sql = neon(process.env.DATABASE_URL!)
+const sql = neon(process.env.DATABASE_URL!);
 
 export interface JudgeResult {
-  verdict: "AC" | "WA" | "TLE" | "MLE" | "RE" | "CE" | "pending"
-  penalty: number
-  executionTime?: number
-  memory?: number
-  error?: string
+  verdict: 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE' | 'CE' | 'pending';
+  penalty: number;
+  executionTime?: number;
+  memory?: number;
+  error?: string;
 }
 
 export interface SubmissionPayload {
-  code: string
-  language: string
-  problemId: string
-  battleId: string
-  teamId?: string
-  userId: string
+  code: string;
+  language: string;
+  problemId: string;
+  battleId: string;
+  teamId?: string;
+  userId: string;
 }
 
 /**
  * Judge a submission against test cases
  * For now, returns a mock verdict. In production, integrate with actual judge system.
  */
-export async function judgeSubmission(payload: SubmissionPayload): Promise<JudgeResult> {
+export async function judgeSubmission(
+  payload: SubmissionPayload
+): Promise<JudgeResult> {
   try {
     // TODO: Integrate with actual judge system (e.g., CodeChef Judge API, custom judge)
     // For now, simulate judging with a delay
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Mock verdict logic - in production, run actual tests
-    const verdict: JudgeResult["verdict"] = "AC" // Assume AC for demo
+    const verdict: JudgeResult['verdict'] = 'AC'; // Assume AC for demo
 
     return {
       verdict,
       penalty: 0,
       executionTime: Math.random() * 1000,
       memory: Math.random() * 256,
-    }
+    };
   } catch (error) {
     return {
-      verdict: "CE",
+      verdict: 'CE',
       penalty: 0,
-      error: error instanceof Error ? error.message : "Compilation error",
-    }
+      error: error instanceof Error ? error.message : 'Compilation error',
+    };
   }
 }
 
@@ -56,9 +58,9 @@ export async function storeSubmission(
   problemId: string,
   code: string,
   language: string,
-  verdict: JudgeResult["verdict"],
+  verdict: JudgeResult['verdict'],
   penalty: number,
-  teamId?: string,
+  teamId?: string
 ) {
   try {
     const result = await sql(
@@ -66,12 +68,21 @@ export async function storeSubmission(
        (battle_id, team_id, user_id, problem_id, code, language, verdict, penalty)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [battleId, teamId || null, userId, problemId, code, language, verdict, penalty],
-    )
-    return result[0]
+      [
+        battleId,
+        teamId || null,
+        userId,
+        problemId,
+        code,
+        language,
+        verdict,
+        penalty,
+      ]
+    );
+    return result[0];
   } catch (error) {
-    console.error("Error storing submission:", error)
-    throw error
+    console.error('Error storing submission:', error);
+    throw error;
   }
 }
 
@@ -84,12 +95,12 @@ export async function getBattleSubmissions(battleId: string) {
       `SELECT * FROM public.battle_submissions 
        WHERE battle_id = $1 
        ORDER BY submitted_at DESC`,
-      [battleId],
-    )
-    return results
+      [battleId]
+    );
+    return results;
   } catch (error) {
-    console.error("Error fetching submissions:", error)
-    throw error
+    console.error('Error fetching submissions:', error);
+    throw error;
   }
 }
 
@@ -106,16 +117,18 @@ export async function calculateICPCScore(battleId: string, teamId: string) {
         MAX(EXTRACT(EPOCH FROM (submitted_at - (SELECT start_at FROM public.battles WHERE id = $1))) / 60) as max_time
        FROM public.battle_submissions
        WHERE battle_id = $1 AND team_id = $2`,
-      [battleId, teamId],
-    )
+      [battleId, teamId]
+    );
 
-    const row = results[0]
+    const row = results[0];
     return {
       problemsSolved: Number.parseInt(row.problems_solved) || 0,
-      penaltyTime: (Number.parseInt(row.penalty_minutes) || 0) + (Number.parseInt(row.max_time) || 0),
-    }
+      penaltyTime:
+        (Number.parseInt(row.penalty_minutes) || 0) +
+        (Number.parseInt(row.max_time) || 0),
+    };
   } catch (error) {
-    console.error("Error calculating ICPC score:", error)
-    throw error
+    console.error('Error calculating ICPC score:', error);
+    throw error;
   }
 }

@@ -2,6 +2,7 @@
 
 import CodeExecutionService, { CodeExecutionRequest, CodeExecutionResult } from '@/lib/code-execution-service';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from './supabase/server';
 
 export interface JudgeRequest {
   sourceCode: string;
@@ -23,6 +24,20 @@ export interface JudgeResult extends CodeExecutionResult {
   userId: string;
   contestId?: string;
   battleId?: string;
+  verdict: 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE' | 'CE' | 'pending';
+  penalty: number;
+  executionTime?: number;
+  memory?: number;
+  error?: string;
+}
+
+export interface SubmissionPayload {
+  code: string;
+  language: string;
+  problemId: string;
+  battleId: string;
+  teamId?: string;
+  userId: string;
 }
 
 export class JudgeService {
@@ -53,6 +68,20 @@ export class JudgeService {
 
       const executionResult = await this.codeExecutor.executeCode(executionRequest);
 
+      // Map execution status to verdict
+      const statusToVerdict: Record<string, JudgeResult['verdict']> = {
+        'success': 'AC',
+        'compilation_error': 'CE',
+        'runtime_error': 'RE',
+        'time_limit_exceeded': 'TLE',
+        'memory_limit_exceeded': 'MLE',
+        'wrong_answer': 'WA',
+        'internal_error': 'RE'
+      };
+
+      const verdict = executionResult.status ? statusToVerdict[executionResult.status] : 'pending';
+      const penalty = executionResult.status === 'success' ? 0 : 20; // Simple penalty logic
+
       const judgeResult: JudgeResult = {
         ...executionResult,
         sourceCode: request.sourceCode,
@@ -60,7 +89,11 @@ export class JudgeService {
         problemId: request.problemId,
         userId: request.userId,
         contestId: request.contestId,
-        battleId: request.battleId
+        battleId: request.battleId,
+        verdict,
+        penalty,
+        executionTime: executionResult.executionTimeMs,
+        memory: executionResult.memoryUsedKb
       };
 
       // Save the result to database based on context (contest or battle)
@@ -78,7 +111,15 @@ export class JudgeService {
         problemId: request.problemId,
         userId: request.userId,
         contestId: request.contestId,
-        battleId: request.battleId
+        battleId: request.battleId,
+        verdict: 'RE',
+        penalty: 20,
+        error: error instanceof Error ? error.message : 'Internal error',
+        stdout: undefined,
+        stderr: undefined,
+        compileOutput: undefined,
+        executionTimeMs: undefined,
+        memoryUsedKb: undefined
       };
     }
   }
@@ -103,7 +144,9 @@ export class JudgeService {
           memory_kb: result.memoryUsedKb,
           stdout: result.stdout,
           stderr: result.stderr,
-          compile_output: result.compileOutput
+          compile_output: result.compileOutput,
+          verdict: result.verdict,
+          penalty: result.penalty
         });
       } else if (result.contestId) {
         // Save to contest submissions table
@@ -112,8 +155,7 @@ export class JudgeService {
           user_id: result.userId,
           problem_id: result.problemId,
           status: result.status === 'success' ? 'solved' : 'failed',
-          // In a real implementation, we would calculate penalty
-          penalty_s: 0
+          penalty_s: result.penalty
         });
       }
     } catch (error) {
@@ -140,27 +182,6 @@ export class JudgeService {
   }
 }
 
-// Export singleton instance
-export default new JudgeService();
-import { createServiceRoleClient } from './supabase/server';
-
-export interface JudgeResult {
-  verdict: 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE' | 'CE' | 'pending';
-  penalty: number;
-  executionTime?: number;
-  memory?: number;
-  error?: string;
-}
-
-export interface SubmissionPayload {
-  code: string;
-  language: string;
-  problemId: string;
-  battleId: string;
-  teamId?: string;
-  userId: string;
-}
-
 /**
  * Judge a submission against test cases
  * For now, returns a mock verdict. In production, integrate with actual judge system.
@@ -177,16 +198,44 @@ export async function judgeSubmission(
     const verdict: JudgeResult['verdict'] = 'AC'; // Assume AC for demo
 
     return {
+      success: true,
+      status: 'success',
       verdict,
       penalty: 0,
       executionTime: Math.random() * 1000,
       memory: Math.random() * 256,
+      sourceCode: payload.code,
+      language: payload.language,
+      problemId: payload.problemId,
+      userId: payload.userId,
+      battleId: payload.battleId,
+      contestId: undefined,
+      message: 'Code executed successfully',
+      stdout: undefined,
+      stderr: undefined,
+      compileOutput: undefined,
+      executionTimeMs: Math.random() * 1000,
+      memoryUsedKb: Math.random() * 256
     };
   } catch (error) {
     return {
+      success: false,
+      status: 'compilation_error',
       verdict: 'CE',
       penalty: 0,
       error: error instanceof Error ? error.message : 'Compilation error',
+      sourceCode: payload.code,
+      language: payload.language,
+      problemId: payload.problemId,
+      userId: payload.userId,
+      battleId: payload.battleId,
+      contestId: undefined,
+      message: 'Compilation error occurred during judging',
+      stdout: undefined,
+      stderr: undefined,
+      compileOutput: undefined,
+      executionTimeMs: undefined,
+      memoryUsedKb: undefined
     };
   }
 }
@@ -200,7 +249,7 @@ export async function storeSubmission(
   problemId: string,
   code: string,
   language: string,
-  verdict: JudgeResult['verdict'],
+  verdict: 'AC' | 'WA' | 'TLE' | 'MLE' | 'RE' | 'CE' | 'pending',
   penalty: number,
   teamId?: string
 ) {
@@ -306,3 +355,6 @@ export async function calculateICPCScore(battleId: string, teamId: string) {
     throw error;
   }
 }
+
+// Export singleton instance
+export default new JudgeService();

@@ -75,7 +75,7 @@ export class ProblemGenerator {
     const { PROBLEM_TEMPLATES } = require('./problem-templates');
     
     const categoryTemplates = PROBLEM_TEMPLATES.filter(
-      template => template.category.toLowerCase() === category.toLowerCase()
+      (template: ProblemTemplate) => template.category.toLowerCase() === category.toLowerCase()
     );
     
     if (categoryTemplates.length === 0) {
@@ -96,7 +96,7 @@ export class ProblemGenerator {
     const { PROBLEM_TEMPLATES } = require('./problem-templates');
     
     const difficultyTemplates = PROBLEM_TEMPLATES.filter(
-      template => template.difficulty === difficulty
+      (template: ProblemTemplate) => template.difficulty === difficulty
     );
     
     if (difficultyTemplates.length === 0) {

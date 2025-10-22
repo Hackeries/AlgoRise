@@ -197,6 +197,3 @@ export class TestCaseGenerator {
     return stressCases;
   }
 }
-
-// Export singleton instance
-export default new TestCaseGenerator();

@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { ProblemGenerator } from '@/lib/problem-generator/problem-generator';
-import { GeneratedProblem } from '@/lib/problem-generator/problem-templates';
+import { GeneratedProblem, PROBLEM_TEMPLATES } from '@/lib/problem-generator/problem-templates';
 import { ProblemGeneratorClient } from '@/components/problem-generator/problem-generator-client';
 
 export default function ProblemGeneratorPage() {
@@ -17,7 +17,6 @@ export default function ProblemGeneratorPage() {
     
     try {
       // For demo purposes, we'll use the first template
-      const { PROBLEM_TEMPLATES } = require('@/lib/problem-generator/problem-templates');
       const generator = new ProblemGenerator();
       const problem = generator.generateProblem(PROBLEM_TEMPLATES[0]);
       setGeneratedProblem(problem);
@@ -84,7 +83,6 @@ export default function ProblemGeneratorPage() {
                         setIsLoading(true);
                         try {
                           const generator = new ProblemGenerator();
-                          const { PROBLEM_TEMPLATES } = require('@/lib/problem-generator/problem-templates');
                           const problem = generator.generateProblem(PROBLEM_TEMPLATES[0]);
                           setGeneratedProblem(problem);
                         } catch (err) {
@@ -102,7 +100,6 @@ export default function ProblemGeneratorPage() {
                         setIsLoading(true);
                         try {
                           const generator = new ProblemGenerator();
-                          const { PROBLEM_TEMPLATES } = require('@/lib/problem-generator/problem-templates');
                           const problem = generator.generateProblem(PROBLEM_TEMPLATES[2]);
                           setGeneratedProblem(problem);
                         } catch (err) {
@@ -120,7 +117,6 @@ export default function ProblemGeneratorPage() {
                         setIsLoading(true);
                         try {
                           const generator = new ProblemGenerator();
-                          const { PROBLEM_TEMPLATES } = require('@/lib/problem-generator/problem-templates');
                           const problem = generator.generateProblem(PROBLEM_TEMPLATES[3]);
                           setGeneratedProblem(problem);
                         } catch (err) {

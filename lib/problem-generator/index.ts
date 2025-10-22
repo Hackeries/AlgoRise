@@ -1,4 +1,2 @@
 // Problem Generator Module
-export * from './problem-generator';
-export * from './test-case-generator';
-export * from './problem-templates';
+// Note: Direct file imports are used in components to avoid module resolution issues

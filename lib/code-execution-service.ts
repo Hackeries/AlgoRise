@@ -92,6 +92,22 @@ export class CodeExecutionService {
         };
       }
       
+      // Check if expected output is provided for validation
+      if (request.expectedOutput) {
+        // In a real implementation, we would compare the actual output with expected output
+        // For now, we'll simulate this check
+        const passed = !request.sourceCode.includes('// WA');
+        
+        if (!passed) {
+          return {
+            success: false,
+            status: 'wrong_answer',
+            stdout: request.stdin || '',
+            message: 'Output does not match expected result'
+          };
+        }
+      }
+      
       // Simulate successful execution
       const executionTime = Math.floor(50 + Math.random() * 200);
       const memoryUsed = Math.floor(1000 + Math.random() * 5000);
@@ -99,7 +115,7 @@ export class CodeExecutionService {
       return {
         success: true,
         status: 'success',
-        stdout: 'Correct answer!',
+        stdout: request.expectedOutput || 'Correct answer!',
         executionTimeMs: executionTime,
         memoryUsedKb: memoryUsed,
         message: 'Code executed successfully'

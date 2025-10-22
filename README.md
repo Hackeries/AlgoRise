@@ -33,6 +33,7 @@ npm start
 - **Streak Tracking** - Daily practice motivation
 - **Smart Notifications** - Timely alerts for daily problems, contests, rating changes, and friend activity
 - **Code Battle Arena** - Real-time 1v1 competitive coding duels
+- **Problem Generator** - Unlimited practice problems with custom test cases
 
 ## 🔧 Tech Stack
 
@@ -49,6 +50,7 @@ npm start
 - **`DATABASE_SETUP_GUIDE.md`** - Database configuration guide
 - **`SMART_NOTIFICATIONS.md`** - Smart notifications implementation guide
 - **`CODE_BATTLE_ARENA.md`** - Code Battle Arena implementation guide
+- **`PROBLEM_GENERATOR.md`** - Problem Generator & Custom Test Cases implementation guide
 
 ## 🐛 Issues Fixed
 

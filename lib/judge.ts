@@ -12,6 +12,8 @@ export interface JudgeRequest {
   battleId?: string;
   timeLimit?: number;
   memoryLimit?: number;
+  stdin?: string;
+  expectedOutput?: string;
 }
 
 export interface JudgeResult extends CodeExecutionResult {
@@ -43,6 +45,8 @@ export class JudgeService {
       const executionRequest: CodeExecutionRequest = {
         sourceCode: request.sourceCode,
         language: request.language,
+        stdin: request.stdin,
+        expectedOutput: request.expectedOutput,
         timeLimit: request.timeLimit,
         memoryLimit: request.memoryLimit
       };

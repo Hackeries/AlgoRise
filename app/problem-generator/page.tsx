@@ -10,15 +10,49 @@ export default function ProblemGeneratorPage() {
   const [generatedProblem, setGeneratedProblem] = useState<GeneratedProblem | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('Arrays');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('easy');
 
-  const generateProblem = () => {
+  const generateProblem = (categoryId?: string, difficulty?: string) => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // For demo purposes, we'll use the first template
       const generator = new ProblemGenerator();
-      const problem = generator.generateProblem(PROBLEM_TEMPLATES[0]);
+      let problem;
+      
+      if (categoryId) {
+        // Generate problem by category
+        const categoryTemplates = PROBLEM_TEMPLATES.filter(
+          template => template.category === categoryId
+        );
+        if (categoryTemplates.length > 0) {
+          const randomTemplate = categoryTemplates[Math.floor(Math.random() * categoryTemplates.length)];
+          problem = generator.generateProblem(randomTemplate);
+        } else {
+          // Fallback to random template if no templates found for category
+          const randomTemplate = PROBLEM_TEMPLATES[Math.floor(Math.random() * PROBLEM_TEMPLATES.length)];
+          problem = generator.generateProblem(randomTemplate);
+        }
+      } else if (difficulty) {
+        // Generate problem by difficulty
+        const difficultyTemplates = PROBLEM_TEMPLATES.filter(
+          template => template.difficulty === difficulty
+        );
+        if (difficultyTemplates.length > 0) {
+          const randomTemplate = difficultyTemplates[Math.floor(Math.random() * difficultyTemplates.length)];
+          problem = generator.generateProblem(randomTemplate);
+        } else {
+          // Fallback to random template if no templates found for difficulty
+          const randomTemplate = PROBLEM_TEMPLATES[Math.floor(Math.random() * PROBLEM_TEMPLATES.length)];
+          problem = generator.generateProblem(randomTemplate);
+        }
+      } else {
+        // Generate problem with random template from all available templates
+        const randomTemplate = PROBLEM_TEMPLATES[Math.floor(Math.random() * PROBLEM_TEMPLATES.length)];
+        problem = generator.generateProblem(randomTemplate);
+      }
+      
       setGeneratedProblem(problem);
     } catch (err) {
       setError('Failed to generate problem');
@@ -53,7 +87,7 @@ export default function ProblemGeneratorPage() {
               <div className="bg-destructive/20 border border-destructive rounded-lg p-4">
                 <p className="text-destructive">{error}</p>
                 <button 
-                  onClick={generateProblem}
+                  onClick={() => generateProblem()}
                   className="mt-2 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
                 >
                   Try Again
@@ -62,7 +96,7 @@ export default function ProblemGeneratorPage() {
             ) : generatedProblem ? (
               <ProblemGeneratorClient 
                 problem={generatedProblem} 
-                onRegenerate={generateProblem}
+                onRegenerate={() => generateProblem()}
               />
             ) : (
               <div className="flex items-center justify-center h-64">
@@ -79,53 +113,26 @@ export default function ProblemGeneratorPage() {
                   <h3 className="font-medium mb-2">Categories</h3>
                   <div className="space-y-2">
                     <button 
-                      onClick={() => {
-                        setIsLoading(true);
-                        try {
-                          const generator = new ProblemGenerator();
-                          const problem = generator.generateProblem(PROBLEM_TEMPLATES[0]);
-                          setGeneratedProblem(problem);
-                        } catch (err) {
-                          setError('Failed to generate problem');
-                        } finally {
-                          setIsLoading(false);
-                        }
-                      }}
-                      className="w-full text-left px-3 py-2 bg-secondary rounded hover:bg-secondary/80"
+                      onClick={() => generateProblem('Arrays')}
+                      className={`w-full text-left px-3 py-2 rounded hover:bg-secondary/80 ${
+                        selectedCategory === 'Arrays' ? 'bg-secondary' : 'bg-muted'
+                      }`}
                     >
                       Arrays
                     </button>
                     <button 
-                      onClick={() => {
-                        setIsLoading(true);
-                        try {
-                          const generator = new ProblemGenerator();
-                          const problem = generator.generateProblem(PROBLEM_TEMPLATES[2]);
-                          setGeneratedProblem(problem);
-                        } catch (err) {
-                          setError('Failed to generate problem');
-                        } finally {
-                          setIsLoading(false);
-                        }
-                      }}
-                      className="w-full text-left px-3 py-2 bg-secondary rounded hover:bg-secondary/80"
+                      onClick={() => generateProblem('Searching')}
+                      className={`w-full text-left px-3 py-2 rounded hover:bg-secondary/80 ${
+                        selectedCategory === 'Searching' ? 'bg-secondary' : 'bg-muted'
+                      }`}
                     >
                       Searching
                     </button>
                     <button 
-                      onClick={() => {
-                        setIsLoading(true);
-                        try {
-                          const generator = new ProblemGenerator();
-                          const problem = generator.generateProblem(PROBLEM_TEMPLATES[3]);
-                          setGeneratedProblem(problem);
-                        } catch (err) {
-                          setError('Failed to generate problem');
-                        } finally {
-                          setIsLoading(false);
-                        }
-                      }}
-                      className="w-full text-left px-3 py-2 bg-secondary rounded hover:bg-secondary/80"
+                      onClick={() => generateProblem('Dynamic Programming')}
+                      className={`w-full text-left px-3 py-2 rounded hover:bg-secondary/80 ${
+                        selectedCategory === 'Dynamic Programming' ? 'bg-secondary' : 'bg-muted'
+                      }`}
                     >
                       Dynamic Programming
                     </button>
@@ -135,20 +142,35 @@ export default function ProblemGeneratorPage() {
                 <div>
                   <h3 className="font-medium mb-2">Difficulty</h3>
                   <div className="flex gap-2">
-                    <button className="px-3 py-1 bg-secondary rounded text-sm hover:bg-secondary/80">
+                    <button 
+                      onClick={() => generateProblem(undefined, 'easy')}
+                      className={`px-3 py-1 rounded text-sm hover:bg-secondary/80 ${
+                        selectedDifficulty === 'easy' ? 'bg-secondary' : 'bg-muted'
+                      }`}
+                    >
                       Easy
                     </button>
-                    <button className="px-3 py-1 bg-secondary rounded text-sm hover:bg-secondary/80">
+                    <button 
+                      onClick={() => generateProblem(undefined, 'medium')}
+                      className={`px-3 py-1 rounded text-sm hover:bg-secondary/80 ${
+                        selectedDifficulty === 'medium' ? 'bg-secondary' : 'bg-muted'
+                      }`}
+                    >
                       Medium
                     </button>
-                    <button className="px-3 py-1 bg-secondary rounded text-sm hover:bg-secondary/80">
+                    <button 
+                      onClick={() => generateProblem(undefined, 'hard')}
+                      className={`px-3 py-1 rounded text-sm hover:bg-secondary/80 ${
+                        selectedDifficulty === 'hard' ? 'bg-secondary' : 'bg-muted'
+                      }`}
+                    >
                       Hard
                     </button>
                   </div>
                 </div>
                 
                 <button 
-                  onClick={generateProblem}
+                  onClick={() => generateProblem()}
                   disabled={isLoading}
                   className="w-full px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50"
                 >

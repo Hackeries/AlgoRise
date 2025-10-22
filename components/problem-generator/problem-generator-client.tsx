@@ -2,8 +2,8 @@
 'use client';
 
 import { useState } from 'react';
-import { GeneratedProblem, TestCase } from '@/lib/problem-generator/problem-templates';
-import { ProblemJudgeService } from '@/lib/problem-generator/problem-judge-service';
+import { GeneratedProblem, TestCase } from '../../lib/problem-generator/problem-templates';
+import { ProblemJudgeService, TestResult } from '../../lib/problem-generator/problem-judge-service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { TestResult } from '@/lib/problem-generator/problem-judge-service';
 
 export function ProblemGeneratorClient({ 
   problem, 
@@ -115,7 +114,7 @@ export function ProblemGeneratorClient({
               <div className="flex flex-wrap gap-2 mt-2">
                 <Badge variant="outline">{problem.category}</Badge>
                 <Badge variant="outline">{problem.difficulty}</Badge>
-                {problem.tags.map(tag => (
+                {problem.tags.map((tag: string) => (
                   <Badge key={tag} variant="secondary">{tag}</Badge>
                 ))}
               </div>
@@ -140,14 +139,14 @@ export function ProblemGeneratorClient({
             
             <h3 className="text-lg font-semibold mt-4">Constraints</h3>
             <ul className="list-disc pl-5 space-y-1">
-              {problem.constraints.map((constraint, i) => (
+              {problem.constraints.map((constraint: string, i: number) => (
                 <li key={i}>{constraint}</li>
               ))}
             </ul>
             
             <h3 className="text-lg font-semibold mt-4">Examples</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-              {problem.examples.map((example, i) => (
+              {problem.examples.map((example: any, i: number) => (
                 <Card key={i}>
                   <CardContent className="p-4">
                     <h4 className="font-medium mb-2">Example {i + 1}</h4>
@@ -255,7 +254,7 @@ export function ProblemGeneratorClient({
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold mb-4">Generated Test Cases</h3>
               <div className="space-y-4">
-                {problem.testCases.map((testCase, i) => (
+                {problem.testCases.map((testCase: any, i: number) => (
                   <Card key={i}>
                     <CardContent className="p-4">
                       <div className="flex justify-between items-center mb-2">

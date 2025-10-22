@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TestSuiteManager, TestSuite, TestSuiteCollection } from '@/lib/problem-generator/test-suite-manager';
+import TestSuiteManager, { TestSuite, TestSuiteCollection } from '@/lib/problem-generator/test-suite-manager';
 import { TestCase } from '@/lib/problem-generator/problem-templates';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -66,8 +66,6 @@ export function TestSuiteManagerComponent() {
   const [tagInput, setTagInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const manager = TestSuiteManager;
-
   // Load test suites on component mount
   useEffect(() => {
     loadTestSuites();
@@ -75,7 +73,7 @@ export function TestSuiteManagerComponent() {
   }, []);
 
   const loadTestSuites = () => {
-    const suites = manager.listTestSuites();
+    const suites = TestSuiteManager.listTestSuites();
     setTestSuites(suites);
   };
 
@@ -87,7 +85,7 @@ export function TestSuiteManagerComponent() {
   const handleCreateTestSuite = () => {
     if (!newTestSuite.name.trim()) return;
     
-    const suite = manager.createTestSuite(
+    const suite = TestSuiteManager.createTestSuite(
       newTestSuite.name,
       newTestSuite.description,
       [], // Empty test cases initially
@@ -106,7 +104,7 @@ export function TestSuiteManagerComponent() {
   };
 
   const handleDeleteTestSuite = (id: string) => {
-    manager.deleteTestSuite(id);
+    TestSuiteManager.deleteTestSuite(id);
     setTestSuites(testSuites.filter(suite => suite.id !== id));
     if (selectedTestSuite?.id === id) {
       setSelectedTestSuite(null);
@@ -139,7 +137,7 @@ export function TestSuiteManagerComponent() {
       type: newTestCase.type
     }];
     
-    const updated = manager.updateTestSuite(selectedTestSuite.id, {
+    const updated = TestSuiteManager.updateTestSuite(selectedTestSuite.id, {
       testCases: updatedTestCases
     });
     
@@ -162,7 +160,7 @@ export function TestSuiteManagerComponent() {
     const updatedTestCases = [...selectedTestSuite.testCases];
     updatedTestCases.splice(index, 1);
     
-    const updated = manager.updateTestSuite(selectedTestSuite.id, {
+    const updated = TestSuiteManager.updateTestSuite(selectedTestSuite.id, {
       testCases: updatedTestCases
     });
     
@@ -175,7 +173,7 @@ export function TestSuiteManagerComponent() {
   };
 
   const handleExportTestSuite = (suite: TestSuite) => {
-    const json = manager.exportTestSuite(suite);
+    const json = TestSuiteManager.exportTestSuite(suite);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

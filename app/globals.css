@@ -148,15 +148,17 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1, "cv10" 1;
+    text-rendering: optimizeLegibility;
   }
   h1,
   h2,
   h3,
   h4 {
-    @apply text-foreground;
+    @apply text-foreground tracking-tight;
   }
   a {
-    @apply text-primary hover:opacity-90;
+    @apply text-primary hover:opacity-90 underline-offset-4 hover:underline;
   }
   button:not([disabled]),
   [role="button"]:not([disabled]) {
@@ -167,8 +169,8 @@
 @layer utilities {
   /* Smooth theme transitions */
   .theme-transition * {
-    transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, fill 180ms ease, stroke 180ms
-      ease;
+    transition: color 220ms ease, background-color 220ms ease, border-color 220ms ease, fill 220ms ease, stroke 220ms
+      ease, opacity 220ms ease, transform 220ms ease;
   }
   @media (prefers-reduced-motion: reduce) {
     .theme-transition * {
@@ -197,7 +199,7 @@
   /* Enhanced card hover effects with smooth transitions */
   .card-3d {
     @apply transition-all duration-300 ease-out;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.08);
   }
 
   .card-3d:hover {
@@ -328,7 +330,8 @@
   }
 
   .grid-item-hover:hover {
-    @apply scale-102 shadow-lg;
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.12);
   }
 
   @keyframes slideInUp {

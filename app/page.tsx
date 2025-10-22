@@ -9,7 +9,7 @@ export default function VisualizersPage() {
     <main className='relative w-full min-h-screen overflow-x-hidden'>
       {/* Background Animation */}
       <div className='absolute inset-0 -z-10'>
-        <PixelBlast color='#63EDA1' />
+        <PixelBlast color='hsl(var(--accent))' />
       </div>
 
       {/* Hero Section */}

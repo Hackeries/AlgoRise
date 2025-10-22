@@ -1,7 +1,15 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Brain, Zap, LineChart, Users, Shield, Sparkles } from 'lucide-react';
+import {
+  Brain,
+  Zap,
+  LineChart,
+  Users,
+  Shield,
+  Sparkles,
+  Sword,
+} from 'lucide-react';
 import { CardContent } from '@/components/ui/card';
 
 export default function PlatformFeatures() {
@@ -28,11 +36,18 @@ export default function PlatformFeatures() {
       gradient: 'from-purple-500 to-pink-500',
     },
     {
+      icon: Sword,
+      title: 'Real-time Battle Arena',
+      description:
+        'Compete in 1v1 duels or 3v3 team battles with real-time matchmaking, ELO ratings, and collaborative team features for ultimate competitive programming experience.',
+      gradient: 'from-red-500 to-orange-500',
+    },
+    {
       icon: Users,
       title: 'Group Competitions',
       description:
         'Create or join study groups, compete with friends on leaderboards, and participate in group challenges to stay motivated and accountable.',
-      gradient: 'from-orange-500 to-red-500',
+      gradient: 'from-orange-500 to-yellow-500',
     },
     {
       icon: Shield,
@@ -71,8 +86,8 @@ export default function PlatformFeatures() {
           </h2>
           <p className='text-sm sm:text-base lg:text-lg text-slate-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed'>
             MyAlgoRise combines adaptive learning, real-time contest tracking,
-            and community features to create the ultimate competitive
-            programming platform.
+            competitive battles, and community features to create the ultimate
+            competitive programming platform.
           </p>
         </motion.div>
 

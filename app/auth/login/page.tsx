@@ -295,8 +295,8 @@ export default function Page() {
       <div className='w-full max-w-md'>
         <Card className='shadow-xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl transform transition duration-300 max-h-[90vh] overflow-y-auto'>
           <CardHeader className='text-center px-4 sm:px-6 py-4 sm:py-6'>
-            <div className='mx-auto mb-4'>
-              <AlgoRiseLogoIcon className='h-16 w-16 sm:h-20 sm:w-20 mx-auto' />
+            <div className='flex justify-center mb-4'>
+              <AlgoRiseLogoIcon className='h-16 w-16 sm:h-20 sm:w-20' />
             </div>
             <CardTitle className='text-xl sm:text-2xl md:text-3xl font-bold'>
               Login

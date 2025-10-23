@@ -12,207 +12,45 @@ export function AlgoRiseLogoIcon({
       xmlns='http://www.w3.org/2000/svg'
     >
       <defs>
-        {/* Glow for better visibility */}
-        <filter id='logoIconGlow'>
-          <feGaussianBlur stdDeviation='1.5' result='coloredBlur' />
-          <feMerge>
-            <feMergeNode in='coloredBlur' />
-            <feMergeNode in='SourceGraphic' />
-          </feMerge>
-        </filter>
+        {/* Simple gradient */}
+        <linearGradient id='logoIconGradient' x1='0%' y1='0%' x2='100%' y2='100%'>
+          <stop offset='0%' className='text-blue-500 dark:text-blue-400' stopColor='currentColor' />
+          <stop offset='50%' className='text-cyan-500 dark:text-cyan-400' stopColor='currentColor' />
+          <stop offset='100%' className='text-purple-500 dark:text-purple-400' stopColor='currentColor' />
+        </linearGradient>
       </defs>
 
-      {/* Logo Icon - Binary Tree & Graph Network Symbol */}
+      {/* AR Logo with Circle - Both letters centered inside */}
       <g transform='translate(40, 40)'>
-        {/* Outer orbital ring - representing algorithms cycling */}
+        {/* Circle around logo */}
         <circle
           cx='0'
           cy='0'
-          r='32'
-          stroke='currentColor'
-          strokeWidth='2'
-          opacity='0.5'
-          className='text-cyan-400 dark:text-cyan-300'
-          strokeDasharray='5 5'
+          r='34'
+          stroke='url(#logoIconGradient)'
+          strokeWidth='2.5'
+          fill='none'
+          opacity='0.7'
         />
-
-        {/* Central node - represents root/starting point */}
-        <circle
-          cx='0'
-          cy='-15'
-          r='5'
-          fill='currentColor'
-          className='text-emerald-400 dark:text-emerald-300'
-          opacity='1'
-        />
-
-        {/* Binary tree structure - left branch */}
-        <g opacity='0.95' filter='url(#logoIconGlow)'>
-          <line
-            x1='0'
-            y1='-10'
-            x2='-13'
-            y2='6'
-            stroke='currentColor'
-            strokeWidth='3.5'
-            strokeLinecap='round'
-            className='text-cyan-400 dark:text-cyan-300'
-          />
-          <circle
-            cx='-13'
-            cy='6'
-            r='4.5'
-            fill='currentColor'
-            className='text-sky-400 dark:text-sky-300'
-          />
-          
-          {/* Sub-branches left */}
-          <line
-            x1='-13'
-            y1='10.5'
-            x2='-20'
-            y2='18'
-            stroke='currentColor'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-            className='text-sky-300 dark:text-sky-200'
-            opacity='0.9'
-          />
-          <circle
-            cx='-20'
-            cy='18'
-            r='3.5'
-            fill='currentColor'
-            className='text-teal-400 dark:text-teal-300'
-          />
-          
-          <line
-            x1='-13'
-            y1='10.5'
-            x2='-6'
-            y2='18'
-            stroke='currentColor'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-            className='text-sky-300 dark:text-sky-200'
-            opacity='0.9'
-          />
-          <circle
-            cx='-6'
-            cy='18'
-            r='3.5'
-            fill='currentColor'
-            className='text-teal-400 dark:text-teal-300'
-          />
-        </g>
-
-        {/* Binary tree structure - right branch */}
-        <g opacity='0.95' filter='url(#logoIconGlow)'>
-          <line
-            x1='0'
-            y1='-10'
-            x2='13'
-            y2='6'
-            stroke='currentColor'
-            strokeWidth='3.5'
-            strokeLinecap='round'
-            className='text-purple-400 dark:text-purple-300'
-          />
-          <circle
-            cx='13'
-            cy='6'
-            r='4.5'
-            fill='currentColor'
-            className='text-fuchsia-400 dark:text-fuchsia-300'
-          />
-          
-          {/* Sub-branches right */}
-          <line
-            x1='13'
-            y1='10.5'
-            x2='6'
-            y2='18'
-            stroke='currentColor'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-            className='text-fuchsia-300 dark:text-fuchsia-200'
-            opacity='0.9'
-          />
-          <circle
-            cx='6'
-            cy='18'
-            r='3.5'
-            fill='currentColor'
-            className='text-pink-400 dark:text-pink-300'
-          />
-          
-          <line
-            x1='13'
-            y1='10.5'
-            x2='20'
-            y2='18'
-            stroke='currentColor'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-            className='text-fuchsia-300 dark:text-fuchsia-200'
-            opacity='0.9'
-          />
-          <circle
-            cx='20'
-            cy='18'
-            r='3.5'
-            fill='currentColor'
-            className='text-pink-400 dark:text-pink-300'
-          />
-        </g>
-
-        {/* Upward arrow path - representing growth/rise */}
-        <g className='text-amber-400 dark:text-amber-300' filter='url(#logoIconGlow)'>
-          <path
-            d='M 0,-25 L 0,-32 M -4,-28 L 0,-32 L 4,-28'
-            stroke='currentColor'
-            strokeWidth='3'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            opacity='1'
-          />
-        </g>
-
-        {/* Connection lines creating network effect */}
-        <line
-          x1='-20'
-          y1='18'
-          x2='6'
-          y2='18'
-          stroke='currentColor'
-          strokeWidth='1.5'
+        
+        {/* Letter A - properly positioned left of center */}
+        <path
+          d='M -15 18 L -5 -18 L 5 18 M -10 5 L 0 5'
+          stroke='url(#logoIconGradient)'
+          strokeWidth='4'
           strokeLinecap='round'
-          className='text-cyan-300 dark:text-cyan-200'
-          opacity='0.6'
-          strokeDasharray='3 3'
+          strokeLinejoin='round'
+          fill='none'
         />
-        <line
-          x1='-6'
-          y1='18'
-          x2='20'
-          y2='18'
-          stroke='currentColor'
-          strokeWidth='1.5'
+        
+        {/* Letter R - properly positioned right of center */}
+        <path
+          d='M 8 18 L 8 -18 L 18 -18 Q 23 -18 23 -11 Q 23 -4 18 -4 L 8 -4 M 18 -4 L 24 18'
+          stroke='url(#logoIconGradient)'
+          strokeWidth='4'
           strokeLinecap='round'
-          className='text-fuchsia-300 dark:text-fuchsia-200'
-          opacity='0.6'
-          strokeDasharray='3 3'
-        />
-
-        {/* Decorative pulse circles */}
-        <circle
-          cx='0'
-          cy='0'
-          r='37'
-          stroke='currentColor'
-          strokeWidth='0.8'
-          opacity='0.3'
-          className='text-violet-400 dark:text-violet-300'
+          strokeLinejoin='round'
+          fill='none'
         />
       </g>
     </svg>

@@ -11,263 +11,62 @@ export function AlgoRiseLogo({
       xmlns='http://www.w3.org/2000/svg'
     >
       <defs>
-        {/* Multi-stop gradient for depth */}
-        <linearGradient id='primaryGradient' x1='0%' y1='0%' x2='100%' y2='100%'>
+        {/* Simple gradient for the logo */}
+        <linearGradient id='logoGradient' x1='0%' y1='0%' x2='100%' y2='100%'>
           <stop offset='0%' className='text-blue-500 dark:text-blue-400' stopColor='currentColor' />
           <stop offset='50%' className='text-cyan-500 dark:text-cyan-400' stopColor='currentColor' />
           <stop offset='100%' className='text-purple-500 dark:text-purple-400' stopColor='currentColor' />
         </linearGradient>
-        
-        {/* Accent gradient */}
-        <linearGradient id='accentGradient' x1='0%' y1='0%' x2='100%' y2='0%'>
-          <stop offset='0%' className='text-emerald-500 dark:text-emerald-400' stopColor='currentColor' />
-          <stop offset='100%' className='text-cyan-500 dark:text-cyan-400' stopColor='currentColor' />
-        </linearGradient>
-
-        {/* Glow for dark theme */}
-        <filter id='logoGlow'>
-          <feGaussianBlur stdDeviation='1.5' result='coloredBlur' />
-          <feMerge>
-            <feMergeNode in='coloredBlur' />
-            <feMergeNode in='SourceGraphic' />
-          </feMerge>
-        </filter>
       </defs>
 
-      {/* Logo Icon - Binary Tree & Graph Network Symbol */}
+      {/* AR Logo Icon with Circle */}
       <g transform='translate(40, 40)'>
-        {/* Outer orbital ring - representing algorithms cycling */}
+        {/* Circle around logo */}
         <circle
-          cx='0'
+          cx='13'
           cy='0'
           r='32'
-          stroke='currentColor'
-          strokeWidth='2'
-          opacity='0.5'
-          className='text-cyan-400 dark:text-cyan-300'
-          strokeDasharray='5 5'
+          stroke='url(#logoGradient)'
+          strokeWidth='2.5'
+          fill='none'
+          opacity='0.7'
         />
-
-        {/* Central node - represents root/starting point */}
-        <circle
-          cx='0'
-          cy='-15'
-          r='5'
-          fill='currentColor'
-          className='text-emerald-400 dark:text-emerald-300'
-          opacity='1'
-        />
-
-        {/* Binary tree structure - left branch */}
-        <g opacity='0.95'>
-          <line
-            x1='0'
-            y1='-10'
-            x2='-13'
-            y2='6'
-            stroke='currentColor'
-            strokeWidth='3.5'
-            strokeLinecap='round'
-            className='text-cyan-400 dark:text-cyan-300'
-          />
-          <circle
-            cx='-13'
-            cy='6'
-            r='4.5'
-            fill='currentColor'
-            className='text-sky-400 dark:text-sky-300'
-          />
-          
-          {/* Sub-branches left */}
-          <line
-            x1='-13'
-            y1='10.5'
-            x2='-20'
-            y2='18'
-            stroke='currentColor'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-            className='text-sky-300 dark:text-sky-200'
-            opacity='0.9'
-          />
-          <circle
-            cx='-20'
-            cy='18'
-            r='3.5'
-            fill='currentColor'
-            className='text-teal-400 dark:text-teal-300'
-          />
-          
-          <line
-            x1='-13'
-            y1='10.5'
-            x2='-6'
-            y2='18'
-            stroke='currentColor'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-            className='text-sky-300 dark:text-sky-200'
-            opacity='0.9'
-          />
-          <circle
-            cx='-6'
-            cy='18'
-            r='3.5'
-            fill='currentColor'
-            className='text-teal-400 dark:text-teal-300'
-          />
-        </g>
-
-        {/* Binary tree structure - right branch */}
-        <g opacity='0.95'>
-          <line
-            x1='0'
-            y1='-10'
-            x2='13'
-            y2='6'
-            stroke='currentColor'
-            strokeWidth='3.5'
-            strokeLinecap='round'
-            className='text-purple-400 dark:text-purple-300'
-          />
-          <circle
-            cx='13'
-            cy='6'
-            r='4.5'
-            fill='currentColor'
-            className='text-fuchsia-400 dark:text-fuchsia-300'
-          />
-          
-          {/* Sub-branches right */}
-          <line
-            x1='13'
-            y1='10.5'
-            x2='6'
-            y2='18'
-            stroke='currentColor'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-            className='text-fuchsia-300 dark:text-fuchsia-200'
-            opacity='0.9'
-          />
-          <circle
-            cx='6'
-            cy='18'
-            r='3.5'
-            fill='currentColor'
-            className='text-pink-400 dark:text-pink-300'
-          />
-          
-          <line
-            x1='13'
-            y1='10.5'
-            x2='20'
-            y2='18'
-            stroke='currentColor'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-            className='text-fuchsia-300 dark:text-fuchsia-200'
-            opacity='0.9'
-          />
-          <circle
-            cx='20'
-            cy='18'
-            r='3.5'
-            fill='currentColor'
-            className='text-pink-400 dark:text-pink-300'
-          />
-        </g>
-
-        {/* Upward arrow path - representing growth/rise */}
-        <g className='text-amber-400 dark:text-amber-300'>
-          <path
-            d='M 0,-25 L 0,-32 M -4,-28 L 0,-32 L 4,-28'
-            stroke='currentColor'
-            strokeWidth='3'
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            opacity='1'
-          />
-        </g>
-
-        {/* Connection lines creating network effect */}
-        <line
-          x1='-20'
-          y1='18'
-          x2='6'
-          y2='18'
-          stroke='currentColor'
-          strokeWidth='1.5'
+        
+        {/* Letter A */}
+        <path
+          d='M -12 20 L 0 -20 L 12 20 M -6 8 L 6 8'
+          stroke='url(#logoGradient)'
+          strokeWidth='4'
           strokeLinecap='round'
-          className='text-cyan-300 dark:text-cyan-200'
-          opacity='0.6'
-          strokeDasharray='3 3'
+          strokeLinejoin='round'
+          fill='none'
         />
-        <line
-          x1='-6'
-          y1='18'
-          x2='20'
-          y2='18'
-          stroke='currentColor'
-          strokeWidth='1.5'
+        
+        {/* Letter R */}
+        <path
+          d='M 18 20 L 18 -20 L 30 -20 Q 36 -20 36 -12 Q 36 -4 30 -4 L 18 -4 M 30 -4 L 38 20'
+          stroke='url(#logoGradient)'
+          strokeWidth='4'
           strokeLinecap='round'
-          className='text-fuchsia-300 dark:text-fuchsia-200'
-          opacity='0.6'
-          strokeDasharray='3 3'
-        />
-
-        {/* Decorative pulse circles */}
-        <circle
-          cx='0'
-          cy='0'
-          r='37'
-          stroke='currentColor'
-          strokeWidth='0.8'
-          opacity='0.3'
-          className='text-violet-400 dark:text-violet-300'
+          strokeLinejoin='round'
+          fill='none'
         />
       </g>
 
-      {/* Text: AlgoRise with gradient effect */}
+      {/* Text: AlgoRise - Simple clean font */}
       <g>
         <text
           x='95'
           y='52'
-          fontFamily="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-          fontSize='40'
-          fontWeight='900'
-          letterSpacing='-1.8'
+          fontFamily="system-ui, -apple-system, 'Segoe UI', sans-serif"
+          fontSize='38'
+          fontWeight='600'
+          letterSpacing='-0.5'
           className='text-slate-800 dark:text-gray-100'
           style={{ fill: 'currentColor' }}
         >
-          Algo
+          AlgoRise
         </text>
-        <text
-          x='183'
-          y='52'
-          fontFamily="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-          fontSize='40'
-          fontWeight='900'
-          letterSpacing='-1.8'
-        >
-          <tspan className='text-cyan-500 dark:text-cyan-400' style={{ fill: 'currentColor' }}>R</tspan>
-          <tspan className='text-sky-500 dark:text-sky-400' style={{ fill: 'currentColor' }}>i</tspan>
-          <tspan className='text-purple-500 dark:text-purple-400' style={{ fill: 'currentColor' }}>s</tspan>
-          <tspan className='text-fuchsia-500 dark:text-fuchsia-400' style={{ fill: 'currentColor' }}>e</tspan>
-        </text>
-        
-        {/* Vibrant bottom accent line */}
-        <line
-          x1='95'
-          y1='59'
-          x2='260'
-          y2='59'
-          stroke='currentColor'
-          strokeWidth='3'
-          opacity='0.4'
-          strokeLinecap='round'
-          className='text-cyan-400 dark:text-cyan-300'
-        />
       </g>
     </svg>
   );

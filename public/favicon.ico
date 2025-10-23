@@ -1,5 +1,14 @@
-<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="32" height="32" rx="6" fill="#0A0A0A"/>
-  <path d="M8 24L13 8H15L20 24H17L16.5 22H12.5L12 24H8ZM13 19H16L14.5 14L13 19Z" fill="#06B6D4"/>
-  <path d="M21 8H27C28.5 8 30 9.5 30 11V14C30 15.2 29 16 28 16.2L31 24H27L24.5 17H24V24H21V8ZM24 11V15H27C27.5 15 28 14.5 28 14V12C28 11.5 27.5 11 27 11H24Z" fill="#06B6D4"/>
+<svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="50%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(50,50)">
+    <circle cx="8" cy="0" r="45" stroke="url(#g)" stroke-width="3.5" fill="none" opacity="0.7"/>
+    <path d="M -18 30 L 0 -30 L 18 30 M -10 12 L 10 12" stroke="url(#g)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M 26 30 L 26 -30 L 42 -30 Q 52 -30 52 -18 Q 52 -6 42 -6 L 26 -6 M 42 -6 L 54 30" stroke="url(#g)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
 </svg>

@@ -80,7 +80,7 @@ export default function JoinGroupPage({
 
         setStatus('success');
         setMessage(`You've joined ${group.name}!`);
-        setTimeout(() => router.push('/groups'), 1500);
+        setTimeout(() => router.replace('/groups'), 1200);
       } catch (err: any) {
         setStatus('error');
         setMessage(err.message || 'Something went wrong');

@@ -119,7 +119,9 @@ export function AuthModal({ open, mode, onModeChange, onOpenChange }: AuthModalP
     try {
       const supabase = createClient();
       const origin = buildOrigin();
-      const nextPath = context === 'signin' ? '/profile' : '/auth/sign-up-success';
+      // Always go to callback first; it decides final redirect based on user existence
+      // For both signin and signup via OAuth, send next as '/profile' so callback can upgrade to '/profile/overview' if existing
+      const nextPath = '/profile';
       const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}&o=${encodeURIComponent(origin)}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
@@ -152,7 +154,29 @@ export function AuthModal({ open, mode, onModeChange, onOpenChange }: AuthModalP
       if (error) throw error;
       await refreshUser();
       onOpenChange(false);
-      router.push('/profile');
+      // Compute destination based on user profile/CF status
+      try {
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
+        let destination = '/profile';
+        if (currentUser?.id) {
+          const { data: cf } = await supabase
+            .from('cf_handles')
+            .select('verified')
+            .eq('user_id', currentUser.id)
+            .single();
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('status')
+            .eq('user_id', currentUser.id)
+            .single();
+          if (cf?.verified && prof?.status) destination = '/profile/overview';
+        }
+        router.push(destination);
+      } catch {
+        router.push('/profile');
+      }
     } catch (error) {
       setSignInError(error instanceof Error ? error.message : 'Unable to sign in right now.');
     } finally {

@@ -198,7 +198,34 @@ export default function Page() {
       });
       if (error) throw error;
       await refreshUser();
-      router.push('/profile');
+
+      // Decide redirect based on existing profile status
+      try {
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
+
+        let redirectTarget = '/profile';
+        if (currentUser?.id) {
+          const { data: cf } = await supabase
+            .from('cf_handles')
+            .select('verified')
+            .eq('user_id', currentUser.id)
+            .single();
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('status')
+            .eq('user_id', currentUser.id)
+            .single();
+
+          if (cf?.verified && prof?.status) {
+            redirectTarget = '/profile/overview';
+          }
+        }
+        router.push(redirectTarget);
+      } catch {
+        router.push('/profile');
+      }
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : 'An unexpected error occurred'
@@ -226,7 +253,7 @@ export default function Page() {
       };
 
       const origin = getBaseUrl();
-      const redirectTo = `${origin}/auth/callback`;
+      const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent('/profile')}`;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider,

@@ -1,72 +1,57 @@
-export function AlgoRiseLogo({
-  className = 'h-10 w-auto',
+// Logo icon only (without text) - for auth pages and other places
+export function AlgoRiseLogoIcon({
+  className = 'h-16 w-16',
 }: {
   className?: string;
 }) {
   return (
     <svg
-      viewBox='0 0 320 80'
+      viewBox='0 0 80 80'
       className={className}
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
     >
       <defs>
-        {/* Simple gradient for the logo */}
-        <linearGradient id='logoGradient' x1='0%' y1='0%' x2='100%' y2='100%'>
+        {/* Simple gradient */}
+        <linearGradient id='logoIconGradient' x1='0%' y1='0%' x2='100%' y2='100%'>
           <stop offset='0%' className='text-blue-500 dark:text-blue-400' stopColor='currentColor' />
           <stop offset='50%' className='text-cyan-500 dark:text-cyan-400' stopColor='currentColor' />
           <stop offset='100%' className='text-purple-500 dark:text-purple-400' stopColor='currentColor' />
         </linearGradient>
       </defs>
 
-      {/* AR Logo Icon with Circle */}
+      {/* AR Logo with Circle - Both letters centered inside */}
       <g transform='translate(40, 40)'>
         {/* Circle around logo */}
         <circle
-          cx='13'
+          cx='0'
           cy='0'
-          r='32'
-          stroke='url(#logoGradient)'
+          r='34'
+          stroke='url(#logoIconGradient)'
           strokeWidth='2.5'
           fill='none'
           opacity='0.7'
         />
         
-        {/* Letter A */}
+        {/* Letter A - properly positioned left of center */}
         <path
-          d='M -12 20 L 0 -20 L 12 20 M -6 8 L 6 8'
-          stroke='url(#logoGradient)'
+          d='M -15 18 L -5 -18 L 5 18 M -10 5 L 0 5'
+          stroke='url(#logoIconGradient)'
           strokeWidth='4'
           strokeLinecap='round'
           strokeLinejoin='round'
           fill='none'
         />
         
-        {/* Letter R */}
+        {/* Letter R - properly positioned right of center */}
         <path
-          d='M 18 20 L 18 -20 L 30 -20 Q 36 -20 36 -12 Q 36 -4 30 -4 L 18 -4 M 30 -4 L 38 20'
-          stroke='url(#logoGradient)'
+          d='M 8 18 L 8 -18 L 18 -18 Q 23 -18 23 -11 Q 23 -4 18 -4 L 8 -4 M 18 -4 L 24 18'
+          stroke='url(#logoIconGradient)'
           strokeWidth='4'
           strokeLinecap='round'
           strokeLinejoin='round'
           fill='none'
         />
-      </g>
-
-      {/* Text: AlgoRise - Simple clean font */}
-      <g>
-        <text
-          x='95'
-          y='52'
-          fontFamily="system-ui, -apple-system, 'Segoe UI', sans-serif"
-          fontSize='38'
-          fontWeight='600'
-          letterSpacing='-0.5'
-          className='text-slate-800 dark:text-gray-100'
-          style={{ fill: 'currentColor' }}
-        >
-          AlgoRise
-        </text>
       </g>
     </svg>
   );

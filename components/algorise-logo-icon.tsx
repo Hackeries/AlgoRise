@@ -1,31 +1,19 @@
-export function AlgoRiseLogo({
-  className = 'h-10 w-auto',
+// Logo icon only (without text) - for auth pages and other places
+export function AlgoRiseLogoIcon({
+  className = 'h-16 w-16',
 }: {
   className?: string;
 }) {
   return (
     <svg
-      viewBox='0 0 320 80'
+      viewBox='0 0 80 80'
       className={className}
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
     >
       <defs>
-        {/* Multi-stop gradient for depth */}
-        <linearGradient id='primaryGradient' x1='0%' y1='0%' x2='100%' y2='100%'>
-          <stop offset='0%' className='text-blue-500 dark:text-blue-400' stopColor='currentColor' />
-          <stop offset='50%' className='text-cyan-500 dark:text-cyan-400' stopColor='currentColor' />
-          <stop offset='100%' className='text-purple-500 dark:text-purple-400' stopColor='currentColor' />
-        </linearGradient>
-        
-        {/* Accent gradient */}
-        <linearGradient id='accentGradient' x1='0%' y1='0%' x2='100%' y2='0%'>
-          <stop offset='0%' className='text-emerald-500 dark:text-emerald-400' stopColor='currentColor' />
-          <stop offset='100%' className='text-cyan-500 dark:text-cyan-400' stopColor='currentColor' />
-        </linearGradient>
-
-        {/* Glow for dark theme */}
-        <filter id='logoGlow'>
+        {/* Glow for better visibility */}
+        <filter id='logoIconGlow'>
           <feGaussianBlur stdDeviation='1.5' result='coloredBlur' />
           <feMerge>
             <feMergeNode in='coloredBlur' />
@@ -59,7 +47,7 @@ export function AlgoRiseLogo({
         />
 
         {/* Binary tree structure - left branch */}
-        <g opacity='0.95'>
+        <g opacity='0.95' filter='url(#logoIconGlow)'>
           <line
             x1='0'
             y1='-10'
@@ -119,7 +107,7 @@ export function AlgoRiseLogo({
         </g>
 
         {/* Binary tree structure - right branch */}
-        <g opacity='0.95'>
+        <g opacity='0.95' filter='url(#logoIconGlow)'>
           <line
             x1='0'
             y1='-10'
@@ -179,7 +167,7 @@ export function AlgoRiseLogo({
         </g>
 
         {/* Upward arrow path - representing growth/rise */}
-        <g className='text-amber-400 dark:text-amber-300'>
+        <g className='text-amber-400 dark:text-amber-300' filter='url(#logoIconGlow)'>
           <path
             d='M 0,-25 L 0,-32 M -4,-28 L 0,-32 L 4,-28'
             stroke='currentColor'
@@ -225,48 +213,6 @@ export function AlgoRiseLogo({
           strokeWidth='0.8'
           opacity='0.3'
           className='text-violet-400 dark:text-violet-300'
-        />
-      </g>
-
-      {/* Text: AlgoRise with gradient effect */}
-      <g>
-        <text
-          x='95'
-          y='52'
-          fontFamily="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-          fontSize='40'
-          fontWeight='900'
-          letterSpacing='-1.8'
-          className='text-slate-800 dark:text-gray-100'
-          style={{ fill: 'currentColor' }}
-        >
-          Algo
-        </text>
-        <text
-          x='183'
-          y='52'
-          fontFamily="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-          fontSize='40'
-          fontWeight='900'
-          letterSpacing='-1.8'
-        >
-          <tspan className='text-cyan-500 dark:text-cyan-400' style={{ fill: 'currentColor' }}>R</tspan>
-          <tspan className='text-sky-500 dark:text-sky-400' style={{ fill: 'currentColor' }}>i</tspan>
-          <tspan className='text-purple-500 dark:text-purple-400' style={{ fill: 'currentColor' }}>s</tspan>
-          <tspan className='text-fuchsia-500 dark:text-fuchsia-400' style={{ fill: 'currentColor' }}>e</tspan>
-        </text>
-        
-        {/* Vibrant bottom accent line */}
-        <line
-          x1='95'
-          y1='59'
-          x2='260'
-          y2='59'
-          stroke='currentColor'
-          strokeWidth='3'
-          opacity='0.4'
-          strokeLinecap='round'
-          className='text-cyan-400 dark:text-cyan-300'
         />
       </g>
     </svg>

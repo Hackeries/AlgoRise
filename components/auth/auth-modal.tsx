@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/auth/context';
-import Image from 'next/image';
+import { AlgoRiseLogoIcon } from '@/components/algorise-logo-icon';
 
 type AuthMode = 'signin' | 'signup';
 
@@ -235,17 +235,11 @@ export function AuthModal({ open, mode, onModeChange, onOpenChange }: AuthModalP
 
           <div className='relative p-6 space-y-6'>
             <div className='text-center space-y-3'>
-              {/* Just the logo with glow effect */}
-              <div className='flex justify-center mb-6'>
+              {/* AlgoRise Logo Icon with glow effect */}
+              <div className='flex justify-center mb-4'>
                 <div className='relative'>
                   <div className='absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse'></div>
-                  <Image
-                    src="/algorise-logo.png"
-                    alt="AlgoRise"
-                    width={64}
-                    height={64}
-                    className="relative object-contain"
-                  />
+                  <AlgoRiseLogoIcon className='h-14 w-14 relative' />
                 </div>
               </div>
               <h2 className='text-2xl font-bold tracking-tight bg-gradient-to-br from-foreground via-foreground/90 to-foreground/70 bg-clip-text text-transparent'>

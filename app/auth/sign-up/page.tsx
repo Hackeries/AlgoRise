@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AuthConfigurationAlert } from '@/components/auth/auth-configuration-alert';
 import { Mail, Lock, Github, Eye, EyeOff } from 'lucide-react';
+import { AlgoRiseLogoIcon } from '@/components/algorise-logo-icon';
 
 // Spinner component
 const Spinner = () => (
@@ -258,7 +259,9 @@ export default function SignUpPage() {
       <div className='w-full max-w-md'>
         <Card className='shadow-xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl transform transition duration-300'>
           <CardHeader className='text-center px-4 sm:px-6 py-4 sm:py-6'>
-            <Mail className='mx-auto mb-4 h-8 w-8 sm:h-10 sm:w-10 text-blue-500' />
+            <div className='mx-auto mb-4'>
+              <AlgoRiseLogoIcon className='h-16 w-16 sm:h-20 sm:w-20 mx-auto' />
+            </div>
             <CardTitle className='text-xl sm:text-2xl md:text-3xl font-bold'>
               Sign Up
             </CardTitle>

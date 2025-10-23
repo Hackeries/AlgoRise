@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { Github, Mail, Linkedin, Sparkles, Code2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { AlgoRiseLogo } from '@/components/algorise-logo';
 
 export function Footer() {
   const containerVariants = {
@@ -46,10 +47,7 @@ export function Footer() {
           {/* About Section */}
           <motion.div variants={itemVariants}>
             <div className='flex items-center gap-2 mb-4'>
-              <Code2 className='h-5 w-5 text-blue-600 dark:text-[#63EDA1]' />
-              <h3 className='text-base font-bold bg-gradient-to-r from-blue-700 to-purple-700 dark:from-[#63EDA1] dark:via-emerald-400 dark:to-cyan-400 bg-clip-text text-transparent'>
-                AlgoRise
-              </h3>
+              <AlgoRiseLogo className='h-8 w-auto' />
             </div>
             <p className='text-sm text-slate-700 dark:text-gray-300 leading-relaxed'>
               Practice that adapts. Compete when it counts. Master competitive

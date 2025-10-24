@@ -66,7 +66,7 @@ function QueuePageClient({ mode }: { mode: '1v1' | '3v3' }) {
         const response = await fetch('/api/arena/queue', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ mode }),
+          body: JSON.stringify({ mode, teamId: new URLSearchParams(window.location.search).get('teamId') }),
         });
 
         const data = await response.json();
@@ -141,21 +141,14 @@ function QueuePageClient({ mode }: { mode: '1v1' | '3v3' }) {
 
   const handlePlayBot = async () => {
     try {
-      const supabase = createClient();
-      const { data: battle, error } = await supabase
-        .from('battles')
-        .insert({
-          mode: mode,
-          status: 'active',
-        })
-        .select()
-        .single();
-
-      if (!error && battle) {
-        router.push(`/battle-arena/room/${battle.id}`);
-      } else {
-        setErrorMessage('Failed to create bot match. Please try again.');
-      }
+      const response = await fetch('/api/arena/bot-match', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Bot match failed');
+      router.push(`/battle-arena/room/${data.battleId}`);
     } catch (error) {
       console.error('Bot match error:', error);
       setErrorMessage('Failed to create bot match. Please try again.');

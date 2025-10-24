@@ -142,6 +142,7 @@
   }
   html {
     color-scheme: light;
+    text-size-adjust: 100%;
   }
   .dark {
     color-scheme: dark;
@@ -150,6 +151,8 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1, "cv10" 1;
     text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   h1,
   h2,
@@ -158,7 +161,7 @@
     @apply text-foreground tracking-tight;
   }
   a {
-    @apply text-primary hover:opacity-90 underline-offset-4 hover:underline;
+    @apply text-primary underline-offset-4 hover:underline;
   }
   button:not([disabled]),
   [role="button"]:not([disabled]) {
@@ -169,8 +172,8 @@
 @layer utilities {
   /* Smooth theme transitions */
   .theme-transition * {
-    transition: color 220ms ease, background-color 220ms ease, border-color 220ms ease, fill 220ms ease, stroke 220ms
-      ease, opacity 220ms ease, transform 220ms ease;
+    transition: color 200ms ease, background-color 200ms ease, border-color 200ms ease, fill 200ms ease,
+      stroke 200ms ease, opacity 150ms ease, transform 150ms ease, box-shadow 150ms ease;
   }
   @media (prefers-reduced-motion: reduce) {
     .theme-transition * {
@@ -198,17 +201,11 @@
 
   /* Enhanced card hover effects with smooth transitions */
   .card-3d {
-    @apply transition-all duration-300 ease-out;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.08);
+    @apply transition-all duration-300 ease-out shadow-elevation1;
   }
 
   .card-3d:hover {
-    @apply -translate-y-1;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-  }
-
-  .dark .card-3d:hover {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    @apply -translate-y-1 shadow-elevation3;
   }
 
   /* New interactive card hover state */

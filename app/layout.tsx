@@ -167,10 +167,10 @@ export default function RootLayout({
       </head>
       <body
         suppressHydrationWarning
-        className='min-h-dvh bg-background text-foreground font-sans theme-transition'
+        className='min-h-dvh bg-background text-foreground font-sans theme-transition antialiased selection:bg-primary selection:text-primary-foreground'
       >
         <ErrorBoundary>
-          <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
+          <ThemeProvider>
             <AuthProvider>
               <CFVerificationProvider>
                 <SidebarLayout>

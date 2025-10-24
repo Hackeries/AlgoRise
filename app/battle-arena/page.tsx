@@ -352,9 +352,9 @@ export default function BattleArenaPage() {
           >
             <div className='flex items-center gap-3 mb-2'>
               <Zap className='w-5 h-5 text-blue-400' />
-              <p className='text-sm text-blue-300/70'>Active Players</p>
+              <p className='text-sm text-blue-300/70'>Live Matchmaking</p>
             </div>
-            <p className='text-3xl font-bold text-white'>2,847</p>
+            <p className='text-base text-blue-200'>Realtime rooms powered by Supabase</p>
           </motion.div>
           <motion.div
             variants={itemVariants}
@@ -362,9 +362,9 @@ export default function BattleArenaPage() {
           >
             <div className='flex items-center gap-3 mb-2'>
               <Clock className='w-5 h-5 text-purple-400' />
-              <p className='text-sm text-purple-300/70'>Battles Today</p>
+              <p className='text-sm text-purple-300/70'>Seamless Experience</p>
             </div>
-            <p className='text-3xl font-bold text-white'>1,234</p>
+            <p className='text-base text-purple-200'>Smooth animations and modern UI theme</p>
           </motion.div>
           <motion.div
             variants={itemVariants}
@@ -372,9 +372,9 @@ export default function BattleArenaPage() {
           >
             <div className='flex items-center gap-3 mb-2'>
               <Crown className='w-5 h-5 text-yellow-400' />
-              <p className='text-sm text-yellow-300/70'>Top Rating</p>
+              <p className='text-sm text-yellow-300/70'>Private Beta</p>
             </div>
-            <p className='text-3xl font-bold text-white'>3,850</p>
+            <p className='text-base text-yellow-200'>No placeholder stats shown during beta</p>
           </motion.div>
         </motion.div>
       </div>

@@ -33,6 +33,7 @@ import { usePathname } from 'next/navigation';
 import { AuthModal } from '@/components/auth/auth-modal';
 import { cn } from '@/lib/utils';
 import { AlgoRiseLogo } from '@/components/algorise-logo';
+import { Container } from '@/components/ui/container';
 
 interface Notification {
   id: number;
@@ -189,13 +190,15 @@ export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
     <>
       <header
         className={cn(
-          'h-16 flex items-center justify-between z-50 w-full',
-          // On landing page: flush, transparent, no border
-          pathname === '/'
-            ? 'px-0 bg-transparent border-b-0'
-            : 'px-3 sm:px-6 bg-card border-b border-border backdrop-blur'
+          'h-16 z-50 w-full',
+          pathname === '/' ? 'bg-transparent border-b-0' : 'bg-card border-b border-border backdrop-blur'
         )}
       >
+        <Container
+          size={pathname === '/' ? 'full' : '7xl'}
+          padding={pathname !== '/'}
+          className='h-16 flex items-center justify-between'
+        >
         {/* Left: Mobile Menu + Logo */}
         <div className='flex items-center gap-2 sm:gap-4 flex-shrink-0'>
           {/* Mobile Menu Button */}
@@ -660,6 +663,7 @@ export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
             </DropdownMenu>
           )}
         </div>
+        </Container>
       </header>
 
       {/* Mobile Search Modal */}

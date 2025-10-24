@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { Github, Mail, Linkedin, Sparkles, Code2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Container } from '@/components/ui/container';
 
 export function Footer() {
   const containerVariants = {
@@ -35,7 +36,7 @@ export function Footer() {
       <div className='absolute top-0 left-0 w-96 h-96 bg-blue-400/10 dark:bg-[#63EDA1]/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2' />
       <div className='absolute bottom-0 right-0 w-96 h-96 bg-purple-400/10 dark:bg-purple-500/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2' />
       
-      <div className='mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 relative z-10'>
+      <Container className='py-12 relative z-10'>
         <motion.div
           className='grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4'
           variants={containerVariants}
@@ -222,7 +223,7 @@ export function Footer() {
             </div>
           </div>
         </motion.div>
-      </div>
+      </Container>
     </motion.footer>
   );
 }

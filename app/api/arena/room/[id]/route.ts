@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { generateBattleProblems } from '@/lib/arena/problem-generator';
+import { getUserCodeforcesRating } from '@/lib/battle-arena/matchmaking';
 
 export async function GET(
   request: NextRequest,
@@ -37,48 +39,7 @@ export async function GET(
       return NextResponse.json({ error: 'Battle not found' }, { status: 404 });
     }
 
-    // Derive problems for the battle: if no problem_set_id, generate from CF by rating window
-    let problems: any[] = [];
-    if ((battle as any).problem_set_id) {
-      const { data: contest } = await supabase
-        .from('contests')
-        .select('problems')
-        .eq('id', (battle as any).problem_set_id)
-        .single();
-      if (contest?.problems && Array.isArray(contest.problems)) {
-        problems = contest.problems.slice(0, 5);
-      }
-    }
-
-    if (problems.length === 0) {
-      try {
-        const ratingMin = 1000;
-        const ratingMax = 1600;
-        const origin = request.nextUrl.origin;
-        const resp = await fetch(`${origin}/api/practice/generate`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ count: 5, ratingMin, ratingMax }),
-        });
-        if (resp.ok) {
-          const json = await resp.json();
-          problems = (json.problems || []).map((p: any) => ({
-            id: `${p.contestId}${p.index}`,
-            name: p.name,
-            rating: p.rating,
-            description: p.statement || 'Solve the problem from Codeforces.',
-            examples: [],
-            constraints: '',
-            timeLimit: 2,
-            memoryLimit: 256,
-            difficulty: p.rating <= 1200 ? 'easy' : p.rating <= 1700 ? 'medium' : 'hard',
-            source: 'Codeforces',
-            contestUrl: `https://codeforces.com/problemset/problem/${p.contestId}/${p.index}`,
-          }));
-        }
-      } catch (_) {}
-    }
-
+    // Fetch teams (with players) early to detect bot matches and compute rating
     const { data: teams } = await supabase
       .from('battle_teams')
       .select(
@@ -88,6 +49,51 @@ export async function GET(
       `
       )
       .eq('battle_id', battleId);
+
+    // Determine if this is a bot battle (team_name starts with "Bot (")
+    const botTeam = (teams || []).find(t => (t as any).team_name?.startsWith('Bot (')) as any | undefined;
+    const humanTeam = (teams || []).find(t => !(t as any).team_name?.startsWith('Bot (')) as any | undefined;
+
+    // Derive problems for the battle
+    let problems: any[] = [];
+
+    if (botTeam) {
+      // Internal problem generation for bot battles, fixed by battle id
+      let baseRating = 1500;
+      try {
+        const humanUserId = (humanTeam?.battle_team_players || [])[0]?.user_id as string | undefined;
+        if (humanUserId) {
+          baseRating = await getUserCodeforcesRating(humanUserId);
+        }
+      } catch {}
+      problems = generateBattleProblems({ rating: baseRating, count: 3, seed: battleId }).map(p => ({
+        ...p,
+      }));
+    } else if ((battle as any).problem_set_id) {
+      // If linked to a contest, load problem rows and map to internal shape
+      const { data: cps } = await supabase
+        .from('contest_problems')
+        .select('problem_id, title, rating')
+        .eq('contest_id', (battle as any).problem_set_id)
+        .order('points', { ascending: true });
+      problems = (cps || []).slice(0, 3).map((p: any, idx: number) => ({
+        id: p.problem_id,
+        name: p.title || p.problem_id,
+        rating: p.rating || undefined,
+        description:
+          '<p>Contest problem. Full statement available in the arena.</p>',
+        examples: [],
+        constraints: '',
+        timeLimit: 2,
+        memoryLimit: 256,
+        difficulty: idx === 0 ? 'easy' : idx === 1 ? 'medium' : 'hard',
+        source: 'Internal',
+      }));
+    }
+
+    // As a final fallback (non-bot battles only), keep empty problems array
+
+    // teams already fetched above
 
     const { data: submissions } = await supabase
       .from('battle_submissions')
@@ -109,6 +115,84 @@ export async function GET(
         penaltyTime: penalty,
       };
     });
+
+    // If bot battle, overlay bot's simulated progress onto its team
+    if (botTeam) {
+      // Compute elapsed time since battle start
+      const startAtIso = (battle as any).start_at || (battle as any).created_at;
+      const startMs = startAtIso ? new Date(startAtIso).getTime() : Date.now();
+      const elapsedMs = Math.max(0, Date.now() - startMs);
+      const contestDurationMs = 45 * 60 * 1000; // 45 minutes
+
+      // Parse bot rating from name e.g., "Bot (1520)"
+      const m = String(botTeam.team_name || '').match(/Bot\s*\((\d+)\)/i);
+      const botRating = m ? parseInt(m[1], 10) : 1500;
+
+      // Derive base rating as in problems generation
+      let baseRating = 1500;
+      try {
+        const humanUserId = (humanTeam?.battle_team_players || [])[0]?.user_id as string | undefined;
+        if (humanUserId) baseRating = await getUserCodeforcesRating(humanUserId);
+      } catch {}
+
+      // Deterministic seeded RNG
+      const seed = `${battleId}-bot`;
+      let h = 2166136261 >>> 0;
+      for (let i = 0; i < seed.length; i++) {
+        h ^= seed.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      let t = h >>> 0;
+      const rand = () => {
+        t += 0x6d2b79f5;
+        let r = Math.imul(t ^ (t >>> 15), 1 | t);
+        r ^= r + Math.imul(r ^ (r >>> 7), 61 | r);
+        return ((r ^ (r >>> 14)) >>> 0) / 4294967296;
+      };
+
+      const ratingDiff = botRating - baseRating;
+      const baseSuccess = Math.max(0.3, Math.min(0.9, 0.6 + (ratingDiff / 500) * 0.2));
+
+      // Plan 3 problems with E/M/H multipliers
+      const difficultyMultipliers = [0.8, 1.0, 1.25];
+      const difficultyOffsets = [0.15, 0.0, -0.15];
+
+      let botSolved = 0;
+      let botPenalty = 0;
+      for (let i = 0; i < Math.min(3, problems.length || 3); i++) {
+        const successProb = Math.max(
+          0.1,
+          Math.min(0.95, baseSuccess + difficultyOffsets[i]!)
+        );
+        const willSolve = rand() < successProb;
+        // Triangular-ish distribution around 15 min, scaled by multiplier and rating diff
+        const baseMean = 15 * 60 * 1000 * difficultyMultipliers[i]!;
+        const ratingBoost = -((ratingDiff / 500) * 5 * 60 * 1000); // faster if stronger
+        const u1 = rand();
+        const u2 = rand();
+        const timeNoise = ((u1 + u2) / 2 - 0.5) * 6 * 60 * 1000; // +/- ~3 min
+        const solveTime = Math.max(3 * 60 * 1000, baseMean + ratingBoost + timeNoise);
+
+        if (willSolve && elapsedMs >= solveTime && solveTime <= contestDurationMs) {
+          botSolved += 1;
+          // Wrong attempts before AC: 0-2 average based on (1 - successProb)
+          const expectedWrongs = Math.max(0, Math.min(2, (1 - successProb) * 3));
+          const wrongs = Math.floor(expectedWrongs + rand());
+          botPenalty += Math.floor(solveTime / 60000) + wrongs * 20;
+        }
+      }
+
+      // Replace bot team entry in scoreboard
+      const idx = teamScores.findIndex(ts => ts.teamId === botTeam.id);
+      if (idx >= 0) {
+        teamScores[idx] = {
+          teamId: botTeam.id,
+          teamName: botTeam.team_name,
+          score: botSolved,
+          penaltyTime: botPenalty,
+        } as any;
+      }
+    }
 
     return NextResponse.json({
       battle,

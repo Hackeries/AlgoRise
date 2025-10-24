@@ -74,6 +74,11 @@ export async function POST(
       .single();
 
     if (battle?.mode === '1v1' && (teams || []).length === 2) {
+      // Skip ELO updates if this was a bot match (bot team has name like "Bot (xxxx)")
+      const hasBot = (teams || []).some((t: any) => String(t.team_name || '').startsWith('Bot ('));
+      if (hasBot) {
+        // No ELO changes for bot matches
+      } else {
       // Map team -> user ids
       const { data: teamPlayers } = await service
         .from('battle_team_players')
@@ -111,6 +116,7 @@ export async function POST(
           { battle_id: battleId, user_id: u2, team_id: t2, result: winnerIsT1 ? 'loss' : 'win', elo_change: winnerIsT1 ? loserChange : winnerChange },
         ]
       );
+      }
     }
 
     // Broadcast final scoreboard

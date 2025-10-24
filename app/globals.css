@@ -136,9 +136,7 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-[1px_solid_hsl(var(--ring)/0.5)];
-  }
+  * { @apply border-border; }
   html {
     color-scheme: light;
   }
@@ -200,8 +198,8 @@
   }
 
   .card-3d:hover {
-    @apply -translate-y-1;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+    @apply -translate-y-0.5;
+    box-shadow: 0 8px 16px -6px rgba(0, 0, 0, 0.12), 0 4px 8px -4px rgba(0, 0, 0, 0.08);
   }
 
   .dark .card-3d:hover {
@@ -213,9 +211,7 @@
     @apply transition-all duration-200 ease-out cursor-pointer;
   }
 
-  .card-hover:hover {
-    @apply border-primary/50 bg-card/80 shadow-lg;
-  }
+  .card-hover:hover { @apply border-border bg-card/70 shadow-sm; }
 
   .dark .card-hover:hover {
     @apply border-primary/40 bg-card/60;
@@ -256,9 +252,7 @@
     }
   }
 
-  .hover-glow:hover {
-    animation: glow 1.5s infinite ease-in-out;
-  }
+  .hover-glow:hover { opacity: 0.98; }
 
   /* Gradient border effect */
   .gradient-border {

@@ -13,8 +13,8 @@
   --popover: 0 0% 100%;
   --popover-foreground: 240 10% 12%;
 
-  /* Brand Colors - AlgoRise Blue & Cyan */
-  --primary: 217 100% 50%;
+  /* Brand Colors - AlgoRise Electric Blue & Aqua */
+  --primary: 217 92% 52%;
   --primary-foreground: 0 0% 100%;
   --secondary: 0 0% 96%;
   --secondary-foreground: 240 10% 12%;
@@ -22,7 +22,7 @@
   /* Accents & States */
   --muted: 0 0% 92%;
   --muted-foreground: 240 5% 35%;
-  --accent: 180 100% 50%;
+  --accent: 190 95% 48%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
@@ -33,11 +33,11 @@
   --ring: 217 100% 50%;
 
   /* Charts */
-  --chart-1: 217 100% 50%;
-  --chart-2: 180 100% 50%;
-  --chart-3: 120 100% 50%;
-  --chart-4: 0 84% 60%;
-  --chart-5: 240 100% 50%;
+  --chart-1: 217 92% 52%;
+  --chart-2: 190 95% 48%;
+  --chart-3: 160 70% 45%;
+  --chart-4: 0 70% 55%;
+  --chart-5: 250 80% 60%;
 
   /* Sidebar */
   --sidebar: 0 0% 98.5%;
@@ -63,14 +63,14 @@
   --popover: 0 0% 0%;
   --popover-foreground: 0 0% 98%;
 
-  --primary: 217 100% 60%;
+  --primary: 217 95% 60%;
   --primary-foreground: 0 0% 100%;
   --secondary: 0 0% 5%;
   --secondary-foreground: 0 0% 98%;
 
   --muted: 0 0% 10%;
   --muted-foreground: 0 0% 88%;
-  --accent: 180 100% 60%;
+  --accent: 190 95% 55%;
   --accent-foreground: 0 0% 0%;
   --destructive: 0 84% 52%;
   --destructive-foreground: 0 0% 99%;
@@ -79,11 +79,11 @@
   --input: var(--border);
   --ring: 217 100% 55%;
 
-  --chart-1: 217 100% 60%;
-  --chart-2: 180 100% 60%;
-  --chart-3: 120 100% 60%;
-  --chart-4: 0 84% 63%;
-  --chart-5: 240 100% 65%;
+  --chart-1: 217 95% 60%;
+  --chart-2: 190 95% 55%;
+  --chart-3: 160 70% 55%;
+  --chart-4: 0 78% 60%;
+  --chart-5: 250 80% 65%;
 
   --sidebar: 0 0% 0%;
   --sidebar-foreground: 0 0% 98%;

@@ -1,7 +1,9 @@
 export function AlgoRiseLogo({
   className = 'h-8 w-auto',
+  priority = false,
 }: {
   className?: string;
+  priority?: boolean;
 }) {
   return (
     <svg
@@ -9,6 +11,9 @@ export function AlgoRiseLogo({
       className={className}
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
+      aria-label='AlgoRise'
+      role='img'
+      focusable='false'
     >
       <defs>
         <linearGradient id='arGradient' x1='0%' y1='0%' x2='100%' y2='100%'>

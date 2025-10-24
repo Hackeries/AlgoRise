@@ -85,11 +85,11 @@ export const metadata: Metadata = {
     url: 'https://www.myalgorise.in',
     images: [
       {
-        url: 'https://www.myalgorise.in/icon.jpg',
+        url: 'https://www.myalgorise.in/icon.webp',
         width: 1200,
         height: 630,
         alt: 'AlgoRise - Master Competitive Programming',
-        type: 'image/jpeg',
+        type: 'image/webp',
       },
     ],
   },
@@ -98,7 +98,7 @@ export const metadata: Metadata = {
     title: 'AlgoRise - Master Competitive Programming & Algorithms',
     description: 'Practice that adapts. Compete when it counts.',
     creator: '@AlgoRise',
-    images: ['https://www.myalgorise.in/icon.jpg'],
+    images: ['https://www.myalgorise.in/icon.webp'],
   },
   robots: {
     index: true,

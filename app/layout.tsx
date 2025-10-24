@@ -1,5 +1,6 @@
 import type React from 'react';
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Suspense } from 'react';
 import { Analytics } from '@vercel/analytics/next';
 import { SidebarLayout } from '@/components/sidebar-layout';
@@ -128,6 +129,14 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} ${bricolage.variable} antialiased`}
     >
       <head>
+        {/* Google AdSense */}
+        <Script
+          id='adsense-loader'
+          async
+          strategy='afterInteractive'
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3173433370339000"
+          crossOrigin="anonymous"
+        />
         <link rel='manifest' href='/manifest.json' />
         <link rel='canonical' href='https://www.myalgorise.in' />
         <meta

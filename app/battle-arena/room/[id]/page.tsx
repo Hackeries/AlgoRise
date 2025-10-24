@@ -27,7 +27,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
     null
   );
   const [submitting, setSubmitting] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(3600);
+  const [timeRemaining, setTimeRemaining] = useState(45 * 60);
   const [showStats, setShowStats] = useState(false);
   const [myTeamId, setMyTeamId] = useState<string | null>(null);
   const [isSpectator, setIsSpectator] = useState(false);
@@ -302,9 +302,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                   <p className='font-semibold text-sm'>
                     {String.fromCharCode(65 + idx)}. {problem.name}
                   </p>
-                  <p className='text-xs opacity-75 mt-1'>
-                    Rating: {problem.rating || 'N/A'}
-                  </p>
+                  {/* Rating hidden for contest feel */}
                 </motion.button>
               ))}
             </div>

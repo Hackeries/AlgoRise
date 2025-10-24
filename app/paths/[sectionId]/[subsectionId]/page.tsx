@@ -4,6 +4,7 @@ import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LEARNING_PATH_DATA } from '@/lib/learning-path-data';
 import Link from 'next/link';
+import AdSenseAd from '@/components/ads/AdSenseAd';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -277,6 +278,15 @@ export default function SubsectionPage() {
 
   return (
     <main className='mx-auto max-w-4xl px-4 py-10'>
+      {/* Ad: Inline responsive banner near top of problem page */}
+      <div className='mb-6'>
+        <AdSenseAd
+          slot={'0000000000'}
+          format='auto'
+          responsive
+          style={{ minHeight: 90 }}
+        />
+      </div>
       {/* Breadcrumb */}
       <div className='flex items-center gap-2 text-sm text-muted-foreground mb-6'>
         <Link href='/paths' className='hover:text-foreground'>

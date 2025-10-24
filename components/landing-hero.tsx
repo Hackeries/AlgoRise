@@ -70,7 +70,7 @@ export default function ModernLanding() {
   };
 
   return (
-    <div className='min-h-screen relative overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-transparent dark:via-transparent dark:to-transparent'>
+    <div className='min-h-[calc(100vh-4rem)] relative overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-transparent dark:via-transparent dark:to-transparent'>
       {/* Animated background blobs - enhanced for light theme */}
       <div className='absolute top-[-50px] left-[-50px] sm:top-[-80px] sm:left-[-80px] lg:top-[-100px] lg:left-[-100px] w-[150px] h-[150px] sm:w-[250px] sm:h-[250px] lg:w-[300px] lg:h-[300px] bg-purple-500/20 dark:bg-purple-600/20 rounded-full blur-3xl animate-blob' />
       <div className='absolute bottom-[-40px] right-[-40px] sm:bottom-[-60px] sm:right-[-60px] lg:bottom-[-80px] lg:right-[-120px] w-[180px] h-[180px] sm:w-[300px] sm:h-[300px] lg:w-[400px] lg:h-[400px] bg-blue-500/20 dark:bg-blue-600/20 rounded-full blur-3xl animate-blob animation-delay-2000' />

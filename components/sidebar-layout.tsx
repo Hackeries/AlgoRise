@@ -380,7 +380,15 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           onMobileMenuToggle={() => setIsOpen(!isOpen)}
           isMobile={isMobile}
         />
-        <main className='flex-1 overflow-y-auto content-padding'>{children}</main>
+        <main
+          className={cn(
+            'flex-1 overflow-y-auto',
+            // Full-bleed on landing page; padded on others
+            pathname === '/' ? '' : 'content-padding'
+          )}
+        >
+          {children}
+        </main>
         <Footer />
       </div>
     </div>

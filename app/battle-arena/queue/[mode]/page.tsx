@@ -28,9 +28,16 @@ function QueuePageClient({ mode }: { mode: '1v1' | '3v3' }) {
   const [battleId, setBattleId] = useState<string | null>(null);
   const [queueId, setQueueId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [estimatedWait, setEstimatedWait] = useState(15);
+  const [estimatedWait, setEstimatedWait] = useState<number | null>(null);
 
   const { queueUpdate, isConnected } = useQueueRealtime(mode, !!queueId);
+
+  useEffect(() => {
+    if (queueUpdate?.type === 'queue_size' && typeof queueUpdate.queueSize === 'number') {
+      const estimate = Math.max(5, 5 + Math.floor(queueUpdate.queueSize / 5) * 2);
+      setEstimatedWait(estimate);
+    }
+  }, [queueUpdate]);
 
   useEffect(() => {
     if (queueUpdate?.type === 'match_found' && queueUpdate.battleId) {
@@ -293,7 +300,7 @@ function QueuePageClient({ mode }: { mode: '1v1' | '3v3' }) {
                     <p className='text-xs text-blue-300/70'>Est. Wait</p>
                   </div>
                   <p className='font-semibold text-white text-lg'>
-                    {estimatedWait}s
+                    {estimatedWait !== null ? `${estimatedWait}s` : '—'}
                   </p>
                 </motion.div>
                 <motion.div
@@ -305,7 +312,7 @@ function QueuePageClient({ mode }: { mode: '1v1' | '3v3' }) {
                     <p className='text-xs text-purple-300/70'>In Queue</p>
                   </div>
                   <p className='font-semibold text-white text-lg'>
-                    {Math.floor(Math.random() * 50) + 10}
+                    {queueUpdate?.type === 'queue_size' && typeof queueUpdate.queueSize === 'number' ? queueUpdate.queueSize : '—'}
                   </p>
                 </motion.div>
               </div>

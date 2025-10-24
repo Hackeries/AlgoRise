@@ -9,26 +9,26 @@ export default function VisualizersPage() {
     <main className='relative w-full min-h-screen overflow-x-hidden'>
       {/* Background Animation */}
       <div className='absolute inset-0 -z-10'>
-        <PixelBlast color='#63EDA1' />
+        <PixelBlast color='hsl(var(--accent))' />
       </div>
 
       {/* Hero Section */}
-      <section className='relative z-5 w-full' aria-label='Hero Section'>
+      <section className='relative z-5 w-full content-padding' aria-label='Hero Section'>
         <ModernLanding />
       </section>
 
       {/* Codeforces Levels Section */}
-      <section className='relative z-5 w-full' aria-label='Codeforces Levels'>
+      <section className='relative z-5 w-full content-padding' aria-label='Codeforces Levels'>
         <CFLevels />
       </section>
 
       {/* How It Works Section */}
-      <section className='relative z-5 w-full' aria-label='How It Works'>
+      <section className='relative z-5 w-full content-padding' aria-label='How It Works'>
         <HowItWorks />
       </section>
 
       {/* Platform Features Section */}
-      <section className='relative z-5 w-full' aria-label='Platform Features'>
+      <section className='relative z-5 w-full content-padding' aria-label='Platform Features'>
         <PlatformFeatures />
       </section>
     </main>

@@ -20,6 +20,7 @@ import {
   ComposedChart,
   Area,
 } from 'recharts';
+import { useTheme } from 'next-themes';
 import {
   TrendingUp,
   Trophy,
@@ -122,6 +123,7 @@ function getProblemDifficultyColor(rating?: number): string {
 }
 
 export function CPAnalyticsDashboard({ handle }: DashboardProps) {
+  const { resolvedTheme } = useTheme();
   const [data, setData] = useState<CPAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -268,6 +270,8 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
     ...item,
     divColor: getDivTier(item.rating).color,
   }));
+
+  const isDark = resolvedTheme === 'dark';
 
   return (
     <div className='section-spacing content-padding'>
@@ -443,17 +447,17 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
                         >
                           <stop
                             offset='0%'
-                            stopColor='#3b82f6'
+                            stopColor={isDark ? '#60A5FA' : '#3B82F6'}
                             stopOpacity={0.3}
                           />
                           <stop
                             offset='100%'
-                            stopColor='#3b82f6'
+                            stopColor={isDark ? '#60A5FA' : '#3B82F6'}
                             stopOpacity={0.05}
                           />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray='3 3' stroke='#374151' />
+                      <CartesianGrid strokeDasharray='3 3' stroke={isDark ? '#374151' : '#E5E7EB'} />
                       <XAxis
                         dataKey='name'
                         angle={-45}
@@ -464,9 +468,10 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
                       <YAxis tick={{ fontSize: 12 }} />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: '#1f2937',
-                          border: '1px solid #374151',
+                          backgroundColor: isDark ? '#111827' : '#ffffff',
+                          border: `1px solid ${isDark ? '#374151' : '#E5E7EB'}`,
                           borderRadius: '0.5rem',
+                          color: isDark ? '#F9FAFB' : '#111827',
                         }}
                         formatter={(value: any, name: string) => {
                           if (name === 'rating') return [value, 'Rating'];
@@ -483,7 +488,7 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
                       <Area
                         type='monotone'
                         dataKey='rating'
-                        stroke='#3b82f6'
+                        stroke={isDark ? '#60A5FA' : '#3B82F6'}
                         fill='url(#ratingGradient)'
                         strokeWidth={2}
                         name='Rating'
@@ -535,7 +540,7 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
               {topicChartData.length > 0 ? (
                 <ResponsiveContainer width='100%' height={300}>
                   <BarChart data={topicChartData}>
-                    <CartesianGrid strokeDasharray='3 3' stroke='#374151' />
+                    <CartesianGrid strokeDasharray='3 3' stroke={isDark ? '#374151' : '#E5E7EB'} />
                     <XAxis
                       dataKey='topic'
                       angle={-45}
@@ -546,14 +551,15 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
                     <YAxis tick={{ fontSize: 12 }} />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#1f2937',
-                        border: '1px solid #374151',
+                        backgroundColor: isDark ? '#111827' : '#ffffff',
+                        border: `1px solid ${isDark ? '#374151' : '#E5E7EB'}`,
                         borderRadius: '0.5rem',
+                        color: isDark ? '#F9FAFB' : '#111827',
                       }}
                     />
                     <Legend />
-                    <Bar dataKey='solved' fill='#10b981' name='Solved' />
-                    <Bar dataKey='attempted' fill='#f59e0b' name='Attempted' />
+                    <Bar dataKey='solved' fill={isDark ? '#34D399' : '#10B981'} name='Solved' />
+                    <Bar dataKey='attempted' fill={isDark ? '#F59E0B' : '#F59E0B'} name='Attempted' />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -621,9 +627,10 @@ export function CPAnalyticsDashboard({ handle }: DashboardProps) {
                     </Pie>
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: '#1f2937',
-                        border: '1px solid #374151',
+                        backgroundColor: isDark ? '#111827' : '#ffffff',
+                        border: `1px solid ${isDark ? '#374151' : '#E5E7EB'}`,
                         borderRadius: '0.5rem',
+                        color: isDark ? '#F9FAFB' : '#111827',
                       }}
                     />
                   </PieChart>

@@ -266,7 +266,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       <motion.aside
         data-sidebar
         className={cn(
-          'fixed top-0 left-0 z-50 h-screen flex flex-col bg-white dark:bg-black backdrop-blur-md border-r border-gray-200 dark:border-gray-900 shadow-2xl',
+          'fixed top-0 left-0 z-50 h-screen flex flex-col bg-card backdrop-blur-md border-r border-border shadow-2xl',
           // Enhanced mobile styling
           isMobile
             ? 'w-72' // Slightly wider on mobile for better touch targets
@@ -380,7 +380,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           onMobileMenuToggle={() => setIsOpen(!isOpen)}
           isMobile={isMobile}
         />
-        <main className='flex-1 overflow-y-auto p-2 sm:p-4'>{children}</main>
+        <main className='flex-1 overflow-y-auto content-padding'>{children}</main>
         <Footer />
       </div>
     </div>

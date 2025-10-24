@@ -137,7 +137,7 @@ const OAuthModal = ({
 
   return (
     <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50'>
-      <Card className='w-full max-w-md'>
+      <Card className='w-full max-w-md mx-4'>
         <CardHeader>
           <CardTitle>
             {provider === 'google' ? 'Google Sign Up' : 'GitHub Sign Up'}
@@ -241,7 +241,7 @@ export default function SignUpPage() {
 
   if (!isConfigured)
     return (
-      <div className='flex min-h-screen items-center justify-center p-6 md:p-10'>
+      <div className='flex min-h-screen items-center justify-center p-4 sm:p-6 md:p-10'>
         <AuthConfigurationAlert
           title='Sign Up Unavailable'
           description='Authentication is not configured. Please set up Supabase.'
@@ -250,7 +250,7 @@ export default function SignUpPage() {
     );
 
   return (
-    <div className='flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6 md:p-10'>
+    <div className='flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 sm:p-6 md:p-10'>
       <OAuthModal
         isOpen={oauthModalOpen}
         onClose={() => setOAuthModalOpen(false)}
@@ -258,22 +258,22 @@ export default function SignUpPage() {
         isLoading={!!isOAuthLoading}
       />
       <div className='w-full max-w-md'>
-        <Card className='shadow-xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl transform hover:scale-105 transition duration-300'>
-          <CardHeader className='text-center'>
-            <Mail className='mx-auto mb-4 h-10 w-10 text-blue-500' />
-            <CardTitle className='text-2xl md:text-3xl font-bold'>
+        <Card className='shadow-xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl transform transition duration-300'>
+          <CardHeader className='text-center px-4 sm:px-6 py-4 sm:py-6'>
+            <Mail className='mx-auto mb-4 h-8 w-8 sm:h-10 sm:w-10 text-blue-500' />
+            <CardTitle className='text-xl sm:text-2xl md:text-3xl font-bold'>
               Sign Up
             </CardTitle>
-            <CardDescription className='text-gray-600 dark:text-gray-300'>
+            <CardDescription className='text-sm sm:text-base text-gray-600 dark:text-gray-300'>
               Create your account or sign in with Google/GitHub
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className='flex flex-col gap-3 mb-6'>
+          <CardContent className='px-4 sm:px-6 py-4 sm:py-6'>
+            <div className='flex flex-col gap-2 sm:gap-3 mb-4 sm:mb-6'>
               <Button
                 onClick={() => handleOAuthSignIn('google')}
                 disabled={!!isOAuthLoading}
-                className={`flex items-center justify-center gap-2 w-full text-white transition-all duration-300 transform hover:scale-105 ${
+                className={`flex items-center justify-center gap-2 w-full text-white text-sm sm:text-base transition-all duration-300 transform hover:scale-105 py-2 sm:py-3 ${
                   isOAuthLoading === 'google'
                     ? 'bg-red-400 cursor-not-allowed'
                     : 'bg-red-500 hover:bg-red-600'
@@ -287,7 +287,7 @@ export default function SignUpPage() {
               <Button
                 onClick={() => handleOAuthSignIn('github')}
                 disabled={!!isOAuthLoading}
-                className={`flex items-center justify-center gap-2 w-full text-white transition-all duration-300 transform hover:scale-105 ${
+                className={`flex items-center justify-center gap-2 w-full text-white text-sm sm:text-base transition-all duration-300 transform hover:scale-105 py-2 sm:py-3 ${
                   isOAuthLoading === 'github'
                     ? 'bg-gray-600 cursor-not-allowed'
                     : 'bg-gray-800 hover:bg-gray-900'
@@ -296,7 +296,7 @@ export default function SignUpPage() {
                 {isOAuthLoading === 'github' ? (
                   <Spinner />
                 ) : (
-                  <Github className='h-4 w-4' />
+                  <Github className='h-4 w-4 sm:h-5 sm:w-5' />
                 )}
                 {isOAuthLoading === 'github'
                   ? 'Signing in...'
@@ -304,7 +304,7 @@ export default function SignUpPage() {
               </Button>
             </div>
 
-            <form onSubmit={handleSignUp} className='space-y-6'>
+            <form onSubmit={handleSignUp} className='space-y-4 sm:space-y-6'>
               <InputWithIcon
                 id='email'
                 label='Email'
@@ -333,22 +333,22 @@ export default function SignUpPage() {
                 setShowPassword={setShowRepeatPassword}
               />
               {error && (
-                <p className='text-sm text-red-500 text-center animate-pulse'>
+                <p className='text-xs sm:text-sm text-red-500 text-center animate-pulse'>
                   {error}
                 </p>
               )}
               <Button
                 type='submit'
                 disabled={isLoading || !email || !password || !repeatPassword}
-                className='w-full bg-blue-500 hover:bg-blue-600 text-white transition duration-300'
+                className='w-full bg-blue-500 hover:bg-blue-600 text-white transition duration-300 py-2 sm:py-3 text-sm sm:text-base'
               >
                 {isLoading ? 'Creating your account...' : 'Sign Up'}
               </Button>
-              <p className='text-sm text-center text-gray-600 dark:text-gray-400 mt-2'>
+              <p className='text-xs sm:text-sm text-center text-gray-600 dark:text-gray-400 mt-2'>
                 Already have an account?{' '}
                 <Link
                   href='/auth/login'
-                  className='text-blue-500 hover:underline'
+                  className='text-blue-500 hover:underline font-medium'
                 >
                   Log in
                 </Link>

@@ -56,9 +56,12 @@ function FragmentRow({ label, values }: { label: string; values: number[] }) {
 }
 
 function intensityToColor(v: number) {
-  if (v <= 0) return 'rgba(37, 99, 235, 0.08)';
-  if (v === 1) return 'rgba(37, 99, 235, 0.25)';
-  if (v === 2) return 'rgba(37, 99, 235, 0.45)';
-  if (v === 3) return 'rgba(37, 99, 235, 0.65)';
-  return 'rgba(37, 99, 235, 0.85)';
+  const base = getComputedStyle(document.documentElement)
+    .getPropertyValue('--primary')
+    .trim();
+  // Fallback to blue if CSS variable not ready
+  const hslBody = base || '217 91% 60%';
+  const opacities = [0.08, 0.25, 0.45, 0.65, 0.85];
+  const idx = Math.max(0, Math.min(4, v));
+  return `hsl(${hslBody} / ${opacities[idx]})`;
 }

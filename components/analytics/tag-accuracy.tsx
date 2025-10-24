@@ -23,12 +23,12 @@ export function TagAccuracy({ range }: { range: '7d' | '30d' }) {
   return (
     <div className='h-64'>
       <ResponsiveContainer width='100%' height='100%'>
-        <BarChart data={tags}>
+          <BarChart data={tags}>
           <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
           <XAxis dataKey='tag' tick={{ fontSize: 12 }} />
           <YAxis tick={{ fontSize: 12 }} domain={[0, 100]} />
           <Tooltip />
-          <Bar dataKey='accuracy' fill='#10B981' />
+            <Bar dataKey='accuracy' fill={'hsl(var(--accent))'} />
         </BarChart>
       </ResponsiveContainer>
       <div className='mt-2 text-sm text-muted-foreground'>

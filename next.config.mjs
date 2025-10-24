@@ -9,7 +9,18 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    // Enable Next/Image optimizations for performance and AVIF/WebP output
+    unoptimized: false,
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24, // 1 day
+    dangerouslyAllowSVG: true, // we use inline SVG icons/logos
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    remotePatterns: [
+      { protocol: 'https', hostname: 'www.myalgorise.in' },
+      { protocol: 'https', hostname: 'myalgorise.in' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
+    ],
   },
   webpack: config => {
     config.resolve = config.resolve || {};

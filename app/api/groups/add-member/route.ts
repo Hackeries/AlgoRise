@@ -41,21 +41,37 @@ export async function POST(req: Request) {
   if (!group)
     return NextResponse.json({ error: 'Group not found' }, { status: 404 });
 
+  // Try to find user via cf_handles first
   const { data: cfHandle } = await supabase
     .from('cf_handles')
     .select('user_id, verified')
     .eq('handle', targetHandle.trim())
-    .single();
-  if (!cfHandle)
+    .maybeSingle();
+
+  // Fallback: look up by profiles.codeforces_handle if cf_handles record is missing
+  let targetUserId: string | null = cfHandle?.user_id || null;
+  let needsVerification = cfHandle ? !cfHandle.verified : true;
+
+  if (!targetUserId) {
+    const { data: profileByHandle } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('codeforces_handle', targetHandle.trim())
+      .maybeSingle();
+    targetUserId = profileByHandle?.id || null;
+  }
+
+  if (!targetUserId) {
     return NextResponse.json(
       { error: 'User not found with that handle' },
       { status: 404 }
     );
+  }
 
   const { data: targetProfile } = await supabase
     .from('profiles')
     .select('college_id')
-    .eq('user_id', cfHandle.user_id)
+    .eq('id', targetUserId)
     .single();
   if (!targetProfile)
     return NextResponse.json(
@@ -90,11 +106,11 @@ export async function POST(req: Request) {
   const { error } = await supabase
     .from('group_memberships')
     .upsert(
-      { group_id: groupId, user_id: cfHandle.user_id, role: 'member' },
+      { group_id: groupId, user_id: targetUserId, role: 'member' },
       { onConflict: 'group_id,user_id' }
     );
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ ok: true, needsVerification: !cfHandle.verified });
+  return NextResponse.json({ ok: true, needsVerification });
 }

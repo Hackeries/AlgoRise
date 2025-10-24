@@ -56,9 +56,26 @@ export function useQueueRealtime(mode: '1v1' | '3v3', enabled = true) {
     const channel: RealtimeChannel = supabase.channel(`queue:${mode}`);
 
     channel
+      // Legacy/general queue updates
       .on(
         'broadcast',
         { event: 'queue_update' },
+        (payload: { payload: QueueUpdate }) => {
+          setQueueUpdate(payload.payload);
+        }
+      )
+      // Explicit queue size updates from server
+      .on(
+        'broadcast',
+        { event: 'queue_size' },
+        (payload: { payload: QueueUpdate }) => {
+          setQueueUpdate(payload.payload);
+        }
+      )
+      // Match found event from server
+      .on(
+        'broadcast',
+        { event: 'match_found' },
         (payload: { payload: QueueUpdate }) => {
           setQueueUpdate(payload.payload);
         }
@@ -93,11 +110,29 @@ export function useBattleRealtime(battleId: string, enabled = true) {
     const channel: RealtimeChannel = supabase.channel(`battle:${battleId}`);
 
     channel
+      // General battle updates envelope
       .on(
         'broadcast',
         { event: 'battle_update' },
         (payload: { payload: BattleUpdate }) => {
           setBattleUpdate(payload.payload);
+        }
+      )
+      // Direct submission events (server may emit this)
+      .on(
+        'broadcast',
+        { event: 'submission' },
+        (payload: {
+          payload: {
+            submission: BattleUpdate['submission'];
+            verdict?: string;
+            penalty?: number;
+          };
+        }) => {
+          setBattleUpdate({
+            type: 'submission',
+            submission: payload.payload.submission as any,
+          });
         }
       )
       .subscribe(status => {

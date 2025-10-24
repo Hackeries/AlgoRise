@@ -4,6 +4,46 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { EffectComposer, EffectPass, RenderPass, Effect } from 'postprocessing';
+// Helpers to convert theme HSL tokens to hex for THREE.Color
+function hslTokensToHex(tokens: string): string | null {
+  // tokens like "221 83% 53%"
+  const parts = tokens
+    .replace(/%/g, '')
+    .trim()
+    .split(/\s+/)
+    .map(Number);
+  if (parts.length < 3 || parts.some(n => Number.isNaN(n))) return null;
+  const [h, s, l] = parts;
+  return hslToHex(h, s / 100, l / 100);
+}
+
+function hslFuncToHex(hsl: string): string | null {
+  // formats: hsl(h s% l%), hsl(h, s%, l%)
+  const m = hsl
+    .replace(/hsl\(|\)/gi, '')
+    .replace(/,/g, ' ')
+    .trim()
+    .split(/\s+/);
+  if (m.length < 3) return null;
+  const h = parseFloat(m[0]);
+  const s = parseFloat(m[1]);
+  const l = parseFloat(m[2]);
+  if ([h, s, l].some(n => Number.isNaN(n))) return null;
+  return hslToHex(h, s / 100, l / 100);
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const c = l - a * Math.max(-1, Math.min(k - 3, Math.min(9 - k, 1)));
+    const v = Math.round(255 * c)
+      .toString(16)
+      .padStart(2, '0');
+    return v;
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
 
 type PixelBlastVariant = 'square' | 'circle' | 'triangle' | 'diamond';
 
@@ -30,6 +70,11 @@ type PixelBlastProps = {
   transparent?: boolean;
   edgeFade?: number;
   noiseAmount?: number;
+  // Modern theming controls
+  themeSync?: boolean; // use CSS variables for color when true
+  useAccent?: boolean; // pick --accent (else --primary)
+  intensity?: number; // 0..1 multiplier for color brightness
+  alpha?: number; // 0..1 global alpha multiplier (reduces "shine")
 };
 
 const createTouchTexture = () => {
@@ -196,6 +241,8 @@ uniform float uRippleSpeed;
 uniform float uRippleThickness;
 uniform float uRippleIntensity;
 uniform float uEdgeFade;
+uniform float uColorIntensity;
+uniform float uAlpha;
 
 uniform int   uShapeType;
 const int SHAPE_SQUARE   = 0;
@@ -335,8 +382,8 @@ void main(){
     M *= fade;
   }
 
-  vec3 color = uColor;
-  fragColor = vec4(color, M);
+  vec3 color = uColor * clamp(uColorIntensity, 0.0, 1.0);
+  fragColor = vec4(color, clamp(M * uAlpha, 0.0, 1.0));
 }
 `;
 
@@ -344,45 +391,68 @@ const MAX_CLICKS = 10;
 
 const PixelBlast: React.FC<PixelBlastProps> = ({
   variant = 'square',
-  pixelSize = 3,
-  color = '#63EDA1',
+  pixelSize = 2,
+  color,
   className,
   style,
   antialias = true,
-  patternScale = 2,
-  patternDensity = 1,
+  patternScale = 1.6,
+  patternDensity = 0.9,
   liquid = false,
-  liquidStrength = 0.1,
+  liquidStrength = 0.08,
   liquidRadius = 1,
-  pixelSizeJitter = 0,
-  enableRipples = true,
-  rippleIntensityScale = 1,
-  rippleThickness = 0.1,
-  rippleSpeed = 0.3,
-  liquidWobbleSpeed = 4.5,
-  autoPauseOffscreen = false,
-  speed = 0.6,
+  pixelSizeJitter = 0.08,
+  enableRipples = false,
+  rippleIntensityScale = 0.6,
+  rippleThickness = 0.12,
+  rippleSpeed = 0.25,
+  liquidWobbleSpeed = 3.5,
+  autoPauseOffscreen = true,
+  speed = 0.25,
   transparent = true,
-  edgeFade = 0.5,
+  edgeFade = 0.2,
   noiseAmount = 0,
+  themeSync = true,
+  useAccent = true,
+  intensity = 0.35,
+  alpha = 0.16,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const visibilityRef = useRef({ visible: true });
   const speedRef = useRef(speed);
-  const [themeColor, setThemeColor] = React.useState(color);
+  const [themeColor, setThemeColor] = React.useState<string | undefined>(color);
+
+  const resolveCssVarColor = React.useCallback(() => {
+    try {
+      const root = document.documentElement;
+      const varName = useAccent ? '--accent' : '--primary';
+      const raw = getComputedStyle(root).getPropertyValue(varName).trim();
+      // raw like "221 83% 53%" -> build hsl and convert to hex
+      const hex = hslTokensToHex(raw);
+      return hex ?? '#3b82f6';
+    } catch {
+      return '#3b82f6';
+    }
+  }, [useAccent]);
+
+  const resolveColor = React.useCallback(
+    (c?: string) => {
+      if (!c || (themeSync && /var\(/.test(c))) {
+        return resolveCssVarColor();
+      }
+      if (/var\(/.test(c)) {
+        return resolveCssVarColor();
+      }
+      if (/^hsl\(/i.test(c)) {
+        return hslFuncToHex(c) ?? '#3b82f6';
+      }
+      return c;
+    },
+    [resolveCssVarColor, themeSync]
+  );
 
   React.useEffect(() => {
-    const updateThemeColor = () => {
-      const isDark = document.documentElement.classList.contains('dark');
-      if (isDark && color === '#63EDA1') {
-        setThemeColor('#63EDA1');
-      } else if (!isDark && color === '#63EDA1') {
-        setThemeColor('#3B82F6');
-      } else {
-        setThemeColor(color);
-      }
-    };
-
+    const updateThemeColor = () => setThemeColor(resolveColor(color));
     updateThemeColor();
     const observer = new MutationObserver(updateThemeColor);
     observer.observe(document.documentElement, {
@@ -391,7 +461,7 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
     });
 
     return () => observer.disconnect();
-  }, [color]);
+  }, [color, resolveColor]);
 
   const threeRef = useRef<{
     renderer: THREE.WebGLRenderer;
@@ -416,6 +486,8 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
       uRippleThickness: { value: number };
       uRippleIntensity: { value: number };
       uEdgeFade: { value: number };
+      uColorIntensity: { value: number };
+      uAlpha: { value: number };
     };
     resizeObserver?: ResizeObserver;
     raf?: number;
@@ -470,7 +542,7 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
       const uniforms = {
         uResolution: { value: new THREE.Vector2(0, 0) },
         uTime: { value: 0 },
-        uColor: { value: new THREE.Color(themeColor) },
+        uColor: { value: new THREE.Color(themeColor ?? '#3b82f6') },
         uClickPos: {
           value: Array.from(
             { length: MAX_CLICKS },
@@ -488,6 +560,8 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
         uRippleThickness: { value: rippleThickness },
         uRippleIntensity: { value: rippleIntensityScale },
         uEdgeFade: { value: edgeFade },
+        uColorIntensity: { value: intensity },
+        uAlpha: { value: alpha },
       };
       const scene = new THREE.Scene();
       const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -599,12 +673,16 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
         const { fx, fy, w, h } = mapToPixels(e);
         touch.addTouch({ x: fx / w, y: fy / h });
       };
-      renderer.domElement.addEventListener('pointerdown', onPointerDown, {
-        passive: true,
-      });
-      renderer.domElement.addEventListener('pointermove', onPointerMove, {
-        passive: true,
-      });
+      if (enableRipples) {
+        renderer.domElement.addEventListener('pointerdown', onPointerDown, {
+          passive: true,
+        });
+      }
+      if (liquid) {
+        renderer.domElement.addEventListener('pointermove', onPointerMove, {
+          passive: true,
+        });
+      }
       let raf = 0;
       const animate = () => {
         if (autoPauseOffscreen && !visibilityRef.current.visible) {
@@ -651,7 +729,7 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
       const t = threeRef.current!;
       t.uniforms.uShapeType.value = SHAPE_MAP[variant] ?? 0;
       t.uniforms.uPixelSize.value = pixelSize * t.renderer.getPixelRatio();
-      t.uniforms.uColor.value.set(themeColor);
+      if (themeColor) t.uniforms.uColor.value.set(themeColor);
       t.uniforms.uScale.value = patternScale;
       t.uniforms.uDensity.value = patternDensity;
       t.uniforms.uPixelJitter.value = pixelSizeJitter;
@@ -660,6 +738,8 @@ const PixelBlast: React.FC<PixelBlastProps> = ({
       t.uniforms.uRippleThickness.value = rippleThickness;
       t.uniforms.uRippleSpeed.value = rippleSpeed;
       t.uniforms.uEdgeFade.value = edgeFade;
+      t.uniforms.uColorIntensity.value = intensity;
+      t.uniforms.uAlpha.value = alpha;
       if (transparent) t.renderer.setClearAlpha(0);
       else t.renderer.setClearColor(0x000000, 1);
       if (t.liquidEffect) {

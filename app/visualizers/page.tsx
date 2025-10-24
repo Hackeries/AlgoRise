@@ -2,18 +2,17 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { VISUALIZERS } from '@/lib/visualizers';
 import { ProductionVisualizer } from '@/components/visualizers/production-visualizer';
+import { Container } from '@/components/ui/container';
+import { PageHeader } from '@/components/ui/page-header';
 
 export default function VisualizersPage() {
   return (
-    <main className='mx-auto max-w-7xl px-4 py-10'>
-      <div className='mb-12'>
-        <h1 className='text-3xl font-bold mb-2'>Algorithm Visualizers</h1>
-        <p className='text-muted-foreground leading-relaxed'>
-          Master competitive programming algorithms with interactive
-          step-by-step visualizations. Learn sorting, searching, dynamic
-          programming, graphs, and more with real-time animations.
-        </p>
-      </div>
+    <main>
+      <Container className='py-10'>
+        <PageHeader
+          title='Algorithm Visualizers'
+          description='Master competitive programming algorithms with interactive step-by-step visualizations. Learn sorting, searching, dynamic programming, graphs, and more with real-time animations.'
+        />
 
       {/* Production Visualizer */}
       <div className='mb-12'>
@@ -46,6 +45,7 @@ export default function VisualizersPage() {
           ))}
         </div>
       </div>
+      </Container>
     </main>
   );
 }

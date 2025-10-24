@@ -375,12 +375,15 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           // Mobile: no margin (sidebar overlays), Desktop: margin based on sidebar state
           isMobile ? 'ml-0' : isOpen ? 'ml-64' : 'ml-16'
         )}
+        data-app-layout
       >
         <Header
           onMobileMenuToggle={() => setIsOpen(!isOpen)}
           isMobile={isMobile}
         />
-        <main className='flex-1 overflow-y-auto content-padding'>{children}</main>
+        <main className={cn('flex-1 overflow-y-auto')}>
+          {children}
+        </main>
         <Footer />
       </div>
     </div>

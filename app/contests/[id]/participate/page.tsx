@@ -1,35 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { useCFVerification } from '@/lib/context/cf-verification';
 import {
   Clock,
   ExternalLink,
   Trophy,
-  User,
   CheckCircle,
   XCircle,
   AlertCircle,
   Maximize2,
+  RefreshCw,
 } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
@@ -55,23 +41,52 @@ interface Contest {
   shareUrl: string;
 }
 
-interface Submission {
-  problemId: string;
-  status: 'AC' | 'WA' | 'TLE' | 'RE' | 'CE' | 'PE' | 'MLE';
-  timestamp: string;
-  penalty: number;
-}
+type VerdictSimple =
+  | 'UNATTEMPTED'
+  | 'AC'
+  | 'WA'
+  | 'TLE'
+  | 'RE'
+  | 'CE'
+  | 'MLE'
+  | 'OTHER';
+const verdictFromCF = (v?: string): VerdictSimple => {
+  switch (v) {
+    case 'OK':
+      return 'AC';
+    case 'WRONG_ANSWER':
+      return 'WA';
+    case 'TIME_LIMIT_EXCEEDED':
+      return 'TLE';
+    case 'MEMORY_LIMIT_EXCEEDED':
+      return 'MLE';
+    case 'RUNTIME_ERROR':
+      return 'RE';
+    case 'COMPILATION_ERROR':
+      return 'CE';
+    default:
+      return v ? 'OTHER' : 'UNATTEMPTED';
+  }
+};
 
 export default function ContestParticipationPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { toast } = useToast();
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
-  const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
-  const [submissionStatus, setSubmissionStatus] = useState<string>('');
-  const [contestEnded, setContestEnded] = useState(false);
-
+  const { verificationData } = useCFVerification();
+  const handle = verificationData?.handle;
+  const {
+    data: cfData,
+    mutate: refreshCF,
+    isValidating: cfRefreshing,
+  } = useSWR(
+    handle
+      ? `https://codeforces.com/api/user.status?handle=${encodeURIComponent(
+          handle
+        )}&from=1&count=100`
+      : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
   const { data, error, mutate } = useSWR<{ contest: Contest }>(
     params.id ? `/api/contests/${params.id}` : null,
     fetcher,
@@ -80,94 +95,66 @@ export default function ContestParticipationPage() {
 
   const contest = data?.contest;
 
-  // Enter fullscreen on mount
+  const problemVerdicts = useMemo(() => {
+    const map = new Map<string, { verdict: VerdictSimple; ts: number }>();
+    const list =
+      cfData && cfData.status === 'OK' && Array.isArray(cfData.result)
+        ? (cfData.result as any[])
+        : [];
+    list.forEach(sub => {
+      const p = sub?.problem;
+      if (!p?.contestId || !p?.index) return;
+      const key = `${p.contestId}${p.index}`;
+      const ts = sub?.creationTimeSeconds || 0;
+      const v: VerdictSimple = verdictFromCF(sub?.verdict);
+      const current = map.get(key);
+      if (!current || ts > current.ts) {
+        map.set(key, { verdict: v, ts });
+      }
+    });
+    return map;
+  }, [cfData]);
+
   useEffect(() => {
-    const enterFullscreen = async () => {
-      try {
-        await document.documentElement.requestFullscreen();
-        setIsFullscreen(true);
-      } catch (err) {
-        console.log('Fullscreen not supported or denied');
+    if (!contest || !contest.problems || contest.status !== 'live') return;
+    if (problemVerdicts.size === 0) return;
+
+    const saveSubmissions = async () => {
+      for (const problem of contest.problems) {
+        const key = `${problem.contestId}${problem.index}`;
+        const verdict = problemVerdicts.get(key);
+
+        if (verdict && verdict.verdict !== 'UNATTEMPTED') {
+          const status = verdict.verdict === 'AC' ? 'solved' : 'failed';
+
+          // Save to database
+          try {
+            await fetch(`/api/contests/${params.id}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                problemId: problem.id,
+                status,
+                penalty: 0, // Can be calculated based on time if needed
+              }),
+            });
+          } catch (err) {
+            console.error('Failed to save submission:', err);
+          }
+        }
       }
     };
 
-    enterFullscreen();
-
-    // Listen for fullscreen changes
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    };
-  }, []);
-
-  // Timer countdown
-  useEffect(() => {
-    if (!contest || contest.status !== 'live') return;
-
-    const interval = setInterval(() => {
-      mutate(); // Refresh contest data to get updated time
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [contest, mutate]);
-
-  // Auto-end contest when time is up
-  useEffect(() => {
-    if (contest && contest.status === 'live' && contest.timeRemaining <= 0) {
-      setContestEnded(true);
-    }
-  }, [contest]);
+    saveSubmissions();
+  }, [problemVerdicts, contest, params.id]);
 
   const formatTime = (ms: number) => {
     const hours = Math.floor(ms / (1000 * 60 * 60));
     const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((ms % (1000 * 60)) / 1000);
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  const handleSubmission = async (status: string) => {
-    if (!selectedProblem) return;
-
-    const submission: Submission = {
-      problemId: selectedProblem.id,
-      status: status as any,
-      timestamp: new Date().toISOString(),
-      penalty: status === 'AC' ? 0 : 1200, // 20 minutes penalty for wrong submission
-    };
-
-    // Add to local submissions
-    setSubmissions(prev => [...prev, submission]);
-
-    try {
-      // Submit to backend
-      await fetch(`/api/contests/${params.id}/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          problemId: selectedProblem.id,
-          status: status === 'AC' ? 'solved' : 'failed',
-          penalty: submission.penalty,
-        }),
-      });
-
-      toast({
-        title: status === 'AC' ? 'Accepted!' : 'Wrong Answer',
-        description: `Submission for ${selectedProblem.index}: ${selectedProblem.name}`,
-        variant: status === 'AC' ? 'default' : 'destructive',
-      });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to submit solution',
-        variant: 'destructive',
-      });
-    }
-
-    setSelectedProblem(null);
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
   const exitFullscreen = async () => {
@@ -178,15 +165,44 @@ export default function ContestParticipationPage() {
     }
   };
 
-  const getSubmissionStats = () => {
-    const solved = submissions.filter(s => s.status === 'AC').length;
-    const total = contest?.problems.length || 0;
-    const totalPenalty = submissions
-      .filter(s => s.status === 'AC')
-      .reduce((acc, s) => acc + s.penalty, 0);
+  useEffect(() => {
+    const enterFullscreen = async () => {
+      try {
+        await document.documentElement.requestFullscreen();
+      } catch (err) {
+        console.log('Fullscreen not supported or denied');
+      }
+    };
 
-    return { solved, total, penalty: totalPenalty };
-  };
+    enterFullscreen();
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        router.push('/contests');
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, [router]);
+
+  useEffect(() => {
+    if (!contest || contest.status !== 'live') return;
+
+    const interval = setInterval(() => {
+      mutate(); // Refresh contest data to get updated time
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [contest, mutate]);
+
+  useEffect(() => {
+    if (contest && contest.status === 'live' && contest.timeRemaining <= 0) {
+      router.push(`/contests/${contest.id}`);
+    }
+  }, [contest, router]);
 
   if (error) {
     return (
@@ -205,6 +221,36 @@ export default function ContestParticipationPage() {
     return (
       <div className='min-h-screen bg-gray-900 flex items-center justify-center'>
         <div className='text-white'>Loading contest...</div>
+      </div>
+    );
+  }
+
+  if (contest.status === 'ended') {
+    return (
+      <div className='min-h-screen bg-gray-900 flex items-center justify-center text-white px-6'>
+        <div className='text-center max-w-md'>
+          <Trophy className='mx-auto h-16 w-16 text-yellow-500 mb-4' />
+          <h1 className='text-2xl font-bold mb-2'>Contest Ended</h1>
+          <p className='text-white/70 mb-6'>
+            This contest has finished. You can go back to the contests list or
+            view the leaderboard and details.
+          </p>
+          <div className='flex gap-3 justify-center'>
+            <Button
+              onClick={() => router.push('/contests')}
+              className='flex-1 sm:flex-none'
+            >
+              Back to Contests
+            </Button>
+            <Button
+              onClick={() => router.push(`/contests/${contest.id}`)}
+              variant='outline'
+              className='flex-1 sm:flex-none'
+            >
+              View Details
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -228,8 +274,6 @@ export default function ContestParticipationPage() {
     );
   }
 
-  const stats = getSubmissionStats();
-
   return (
     <div className='min-h-screen bg-gray-900 text-white'>
       {/* Header */}
@@ -244,7 +288,25 @@ export default function ContestParticipationPage() {
             </Badge>
           </div>
 
-          <div className='flex items-center gap-4'>
+          <div className='flex items-center gap-3'>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => refreshCF()}
+              disabled={!handle || cfRefreshing}
+              className='text-white border-gray-600 hover:bg-gray-700 bg-transparent'
+              title={
+                handle
+                  ? `Refresh Codeforces status for ${handle}`
+                  : 'Connect your Codeforces handle first'
+              }
+            >
+              <RefreshCw
+                className={`h-4 w-4 mr-2 ${cfRefreshing ? 'animate-spin' : ''}`}
+              />
+              {cfRefreshing ? 'Refreshing...' : 'Refresh CF Status'}
+            </Button>
+
             {contest.status === 'live' && (
               <div className='flex items-center gap-2 text-green-400'>
                 <Clock className='h-4 w-4' />
@@ -254,18 +316,11 @@ export default function ContestParticipationPage() {
               </div>
             )}
 
-            <div className='flex items-center gap-2'>
-              <Trophy className='h-4 w-4' />
-              <span>
-                {stats.solved}/{stats.total} solved
-              </span>
-            </div>
-
             <Button
               variant='outline'
               size='sm'
               onClick={exitFullscreen}
-              className='text-white border-gray-600 hover:bg-gray-700'
+              className='text-white border-gray-600 hover:bg-gray-700 bg-transparent'
             >
               <Maximize2 className='h-4 w-4 mr-2' />
               Exit Fullscreen
@@ -274,224 +329,215 @@ export default function ContestParticipationPage() {
         </div>
       </div>
 
-      <div className='flex h-[calc(100vh-80px)]'>
+      <div className='flex h-[calc(100vh-80px)] overflow-hidden'>
         {/* Problems List */}
-        <div className='w-1/2 border-r border-gray-700 p-6'>
-          <h2 className='text-lg font-semibold mb-4'>Problems</h2>
-          <div className='space-y-3'>
-            {contest.problems.map((problem, index) => {
-              const problemSubmissions = submissions.filter(
-                s => s.problemId === problem.id
-              );
-              const solved = problemSubmissions.some(s => s.status === 'AC');
-              const attempted = problemSubmissions.length > 0;
+        <div className='w-1/2 min-w-0 border-r border-gray-700 p-6 overflow-y-auto'>
+          <div className='flex items-center justify-between mb-4'>
+            <h2 className='text-lg font-semibold'>Problems</h2>
+            {!handle && (
+              <Badge
+                variant='destructive'
+                title='Verify your CF handle on Profile to enable status checks'
+              >
+                Connect Codeforces to enable checks
+              </Badge>
+            )}
+          </div>
 
-              return (
-                <Card
-                  key={problem.id}
-                  className={`bg-gray-800 border-gray-700 hover:bg-gray-750 cursor-pointer transition-colors ${
-                    solved
-                      ? 'border-green-500'
-                      : attempted
-                        ? 'border-yellow-500'
-                        : ''
-                  }`}
-                  onClick={() => setSelectedProblem(problem)}
+          {!contest.problems || contest.problems.length === 0 ? (
+            <div className='flex flex-col items-center justify-center text-center h-full text-gray-400'>
+              <AlertCircle className='h-8 w-8 mb-2 text-gray-500' />
+              <p className='mb-2'>No problems are available yet.</p>
+              <p className='text-sm text-gray-500 mb-4'>
+                The host may not have added problems or the contest hasn&apos;t
+                fully started. Please check back soon.
+              </p>
+              <div className='flex gap-2'>
+                <Button
+                  variant='outline'
+                  onClick={() => window.location.reload()}
                 >
-                  <CardContent className='p-4'>
-                    <div className='flex items-center justify-between'>
-                      <div className='flex items-center gap-3'>
-                        <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                            solved
-                              ? 'bg-green-600'
-                              : attempted
-                                ? 'bg-yellow-600'
+                  Refresh
+                </Button>
+                <Button
+                  variant='ghost'
+                  onClick={() => router.push('/contests')}
+                >
+                  Back to Contests
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className='space-y-3'>
+              {contest.problems.map(problem => {
+                const key = `${problem.contestId}${problem.index}`;
+                const status =
+                  problemVerdicts.get(key)?.verdict ?? 'UNATTEMPTED';
+                const isSolved = status === 'AC';
+                const attempted = status !== 'UNATTEMPTED';
+
+                return (
+                  <Card
+                    key={problem.id}
+                    className={`bg-gray-800 border-gray-700 hover:bg-gray-750 cursor-pointer transition-colors ${
+                      isSolved
+                        ? 'border-green-500'
+                        : attempted
+                        ? 'border-red-500'
+                        : ''
+                    }`}
+                  >
+                    <CardContent className='p-4'>
+                      <div className='flex items-center justify-between gap-3 min-w-0'>
+                        <div className='flex items-center gap-3 min-w-0 flex-1'>
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                              isSolved
+                                ? 'bg-green-600'
+                                : attempted
+                                ? 'bg-red-600'
                                 : 'bg-gray-600'
-                          }`}
-                        >
-                          {problem.index}
-                        </div>
-                        <div>
-                          <div className='font-medium'>{problem.name}</div>
-                          <div className='text-sm text-gray-400'>
-                            Rating: {problem.rating}
+                            }`}
+                          >
+                            {problem.index}
+                          </div>
+                          <div className='min-w-0 flex-1'>
+                            <div className='font-medium truncate'>
+                              {problem.name}
+                            </div>
+                            <div className='text-xs text-white/60 truncate'>
+                              {status === 'UNATTEMPTED'
+                                ? 'Unattempted'
+                                : `Latest: ${status}`}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className='flex items-center gap-2'>
-                        {solved && (
-                          <CheckCircle className='h-5 w-5 text-green-500' />
-                        )}
-                        {attempted && !solved && (
-                          <XCircle className='h-5 w-5 text-yellow-500' />
-                        )}
-                        <Button
-                          variant='outline'
-                          size='sm'
-                          onClick={e => {
-                            e.stopPropagation();
-                            window.open(
-                              `https://codeforces.com/problemset/problem/${problem.contestId}/${problem.index}`,
-                              '_blank'
-                            );
-                          }}
-                        >
-                          <ExternalLink className='h-4 w-4' />
-                        </Button>
+                        <div className='flex items-center gap-2 flex-shrink-0'>
+                          {isSolved && (
+                            <CheckCircle className='h-5 w-5 text-green-500' />
+                          )}
+                          {attempted && !isSolved && (
+                            <XCircle className='h-5 w-5 text-red-500' />
+                          )}
+
+                          {/* Open problem directly */}
+                          <Button
+                            variant='outline'
+                            size='sm'
+                            onClick={e => {
+                              e.stopPropagation();
+                              window.open(
+                                `https://codeforces.com/problemset/problem/${problem.contestId}/${problem.index}`,
+                                '_blank'
+                              );
+                            }}
+                            title='Open on Codeforces'
+                          >
+                            <ExternalLink className='h-4 w-4' />
+                          </Button>
+
+                          {/* Refresh only this problem */}
+                          <Button
+                            variant='outline'
+                            size='sm'
+                            onClick={e => {
+                              e.stopPropagation();
+                              refreshCF();
+                            }}
+                            disabled={!handle || cfRefreshing}
+                            title={
+                              handle
+                                ? 'Refresh latest submission'
+                                : 'Verify Codeforces handle first'
+                            }
+                          >
+                            <RefreshCw
+                              className={`h-4 w-4 ${
+                                cfRefreshing ? 'animate-spin' : ''
+                              }`}
+                            />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Submissions Panel */}
-        <div className='w-1/2 p-6'>
-          <h2 className='text-lg font-semibold mb-4'>Submissions</h2>
-          <div className='space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto'>
-            {submissions.length === 0 ? (
-              <div className='text-gray-400 text-center py-8'>
-                No submissions yet. Click on a problem to start!
-              </div>
-            ) : (
-              submissions
-                .slice()
-                .reverse()
-                .map((submission, index) => {
-                  const problem = contest.problems.find(
-                    p => p.id === submission.problemId
-                  );
-                  return (
-                    <Card key={index} className='bg-gray-800 border-gray-700'>
-                      <CardContent className='p-4'>
-                        <div className='flex items-center justify-between'>
-                          <div className='flex items-center gap-3'>
-                            <Badge
-                              variant={
-                                submission.status === 'AC'
-                                  ? 'default'
-                                  : 'destructive'
-                              }
-                            >
-                              {submission.status}
-                            </Badge>
-                            <span>
-                              {problem?.index}. {problem?.name}
-                            </span>
-                          </div>
-                          <div className='text-sm text-gray-400'>
-                            {new Date(
-                              submission.timestamp
-                            ).toLocaleTimeString()}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })
+        <div className='w-1/2 min-w-0 p-6 overflow-y-auto'>
+          <div className='flex items-center justify-between mb-4'>
+            <h2 className='text-lg font-semibold'>
+              Recent Submissions (Codeforces)
+            </h2>
+            {handle && (
+              <div className='text-xs text-white/60'>Handle: {handle}</div>
             )}
+          </div>
+          <div className='space-y-3'>
+            {(() => {
+              const all =
+                cfData && cfData.status === 'OK' && Array.isArray(cfData.result)
+                  ? (cfData.result as any[])
+                  : [];
+              const ids = new Set(
+                contest.problems.map(p => `${p.contestId}${p.index}`)
+              );
+              const filtered = all.filter(s => {
+                const p = s?.problem;
+                return (
+                  p?.contestId &&
+                  p?.index &&
+                  ids.has(`${p.contestId}${p.index}`)
+                );
+              });
+              if (filtered.length === 0) {
+                return (
+                  <div className='text-gray-400 text-center py-8'>
+                    No submissions yet. Solve on Codeforces and hit Refresh.
+                  </div>
+                );
+              }
+              return filtered.slice(0, 50).map((s, idx) => {
+                const v = verdictFromCF(s?.verdict);
+                return (
+                  <Card
+                    key={`${s?.id}-${idx}`}
+                    className='bg-gray-800 border-gray-700'
+                  >
+                    <CardContent className='p-4'>
+                      <div className='flex items-center justify-between gap-3 min-w-0'>
+                        <div className='flex items-center gap-3 min-w-0 flex-1'>
+                          <Badge
+                            variant={v === 'AC' ? 'default' : 'destructive'}
+                            className='flex-shrink-0'
+                          >
+                            {v}
+                          </Badge>
+                          <span className='truncate'>
+                            {s?.problem?.index}. {s?.problem?.name}
+                          </span>
+                        </div>
+                        <div className='text-sm text-gray-400 flex-shrink-0'>
+                          {s?.creationTimeSeconds
+                            ? new Date(
+                                s.creationTimeSeconds * 1000
+                              ).toLocaleTimeString()
+                            : ''}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              });
+            })()}
           </div>
         </div>
       </div>
-
-      {/* Submission Dialog */}
-      <Dialog
-        open={!!selectedProblem}
-        onOpenChange={() => setSelectedProblem(null)}
-      >
-        <DialogContent className='bg-gray-800 border-gray-700 text-white'>
-          <DialogHeader>
-            <DialogTitle className='flex items-center gap-2'>
-              Submit Solution for {selectedProblem?.index}.{' '}
-              {selectedProblem?.name}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className='space-y-4'>
-            <p className='text-gray-300'>
-              Have you solved this problem? Select the result of your
-              submission:
-            </p>
-
-            <div className='grid grid-cols-2 gap-3'>
-              <Button
-                onClick={() => handleSubmission('AC')}
-                className='bg-green-600 hover:bg-green-700'
-              >
-                <CheckCircle className='h-4 w-4 mr-2' />
-                Accepted (AC)
-              </Button>
-              <Button
-                onClick={() => handleSubmission('WA')}
-                variant='destructive'
-              >
-                <XCircle className='h-4 w-4 mr-2' />
-                Wrong Answer (WA)
-              </Button>
-              <Button
-                onClick={() => handleSubmission('TLE')}
-                variant='destructive'
-              >
-                <AlertCircle className='h-4 w-4 mr-2' />
-                Time Limit Exceeded (TLE)
-              </Button>
-              <Button
-                onClick={() => handleSubmission('RE')}
-                variant='destructive'
-              >
-                <AlertCircle className='h-4 w-4 mr-2' />
-                Runtime Error (RE)
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Contest End Dialog */}
-      <Dialog open={contestEnded} onOpenChange={() => setContestEnded(false)}>
-        <DialogContent className='bg-gray-800 border-gray-700 text-white'>
-          <DialogHeader>
-            <DialogTitle className='flex items-center gap-2'>
-              <Trophy className='h-6 w-6 text-yellow-500' />
-              Contest Ended!
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className='space-y-4'>
-            <div className='text-center'>
-              <div className='text-4xl font-bold text-green-400 mb-2'>
-                {stats.solved}/{stats.total}
-              </div>
-              <p className='text-gray-300'>Problems Solved</p>
-              {stats.penalty > 0 && (
-                <p className='text-sm text-gray-400 mt-2'>
-                  Total Penalty: {Math.floor(stats.penalty / 60)} minutes
-                </p>
-              )}
-            </div>
-
-            <div className='flex gap-3'>
-              <Button
-                onClick={() => router.push('/contests')}
-                className='flex-1'
-              >
-                Back to Contests
-              </Button>
-              <Button
-                onClick={() => router.push(`/contests/${contest.id}`)}
-                variant='outline'
-                className='flex-1'
-              >
-                View Leaderboard
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

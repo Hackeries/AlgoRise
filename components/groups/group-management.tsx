@@ -1,7 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -30,8 +36,11 @@ import {
   Shield,
   User,
   MoreVertical,
-  Copy,
   Check,
+  AlertCircle,
+  Copy,
+  Send,
+  Zap,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -41,6 +50,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import useSWR, { mutate } from 'swr';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface GroupMember {
   id: string;
@@ -56,15 +66,78 @@ interface GroupMember {
 interface GroupManagementProps {
   groupId: string;
   groupName: string;
+  groupType: 'college' | 'friends' | 'icpc';
   userRole: 'admin' | 'moderator' | 'member';
+  maxMembers?: number;
 }
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
+const safeJson = async (res: Response) => {
+  const text = await res.text();
+  if (!text) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {};
+  }
+};
+
+const AdvancedToast = ({
+  title,
+  description,
+  isSuccess,
+}: {
+  title: string;
+  description: string;
+  isSuccess: boolean;
+}) => {
+  return (
+    <div className='fixed bottom-6 right-6 z-50 animate-in slide-in-from-bottom-5 fade-in duration-300'>
+      <div
+        className={`rounded-lg shadow-2xl border-2 p-4 max-w-sm ${
+          isSuccess
+            ? 'bg-gradient-to-r from-green-900/20 to-emerald-900/20 border-green-500/50'
+            : 'bg-gradient-to-r from-red-900/20 to-rose-900/20 border-red-500/50'
+        }`}
+      >
+        <div className='flex items-start gap-3'>
+          <div
+            className={`mt-0.5 ${
+              isSuccess ? 'text-green-500' : 'text-red-500'
+            }`}
+          >
+            {isSuccess ? (
+              <div className='relative'>
+                <Zap className='h-5 w-5 animate-pulse' />
+                <Check className='h-5 w-5 absolute inset-0' />
+              </div>
+            ) : (
+              <AlertCircle className='h-5 w-5 animate-pulse' />
+            )}
+          </div>
+          <div className='flex-1'>
+            <p
+              className={`font-bold text-sm ${
+                isSuccess ? 'text-green-400' : 'text-red-400'
+              }`}
+            >
+              {title}
+            </p>
+            <p className='text-xs text-foreground/70 mt-1'>{description}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export function GroupManagement({
   groupId,
   groupName,
+  groupType,
   userRole,
+  maxMembers,
 }: GroupManagementProps) {
   const { toast } = useToast();
   const [inviteEmail, setInviteEmail] = useState('');
@@ -74,6 +147,17 @@ export function GroupManagement({
   const [isInviting, setIsInviting] = useState(false);
   const [showInviteDialog, setShowInviteDialog] = useState(false);
   const [copiedInvite, setCopiedInvite] = useState(false);
+  const [addHandle, setAddHandle] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
+  const [showAddByHandleDialog, setShowAddByHandleDialog] = useState(false);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [advancedToast, setAdvancedToast] = useState<{
+    title: string;
+    description: string;
+    isSuccess: boolean;
+  } | null>(null);
 
   const { data: groupData, isLoading } = useSWR<{
     members: GroupMember[];
@@ -92,8 +176,68 @@ export function GroupManagement({
   const canInvite = userRole === 'admin' || userRole === 'moderator';
   const canManageMembers = userRole === 'admin';
 
+  useEffect(() => {
+    const handler = (e: any) => {
+      if (e?.detail?.groupId === groupId) {
+        setShowInviteDialog(true);
+        setTimeout(() => {
+          const el = document.getElementById(
+            'invite-email-input'
+          ) as HTMLInputElement | null;
+          el?.focus();
+        }, 75);
+      }
+    };
+    window.addEventListener('algorise:open-invite', handler as any);
+    return () =>
+      window.removeEventListener('algorise:open-invite', handler as any);
+  }, [groupId]);
+
+  useEffect(() => {
+    if (canInvite && !inviteCode) {
+      generateInviteCode();
+    }
+  }, [canInvite]);
+
+  const generateInviteCode = async () => {
+    setIsGeneratingCode(true);
+    try {
+      const res = await fetch(`/api/groups/${groupId}/invite`, {
+        method: 'GET',
+      });
+      const data = await safeJson(res);
+
+      if (!res.ok) {
+        const msg =
+          res.status === 401
+            ? 'You are not logged in. Please refresh and sign in.'
+            : res.status === 403
+            ? 'Only group members can generate invite links.'
+            : (data as any).error || 'Failed to generate invite link';
+        throw new Error(msg);
+      }
+
+      setInviteCode((data as any).code);
+      setInviteLink((data as any).link || null);
+    } catch (error: any) {
+      toast({
+        title: 'Failed to generate invite link',
+        description: error.message || 'Please try again',
+        variant: 'destructive',
+      });
+      console.log('[v0] invite code error', error?.message);
+    } finally {
+      setIsGeneratingCode(false);
+    }
+  };
+
   const handleInvite = async () => {
     if (!inviteEmail.trim() || !canInvite) return;
+
+    if (!inviteCode || !inviteLink) {
+      await generateInviteCode();
+    }
+    if (!inviteCode || !inviteLink) return;
 
     setIsInviting(true);
     try {
@@ -103,29 +247,31 @@ export function GroupManagement({
         body: JSON.stringify({
           email: inviteEmail.trim(),
           role: inviteRole,
+          code: inviteCode,
         }),
       });
+      const data = await safeJson(res);
+      if (!res.ok)
+        throw new Error((data as any).error || 'Failed to send invitation');
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to send invitation');
-      }
-
-      toast({
-        title: 'Invitation sent!',
-        description: `Invited ${inviteEmail} to join ${groupName}`,
+      setAdvancedToast({
+        title: 'Invitation Sent! 🚀',
+        description: `${inviteEmail} will receive a professional AlgoRise invitation to join "${groupName}". They'll be able to join directly from the email.`,
+        isSuccess: true,
       });
+
+      setTimeout(() => setAdvancedToast(null), 5000);
 
       setInviteEmail('');
       setShowInviteDialog(false);
       mutate(`/api/groups/${groupId}/members`);
     } catch (error: any) {
-      toast({
-        title: 'Failed to send invitation',
-        description: error.message,
-        variant: 'destructive',
+      setAdvancedToast({
+        title: 'Failed to Send',
+        description: error.message || 'Please try again',
+        isSuccess: false,
       });
+      setTimeout(() => setAdvancedToast(null), 5000);
     } finally {
       setIsInviting(false);
     }
@@ -193,24 +339,83 @@ export function GroupManagement({
     }
   };
 
-  const copyInviteLink = async () => {
-    if (!groupData?.inviteCode) return;
-
-    const inviteUrl = `${window.location.origin}/groups/join/${groupData.inviteCode}`;
-
+  const handleAddByHandle = async () => {
+    if (!addHandle.trim() || !canManageMembers) return;
+    setIsAdding(true);
     try {
-      await navigator.clipboard.writeText(inviteUrl);
+      const res = await fetch(`/api/groups/add-member`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ groupId, handle: addHandle.trim() }),
+      });
+      const data = await safeJson(res);
+      if (!res.ok)
+        throw new Error((data as any).error || 'Failed to add member');
+
+      toast({
+        title: 'Member added',
+        description: `${addHandle} has been added to the group${
+          (data as any).needsVerification
+            ? ". They'll need to verify their CF handle."
+            : '.'
+        }`,
+      });
+      setAddHandle('');
+      setShowAddByHandleDialog(false);
+      mutate(`/api/groups/${groupId}/members`);
+    } catch (error: any) {
+      toast({
+        title: 'Failed to add member',
+        description: error.message || 'Please try again',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
+  const copyInviteLink = async () => {
+    if (!inviteCode || !inviteLink) {
+      await generateInviteCode();
+    }
+    let inviteUrl = inviteLink;
+    if (!inviteUrl && inviteCode) {
+      inviteUrl = `${window.location.origin}/groups/join/${inviteCode}`;
+    }
+    if (!inviteUrl) {
+      toast({
+        title: 'Failed to generate invite link',
+        description: 'Please try again',
+        variant: 'destructive',
+      });
+      return;
+    }
+    try {
+      // Prefer async clipboard
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(inviteUrl);
+      } else {
+        // Fallback for insecure contexts/browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = inviteUrl;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
       setCopiedInvite(true);
       toast({
         title: 'Invite link copied!',
-        description: 'Share this link with others to invite them to the group',
+        description: 'Share this link to invite members to your group',
       });
-
       setTimeout(() => setCopiedInvite(false), 2000);
-    } catch (error) {
+    } catch {
       toast({
         title: 'Failed to copy link',
-        description: 'Please copy the link manually',
+        description: 'Please try again or copy manually',
         variant: 'destructive',
       });
     }
@@ -240,63 +445,197 @@ export function GroupManagement({
 
   return (
     <div className='space-y-6'>
-      {/* Group Actions */}
+      {advancedToast && <AdvancedToast {...advancedToast} />}
+
       {canInvite && (
-        <Card>
-          <CardHeader>
-            <CardTitle className='flex items-center gap-2'>
-              <UserPlus className='h-5 w-5' />
-              Invite Members
-            </CardTitle>
+        <Card className='border-2 bg-gradient-to-br from-card to-card/50'>
+          <CardHeader className='pb-4'>
+            <div className='flex items-start justify-between'>
+              <div>
+                <CardTitle className='flex items-center gap-2 text-xl'>
+                  <UserPlus className='h-5 w-5 text-primary' />
+                  Invite Members
+                </CardTitle>
+                <CardDescription className='mt-1.5'>
+                  {groupType === 'icpc'
+                    ? 'Add teammates to your ICPC team (max 3 members from same college)'
+                    : groupType === 'friends'
+                    ? 'Invite friends to compete together in practice sessions'
+                    : 'Add members from your college to the group'}
+                </CardDescription>
+              </div>
+              {maxMembers && (
+                <Badge variant='secondary' className='text-sm px-3 py-1'>
+                  {members.length}/{maxMembers}
+                </Badge>
+              )}
+            </div>
           </CardHeader>
           <CardContent className='space-y-4'>
-            <div className='flex gap-2'>
+            {maxMembers && members.length >= maxMembers && (
+              <Alert variant='destructive'>
+                <AlertCircle className='h-4 w-4' />
+                <AlertDescription>
+                  This group has reached its maximum capacity. Remove a member
+                  before adding new ones.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {groupType === 'icpc' && members.length < (maxMembers || 3) && (
+              <Alert>
+                <Shield className='h-4 w-4' />
+                <AlertDescription>
+                  <strong>ICPC Rules:</strong> All team members must be from the
+                  same college and maximum 3 members allowed per team.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className='grid gap-3 sm:grid-cols-3'>
               <Button
                 onClick={copyInviteLink}
                 variant='outline'
-                className='flex-1'
+                className='h-auto py-4 flex-col gap-2 hover:bg-primary/5 hover:border-primary bg-gradient-to-br from-primary/5 to-transparent border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20'
+                disabled={
+                  (maxMembers ? members.length >= maxMembers : false) ||
+                  isGeneratingCode
+                }
               >
                 {copiedInvite ? (
-                  <Check className='h-4 w-4 mr-2' />
+                  <Check className='h-5 w-5 text-green-600 animate-bounce' />
                 ) : (
-                  <Copy className='h-4 w-4 mr-2' />
+                  <Copy className='h-5 w-5 text-primary' />
                 )}
-                {copiedInvite ? 'Copied!' : 'Copy Invite Link'}
+                <div className='text-center'>
+                  <div className='font-semibold'>
+                    {copiedInvite ? 'Link Copied!' : 'Copy Invite Link'}
+                  </div>
+                  <div className='text-xs text-muted-foreground mt-0.5'>
+                    Share with anyone
+                  </div>
+                </div>
               </Button>
+
+              <Dialog
+                open={showAddByHandleDialog}
+                onOpenChange={setShowAddByHandleDialog}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    variant='outline'
+                    className='h-auto py-4 flex-col gap-2 hover:bg-primary/5 hover:border-primary bg-gradient-to-br from-primary/5 to-transparent border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20'
+                    disabled={maxMembers ? members.length >= maxMembers : false}
+                  >
+                    <UserPlus className='h-5 w-5 text-primary' />
+                    <div className='text-center'>
+                      <div className='font-semibold'>Add by Handle</div>
+                      <div className='text-xs text-muted-foreground mt-0.5'>
+                        Direct add via CF handle
+                      </div>
+                    </div>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className='sm:max-w-md'>
+                  <DialogHeader>
+                    <DialogTitle>Add Member by Codeforces Handle</DialogTitle>
+                    <DialogDescription>
+                      Enter the Codeforces handle of the user you want to add to{' '}
+                      {groupName}.
+                      {groupType === 'icpc' &&
+                        ' They must be from the same college as your team.'}
+                    </DialogDescription>
+                  </DialogHeader>
+
+                  <div className='space-y-4 py-4'>
+                    <div className='space-y-2'>
+                      <label className='text-sm font-medium'>
+                        Codeforces Handle
+                      </label>
+                      <Input
+                        placeholder='e.g., tourist, Benq, Errichto'
+                        value={addHandle}
+                        onChange={e => setAddHandle(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && addHandle.trim()) {
+                            handleAddByHandle();
+                          }
+                        }}
+                      />
+                      <p className='text-xs text-muted-foreground'>
+                        No verification required to add. If their Codeforces
+                        handle isn't verified yet, they'll be prompted to verify
+                        after joining.
+                      </p>
+                    </div>
+                  </div>
+
+                  <DialogFooter>
+                    <Button
+                      variant='outline'
+                      onClick={() => setShowAddByHandleDialog(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleAddByHandle}
+                      disabled={!addHandle.trim() || isAdding}
+                    >
+                      {isAdding ? 'Adding...' : 'Add Member'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               <Dialog
                 open={showInviteDialog}
                 onOpenChange={setShowInviteDialog}
               >
                 <DialogTrigger asChild>
-                  <Button>
-                    <Mail className='h-4 w-4 mr-2' />
-                    Send Invitation
+                  <Button
+                    variant='outline'
+                    className='h-auto py-4 flex-col gap-2 hover:bg-primary/5 hover:border-primary bg-gradient-to-br from-primary/5 to-transparent border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/20'
+                    disabled={maxMembers ? members.length >= maxMembers : false}
+                  >
+                    <Send className='h-5 w-5 text-primary' />
+                    <div className='text-center'>
+                      <div className='font-semibold'>Send Invitation</div>
+                      <div className='text-xs text-muted-foreground mt-0.5'>
+                        Invite via email
+                      </div>
+                    </div>
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className='sm:max-w-md'>
                   <DialogHeader>
-                    <DialogTitle>Invite to {groupName}</DialogTitle>
+                    <DialogTitle>Send Email Invitation</DialogTitle>
                     <DialogDescription>
-                      Send an invitation email to add someone to this group
+                      Send a professional invitation email to add someone to{' '}
+                      {groupName}. They'll receive a link to join the group.
                     </DialogDescription>
                   </DialogHeader>
 
-                  <div className='space-y-4'>
-                    <div>
+                  <div className='space-y-4 py-4'>
+                    <div className='space-y-2'>
                       <label className='text-sm font-medium'>
                         Email Address
                       </label>
                       <Input
+                        id='invite-email-input'
                         type='email'
-                        placeholder='Enter email address'
+                        placeholder='teammate@example.com'
                         value={inviteEmail}
                         onChange={e => setInviteEmail(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && inviteEmail.trim()) {
+                            handleInvite();
+                          }
+                        }}
                       />
                     </div>
 
                     {canManageMembers && (
-                      <div>
+                      <div className='space-y-2'>
                         <label className='text-sm font-medium'>Role</label>
                         <Select
                           value={inviteRole}
@@ -308,12 +647,31 @@ export function GroupManagement({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value='member'>Member</SelectItem>
-                            <SelectItem value='moderator'>Moderator</SelectItem>
+                            <SelectItem value='member'>
+                              Member - Can participate in group activities
+                            </SelectItem>
+                            <SelectItem value='moderator'>
+                              Moderator - Can invite and manage members
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     )}
+
+                    <div className='bg-muted/50 rounded-lg p-3 space-y-2 border border-border/50'>
+                      <p className='text-xs font-semibold text-muted-foreground'>
+                        Email Preview:
+                      </p>
+                      <div className='text-xs space-y-1 text-foreground/80'>
+                        <p>
+                          <strong>Subject:</strong> Join {groupName} on AlgoRise
+                        </p>
+                        <p className='line-clamp-3'>
+                          <strong>Body:</strong> Professional AlgoRise
+                          invitation with group details...
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   <DialogFooter>
@@ -326,7 +684,9 @@ export function GroupManagement({
                     <Button
                       onClick={handleInvite}
                       disabled={!inviteEmail.trim() || isInviting}
+                      className='gap-2'
                     >
+                      <Send className='h-4 w-4' />
                       {isInviting ? 'Sending...' : 'Send Invitation'}
                     </Button>
                   </DialogFooter>
@@ -337,13 +697,22 @@ export function GroupManagement({
         </Card>
       )}
 
-      {/* Members List */}
       <Card>
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
-            <Users className='h-5 w-5' />
-            Members ({members.length})
+            <Users className='h-5 w-5 text-primary' />
+            Team Members
+            <Badge variant='secondary' className='ml-auto'>
+              {members.length} {members.length === 1 ? 'member' : 'members'}
+            </Badge>
           </CardTitle>
+          <CardDescription>
+            {groupType === 'icpc'
+              ? 'Your ICPC team roster'
+              : groupType === 'friends'
+              ? 'Friends in your practice group'
+              : 'Members of your college group'}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -351,62 +720,89 @@ export function GroupManagement({
               {[1, 2, 3].map(i => (
                 <div
                   key={i}
-                  className='flex items-center space-x-4 p-3 bg-muted/20 rounded-lg animate-pulse'
+                  className='flex items-center space-x-4 p-4 bg-muted/30 rounded-lg animate-pulse'
                 >
-                  <div className='h-10 w-10 bg-muted rounded-full' />
+                  <div className='h-12 w-12 bg-muted rounded-full' />
                   <div className='flex-1'>
-                    <div className='h-4 bg-muted rounded w-24 mb-2' />
-                    <div className='h-3 bg-muted rounded w-16' />
+                    <div className='h-4 bg-muted rounded w-32 mb-2' />
+                    <div className='h-3 bg-muted rounded w-24' />
                   </div>
                   <div className='h-6 bg-muted rounded w-20' />
                 </div>
               ))}
+            </div>
+          ) : members.length === 0 ? (
+            <div className='text-center py-12'>
+              <Users className='h-12 w-12 text-muted-foreground mx-auto mb-4' />
+              <h3 className='text-lg font-semibold mb-2'>No members yet</h3>
+              <p className='text-sm text-muted-foreground mb-4'>
+                Start building your {groupType === 'icpc' ? 'team' : 'group'} by
+                inviting members
+              </p>
             </div>
           ) : (
             <div className='space-y-2'>
               {members.map(member => (
                 <div
                   key={member.id}
-                  className='flex items-center space-x-4 p-3 rounded-lg hover:bg-muted/20'
+                  className='flex items-center space-x-4 p-4 rounded-lg hover:bg-muted/50 transition-colors border border-transparent hover:border-border'
                 >
                   <div className='relative'>
-                    <Avatar className='h-10 w-10'>
-                      <AvatarImage src={member.avatar} alt={member.name} />
-                      <AvatarFallback>
+                    <Avatar className='h-12 w-12 border-2 border-background'>
+                      <AvatarImage
+                        src={member.avatar || '/placeholder.svg'}
+                        alt={member.name}
+                      />
+                      <AvatarFallback className='text-sm font-semibold'>
                         {member.name.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     {member.isOnline && (
-                      <div className='absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-background' />
+                      <div className='absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 bg-green-500 rounded-full border-2 border-background' />
                     )}
                   </div>
 
                   <div className='flex-1 min-w-0'>
-                    <div className='flex items-center gap-2'>
-                      <p className='text-sm font-medium truncate'>
+                    <div className='flex items-center gap-2 mb-1'>
+                      <p className='text-sm font-semibold truncate'>
                         {member.name}
                       </p>
-                      <Badge variant='outline' className='text-xs'>
+                      {member.isOnline && (
+                        <Badge
+                          variant='outline'
+                          className='text-xs px-1.5 py-0'
+                        >
+                          Online
+                        </Badge>
+                      )}
+                    </div>
+                    <div className='flex items-center gap-2 text-xs text-muted-foreground'>
+                      <Badge variant='secondary' className='text-xs font-mono'>
                         {member.handle}
                       </Badge>
+                      <span>•</span>
+                      <span>
+                        Joined {new Date(member.joinedAt).toLocaleDateString()}
+                      </span>
                     </div>
-                    <p className='text-xs text-muted-foreground'>
-                      Joined {new Date(member.joinedAt).toLocaleDateString()}
-                    </p>
                   </div>
 
                   <div className='flex items-center gap-2'>
                     <Badge className={getRoleBadgeColor(member.role)}>
-                      <span className='flex items-center gap-1'>
+                      <span className='flex items-center gap-1.5'>
                         {getRoleIcon(member.role)}
-                        {member.role}
+                        <span className='capitalize'>{member.role}</span>
                       </span>
                     </Badge>
 
                     {canManageMembers && member.role !== 'admin' && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant='ghost' size='sm'>
+                          <Button
+                            variant='ghost'
+                            size='sm'
+                            className='h-8 w-8 p-0'
+                          >
                             <MoreVertical className='h-4 w-4' />
                           </Button>
                         </DropdownMenuTrigger>
@@ -417,6 +813,7 @@ export function GroupManagement({
                                 handleChangeRole(member.id, 'moderator')
                               }
                             >
+                              <Shield className='h-4 w-4 mr-2' />
                               Promote to Moderator
                             </DropdownMenuItem>
                           )}
@@ -426,6 +823,7 @@ export function GroupManagement({
                                 handleChangeRole(member.id, 'member')
                               }
                             >
+                              <User className='h-4 w-4 mr-2' />
                               Demote to Member
                             </DropdownMenuItem>
                           )}
@@ -433,8 +831,9 @@ export function GroupManagement({
                             onClick={() =>
                               handleRemoveMember(member.id, member.name)
                             }
-                            className='text-destructive'
+                            className='text-destructive focus:text-destructive'
                           >
+                            <AlertCircle className='h-4 w-4 mr-2' />
                             Remove from Group
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -448,24 +847,32 @@ export function GroupManagement({
         </CardContent>
       </Card>
 
-      {/* Pending Invitations */}
       {invites.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Pending Invitations ({invites.length})</CardTitle>
+            <CardTitle className='flex items-center gap-2'>
+              <Mail className='h-5 w-5 text-primary' />
+              Pending Invitations
+              <Badge variant='secondary' className='ml-auto'>
+                {invites.length}
+              </Badge>
+            </CardTitle>
+            <CardDescription>
+              Invitations waiting to be accepted
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className='space-y-2'>
               {invites.map(invite => (
                 <div
                   key={invite.id}
-                  className='flex items-center justify-between p-3 rounded-lg bg-muted/20'
+                  className='flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-border'
                 >
-                  <div>
+                  <div className='flex-1'>
                     <p className='text-sm font-medium'>{invite.email}</p>
-                    <p className='text-xs text-muted-foreground'>
-                      Invited {new Date(invite.createdAt).toLocaleDateString()}{' '}
-                      • Role: {invite.role}
+                    <p className='text-xs text-muted-foreground mt-1'>
+                      Sent {new Date(invite.createdAt).toLocaleDateString()} •
+                      Will join as {invite.role}
                     </p>
                   </div>
                   <Badge
@@ -473,9 +880,10 @@ export function GroupManagement({
                       invite.status === 'pending'
                         ? 'secondary'
                         : invite.status === 'accepted'
-                          ? 'default'
-                          : 'destructive'
+                        ? 'default'
+                        : 'destructive'
                     }
+                    className='capitalize'
                   >
                     {invite.status}
                   </Badge>

@@ -8,21 +8,23 @@ import {
   SheetSettings,
   type SRMode,
 } from '@/components/adaptive/sheet-settings';
-import CFVerificationTrigger from '@/components/auth/cf-verification-trigger';
 import { useCFVerification } from '@/lib/context/cf-verification';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, BarChart3 } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export function AdaptiveSheetPageClient() {
   const { isVerified, verificationData } = useCFVerification();
+  const router = useRouter();
   const [filters, setFilters] = useState<FilterState>({
     ratingBase: 1500,
     tags: [],
   });
   const [srMode, setSrMode] = useState<SRMode>('standard');
   const [isMobileRailOpen, setIsMobileRailOpen] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -33,26 +35,29 @@ export function AdaptiveSheetPageClient() {
     const parsedTags = urlTags ? urlTags.split(',').filter(Boolean) : [];
     const base = urlBase ? Number(urlBase) : undefined;
 
-    // If recovery mode: downshift rating by 200 unless ratingBase explicitly provided
     if (mode === 'recovery' || parsedTags.length || typeof base === 'number') {
       setFilters(prev => ({
         ratingBase:
           typeof base === 'number' && !Number.isNaN(base)
             ? base
-            : Math.max(800, prev.ratingBase - 200),
+            : Math.max(800, prev.ratingBase - 100),
         tags: parsedTags.length ? parsedTags : prev.tags,
       }));
     }
 
-    // Set rating base from verified CF data if available
     if (isVerified && verificationData?.rating) {
-      const currentRating = Math.floor(verificationData.rating); // Floor the current rating
+      const currentRating = Math.floor(verificationData.rating);
       setFilters(prev => ({
         ...prev,
         ratingBase: currentRating,
       }));
     }
-  }, [isVerified, verificationData]);
+
+    if (!isVerified && !hasRedirected) {
+      setHasRedirected(true);
+      router.replace('/profile?next=/adaptive-sheet');
+    }
+  }, [isVerified, verificationData, router, hasRedirected]);
 
   return (
     <div className='min-h-screen '>
@@ -97,7 +102,7 @@ export function AdaptiveSheetPageClient() {
                       <Button
                         variant='outline'
                         size='sm'
-                        className='flex items-center gap-2'
+                        className='flex items-center gap-2 bg-transparent'
                       >
                         <BarChart3 className='h-4 w-4' />
                         Stats
@@ -127,7 +132,7 @@ export function AdaptiveSheetPageClient() {
                     <Button
                       variant='outline'
                       size='sm'
-                      className='flex items-center gap-2'
+                      className='flex items-center gap-2 bg-transparent'
                     >
                       <BarChart3 className='h-4 w-4' />
                       Stats
@@ -155,9 +160,9 @@ export function AdaptiveSheetPageClient() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.4 }}
-                  className='max-w-2xl mx-auto mt-8 lg:mt-12'
+                  className='max-w-2xl mx-auto mt-8 lg:mt-12 text-sm text-muted-foreground'
                 >
-                  <CFVerificationTrigger />
+                  Redirecting to profile for Codeforces verification...
                 </motion.div>
               ) : (
                 <motion.div

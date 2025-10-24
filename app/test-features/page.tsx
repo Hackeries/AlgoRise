@@ -438,6 +438,10 @@ export default function TestFeaturesPage() {
               4. <strong>Refresh Index</strong> - Update search index if results
               seem outdated
             </p>
+            <p>
+              5. <strong>Test Notifications</strong> - Visit /test-features/notifications
+              to test smart notification features
+            </p>
           </div>
 
           <div className='flex flex-wrap gap-2 pt-4'>
@@ -464,6 +468,12 @@ export default function TestFeaturesPage() {
               className='border-orange-500/30 text-orange-300'
             >
               users
+            </Badge>
+            <Badge
+              variant='outline'
+              className='border-yellow-500/30 text-yellow-300'
+            >
+              notifications
             </Badge>
           </div>
         </CardContent>

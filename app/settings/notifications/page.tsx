@@ -17,6 +17,17 @@ export default function NotificationsSettingsPage() {
       {/* Notifications Toggle Section */}
       <section className='space-y-6'>
         <NotificationsToggle />
+        
+        {/* Smart Notification Settings */}
+        <div className='bg-muted/50 p-4 rounded-lg'>
+          <h2 className='text-xl font-semibold mb-2'>Smart Notifications</h2>
+          <p className='text-muted-foreground mb-4'>
+            Configure your smart notification preferences for personalized alerts.
+          </p>
+          <p className='text-sm text-muted-foreground'>
+            Note: Smart notification settings will be available in the next update.
+          </p>
+        </div>
       </section>
     </main>
   );

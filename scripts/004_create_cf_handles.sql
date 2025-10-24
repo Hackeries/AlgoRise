@@ -5,11 +5,13 @@ create table if not exists public.cf_handles (
   handle text not null,
   verified boolean not null default false,
   verification_token text,
+  expires_at timestamptz,  -- 🆕 Added: when verification token expires
   last_sync_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (user_id)
 );
+
 
 -- Triggers for updated_at
 create or replace function public.set_updated_at()
@@ -52,3 +54,4 @@ with check ( auth.uid() = user_id );
 
 -- Helpful index
 create index if not exists idx_cf_handles_user_id on public.cf_handles(user_id);
+-- Add columns required for verification flow

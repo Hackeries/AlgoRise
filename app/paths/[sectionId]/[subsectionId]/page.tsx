@@ -13,7 +13,15 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Target, Clock, CheckCircle, Loader2, Star } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  ArrowLeft,
+  Target,
+  Clock,
+  CheckCircle,
+  Loader2,
+  Star,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function SubsectionPage() {
@@ -28,6 +36,15 @@ export default function SubsectionPage() {
   const [loading, setLoading] = useState(true);
   const [updatingProblem, setUpdatingProblem] = useState<string | null>(null);
   const [updatingRevision, setUpdatingRevision] = useState<string | null>(null);
+
+  // New state for UX enhancements
+  const [searchQuery, setSearchQuery] = useState('');
+  const [difficultyFilter, setDifficultyFilter] = useState<
+    'All' | 'Easy' | 'Medium' | 'Hard'
+  >('All');
+  const [recommendedOrder, setRecommendedOrder] = useState(true);
+  const [showUnsolvedOnly, setShowUnsolvedOnly] = useState(false);
+  const [letterFilter, setLetterFilter] = useState<'All' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'>('All');
 
   // Find the section and subsection
   const section = LEARNING_PATH_DATA.find(s => s.id === sectionId);
@@ -69,12 +86,18 @@ export default function SubsectionPage() {
 
       // Convert to Sets for easy lookup
       const solved = new Set(
-        data?.filter(item => item.solved).map(item => item.problem_id) || []
+        data
+          ?.filter((item: { solved: boolean }) => item.solved)
+          .map((item: { problem_id: string }) => item.problem_id) || []
       );
       const revision = new Set(
-        data?.filter(item => item.marked_for_revision).map(item => item.problem_id) || []
+        data
+          ?.filter(
+            (item: { marked_for_revision: boolean }) => item.marked_for_revision
+          )
+          .map((item: { problem_id: string }) => item.problem_id) || []
       );
-      
+
       setSolvedProblems(solved);
       setRevisionProblems(revision);
     } catch (error) {
@@ -99,18 +122,21 @@ export default function SubsectionPage() {
       const isCurrentlySolved = solvedProblems.has(problemId);
       const newSolvedStatus = !isCurrentlySolved;
 
-      // Update in Supabase - specify the unique constraint for upsert
-      const { error } = await supabase.from('user_problems').upsert(
-        {
-          user_id: user.id,
-          problem_id: problemId,
-          solved: newSolvedStatus,
-          solved_at: newSolvedStatus ? new Date().toISOString() : null,
-        },
-        {
-          onConflict: 'user_id,problem_id',
-        }
-      );
+      const payload: {
+        user_id: string;
+        problem_id: string;
+        solved: boolean;
+        solved_at: string | null;
+      } = {
+        user_id: user.id,
+        problem_id: problemId,
+        solved: newSolvedStatus,
+        solved_at: newSolvedStatus ? new Date().toISOString() : null,
+      };
+
+      const { error } = await supabase.from('user_problems').upsert(payload, {
+        onConflict: 'user_id,problem_id',
+      });
 
       if (error) {
         console.error('Error updating problem status:', error);
@@ -151,18 +177,21 @@ export default function SubsectionPage() {
       const isCurrentlyMarked = revisionProblems.has(problemId);
       const newRevisionStatus = !isCurrentlyMarked;
 
-      // Update in Supabase
-      const { error } = await supabase.from('user_problems').upsert(
-        {
-          user_id: user.id,
-          problem_id: problemId,
-          marked_for_revision: newRevisionStatus,
-          revision_marked_at: newRevisionStatus ? new Date().toISOString() : null,
-        },
-        {
-          onConflict: 'user_id,problem_id',
-        }
-      );
+      const payload: {
+        user_id: string;
+        problem_id: string;
+        marked_for_revision: boolean;
+        revision_marked_at: string | null;
+      } = {
+        user_id: user.id,
+        problem_id: problemId,
+        marked_for_revision: newRevisionStatus,
+        revision_marked_at: newRevisionStatus ? new Date().toISOString() : null,
+      };
+
+      const { error } = await supabase.from('user_problems').upsert(payload, {
+        onConflict: 'user_id,problem_id',
+      });
 
       if (error) {
         console.error('Error updating revision status:', error);
@@ -210,6 +239,41 @@ export default function SubsectionPage() {
   const revisionCount = revisionProblems.size;
   const completionPercentage =
     totalProblems > 0 ? Math.round((solvedCount / totalProblems) * 100) : 0;
+
+  // Derive XP and stars
+  const xp = solvedCount * 10;
+  const stars = Math.min(
+    5,
+    Math.floor(solvedCount / Math.max(1, Math.ceil(totalProblems / 5)))
+  );
+
+  // Filter, search, and recommended order
+  const difficultyRank: Record<string, number> = {
+    Easy: 1,
+    Medium: 2,
+    Hard: 3,
+  };
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filtered = subsection.problems.filter(p => {
+    const matchesQuery =
+      !normalizedQuery ||
+      p.title.toLowerCase().includes(normalizedQuery) ||
+      p.tags.some(t => t.toLowerCase().includes(normalizedQuery));
+    const matchesDifficulty =
+      difficultyFilter === 'All' || p.difficulty === difficultyFilter;
+    const matchesLetter =
+      letterFilter === 'All' || /problem\/(\d+)\/([A-Za-z]+)/.test(p.url) &&
+      (p.url.match(/problem\/(\d+)\/([A-Za-z]+)/)?.[2] || '').startsWith(letterFilter);
+    const matchesSolved = !showUnsolvedOnly || !solvedProblems.has(p.id);
+    return matchesQuery && matchesDifficulty && matchesLetter && matchesSolved;
+  });
+  const ordered = recommendedOrder
+    ? [...filtered].sort(
+        (a, b) =>
+          (difficultyRank[a.difficulty] ?? 99) -
+          (difficultyRank[b.difficulty] ?? 99)
+      )
+    : filtered;
 
   return (
     <main className='mx-auto max-w-4xl px-4 py-10'>
@@ -273,6 +337,118 @@ export default function SubsectionPage() {
             )}
           </div>
         </CardHeader>
+        {/* Compact progress bar and XP strip */}
+        <div className='px-6 pb-6'>
+          <div className='flex items-center justify-between mb-2'>
+            <div className='text-sm text-muted-foreground'>
+              Progress:{' '}
+              <span className='font-medium'>{completionPercentage}%</span>
+            </div>
+            <div className='text-sm'>
+              <span className='mr-2'>
+                XP: <span className='font-semibold'>{xp}</span>
+              </span>
+              {/* simple star indicators */}
+              {Array.from({ length: 5 }).map((_, i) => (
+                <span
+                  key={i}
+                  className={
+                    i < stars ? 'text-yellow-500' : 'text-muted-foreground'
+                  }
+                >
+                  ★
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className='h-2 w-full rounded bg-muted overflow-hidden'>
+            <div
+              className='h-full bg-green-600 transition-all'
+              style={{ width: `${completionPercentage}%` }}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={completionPercentage}
+              role='progressbar'
+            />
+          </div>
+        </div>
+      </Card>
+
+      <Card className='mb-6'>
+        <CardHeader>
+          <CardTitle className='text-lg'>Practice Controls</CardTitle>
+          <CardDescription>
+            Search, filter and order problems to fit your pace.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className='space-y-4'>
+            {/* Top row: search + difficulty + order */}
+            <div className='grid gap-3 md:grid-cols-3'>
+              <div>
+                <input
+                  className='w-full rounded-md border bg-background px-3 py-2 text-sm'
+                  placeholder='Search by title or tag'
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  aria-label='Search problems'
+                />
+              </div>
+              <div>
+                <select
+                  className='w-full rounded-md border bg-background px-3 py-2 text-sm'
+                  value={difficultyFilter}
+                  onChange={e => setDifficultyFilter(e.target.value as any)}
+                  aria-label='Filter by difficulty'
+                >
+                  <option>All</option>
+                  <option>Easy</option>
+                  <option>Medium</option>
+                  <option>Hard</option>
+                </select>
+              </div>
+              <div className='flex items-center gap-2'>
+                <input
+                  id='recommended-order'
+                  type='checkbox'
+                  className='h-4 w-4'
+                  checked={recommendedOrder}
+                  onChange={e => setRecommendedOrder(e.target.checked)}
+                />
+                <label htmlFor='recommended-order' className='text-sm'>
+                  Recommended order (Easy → Hard)
+                </label>
+              </div>
+            </div>
+
+            {/* Letter tabs */}
+            <div className='md:col-span-3'>
+              <Tabs value={letterFilter} onValueChange={(v) => setLetterFilter(v as any)}>
+                <TabsList className='flex flex-wrap'>
+                  {['All','A','B','C','D','E','F'].map(l => (
+                    <TabsTrigger key={l} value={l} className='px-3 py-1'>
+                      {l === 'All' ? 'All letters' : `Div problems ${l}`}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            </div>
+
+            {/* Unsolved toggle */}
+            <div className='md:col-span-3 flex items-center gap-2'>
+              <input
+                id='unsolved-only'
+                type='checkbox'
+                className='h-4 w-4'
+                checked={showUnsolvedOnly}
+                onChange={e => setShowUnsolvedOnly(e.target.checked)}
+              />
+              <label htmlFor='unsolved-only' className='text-sm'>
+                Show unsolved only
+              </label>
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
       {/* Problems List */}
@@ -292,7 +468,8 @@ export default function SubsectionPage() {
             </div>
           ) : (
             <div className='space-y-3'>
-              {subsection.problems.map((problem, index) => {
+              {/* Use ordered (filtered+sorted) list */}
+              {ordered.map((problem, index) => {
                 const isSolved = solvedProblems.has(problem.id);
                 const isMarkedForRevision = revisionProblems.has(problem.id);
                 const isUpdating = updatingProblem === problem.id;
@@ -320,12 +497,35 @@ export default function SubsectionPage() {
                       </button>
                       <div>
                         <div
-                          className={`font-medium ${isSolved ? 'line-through text-muted-foreground' : ''}`}
+                          className={`font-medium ${
+                            isSolved ? 'line-through text-muted-foreground' : ''
+                          }`}
                         >
+                          {/* Show recommended index in current list */}
                           Problem {index + 1}: {problem.title}
                         </div>
-                        <div className='text-sm text-muted-foreground'>
-                          Difficulty: {problem.difficulty}
+                        <div className='text-xs text-muted-foreground'>
+                          {/* Difficulty chips + platform + tags */}
+                          <span
+                            className={`mr-2 inline-flex items-center rounded px-2 py-0.5 border ${
+                              problem.difficulty === 'Easy'
+                                ? 'border-green-500/40 text-green-500'
+                                : problem.difficulty === 'Medium'
+                                ? 'border-yellow-500/40 text-yellow-500'
+                                : 'border-red-500/40 text-red-500'
+                            }`}
+                          >
+                            {problem.difficulty}
+                          </span>
+                          <span className='mr-2'>
+                            Source: {problem.platform}
+                          </span>
+                          {problem.tags?.length ? (
+                            <span>
+                              Tags: {problem.tags.slice(0, 3).join(', ')}
+                              {problem.tags.length > 3 ? '…' : ''}
+                            </span>
+                          ) : null}
                         </div>
                       </div>
                     </div>
@@ -334,14 +534,22 @@ export default function SubsectionPage() {
                         {isSolved ? 'Solved' : 'Pending'}
                       </Badge>
                       <Button size='sm' variant='outline' asChild>
-                        <Link href={problem.url} target='_blank'>
+                        <a
+                          href={problem.url}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                        >
                           Solve
-                        </Link>
+                        </a>
                       </Button>
                       <button
                         onClick={() => toggleRevisionStatus(problem.id)}
                         className='flex-shrink-0 hover:scale-110 transition-transform cursor-pointer disabled:cursor-not-allowed p-1'
-                        title={isMarkedForRevision ? 'Remove from revision' : 'Mark for revision'}
+                        title={
+                          isMarkedForRevision
+                            ? 'Remove from revision'
+                            : 'Mark for revision'
+                        }
                         disabled={isUpdatingRev}
                       >
                         {isUpdatingRev ? (
@@ -360,6 +568,12 @@ export default function SubsectionPage() {
                   </div>
                 );
               })}
+              {ordered.length === 0 && (
+                <div className='py-8 text-center text-muted-foreground text-sm'>
+                  No problems match your filters. Try clearing the search or
+                  filters.
+                </div>
+              )}
             </div>
           )}
         </CardContent>

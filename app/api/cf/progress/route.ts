@@ -1,24 +1,59 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import {
   cfGetUserStatus,
   cfGetUserRating,
   calculateUserProgress,
 } from '@/lib/codeforces-api';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const handle = searchParams.get('handle');
+    const qsHandle = searchParams.get('handle');
 
-    if (!handle) {
+    let resolvedHandle = qsHandle;
+    if (!resolvedHandle) {
+      try {
+        const supabase = createServerClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          { cookies: await cookies() }
+        );
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (user) {
+          const { data: row } = await supabase
+            .from('cf_handles')
+            .select('handle, verified')
+            .eq('user_id', user.id)
+            .single();
+          if (row?.handle && row?.verified) {
+            resolvedHandle = row.handle;
+          }
+        }
+      } catch (e) {
+        // ignore fallback errors; we’ll still validate below
+      }
+    }
+
+    if (!resolvedHandle) {
       return NextResponse.json(
-        { error: 'Handle is required' },
+        {
+          error: 'Handle is required',
+          hint: 'Pass ?handle=<cf_handle> or link a Codeforces handle in your profile so we can infer it automatically.',
+        },
         { status: 400 }
       );
     }
 
-    // Get user submissions (last 1000 for comprehensive analysis)
-    const submissionsResponse = await cfGetUserStatus(handle, undefined, 1000);
+    const submissionsResponse = await cfGetUserStatus(
+      resolvedHandle,
+      undefined,
+      1000
+    );
     if (submissionsResponse.status !== 'OK') {
       return NextResponse.json(
         {
@@ -29,47 +64,52 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get rating history
-    const ratingResponse = await cfGetUserRating(handle);
+    const ratingResponse = await cfGetUserRating(resolvedHandle);
     let ratingHistory: any[] = [];
     if (ratingResponse.status === 'OK' && 'result' in ratingResponse) {
       ratingHistory = ratingResponse.result;
     }
 
-    // Calculate comprehensive progress
     const progress =
       'result' in submissionsResponse
         ? calculateUserProgress(submissionsResponse.result)
         : null;
 
-    // Calculate streak data
-    const today = new Date();
     const streakData =
       'result' in submissionsResponse
         ? calculateStreak(submissionsResponse.result)
         : null;
 
-    // Calculate weekly/monthly trends
     const trends =
       'result' in submissionsResponse
         ? calculateTrends(submissionsResponse.result)
         : null;
 
-    return NextResponse.json({
-      progress: {
-        ...progress,
-        streakData,
-        trends,
-        ratingHistory: ratingHistory.map(r => ({
-          contestId: r.contestId,
-          contestName: r.contestName,
-          date: new Date(r.ratingUpdateTimeSeconds * 1000).toISOString(),
-          oldRating: r.oldRating,
-          newRating: r.newRating,
-          change: r.newRating - r.oldRating,
-        })),
-      },
-    });
+    return new NextResponse(
+      JSON.stringify({
+        handle: resolvedHandle,
+        progress: {
+          ...progress,
+          streakData,
+          trends,
+          ratingHistory: ratingHistory.map(r => ({
+            contestId: r.contestId,
+            contestName: r.contestName,
+            date: new Date(r.ratingUpdateTimeSeconds * 1000).toISOString(),
+            oldRating: r.oldRating,
+            newRating: r.newRating,
+            change: r.newRating - r.oldRating,
+          })),
+        },
+      }),
+      {
+        headers: {
+          'content-type': 'application/json',
+          'cache-control': 'private, max-age=60', // short-lived cache to reduce CF API pressure
+        },
+        status: 200,
+      }
+    );
   } catch (error) {
     console.error('Error calculating user progress:', error);
     return NextResponse.json(
@@ -105,13 +145,11 @@ function calculateStreak(submissions: any[]): {
   let longestStreak = 0;
   let tempStreak = 1;
 
-  // Check if solved today or yesterday for current streak
   const today = new Date().toDateString();
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString();
 
   if (solvedDates.has(today)) {
     currentStreak = 1;
-    // Count backwards
     for (let i = 1; i < 365; i++) {
       const checkDate = new Date(
         Date.now() - i * 24 * 60 * 60 * 1000
@@ -124,7 +162,6 @@ function calculateStreak(submissions: any[]): {
     }
   } else if (solvedDates.has(yesterday)) {
     currentStreak = 1;
-    // Count backwards from yesterday
     for (let i = 2; i < 365; i++) {
       const checkDate = new Date(
         Date.now() - i * 24 * 60 * 60 * 1000
@@ -137,7 +174,6 @@ function calculateStreak(submissions: any[]): {
     }
   }
 
-  // Calculate longest streak
   for (let i = 1; i < sortedDates.length; i++) {
     const prevDate = new Date(sortedDates[i - 1]);
     const currDate = new Date(sortedDates[i]);
@@ -199,13 +235,13 @@ function calculateTrends(submissions: any[]): {
       thisWeekSolved > lastWeekSolved
         ? 'up'
         : thisWeekSolved < lastWeekSolved
-          ? 'down'
-          : 'stable',
+        ? 'down'
+        : 'stable',
     monthlyTrend:
       thisMonthSolved > lastMonthSolved
         ? 'up'
         : thisMonthSolved < lastMonthSolved
-          ? 'down'
-          : 'stable',
+        ? 'down'
+        : 'stable',
   };
 }

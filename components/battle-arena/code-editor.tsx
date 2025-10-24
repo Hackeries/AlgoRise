@@ -60,7 +60,7 @@ export function CodeEditor({
       transition={{ duration: 0.4 }}
     >
       {/* Top Bar (File + Controls) */}
-      <div className='flex items-center justify-between px-4 py-3 border-b border-[#222] bg-[#141414]/80 rounded-t-xl backdrop-blur-md'>
+      <div className='flex items-center justify-between px-3 md:px-4 py-2.5 md:py-3 border-b border-[#222] bg-[#141414]/80 rounded-t-xl backdrop-blur-md'>
         <div className='flex items-center gap-2'>
           <motion.div
             className='w-3 h-3 bg-red-500 rounded-full'
@@ -77,7 +77,7 @@ export function CodeEditor({
 
         <div className='flex gap-2 items-center'>
           <Select value={language} onValueChange={onLanguageChange}>
-            <SelectTrigger className='w-32 border-[#333] bg-[#111] text-gray-300'>
+            <SelectTrigger className='w-28 md:w-32 border-[#333] bg-[#111] text-gray-300'>
               <SelectValue placeholder='Language' />
             </SelectTrigger>
             <SelectContent className='bg-[#111] border-[#333] text-gray-200'>
@@ -128,7 +128,7 @@ export function CodeEditor({
       </div>
 
       {/* Bottom Status Bar */}
-      <div className='px-4 py-2 border-t border-[#222] bg-[#141414]/70 text-xs text-gray-400 flex items-center justify-between rounded-b-xl'>
+      <div className='px-3 md:px-4 py-2 border-t border-[#222] bg-[#141414]/70 text-xs text-gray-400 flex items-center justify-between rounded-b-xl'>
         <div className='flex items-center gap-2'>
           <Terminal className='w-3.5 h-3.5 text-sky-400' />
           <span>Ready</span>

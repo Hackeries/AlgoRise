@@ -1,10 +1,7 @@
 @import "tailwindcss";
-/* Removed tw-animate-css to avoid unknown utility classes during build */
-
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Light theme — modern, smooth neutrals */
   --background: 210 20% 98%; /* slate-50 */
   --foreground: 222 47% 11%; /* slate-900 */
   --card: 0 0% 100%; /* white */

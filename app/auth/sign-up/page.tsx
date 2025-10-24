@@ -218,7 +218,9 @@ export default function SignUpPage() {
         typeof window !== 'undefined'
           ? window.location.origin
           : 'http://localhost:3000';
-      const redirectTo = `${origin}/auth/callback`;
+          const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(
+            '/profile'
+          )}`;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider,

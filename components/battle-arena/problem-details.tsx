@@ -49,12 +49,7 @@ export function ProblemDetails({ problem }: ProblemDetailsProps) {
           <Badge className={difficultyColor[problem.difficulty]}>
             {problem.difficulty}
           </Badge>
-          {problem.rating && (
-            <div className='flex items-center text-yellow-600 text-sm'>
-              <Star className='w-4 h-4 mr-1 fill-yellow-400' />
-              {problem.rating}
-            </div>
-          )}
+          {/* Rating intentionally hidden in arena for contest feel */}
           {problem.source && (
             <Badge variant='outline' className='text-xs'>
               {problem.source}

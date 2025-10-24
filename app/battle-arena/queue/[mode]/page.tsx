@@ -29,6 +29,7 @@ function QueuePageClient({ mode }: { mode: '1v1' | '3v3' }) {
   const [queueId, setQueueId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [estimatedWait, setEstimatedWait] = useState<number | null>(null);
+  const [canPlayBot, setCanPlayBot] = useState(false);
 
   const { queueUpdate, isConnected } = useQueueRealtime(mode, !!queueId);
 
@@ -36,6 +37,8 @@ function QueuePageClient({ mode }: { mode: '1v1' | '3v3' }) {
     if (queueUpdate?.type === 'queue_size' && typeof queueUpdate.queueSize === 'number') {
       const estimate = Math.max(5, 5 + Math.floor(queueUpdate.queueSize / 5) * 2);
       setEstimatedWait(estimate);
+      // If only me (1) or empty (0), allow Play vs Bot
+      setCanPlayBot((queueUpdate.queueSize || 0) <= 1);
     }
   }, [queueUpdate]);
 
@@ -54,7 +57,7 @@ function QueuePageClient({ mode }: { mode: '1v1' | '3v3' }) {
       if (status === 'queuing') {
         setStatus('timeout');
       }
-    }, 120000);
+    }, 60000);
 
     return () => clearTimeout(timeoutTimer);
   }, [status]);
@@ -316,6 +319,20 @@ function QueuePageClient({ mode }: { mode: '1v1' | '3v3' }) {
                   </p>
                 </motion.div>
               </div>
+
+              {canPlayBot && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Button
+                    onClick={handlePlayBot}
+                    className='w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold transition-all duration-300'
+                  >
+                    Play vs Bot
+                  </Button>
+                </motion.div>
+              )}
 
               <motion.div
                 className='p-3 bg-gradient-to-r from-blue-900/30 to-cyan-900/30 rounded-lg border border-blue-500/20 backdrop-blur-sm'

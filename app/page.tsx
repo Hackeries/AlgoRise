@@ -3,6 +3,7 @@ import HowItWorks from '@/components/landing/how-it-works';
 import ModernLanding from '@/components/landing-hero';
 import PixelBlast from '@/components/bg/pixelblast';
 import CFLevels from '@/components/landing/cf-levels';
+import AdSenseAd from '@/components/ads/AdSenseAd';
 
 export default function VisualizersPage() {
   return (
@@ -15,6 +16,17 @@ export default function VisualizersPage() {
       {/* Hero Section */}
       <section className='relative z-5 w-full' aria-label='Hero Section'>
         <ModernLanding />
+      </section>
+
+      {/* Ad: Responsive banner between hero and levels */}
+      <section className='relative z-5 w-full my-6 flex justify-center'>
+        <AdSenseAd
+          slot={"0000000000"}
+          format='auto'
+          responsive
+          className='w-full max-w-7xl px-4'
+          style={{ minHeight: 90 }}
+        />
       </section>
 
       {/* Codeforces Levels Section */}

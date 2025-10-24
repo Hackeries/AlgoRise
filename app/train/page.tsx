@@ -1,23 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import {
-  Trophy,
-  Target,
-  Flame,
-  TrendingUp,
-  Zap,
-  BookOpen,
-  Code2,
-  Award,
-  Clock,
-  ChevronRight,
-  Star,
-  Calendar,
-  Activity,
-  Bookmark,
-  Sparkles,
-} from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { Trophy, Target, TrendingUp, Code2, Clock, ChevronRight, Star, Sparkles } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
@@ -25,15 +9,13 @@ import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { ActivityHeatmap } from "@/components/train/activity-heatmap"
 import { cn } from "@/lib/utils"
-import { CFDashboard } from "@/components/dashboard/cf-dashboard"
-import { WelcomeBanner } from "@/components/train/welcome-banner"
-import { QuickActions } from "@/components/train/quick-actions"
-import { RecentActivity } from "@/components/train/recent-activity"
-import { UpcomingContests } from "@/components/train/upcoming-contests"
-import { ProblemRecommendations } from "@/components/train/problem-recommendations"
-import { motion } from "framer-motion"
-import { useCFVerification } from "@/lib/context/cf-verification"
-import { useAuth } from "@/lib/auth/context"
+import { TrainHero } from "@/components/train/hero"
+import { FilterBar, type Filters } from "@/components/train/filter-bar"
+import { SheetsGrid, type Sheet } from "@/components/train/sheets-grid"
+import { CompanyGrid, type CompanySet } from "@/components/train/company-grid"
+import { DailyChallenge } from "@/components/train/daily-challenge"
+import { UpcomingContests } from "@/components/train/contests"
+import { ProblemRecos } from "@/components/train/problem-recos"
 
 // Mock data for progress tracking
 const progressData = {
@@ -87,6 +69,69 @@ const recommendedProblems = [
   },
 ]
 
+// Mock sheets data for the grid
+const SHEETS: Sheet[] = [
+  {
+    id: "blind75",
+    title: "Blind 75",
+    platform: "LeetCode",
+    difficulty: "Medium",
+    topics: ["Arrays", "DP", "Graphs"],
+    companies: ["Google", "Amazon"],
+    completed: 18,
+    total: 75,
+  },
+  {
+    id: "neet250",
+    title: "NeetCode 250",
+    platform: "LeetCode",
+    difficulty: "Hard",
+    topics: ["Trees", "Graphs", "DP"],
+    companies: ["Meta", "Microsoft"],
+    completed: 42,
+    total: 250,
+  },
+  {
+    id: "cses",
+    title: "CSES Problem Set",
+    platform: "CSES",
+    difficulty: "Medium",
+    topics: ["Graphs", "Math", "DP"],
+    companies: [],
+    completed: 30,
+    total: 200,
+  },
+  {
+    id: "leetcode-classic",
+    title: "LeetCode Classics",
+    platform: "LeetCode",
+    difficulty: "Easy",
+    topics: ["Arrays", "Two Pointers", "Strings"],
+    companies: ["Google", "Uber"],
+    completed: 55,
+    total: 180,
+  },
+]
+
+const COMPANIES: CompanySet[] = [
+  {
+    id: "google",
+    name: "Google",
+    problemCount: 120,
+    solved: 37,
+    distribution: { easy: 35, medium: 60, hard: 25 },
+  },
+  {
+    id: "amazon",
+    name: "Amazon",
+    problemCount: 90,
+    solved: 22,
+    distribution: { easy: 28, medium: 45, hard: 17 },
+  },
+  { id: "meta", name: "Meta", problemCount: 85, solved: 31, distribution: { easy: 25, medium: 40, hard: 20 } },
+  { id: "microsoft", name: "Microsoft", problemCount: 78, solved: 18, distribution: { easy: 22, medium: 38, hard: 18 } },
+]
+
 const recentActivity = [
   { id: 1, type: "solved", problem: "Two Sum", time: "2 hours ago", difficulty: "easy" },
   { id: 2, type: "attempted", problem: "Merge K Sorted Lists", time: "5 hours ago", difficulty: "hard" },
@@ -100,10 +145,9 @@ const upcomingContests = [
 ]
 
 export default function TrainingHub() {
-  const { user } = useAuth()
-  const { isVerified, verificationData } = useCFVerification()
-  const [showWelcome, setShowWelcome] = useState(false)
   const [bookmarkedProblems, setBookmarkedProblems] = useState<Set<number>>(new Set())
+  const [filters, setFilters] = useState<Filters>({ query: "" })
+  const sheetsRef = useRef<HTMLDivElement | null>(null)
 
   const difficultyColors = {
     easy: "text-muted-foreground bg-muted/40 border-border/80",
@@ -126,56 +170,24 @@ export default function TrainingHub() {
   }
 
   useEffect(() => {
-    // Check if this is a first-time visit after profile completion
-    const isNewUser = sessionStorage.getItem("profile_just_completed")
-    if (isNewUser) {
-      setShowWelcome(true)
-      sessionStorage.removeItem("profile_just_completed")
-      // Auto-hide welcome banner after 10 seconds
-      setTimeout(() => setShowWelcome(false), 10000)
-    }
+    // reserved for future side effects
   }, [])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-neutral-900 to-gray-950 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-neutral-950 to-gray-950 text-white">
       {/* Hero Section */}
-      <div className="border-b border-gray-800 bg-gradient-to-r from-gray-900/95 via-neutral-900/95 to-gray-900/95 backdrop-blur-md shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">{"Welcome back to your Training Hub\n"}</h1>
-              <p className="text-sm text-muted-foreground mt-1">{"Build rating, keep your streak, and climb the CP ladder."}</p>
-            </div>
-
-            {/* Key Metrics */}
-            <div className="flex gap-3 flex-wrap items-center">
-              <div className="bg-muted/40 border border-border/80 rounded-lg px-4 py-2.5 flex items-center gap-2.5 shadow-sm">
-                <Flame className="h-5 w-5 text-muted-foreground drop-shadow-sm" />
-                <div>
-                  <div className="text-xs text-muted-foreground font-medium">Streak</div>
-                  <div className="font-bold text-foreground text-lg">{progressData.streak} days</div>
-                </div>
-              </div>
-
-              <div className="bg-muted/40 border border-border/80 rounded-lg px-4 py-2.5 flex items-center gap-2.5 shadow-sm">
-                <Target className="h-5 w-5 text-muted-foreground drop-shadow-sm" />
-                <div>
-                  <div className="text-xs text-muted-foreground font-medium">Daily Goal</div>
-                  <div className="font-bold text-foreground text-lg">
-                    {progressData.completedToday}/{progressData.dailyGoal}
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-muted/40 border border-border/80 rounded-lg px-4 py-2.5 flex items-center gap-2.5 shadow-sm">
-                <Trophy className="h-5 w-5 text-muted-foreground drop-shadow-sm" />
-                <div>
-                  <div className="text-xs text-muted-foreground font-medium">Solved</div>
-                  <div className="font-bold text-foreground text-lg">{progressData.totalSolved}</div>
-                </div>
-              </div>
-            </div>
-          </div>
+      <div className="border-b border-gray-900/60 bg-gradient-to-r from-gray-950/95 via-neutral-950/95 to-gray-950/95 backdrop-blur-md shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <TrainHero
+            onQuickNav={(key) => {
+              if (key === "blind75") setFilters((f) => ({ ...f, query: "Blind 75" }))
+              if (key === "neet250") setFilters((f) => ({ ...f, query: "NeetCode 250" }))
+              if (key === "cses") setFilters((f) => ({ ...f, platform: "CSES" }))
+              if (key === "leetcode") setFilters((f) => ({ ...f, platform: "LeetCode" }))
+              sheetsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }}
+            onSearch={(q) => setFilters((f) => ({ ...f, query: q }))}
+          />
         </div>
       </div>
 
@@ -184,123 +196,22 @@ export default function TrainingHub() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column - Primary Content */}
           <div className="lg:col-span-8 space-y-6">
-            {/* Quick Actions */}
-            <Card className="p-6 bg-gray-900/50 border-gray-800 shadow-xl backdrop-blur-sm">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Zap className="h-5 w-5 text-yellow-400" />
-                <span className="text-white">Quick Actions</span>
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Button
-                  variant="outline"
-                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gray-800/30 border-gray-700 hover:bg-gray-800/60 hover:border-blue-500/50 transition-all"
-                >
-                  <Code2 className="h-6 w-6 text-blue-400" />
-                  <div className="text-center">
-                    <div className="font-semibold text-sm text-white">Random Problem</div>
-                    <div className="text-xs text-gray-400">Challenge yourself</div>
-                  </div>
-                </Button>
+            <FilterBar value={filters} onChange={setFilters} />
 
-                <Button
-                  variant="outline"
-                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gray-800/30 border-gray-700 hover:bg-gray-800/60 hover:border-blue-500/50 transition-all"
-                >
-                  <BookOpen className="h-6 w-6 text-purple-400" />
-                  <div className="text-center">
-                    <div className="font-semibold text-sm text-white">Study Plan</div>
-                    <div className="text-xs text-gray-400">Structured learning</div>
-                  </div>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="h-auto py-4 flex flex-col items-center gap-2 bg-gray-800/30 border-gray-700 hover:bg-gray-800/60 hover:border-blue-500/50 transition-all"
-                >
-                  <Award className="h-6 w-6 text-pink-400" />
-                  <div className="text-center">
-                    <div className="font-semibold text-sm text-white">Contests</div>
-                    <div className="text-xs text-gray-400">Compete live</div>
-                  </div>
-                </Button>
-              </div>
-            </Card>
-
-            {/* Problem Recommendations */}
-            <Card className="p-6 bg-gray-900/50 border-gray-800 shadow-xl backdrop-blur-sm">
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-purple-400" />
-                  <span className="text-white">Recommended for You</span>
-                </h2>
+            {/* Problem Sheets Grid */}
+            <div ref={sheetsRef} className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Problem Sheets</h2>
                 <Button variant="ghost" size="sm" className="text-blue-400 hover:bg-blue-500/10">
                   View All
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
+              <SheetsGrid sheets={SHEETS} filters={filters} />
+            </div>
 
-              <div className="space-y-3">
-                {recommendedProblems.map((problem) => (
-                  <Card
-                    key={problem.id}
-                    className="p-4 bg-gray-800/50 border-gray-700 hover:border-blue-500/50 hover:bg-gray-800/70 transition-all shadow-lg"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-medium text-white truncate">{problem.title}</h3>
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "text-xs font-medium",
-                              difficultyColors[problem.difficulty as keyof typeof difficultyColors],
-                            )}
-                          >
-                            {problem.difficulty}
-                          </Badge>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 mb-2">
-                          {problem.tags.map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs bg-secondary/80">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-
-                        <div className="flex items-center gap-4 text-xs text-gray-400">
-                          <span className="flex items-center gap-1">
-                            <Activity className="h-3 w-3 text-gray-400" />
-                            {problem.acceptance}% acceptance
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0">
-                        <button
-                          onClick={() => toggleBookmark(problem.id)}
-                          className="p-2 rounded-lg hover:bg-accent/60 transition-colors"
-                        >
-                          <Bookmark
-                            className={cn(
-                              "h-5 w-5 transition-colors",
-                              bookmarkedProblems.has(problem.id)
-                                ? "text-primary fill-primary"
-                                : "text-muted-foreground",
-                            )}
-                          />
-                        </button>
-
-                        <Button size="sm" variant="ghost" className="hover:bg-primary/10 hover:text-primary">
-                          Solve
-                          <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </Card>
+            {/* AI-powered recommendations */}
+            <ProblemRecos />
 
             {/* Recent Activity */}
             <Card className="p-6 bg-gray-900/50 border-gray-800 shadow-xl backdrop-blur-sm">
@@ -358,6 +269,9 @@ export default function TrainingHub() {
 
           {/* Right Column - Context Sidebar */}
           <div className="lg:col-span-4 space-y-6">
+            {/* Daily challenge */}
+            <DailyChallenge />
+
             {/* Progress Tracker */}
             <Card className="p-6 bg-gray-900/50 border-gray-800 shadow-xl backdrop-blur-sm">
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -457,39 +371,12 @@ export default function TrainingHub() {
             </Card>
 
             {/* Upcoming Contests */}
-            <Card className="p-6 bg-gray-900/50 border-gray-800 shadow-xl backdrop-blur-sm">
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-pink-400" />
-                <span className="text-white">Upcoming Contests</span>
-              </h2>
+            <UpcomingContests />
 
-              <div className="space-y-3">
-                {upcomingContests.map((contest) => (
-                  <Card key={contest.id} className="p-4 bg-gray-800/50 border-gray-700 shadow-lg">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <h3 className="font-medium text-sm text-white">{contest.name}</h3>
-                      {contest.registered && (
-                        <Badge variant="secondary" className="text-xs bg-secondary/80">
-                          Registered
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-xs text-gray-400 mb-3 space-y-0.5">
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="h-3 w-3 text-muted-foreground" />
-                        {contest.date}
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="h-3 w-3 text-muted-foreground" />
-                        {contest.time}
-                      </div>
-                    </div>
-                    <Button size="sm" variant={contest.registered ? "outline" : "default"} className="w-full">
-                      {contest.registered ? "View Details" : "Register Now"}
-                    </Button>
-                  </Card>
-                ))}
-              </div>
+            {/* Company-focused sets */}
+            <Card className="p-6 bg-gray-900/50 border-gray-800 shadow-xl backdrop-blur-sm">
+              <h2 className="text-lg font-semibold mb-4">Company-Focused Sets</h2>
+              <CompanyGrid companies={COMPANIES} />
             </Card>
           </div>
         </div>

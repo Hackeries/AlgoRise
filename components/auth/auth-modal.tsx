@@ -2,29 +2,14 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-  Eye,
-  EyeOff,
-  Github,
-  Lock,
-  Mail,
-} from 'lucide-react';
+import { Eye, EyeOff, Github, Lock, Mail } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/lib/auth/context';
 import Image from 'next/image';
@@ -68,7 +53,12 @@ const buildOrigin = () => {
   return process.env.NEXT_PUBLIC_APP_URL?.trim() || 'http://localhost:3000';
 };
 
-export function AuthModal({ open, mode, onModeChange, onOpenChange }: AuthModalProps) {
+export function AuthModal({
+  open,
+  mode,
+  onModeChange,
+  onOpenChange,
+}: AuthModalProps) {
   const router = useRouter();
   const { refreshUser } = useAuth();
 
@@ -94,9 +84,10 @@ export function AuthModal({ open, mode, onModeChange, onOpenChange }: AuthModalP
   const [signUpError, setSignUpError] = useState<string | null>(null);
   const [signUpLoading, setSignUpLoading] = useState(false);
 
-  const [oauthLoading, setOauthLoading] = useState<
-    { provider: OAuthProvider; context: AuthMode } | null
-  >(null);
+  const [oauthLoading, setOauthLoading] = useState<{
+    provider: OAuthProvider;
+    context: AuthMode;
+  } | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -119,8 +110,12 @@ export function AuthModal({ open, mode, onModeChange, onOpenChange }: AuthModalP
     try {
       const supabase = createClient();
       const origin = buildOrigin();
-      const nextPath = context === 'signin' ? '/profile' : '/auth/sign-up-success';
-      const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}&o=${encodeURIComponent(origin)}`;
+      // Always go to callback first; it decides final redirect based on user existence
+      // For both signin and signup via OAuth, send next as '/profile' so callback can upgrade to '/profile/overview' if existing
+      const nextPath = '/profile';
+      const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(
+        nextPath
+      )}&o=${encodeURIComponent(origin)}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
@@ -131,7 +126,9 @@ export function AuthModal({ open, mode, onModeChange, onOpenChange }: AuthModalP
       if (error) throw error;
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : 'Unable to start social sign-in right now.';
+        error instanceof Error
+          ? error.message
+          : 'Unable to start social sign-in right now.';
       context === 'signin' ? setSignInError(message) : setSignUpError(message);
     } finally {
       setOauthLoading(null);
@@ -152,9 +149,33 @@ export function AuthModal({ open, mode, onModeChange, onOpenChange }: AuthModalP
       if (error) throw error;
       await refreshUser();
       onOpenChange(false);
-      router.push('/profile');
+      // Compute destination based on user profile/CF status
+      try {
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
+        let destination = '/profile';
+        if (currentUser?.id) {
+          const { data: cf } = await supabase
+            .from('cf_handles')
+            .select('verified')
+            .eq('user_id', currentUser.id)
+            .single();
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('status')
+            .eq('user_id', currentUser.id)
+            .single();
+          if (cf?.verified && prof?.status) destination = '/profile/overview';
+        }
+        router.push(destination);
+      } catch {
+        router.push('/profile');
+      }
     } catch (error) {
-      setSignInError(error instanceof Error ? error.message : 'Unable to sign in right now.');
+      setSignInError(
+        error instanceof Error ? error.message : 'Unable to sign in right now.'
+      );
     } finally {
       setSignInLoading(false);
     }
@@ -182,7 +203,11 @@ export function AuthModal({ open, mode, onModeChange, onOpenChange }: AuthModalP
       onOpenChange(false);
       router.push('/auth/sign-up-success');
     } catch (error) {
-      setSignUpError(error instanceof Error ? error.message : 'Unable to create your account.');
+      setSignUpError(
+        error instanceof Error
+          ? error.message
+          : 'Unable to create your account.'
+      );
     } finally {
       setSignUpLoading(false);
     }
@@ -200,7 +225,7 @@ export function AuthModal({ open, mode, onModeChange, onOpenChange }: AuthModalP
         <div className='relative overflow-hidden'>
           {/* Gradient overlay */}
           <div className='absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none' />
-          
+
           {/* Animated background pattern */}
           {/* Enhanced glowing background animation */}
           <div className='absolute inset-0 opacity-[0.03] pointer-events-none overflow-hidden'>
@@ -216,11 +241,11 @@ export function AuthModal({ open, mode, onModeChange, onOpenChange }: AuthModalP
                 <div className='relative'>
                   <div className='absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse'></div>
                   <Image
-                    src="/algorise-logo.png"
-                    alt="AlgoRise"
+                    src='/algorise-logo.png'
+                    alt='AlgoRise'
                     width={64}
                     height={64}
-                    className="relative object-contain"
+                    className='relative object-contain'
                   />
                 </div>
               </div>
@@ -228,265 +253,338 @@ export function AuthModal({ open, mode, onModeChange, onOpenChange }: AuthModalP
                 {activeTab === 'signin' ? 'Welcome back' : 'Join AlgoRise'}
               </h2>
               <p className='text-sm text-muted-foreground/80 leading-relaxed'>
-                {activeTab === 'signin' 
-                  ? 'Continue your competitive programming journey' 
-                  : 'Start mastering algorithms and data structures'
-                }
+                {activeTab === 'signin'
+                  ? 'Continue your competitive programming journey'
+                  : 'Start mastering algorithms and data structures'}
               </p>
             </div>
 
-          {!supabaseConfigured && (
-            <Alert className='border-amber-500/50 bg-amber-500/10 backdrop-blur-sm rounded-xl'>
-              <AlertTitle className='text-amber-600 dark:text-amber-400'>Authentication not configured</AlertTitle>
-              <AlertDescription className='text-xs text-amber-600/80 dark:text-amber-400/80'>
-                Supabase credentials needed for authentication.
-              </AlertDescription>
-            </Alert>
-          )}
+            {!supabaseConfigured && (
+              <Alert className='border-amber-500/50 bg-amber-500/10 backdrop-blur-sm rounded-xl'>
+                <AlertTitle className='text-amber-600 dark:text-amber-400'>
+                  Authentication not configured
+                </AlertTitle>
+                <AlertDescription className='text-xs text-amber-600/80 dark:text-amber-400/80'>
+                  Supabase credentials needed for authentication.
+                </AlertDescription>
+              </Alert>
+            )}
 
-          <Tabs value={activeTab} onValueChange={handleTabChange} className='space-y-4'>
-            <TabsList className='grid w-full grid-cols-2 h-10 bg-muted/30 backdrop-blur-sm rounded-xl border border-border/20'>
-              <TabsTrigger 
-                value='signin' 
-                className='rounded-lg font-medium text-sm transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/20'
-              >
-                Sign In
-              </TabsTrigger>
-              <TabsTrigger 
-                value='signup'
-                className='rounded-lg font-medium text-sm transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/20'
-              >
-                Sign Up
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value='signin' className='space-y-4 mt-4'>
-              <div className='grid grid-cols-2 gap-3'>
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='sm'
-                  disabled={!supabaseConfigured || oauthLoading !== null}
-                  onClick={() => handleOAuth('google', 'signin')}
-                  className='relative flex items-center justify-center gap-2 h-11 bg-background/50 border-border/40 hover:bg-background/80 hover:border-border/60 transition-all duration-200 backdrop-blur-sm'
+            <Tabs
+              value={activeTab}
+              onValueChange={handleTabChange}
+              className='space-y-4'
+            >
+              <TabsList className='grid w-full grid-cols-2 h-10 bg-muted/30 backdrop-blur-sm rounded-xl border border-border/20'>
+                <TabsTrigger
+                  value='signin'
+                  className='rounded-lg font-medium text-sm transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/20'
                 >
-                  {oauthLoading?.provider === 'google' && oauthLoading?.context === 'signin' ? (
-                    <LoaderIcon />
-                  ) : (
-                    <GoogleIcon />
-                  )}
-                  <span className='font-medium'>Google</span>
-                </Button>
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='sm'
-                  disabled={!supabaseConfigured || oauthLoading !== null}
-                  onClick={() => handleOAuth('github', 'signin')}
-                  className='relative flex items-center justify-center gap-2 h-11 bg-background/50 border-border/40 hover:bg-background/80 hover:border-border/60 transition-all duration-200 backdrop-blur-sm'
+                  Sign In
+                </TabsTrigger>
+                <TabsTrigger
+                  value='signup'
+                  className='rounded-lg font-medium text-sm transition-all data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-border/20'
                 >
-                  {oauthLoading?.provider === 'github' && oauthLoading?.context === 'signin' ? (
-                    <LoaderIcon />
-                  ) : (
-                    <Github className='h-4 w-4' />
-                  )}
-                  <span className='font-medium'>GitHub</span>
-                </Button>
-              </div>
+                  Sign Up
+                </TabsTrigger>
+              </TabsList>
 
-              <div className='relative'>
-                <div className='absolute inset-0 flex items-center'>
-                  <span className='w-full border-t border-border/30' />
+              <TabsContent value='signin' className='space-y-4 mt-4'>
+                <div className='grid grid-cols-2 gap-3'>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='sm'
+                    disabled={!supabaseConfigured || oauthLoading !== null}
+                    onClick={() => handleOAuth('google', 'signin')}
+                    className='relative flex items-center justify-center gap-2 h-11 bg-background/50 border-border/40 hover:bg-background/80 hover:border-border/60 transition-all duration-200 backdrop-blur-sm'
+                  >
+                    {oauthLoading?.provider === 'google' &&
+                    oauthLoading?.context === 'signin' ? (
+                      <LoaderIcon />
+                    ) : (
+                      <GoogleIcon />
+                    )}
+                    <span className='font-medium'>Google</span>
+                  </Button>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='sm'
+                    disabled={!supabaseConfigured || oauthLoading !== null}
+                    onClick={() => handleOAuth('github', 'signin')}
+                    className='relative flex items-center justify-center gap-2 h-11 bg-background/50 border-border/40 hover:bg-background/80 hover:border-border/60 transition-all duration-200 backdrop-blur-sm'
+                  >
+                    {oauthLoading?.provider === 'github' &&
+                    oauthLoading?.context === 'signin' ? (
+                      <LoaderIcon />
+                    ) : (
+                      <Github className='h-4 w-4' />
+                    )}
+                    <span className='font-medium'>GitHub</span>
+                  </Button>
                 </div>
-                <div className='relative flex justify-center text-xs uppercase'>
-                  <span className='bg-background px-3 text-muted-foreground/60 font-medium tracking-wider'>or continue with email</span>
-                </div>
-              </div>
 
-              <form className='space-y-5' onSubmit={handleEmailSignIn}>
-                <div className='space-y-2'>
-                  <Label htmlFor='signin-email' className='text-sm font-medium text-foreground/90'>Email</Label>
-                  <div className='relative'>
-                    <Mail className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60' />
-                    <Input
-                      id='signin-email'
-                      type='email'
-                      placeholder='you@example.com'
-                      value={signInEmail}
-                      onChange={event => setSignInEmail(event.target.value)}
-                      disabled={!supabaseConfigured || signInLoading}
-                      className='pl-10 h-11 bg-background/50 border-border/40 focus:bg-background/80 focus:border-primary/50 transition-all duration-200 backdrop-blur-sm'
-                    />
+                <div className='relative'>
+                  <div className='absolute inset-0 flex items-center'>
+                    <span className='w-full border-t border-border/30' />
+                  </div>
+                  <div className='relative flex justify-center text-xs uppercase'>
+                    <span className='bg-background px-3 text-muted-foreground/60 font-medium tracking-wider'>
+                      or continue with email
+                    </span>
                   </div>
                 </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='signin-password' className='text-sm font-medium text-foreground/90'>Password</Label>
-                  <div className='relative'>
-                    <Lock className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60' />
-                    <Input
-                      id='signin-password'
-                      type={signInShowPassword ? 'text' : 'password'}
-                      placeholder='Enter your password'
-                      value={signInPassword}
-                      onChange={event => setSignInPassword(event.target.value)}
-                      disabled={!supabaseConfigured || signInLoading}
-                      className='pl-10 pr-10 h-11 bg-background/50 border-border/40 focus:bg-background/80 focus:border-primary/50 transition-all duration-200 backdrop-blur-sm'
-                    />
-                    <button
-                      type='button'
-                      className='absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 hover:text-foreground/80 transition-colors'
-                      onClick={() => setSignInShowPassword(prev => !prev)}
+
+                <form className='space-y-5' onSubmit={handleEmailSignIn}>
+                  <div className='space-y-2'>
+                    <Label
+                      htmlFor='signin-email'
+                      className='text-sm font-medium text-foreground/90'
                     >
-                      {signInShowPassword ? <EyeOff className='h-4 w-4' /> : <Eye className='h-4 w-4' />}
-                    </button>
+                      Email
+                    </Label>
+                    <div className='relative'>
+                      <Mail className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60' />
+                      <Input
+                        id='signin-email'
+                        type='email'
+                        placeholder='you@example.com'
+                        value={signInEmail}
+                        onChange={event => setSignInEmail(event.target.value)}
+                        disabled={!supabaseConfigured || signInLoading}
+                        className='pl-10 h-11 bg-background/50 border-border/40 focus:bg-background/80 focus:border-primary/50 transition-all duration-200 backdrop-blur-sm'
+                      />
+                    </div>
                   </div>
-                </div>
-                {signInError && (
-                  <div className='p-3 rounded-xl bg-red-500/10 border border-red-500/20 backdrop-blur-sm'>
-                    <p className='text-sm text-red-500 dark:text-red-400'>{signInError}</p>
-                  </div>
-                )}
-                <Button
-                  type='submit'
-                  disabled={!supabaseConfigured || signInLoading || !signInEmail || !signInPassword}
-                  className='w-full h-11 bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/90 hover:to-primary/70 text-primary-foreground font-medium shadow-lg shadow-primary/25 transition-all duration-200'
-                >
-                  <div className='flex items-center justify-center gap-2'>
-                    {signInLoading ? <LoaderIcon /> : <Mail className='h-4 w-4' />}
-                    {signInLoading ? 'Signing in...' : 'Sign In'}
-                  </div>
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value='signup' className='space-y-4 mt-4'>
-              <div className='grid grid-cols-2 gap-3'>
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='sm'
-                  disabled={!supabaseConfigured || oauthLoading !== null}
-                  onClick={() => handleOAuth('google', 'signup')}
-                  className='relative flex items-center justify-center gap-2 h-11 bg-background/50 border-border/40 hover:bg-background/80 hover:border-border/60 transition-all duration-200 backdrop-blur-sm'
-                >
-                  {oauthLoading?.provider === 'google' && oauthLoading?.context === 'signup' ? (
-                    <LoaderIcon />
-                  ) : (
-                    <GoogleIcon />
-                  )}
-                  <span className='font-medium'>Google</span>
-                </Button>
-                <Button
-                  type='button'
-                  variant='outline'
-                  size='sm'
-                  disabled={!supabaseConfigured || oauthLoading !== null}
-                  onClick={() => handleOAuth('github', 'signup')}
-                  className='relative flex items-center justify-center gap-2 h-11 bg-background/50 border-border/40 hover:bg-background/80 hover:border-border/60 transition-all duration-200 backdrop-blur-sm'
-                >
-                  {oauthLoading?.provider === 'github' && oauthLoading?.context === 'signup' ? (
-                    <LoaderIcon />
-                  ) : (
-                    <Github className='h-4 w-4' />
-                  )}
-                  <span className='font-medium'>GitHub</span>
-                </Button>
-              </div>
-
-              <div className='relative'>
-                <div className='absolute inset-0 flex items-center'>
-                  <span className='w-full border-t border-border/30' />
-                </div>
-                <div className='relative flex justify-center text-xs uppercase'>
-                  <span className='bg-background px-3 text-muted-foreground/60 font-medium tracking-wider'>or create with email</span>
-                </div>
-              </div>
-
-              <form className='space-y-3' onSubmit={handleEmailSignUp}>
-                <div className='space-y-1'>
-                  <Label htmlFor='signup-email' className='text-xs font-medium text-foreground/90'>Email</Label>
-                  <div className='relative'>
-                    <Mail className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60' />
-                    <Input
-                      id='signup-email'
-                      type='email'
-                      placeholder='you@example.com'
-                      value={signUpEmail}
-                      onChange={event => setSignUpEmail(event.target.value)}
-                      disabled={!supabaseConfigured || signUpLoading}
-                      className='pl-10 h-10 bg-background/50 border-border/40 focus:bg-background/80 focus:border-primary/50 transition-all duration-200 backdrop-blur-sm'
-                    />
-                  </div>
-                </div>
-                <div className='space-y-1'>
-                  <Label htmlFor='signup-password' className='text-xs font-medium text-foreground/90'>Password</Label>
-                  <div className='relative'>
-                    <Lock className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60' />
-                    <Input
-                      id='signup-password'
-                      type={signUpShowPassword ? 'text' : 'password'}
-                      placeholder='Create a password'
-                      value={signUpPassword}
-                      onChange={event => setSignUpPassword(event.target.value)}
-                      disabled={!supabaseConfigured || signUpLoading}
-                      className='pl-10 pr-10 h-10 bg-background/50 border-border/40 focus:bg-background/80 focus:border-primary/50 transition-all duration-200 backdrop-blur-sm'
-                    />
-                    <button
-                      type='button'
-                      className='absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 hover:text-foreground/80 transition-colors'
-                      onClick={() => setSignUpShowPassword(prev => !prev)}
+                  <div className='space-y-2'>
+                    <Label
+                      htmlFor='signin-password'
+                      className='text-sm font-medium text-foreground/90'
                     >
-                      {signUpShowPassword ? <EyeOff className='h-4 w-4' /> : <Eye className='h-4 w-4' />}
-                    </button>
+                      Password
+                    </Label>
+                    <div className='relative'>
+                      <Lock className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60' />
+                      <Input
+                        id='signin-password'
+                        type={signInShowPassword ? 'text' : 'password'}
+                        placeholder='Enter your password'
+                        value={signInPassword}
+                        onChange={event =>
+                          setSignInPassword(event.target.value)
+                        }
+                        disabled={!supabaseConfigured || signInLoading}
+                        className='pl-10 pr-10 h-11 bg-background/50 border-border/40 focus:bg-background/80 focus:border-primary/50 transition-all duration-200 backdrop-blur-sm'
+                      />
+                      <button
+                        type='button'
+                        className='absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 hover:text-foreground/80 transition-colors'
+                        onClick={() => setSignInShowPassword(prev => !prev)}
+                      >
+                        {signInShowPassword ? (
+                          <EyeOff className='h-4 w-4' />
+                        ) : (
+                          <Eye className='h-4 w-4' />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  {signInError && (
+                    <div className='p-3 rounded-xl bg-red-500/10 border border-red-500/20 backdrop-blur-sm'>
+                      <p className='text-sm text-red-500 dark:text-red-400'>
+                        {signInError}
+                      </p>
+                    </div>
+                  )}
+                  <Button
+                    type='submit'
+                    disabled={
+                      !supabaseConfigured ||
+                      signInLoading ||
+                      !signInEmail ||
+                      !signInPassword
+                    }
+                    className='w-full h-11 bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/90 hover:to-primary/70 text-primary-foreground font-medium shadow-lg shadow-primary/25 transition-all duration-200'
+                  >
+                    <div className='flex items-center justify-center gap-2'>
+                      {signInLoading ? (
+                        <LoaderIcon />
+                      ) : (
+                        <Mail className='h-4 w-4' />
+                      )}
+                      {signInLoading ? 'Signing in...' : 'Sign In'}
+                    </div>
+                  </Button>
+                </form>
+              </TabsContent>
+
+              <TabsContent value='signup' className='space-y-4 mt-4'>
+                <div className='grid grid-cols-2 gap-3'>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='sm'
+                    disabled={!supabaseConfigured || oauthLoading !== null}
+                    onClick={() => handleOAuth('google', 'signup')}
+                    className='relative flex items-center justify-center gap-2 h-11 bg-background/50 border-border/40 hover:bg-background/80 hover:border-border/60 transition-all duration-200 backdrop-blur-sm'
+                  >
+                    {oauthLoading?.provider === 'google' &&
+                    oauthLoading?.context === 'signup' ? (
+                      <LoaderIcon />
+                    ) : (
+                      <GoogleIcon />
+                    )}
+                    <span className='font-medium'>Google</span>
+                  </Button>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    size='sm'
+                    disabled={!supabaseConfigured || oauthLoading !== null}
+                    onClick={() => handleOAuth('github', 'signup')}
+                    className='relative flex items-center justify-center gap-2 h-11 bg-background/50 border-border/40 hover:bg-background/80 hover:border-border/60 transition-all duration-200 backdrop-blur-sm'
+                  >
+                    {oauthLoading?.provider === 'github' &&
+                    oauthLoading?.context === 'signup' ? (
+                      <LoaderIcon />
+                    ) : (
+                      <Github className='h-4 w-4' />
+                    )}
+                    <span className='font-medium'>GitHub</span>
+                  </Button>
+                </div>
+
+                <div className='relative'>
+                  <div className='absolute inset-0 flex items-center'>
+                    <span className='w-full border-t border-border/30' />
+                  </div>
+                  <div className='relative flex justify-center text-xs uppercase'>
+                    <span className='bg-background px-3 text-muted-foreground/60 font-medium tracking-wider'>
+                      or create with email
+                    </span>
                   </div>
                 </div>
-                <div className='space-y-1'>
-                  <Label htmlFor='signup-confirm' className='text-xs font-medium text-foreground/90'>Confirm Password</Label>
-                  <div className='relative'>
-                    <Lock className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60' />
-                    <Input
-                      id='signup-confirm'
-                      type={signUpShowConfirm ? 'text' : 'password'}
-                      placeholder='Confirm your password'
-                      value={signUpConfirmPassword}
-                      onChange={event => setSignUpConfirmPassword(event.target.value)}
-                      disabled={!supabaseConfigured || signUpLoading}
-                      className='pl-10 pr-10 h-10 bg-background/50 border-border/40 focus:bg-background/80 focus:border-primary/50 transition-all duration-200 backdrop-blur-sm'
-                    />
-                    <button
-                      type='button'
-                      className='absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 hover:text-foreground/80 transition-colors'
-                      onClick={() => setSignUpShowConfirm(prev => !prev)}
+
+                <form className='space-y-3' onSubmit={handleEmailSignUp}>
+                  <div className='space-y-1'>
+                    <Label
+                      htmlFor='signup-email'
+                      className='text-xs font-medium text-foreground/90'
                     >
-                      {signUpShowConfirm ? <EyeOff className='h-4 w-4' /> : <Eye className='h-4 w-4' />}
-                    </button>
+                      Email
+                    </Label>
+                    <div className='relative'>
+                      <Mail className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60' />
+                      <Input
+                        id='signup-email'
+                        type='email'
+                        placeholder='you@example.com'
+                        value={signUpEmail}
+                        onChange={event => setSignUpEmail(event.target.value)}
+                        disabled={!supabaseConfigured || signUpLoading}
+                        className='pl-10 h-10 bg-background/50 border-border/40 focus:bg-background/80 focus:border-primary/50 transition-all duration-200 backdrop-blur-sm'
+                      />
+                    </div>
                   </div>
-                </div>
-                {signUpError && (
-                  <div className='p-3 rounded-xl bg-red-500/10 border border-red-500/20 backdrop-blur-sm'>
-                    <p className='text-sm text-red-500 dark:text-red-400'>{signUpError}</p>
+                  <div className='space-y-1'>
+                    <Label
+                      htmlFor='signup-password'
+                      className='text-xs font-medium text-foreground/90'
+                    >
+                      Password
+                    </Label>
+                    <div className='relative'>
+                      <Lock className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60' />
+                      <Input
+                        id='signup-password'
+                        type={signUpShowPassword ? 'text' : 'password'}
+                        placeholder='Create a password'
+                        value={signUpPassword}
+                        onChange={event =>
+                          setSignUpPassword(event.target.value)
+                        }
+                        disabled={!supabaseConfigured || signUpLoading}
+                        className='pl-10 pr-10 h-10 bg-background/50 border-border/40 focus:bg-background/80 focus:border-primary/50 transition-all duration-200 backdrop-blur-sm'
+                      />
+                      <button
+                        type='button'
+                        className='absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 hover:text-foreground/80 transition-colors'
+                        onClick={() => setSignUpShowPassword(prev => !prev)}
+                      >
+                        {signUpShowPassword ? (
+                          <EyeOff className='h-4 w-4' />
+                        ) : (
+                          <Eye className='h-4 w-4' />
+                        )}
+                      </button>
+                    </div>
                   </div>
-                )}
-                <Button
-                  type='submit'
-                  disabled={
-                    !supabaseConfigured ||
-                    signUpLoading ||
-                    !signUpEmail ||
-                    !signUpPassword ||
-                    !signUpConfirmPassword
-                  }
-                  className='w-full h-11 bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/90 hover:to-primary/70 text-primary-foreground font-medium shadow-lg shadow-primary/25 transition-all duration-200'
-                >
-                  <div className='flex items-center justify-center gap-2'>
-                    {signUpLoading ? <LoaderIcon /> : <Mail className='h-4 w-4' />}
-                    {signUpLoading ? 'Creating account...' : 'Create Account'}
+                  <div className='space-y-1'>
+                    <Label
+                      htmlFor='signup-confirm'
+                      className='text-xs font-medium text-foreground/90'
+                    >
+                      Confirm Password
+                    </Label>
+                    <div className='relative'>
+                      <Lock className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60' />
+                      <Input
+                        id='signup-confirm'
+                        type={signUpShowConfirm ? 'text' : 'password'}
+                        placeholder='Confirm your password'
+                        value={signUpConfirmPassword}
+                        onChange={event =>
+                          setSignUpConfirmPassword(event.target.value)
+                        }
+                        disabled={!supabaseConfigured || signUpLoading}
+                        className='pl-10 pr-10 h-10 bg-background/50 border-border/40 focus:bg-background/80 focus:border-primary/50 transition-all duration-200 backdrop-blur-sm'
+                      />
+                      <button
+                        type='button'
+                        className='absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground/60 hover:text-foreground/80 transition-colors'
+                        onClick={() => setSignUpShowConfirm(prev => !prev)}
+                      >
+                        {signUpShowConfirm ? (
+                          <EyeOff className='h-4 w-4' />
+                        ) : (
+                          <Eye className='h-4 w-4' />
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </div>
+                  {signUpError && (
+                    <div className='p-3 rounded-xl bg-red-500/10 border border-red-500/20 backdrop-blur-sm'>
+                      <p className='text-sm text-red-500 dark:text-red-400'>
+                        {signUpError}
+                      </p>
+                    </div>
+                  )}
+                  <Button
+                    type='submit'
+                    disabled={
+                      !supabaseConfigured ||
+                      signUpLoading ||
+                      !signUpEmail ||
+                      !signUpPassword ||
+                      !signUpConfirmPassword
+                    }
+                    className='w-full h-11 bg-gradient-to-r from-primary via-primary to-primary/80 hover:from-primary/90 hover:via-primary/90 hover:to-primary/70 text-primary-foreground font-medium shadow-lg shadow-primary/25 transition-all duration-200'
+                  >
+                    <div className='flex items-center justify-center gap-2'>
+                      {signUpLoading ? (
+                        <LoaderIcon />
+                      ) : (
+                        <Mail className='h-4 w-4' />
+                      )}
+                      {signUpLoading ? 'Creating account...' : 'Create Account'}
+                    </div>
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

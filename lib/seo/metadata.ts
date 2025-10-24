@@ -33,7 +33,7 @@ export const DEFAULT_METADATA: Metadata = {
     url: BASE_URL,
     images: [
       {
-        url: `${BASE_URL}/og-image.jpg`,
+        url: `${BASE_URL}/icon.jpg`,
         width: 1200,
         height: 630,
         alt: "AlgoRise - Master Competitive Programming",
@@ -46,7 +46,7 @@ export const DEFAULT_METADATA: Metadata = {
     title: "AlgoRise - Master Competitive Programming & Algorithms",
     description: "Practice that adapts. Compete when it counts.",
     creator: "@AlgoRise",
-    images: [`${BASE_URL}/og-image.jpg`],
+    images: [`${BASE_URL}/icon.jpg`],
   },
   robots: {
     index: true,
@@ -82,13 +82,20 @@ export function generatePageMetadata(title: string, description: string, path: s
               alt: title,
             },
           ]
-        : undefined,
+        : [
+            {
+              url: `${BASE_URL}/icon.jpg`,
+              width: 1200,
+              height: 630,
+              alt: title,
+            },
+          ],
     },
     twitter: {
       card: "summary_large_image",
       title: fullTitle,
       description,
-      images: image ? [image] : undefined,
+      images: image ? [image] : [`${BASE_URL}/icon.jpg`],
     },
     alternates: {
       canonical: url,

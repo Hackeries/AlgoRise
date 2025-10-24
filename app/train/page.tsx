@@ -8,11 +8,11 @@ import { UpcomingContests } from '@/components/train/contests';
 export default function TrainingHub() {
   return (
     <main className='min-h-screen bg-background text-foreground'>
-      <section className='max-w-6xl mx-auto px-4 py-6 md:py-8 space-y-6'>
+      <section className='max-w-7xl mx-auto content-padding section-spacing'>
         <TrainHeader />
 
         {/* Row 1: Topic Ladder + Daily Challenge */}
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-4'>
+        <div className='grid grid-cols-1 lg:grid-cols-3 card-spacing'>
           <div className='lg:col-span-2'>
             <TopicLadder />
           </div>
@@ -22,7 +22,7 @@ export default function TrainingHub() {
         </div>
 
         {/* Row 2: Problem Recos + Speedrun */}
-        <div className='grid grid-cols-1 lg:grid-cols-3 gap-4'>
+        <div className='grid grid-cols-1 lg:grid-cols-3 card-spacing'>
           <div className='lg:col-span-2'>
             <ProblemRecos />
           </div>
@@ -32,7 +32,7 @@ export default function TrainingHub() {
         </div>
 
         {/* Row 3: Contests */}
-        <div className='grid grid-cols-1 gap-4'>
+        <div className='grid grid-cols-1 card-spacing'>
           <UpcomingContests />
         </div>
       </section>

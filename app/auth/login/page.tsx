@@ -137,7 +137,7 @@ const OAuthModal = ({
 
   return (
     <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50'>
-      <Card className='w-full max-w-md'>
+      <Card className='w-full max-w-md mx-4'>
         <CardHeader>
           <CardTitle>
             {provider === 'google' ? 'Google Login' : 'GitHub Login'}
@@ -198,7 +198,34 @@ export default function Page() {
       });
       if (error) throw error;
       await refreshUser();
-      router.push('/profile');
+
+      // Decide redirect based on existing profile status
+      try {
+        const {
+          data: { user: currentUser },
+        } = await supabase.auth.getUser();
+
+        let redirectTarget = '/profile';
+        if (currentUser?.id) {
+          const { data: cf } = await supabase
+            .from('cf_handles')
+            .select('verified')
+            .eq('user_id', currentUser.id)
+            .single();
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('status')
+            .eq('user_id', currentUser.id)
+            .single();
+
+          if (cf?.verified && prof?.status) {
+            redirectTarget = '/profile/overview';
+          }
+        }
+        router.push(redirectTarget);
+      } catch {
+        router.push('/profile');
+      }
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : 'An unexpected error occurred'
@@ -226,8 +253,9 @@ export default function Page() {
       };
 
       const origin = getBaseUrl();
-      const redirectTo = `${origin}/auth/callback`;
-
+      const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(
+        '/profile'
+      )}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
@@ -247,7 +275,7 @@ export default function Page() {
 
   if (!isConfigured) {
     return (
-      <div className='flex h-screen w-full items-center justify-center'>
+      <div className='flex min-h-screen w-full items-center justify-center p-4'>
         <AuthConfigurationAlert
           title='Login Unavailable'
           description='Authentication is not configured. Please set up Supabase to enable user login.'
@@ -257,7 +285,7 @@ export default function Page() {
   }
 
   return (
-    <div className='flex h-screen w-full items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden'>
+    <div className='flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden p-4 sm:p-6 md:p-8'>
       <OAuthModal
         isOpen={oauthModalOpen}
         onClose={() => setOAuthModalOpen(false)}
@@ -266,22 +294,22 @@ export default function Page() {
       />
       <div className='w-full max-w-md'>
         <Card className='shadow-xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl transform transition duration-300 max-h-[90vh] overflow-y-auto'>
-          <CardHeader className='text-center'>
-            <Mail className='mx-auto mb-4 h-10 w-10 text-blue-500' />
-            <CardTitle className='text-2xl md:text-3xl font-bold'>
+          <CardHeader className='text-center px-4 sm:px-6 py-4 sm:py-6'>
+            <Mail className='mx-auto mb-4 h-8 w-8 sm:h-10 sm:w-10 text-blue-500' />
+            <CardTitle className='text-xl sm:text-2xl md:text-3xl font-bold'>
               Login
             </CardTitle>
-            <CardDescription className='text-gray-600 dark:text-gray-300'>
+            <CardDescription className='text-sm sm:text-base text-gray-600 dark:text-gray-300'>
               Login with email or social accounts
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className='px-4 sm:px-6 py-4 sm:py-6'>
             {/* Social login */}
-            <div className='flex flex-col gap-3 mb-4'>
+            <div className='flex flex-col gap-2 sm:gap-3 mb-4 sm:mb-6'>
               <Button
                 onClick={() => handleOAuthLogin('google')}
                 disabled={!!isOAuthLoading}
-                className={`flex items-center justify-center gap-2 w-full text-white transition-all duration-300 transform hover:scale-105 ${
+                className={`flex items-center justify-center gap-2 w-full text-white text-sm sm:text-base transition-all duration-300 transform hover:scale-105 py-2 sm:py-3 ${
                   isOAuthLoading === 'google'
                     ? 'bg-red-400 cursor-not-allowed'
                     : 'bg-red-500 hover:bg-red-600'
@@ -296,7 +324,7 @@ export default function Page() {
               <Button
                 onClick={() => handleOAuthLogin('github')}
                 disabled={!!isOAuthLoading}
-                className={`flex items-center justify-center gap-2 w-full text-white transition-all duration-300 transform hover:scale-105 ${
+                className={`flex items-center justify-center gap-2 w-full text-white text-sm sm:text-base transition-all duration-300 transform hover:scale-105 py-2 sm:py-3 ${
                   isOAuthLoading === 'github'
                     ? 'bg-gray-600 cursor-not-allowed'
                     : 'bg-gray-800 hover:bg-gray-900'
@@ -305,7 +333,7 @@ export default function Page() {
                 {isOAuthLoading === 'github' ? (
                   <Spinner />
                 ) : (
-                  <Github className='h-5 w-5' />
+                  <Github className='h-4 w-4 sm:h-5 sm:w-5' />
                 )}
                 {isOAuthLoading === 'github'
                   ? 'Signing in...'
@@ -313,8 +341,8 @@ export default function Page() {
               </Button>
             </div>
 
-            <form onSubmit={handleLogin} className='space-y-6'>
-              <div className='flex flex-col gap-4'>
+            <form onSubmit={handleLogin} className='space-y-4 sm:space-y-6'>
+              <div className='flex flex-col gap-3 sm:gap-4'>
                 <InputWithIcon
                   id='email'
                   label='Email'
@@ -334,21 +362,23 @@ export default function Page() {
                   setShowPassword={setShowPassword}
                 />
                 {error && (
-                  <p className='text-sm text-red-500 text-center'>{error}</p>
+                  <p className='text-xs sm:text-sm text-red-500 text-center'>
+                    {error}
+                  </p>
                 )}
                 <Button
                   type='submit'
-                  className='w-full bg-blue-500 hover:bg-blue-600 text-white transition duration-300'
+                  className='w-full bg-blue-500 hover:bg-blue-600 text-white transition duration-300 py-2 sm:py-3 text-sm sm:text-base'
                   disabled={isLoading || !email || !password}
                 >
                   {isLoading ? 'Logging in...' : 'Login'}
                 </Button>
               </div>
-              <div className='mt-4 text-center text-sm text-gray-600 dark:text-gray-400'>
+              <div className='mt-4 text-center text-xs sm:text-sm text-gray-600 dark:text-gray-400'>
                 Don&apos;t have an account?{' '}
                 <Link
                   href='/auth/sign-up'
-                  className='text-blue-500 hover:underline'
+                  className='text-blue-500 hover:underline font-medium'
                 >
                   Sign up
                 </Link>

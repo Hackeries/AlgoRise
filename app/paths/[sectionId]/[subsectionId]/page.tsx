@@ -13,6 +13,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   ArrowLeft,
   Target,
@@ -43,6 +44,7 @@ export default function SubsectionPage() {
   >('All');
   const [recommendedOrder, setRecommendedOrder] = useState(true);
   const [showUnsolvedOnly, setShowUnsolvedOnly] = useState(false);
+  const [letterFilter, setLetterFilter] = useState<'All' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F'>('All');
 
   // Find the section and subsection
   const section = LEARNING_PATH_DATA.find(s => s.id === sectionId);
@@ -259,8 +261,11 @@ export default function SubsectionPage() {
       p.tags.some(t => t.toLowerCase().includes(normalizedQuery));
     const matchesDifficulty =
       difficultyFilter === 'All' || p.difficulty === difficultyFilter;
+    const matchesLetter =
+      letterFilter === 'All' || /problem\/(\d+)\/([A-Za-z]+)/.test(p.url) &&
+      (p.url.match(/problem\/(\d+)\/([A-Za-z]+)/)?.[2] || '').startsWith(letterFilter);
     const matchesSolved = !showUnsolvedOnly || !solvedProblems.has(p.id);
-    return matchesQuery && matchesDifficulty && matchesSolved;
+    return matchesQuery && matchesDifficulty && matchesLetter && matchesSolved;
   });
   const ordered = recommendedOrder
     ? [...filtered].sort(
@@ -377,41 +382,59 @@ export default function SubsectionPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className='grid gap-3 md:grid-cols-3'>
-            <div>
-              <input
-                className='w-full rounded-md border bg-background px-3 py-2 text-sm'
-                placeholder='Search by title or tag'
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                aria-label='Search problems'
-              />
+          <div className='space-y-4'>
+            {/* Top row: search + difficulty + order */}
+            <div className='grid gap-3 md:grid-cols-3'>
+              <div>
+                <input
+                  className='w-full rounded-md border bg-background px-3 py-2 text-sm'
+                  placeholder='Search by title or tag'
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  aria-label='Search problems'
+                />
+              </div>
+              <div>
+                <select
+                  className='w-full rounded-md border bg-background px-3 py-2 text-sm'
+                  value={difficultyFilter}
+                  onChange={e => setDifficultyFilter(e.target.value as any)}
+                  aria-label='Filter by difficulty'
+                >
+                  <option>All</option>
+                  <option>Easy</option>
+                  <option>Medium</option>
+                  <option>Hard</option>
+                </select>
+              </div>
+              <div className='flex items-center gap-2'>
+                <input
+                  id='recommended-order'
+                  type='checkbox'
+                  className='h-4 w-4'
+                  checked={recommendedOrder}
+                  onChange={e => setRecommendedOrder(e.target.checked)}
+                />
+                <label htmlFor='recommended-order' className='text-sm'>
+                  Recommended order (Easy → Hard)
+                </label>
+              </div>
             </div>
-            <div>
-              <select
-                className='w-full rounded-md border bg-background px-3 py-2 text-sm'
-                value={difficultyFilter}
-                onChange={e => setDifficultyFilter(e.target.value as any)}
-                aria-label='Filter by difficulty'
-              >
-                <option>All</option>
-                <option>Easy</option>
-                <option>Medium</option>
-                <option>Hard</option>
-              </select>
+
+            {/* Letter tabs */}
+            <div className='md:col-span-3'>
+              <Tabs value={letterFilter} onValueChange={(v) => setLetterFilter(v as any)}>
+                <TabsList className='flex flex-wrap'>
+                  {['All','A','B','C','D','E','F'].map(l => (
+                    <TabsTrigger key={l} value={l} className='px-3 py-1'>
+                      {l === 'All' ? 'All letters' : `Div problems ${l}`}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
             </div>
-            <div className='flex items-center gap-2'>
-              <input
-                id='recommended-order'
-                type='checkbox'
-                className='h-4 w-4'
-                checked={recommendedOrder}
-                onChange={e => setRecommendedOrder(e.target.checked)}
-              />
-              <label htmlFor='recommended-order' className='text-sm'>
-                Recommended order (Easy → Hard)
-              </label>
-            </div>
+
+            {/* Unsolved toggle */}
             <div className='md:col-span-3 flex items-center gap-2'>
               <input
                 id='unsolved-only'

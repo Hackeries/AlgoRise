@@ -191,7 +191,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className='max-w-7xl mx-auto flex items-center justify-between'>
+        <div className='max-w-screen-2xl xl:max-w-[1800px] mx-auto px-2 sm:px-4 flex items-center justify-between'>
           <div className='flex items-center gap-6'>
             {/* Timer with warning state */}
             <motion.div
@@ -272,28 +272,28 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
       </motion.div>
 
       {/* Main Content Grid */}
-      <div className='grid grid-cols-1 lg:grid-cols-4 gap-4 p-4 h-[calc(100vh-80px)] max-w-7xl mx-auto'>
+      <div className='grid grid-cols-1 xl:grid-cols-12 gap-5 p-3 md:p-5 h-[calc(100vh-80px)] max-w-screen-2xl xl:max-w-[1800px] mx-auto'>
         {/* Left Sidebar: Problems & Scoreboard */}
         <motion.div
-          className='lg:col-span-1 flex flex-col gap-4 overflow-hidden'
+          className='min-w-0 xl:col-span-3 flex flex-col gap-4 overflow-hidden'
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           {/* Problems Card */}
-          <Card className='flex-1 p-4 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-blue-900/30 border-blue-500/20 backdrop-blur-sm'>
+          <Card className='grow-[3] min-h-0 p-4 md:p-5 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-blue-900/30 border-blue-500/20 backdrop-blur-sm rounded-xl'>
             <h3 className='font-bold text-white mb-3 flex items-center gap-2'>
               <Code2 className='w-4 h-4 text-cyan-400' />
               Problems
             </h3>
-            <div className='space-y-2'>
+            <div className='space-y-2.5'>
               {room.problems.map((problem, idx) => (
                 <motion.button
                   key={problem.id}
                   onClick={() => setSelectedProblemId(problem.id)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`w-full p-3 text-left rounded-lg border transition-all duration-300 ${
+                  className={`w-full p-3.5 md:p-4 text-left rounded-lg border transition-all duration-300 ${
                     selectedProblemId === problem.id
                       ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white border-blue-400 shadow-lg shadow-blue-500/30'
                       : 'border-blue-500/20 hover:bg-blue-900/30 hover:border-blue-400/50 text-blue-100'
@@ -309,7 +309,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
           </Card>
 
           {/* Scoreboard Card */}
-          <Card className='flex-1 p-4 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-purple-900/30 border-purple-500/20 backdrop-blur-sm'>
+          <Card className='grow-[2] min-h-0 p-4 md:p-5 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-purple-900/30 border-purple-500/20 backdrop-blur-sm rounded-xl'>
             <h3 className='font-bold text-white mb-3 flex items-center gap-2'>
               <Trophy className='w-4 h-4 text-yellow-400' />
               Scoreboard
@@ -348,29 +348,29 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
 
         {/* Middle: Problem Details */}
         <motion.div
-          className='lg:col-span-1 overflow-hidden'
+          className='min-w-0 xl:col-span-4 overflow-hidden'
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className='h-full p-4 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-cyan-900/30 border-cyan-500/20 backdrop-blur-sm'>
+          <Card className='h-full p-4 md:p-6 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-cyan-900/30 border-cyan-500/20 backdrop-blur-sm rounded-xl'>
             <ProblemDetails problem={selectedProblem} />
           </Card>
         </motion.div>
 
         {/* Right: Editor & Submissions */}
         <motion.div
-          className='lg:col-span-2 flex flex-col gap-4 overflow-hidden'
+          className='min-w-0 xl:col-span-5 flex flex-col gap-4 overflow-hidden'
           initial={{ x: 20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Card className='flex-1 p-4 flex flex-col overflow-hidden bg-gradient-to-br from-slate-900/50 to-blue-900/30 border-blue-500/20 backdrop-blur-sm'>
+          <Card className='flex-1 p-4 md:p-5 flex flex-col overflow-hidden bg-gradient-to-br from-slate-900/50 to-blue-900/30 border-blue-500/20 backdrop-blur-sm rounded-xl'>
             <Tabs
               defaultValue='editor'
               className='flex-1 flex flex-col overflow-hidden'
             >
-              <TabsList className={`grid w-full ${room.battle?.mode === '3v3' && myTeamId ? 'grid-cols-3' : 'grid-cols-2'} bg-slate-800/50 border border-blue-500/20 rounded-lg p-1 mb-4`}>
+              <TabsList className={`grid w-full ${room.battle?.mode === '3v3' && myTeamId ? 'grid-cols-3' : 'grid-cols-2'} bg-slate-800/50 border border-blue-500/20 rounded-lg p-1 mb-4 sticky top-0 z-10`}>
                 <TabsTrigger
                   value='editor'
                   className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 rounded-md transition-all'

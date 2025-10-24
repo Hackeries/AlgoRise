@@ -203,11 +203,7 @@ export function BattleRoom({
                 className='flex-1 bg-card rounded-xl p-4 font-mono text-sm mb-4 overflow-auto border'
               >
                 <div className='text-muted-foreground'>
-                  <div>// Write your solution here</div>
-                  <div>#include &lt;bits/stdc++.h&gt;</div>
-                  <div>using namespace std;</div>
-                  <div>&nbsp;</div>
-                  <div>int main() {'{}'}</div>
+                  <div>// Editor moved to dedicated room page</div>
                 </div>
               </motion.div>
               <div className='flex gap-2'>

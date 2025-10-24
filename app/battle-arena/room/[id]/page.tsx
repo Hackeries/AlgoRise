@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Trophy, CheckCircle2, Flag, Code2 } from 'lucide-react';
-import { useBattleRealtime } from '@/hooks/use-battle-realtime';
+import { Clock, Trophy, CheckCircle2, Flag, Code2, Send, Users } from 'lucide-react';
+import { useBattleRealtime, useTeamChat, broadcastCodeUpdate } from '@/hooks/use-battle-realtime';
 import { CodeEditor } from '@/components/battle-arena/code-editor';
 import { ProblemDetails } from '@/components/battle-arena/problem-details';
 import { SubmissionsList } from '@/components/battle-arena/submissions-list';
 import { motion } from 'framer-motion';
+import { createClient as createSupabaseClient } from '@/lib/supabase/client';
 
 interface BattleRoomData {
   battle: any;
@@ -28,8 +29,17 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
   const [submitting, setSubmitting] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(3600);
   const [showStats, setShowStats] = useState(false);
+  const [myTeamId, setMyTeamId] = useState<string | null>(null);
+  const [isSpectator, setIsSpectator] = useState(false);
+  const [scoreboard, setScoreboard] = useState<Array<{ teamId: string; teamName: string; score: number; penaltyTime: number }>>([]);
+  const [chatInput, setChatInput] = useState('');
 
-  const { battleUpdate, isConnected } = useBattleRealtime(params.id);
+  const { battleUpdate, isConnected, latestCode } = useBattleRealtime(
+    params.id,
+    true,
+    myTeamId || undefined
+  );
+  const teamChat = useTeamChat(params.id, myTeamId || '', room?.battle?.mode === '3v3' && !!myTeamId);
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -37,9 +47,26 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
         const response = await fetch(`/api/arena/room/${params.id}`);
         const data = await response.json();
         setRoom(data);
+        setScoreboard(data.scoreboard || []);
         if (data.problems?.length > 0) {
           setSelectedProblemId(data.problems[0].id);
         }
+        // determine my team membership and spectator mode
+        try {
+          const supabase = createSupabaseClient();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          if (user && data.teams) {
+            const myTeam = data.teams.find((t: any) =>
+              (t.battle_team_players || []).some((p: any) => p.user_id === user.id)
+            );
+            setMyTeamId(myTeam?.id || null);
+            setIsSpectator(!myTeam);
+          } else {
+            setIsSpectator(true);
+          }
+        } catch {}
       } catch (error) {
         console.error('Error fetching room:', error);
       }
@@ -58,11 +85,12 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
   }, []);
 
   useEffect(() => {
-    if (battleUpdate?.type === 'submission') {
+    if (battleUpdate?.type === 'submission' || battleUpdate?.type === 'scoreboard_update') {
       const fetchRoom = async () => {
         const response = await fetch(`/api/arena/room/${params.id}`);
         const data = await response.json();
         setRoom(data);
+        if (data.scoreboard) setScoreboard(data.scoreboard);
       };
       fetchRoom();
     }
@@ -80,6 +108,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
           code,
           language,
           problemId: selectedProblemId,
+          teamId: myTeamId,
         }),
       });
 
@@ -94,6 +123,35 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
       console.error('Submission error:', error);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Live code sync: broadcast on change (debounced at consumer level)
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      if (code) {
+        broadcastCodeUpdate(params.id, code, language, myTeamId || undefined);
+      }
+    }, 400);
+    return () => clearTimeout(handle);
+  }, [code, language, params.id, myTeamId]);
+
+  // Apply incoming code updates if from teammates (basic demo; in prod add author separation)
+  useEffect(() => {
+    if (latestCode && latestCode.content !== code) {
+      setCode(latestCode.content);
+      setLanguage(latestCode.language || 'cpp');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latestCode]);
+
+  const handleSendTeamMessage = async () => {
+    if (!teamChat || !chatInput.trim()) return;
+    try {
+      await teamChat.sendMessage(chatInput.trim());
+      setChatInput('');
+    } catch (e) {
+      console.error('chat send failed', e);
     }
   };
 
@@ -198,6 +256,13 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                 variant='destructive'
                 size='sm'
                 className='bg-red-600/80 hover:bg-red-700 text-white'
+                onClick={async () => {
+                  try {
+                    await fetch(`/api/arena/room/${params.id}/end`, { method: 'POST' });
+                  } catch (e) {
+                    console.error('surrender failed', e);
+                  }
+                }}
               >
                 Surrender
               </Button>
@@ -252,15 +317,15 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
               Scoreboard
             </h3>
             <div className='space-y-2'>
-              {room.teams.map((team: any, idx: number) => (
+              {(scoreboard.length ? scoreboard : (room.teams || []).map((t: any) => ({ teamId: t.id, teamName: t.team_name, score: t.score ?? 0, penaltyTime: t.penalty_time ?? 0 })) ).map((team: any, idx: number) => (
                 <motion.div
-                  key={team.id}
+                  key={team.teamId}
                   className='p-3 bg-gradient-to-r from-purple-900/40 to-pink-900/40 rounded-lg border border-purple-500/20 hover:border-purple-400/50 transition-all'
                   whileHover={{ scale: 1.02 }}
                 >
                   <div className='flex items-center justify-between mb-1'>
                     <p className='font-semibold text-sm text-white'>
-                      {team.team_name}
+                      {team.teamName}
                     </p>
                     <motion.div
                       className='text-xs font-bold text-yellow-400'
@@ -275,7 +340,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                   </div>
                   <div className='flex items-center justify-between text-xs text-purple-200/70'>
                     <span>Score: {team.score}</span>
-                    <span>Penalty: {team.penalty_time}m</span>
+                    <span>Penalty: {team.penaltyTime}m</span>
                   </div>
                 </motion.div>
               ))}
@@ -307,7 +372,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
               defaultValue='editor'
               className='flex-1 flex flex-col overflow-hidden'
             >
-              <TabsList className='grid w-full grid-cols-2 bg-slate-800/50 border border-blue-500/20 rounded-lg p-1 mb-4'>
+              <TabsList className={`grid w-full ${room.battle?.mode === '3v3' && myTeamId ? 'grid-cols-3' : 'grid-cols-2'} bg-slate-800/50 border border-blue-500/20 rounded-lg p-1 mb-4`}>
                 <TabsTrigger
                   value='editor'
                   className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 rounded-md transition-all'
@@ -315,6 +380,14 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                   <Code2 className='w-4 h-4 mr-2' />
                   Editor
                 </TabsTrigger>
+                {room.battle?.mode === '3v3' && myTeamId && (
+                  <TabsTrigger
+                    value='chat'
+                    className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 rounded-md transition-all'
+                  >
+                    <Users className='w-4 h-4 mr-2' /> Team Chat
+                  </TabsTrigger>
+                )}
                 <TabsTrigger
                   value='submissions'
                   className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 rounded-md transition-all'
@@ -332,14 +405,42 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                   onCodeChange={setCode}
                   onSubmit={handleSubmit}
                   isSubmitting={submitting}
+                  readOnly={isSpectator}
                 />
               </TabsContent>
+
+              {room.battle?.mode === '3v3' && myTeamId && (
+                <TabsContent value='chat' className='flex-1 overflow-hidden'>
+                  <div className='flex flex-col h-full'>
+                    <div className='flex-1 overflow-y-auto space-y-3 p-2'>
+                      {teamChat?.messages?.map((m, idx) => (
+                        <div key={idx} className='flex items-start gap-2'>
+                          <span className='text-xs text-cyan-300 font-mono'>{m.handle}</span>
+                          <span className='text-sm text-white'>{m.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className='flex gap-2 pt-2'>
+                      <input
+                        className='flex-1 px-3 py-2 rounded-md bg-slate-900/50 border border-slate-700 text-white'
+                        placeholder='Type a message...'
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSendTeamMessage()}
+                      />
+                      <Button size='icon' onClick={handleSendTeamMessage}>
+                        <Send className='w-4 h-4' />
+                      </Button>
+                    </div>
+                  </div>
+                </TabsContent>
+              )}
 
               <TabsContent
                 value='submissions'
                 className='flex-1 overflow-hidden'
               >
-                <SubmissionsList submissions={room.submissions} />
+                <SubmissionsList submissions={room.submissions as any} />
               </TabsContent>
             </Tabs>
           </Card>

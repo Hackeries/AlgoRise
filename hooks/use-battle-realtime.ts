@@ -95,9 +95,14 @@ export function useQueueRealtime(mode: '1v1' | '3v3', enabled = true) {
 /**
  * Hook for subscribing to battle room updates
  */
-export function useBattleRealtime(battleId: string, enabled = true) {
+export function useBattleRealtime(
+  battleId: string,
+  enabled = true,
+  teamId?: string
+) {
   const [battleUpdate, setBattleUpdate] = useState<BattleUpdate | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [latestCode, setLatestCode] = useState<{ content: string; language: string; userId?: string } | null>(null);
 
   useEffect(() => {
     if (!enabled || !battleId) return;
@@ -108,6 +113,9 @@ export function useBattleRealtime(battleId: string, enabled = true) {
     );
 
     const channel: RealtimeChannel = supabase.channel(`battle:${battleId}`);
+    const teamChannel: RealtimeChannel | null = teamId
+      ? supabase.channel(`battle:${battleId}:team:${teamId}`)
+      : null;
 
     channel
       // General battle updates envelope
@@ -135,16 +143,37 @@ export function useBattleRealtime(battleId: string, enabled = true) {
           });
         }
       )
+      // Code sync updates
+      .on(
+        'broadcast',
+        { event: 'code_update' },
+        (payload: { payload: { content: string; language: string; userId?: string } }) => {
+          setLatestCode(payload.payload);
+        }
+      )
       .subscribe(status => {
         setIsConnected(status === 'SUBSCRIBED');
       });
 
+    if (teamChannel) {
+      teamChannel
+        .on(
+          'broadcast',
+          { event: 'code_update' },
+          (payload: { payload: { content: string; language: string; userId?: string } }) => {
+            setLatestCode(payload.payload);
+          }
+        )
+        .subscribe();
+    }
+
     return () => {
       channel.unsubscribe();
+      if (teamChannel) teamChannel.unsubscribe();
     };
-  }, [battleId, enabled]);
+  }, [battleId, enabled, teamId]);
 
-  return { battleUpdate, isConnected };
+  return { battleUpdate, isConnected, latestCode };
 }
 
 /**
@@ -254,5 +283,27 @@ export async function broadcastBattleUpdate(
   await (channel.send as any)('broadcast', {
     event: 'battle_update',
     payload: update,
+  });
+}
+
+/**
+ * Broadcast live code changes for collaborative editing
+ */
+export async function broadcastCodeUpdate(
+  battleId: string,
+  content: string,
+  language: string,
+  teamId?: string
+) {
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const channel = supabase.channel(
+    teamId ? `battle:${battleId}:team:${teamId}` : `battle:${battleId}`
+  );
+  await (channel.send as any)('broadcast', {
+    event: 'code_update',
+    payload: { content, language },
   });
 }

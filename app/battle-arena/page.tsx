@@ -18,7 +18,6 @@ import {
   Users2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-
 export default function BattleArenaPage() {
   const [selectedMode, setSelectedMode] = useState<'1v1' | '3v3' | null>(null);
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
@@ -339,7 +338,6 @@ export default function BattleArenaPage() {
             </motion.div>
           </TabsContent>
         </Tabs>
-
         <motion.div
           className='mt-12 grid grid-cols-1 md:grid-cols-3 gap-4'
           variants={containerVariants}

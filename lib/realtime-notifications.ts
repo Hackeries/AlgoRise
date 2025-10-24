@@ -10,12 +10,20 @@ export interface NotificationConnection {
 export class RealTimeNotificationManager {
   private connections: Map<string, NotificationConnection[]> = new Map();
   private static instance: RealTimeNotificationManager;
+  private cleanupInterval: NodeJS.Timeout | null = null;
 
   static getInstance(): RealTimeNotificationManager {
     if (!RealTimeNotificationManager.instance) {
       RealTimeNotificationManager.instance = new RealTimeNotificationManager();
     }
     return RealTimeNotificationManager.instance;
+  }
+
+  constructor() {
+    // Start cleanup interval
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupStaleConnections();
+    }, 60000); // Run cleanup every minute
   }
 
   // Add a new connection for a user
@@ -69,7 +77,7 @@ export class RealTimeNotificationManager {
     });
 
     // Send to all active connections for this user
-    for (const connection of userConnections) {
+    const sendPromises = userConnections.map(async (connection) => {
       try {
         connection.controller?.enqueue(encoder.encode(`data: ${data}\n\n`));
         connection.lastSeen = new Date();
@@ -78,14 +86,17 @@ export class RealTimeNotificationManager {
         // Remove failed connection
         this.removeConnection(userId, connection.controller!);
       }
-    }
+    });
+
+    // Wait for all sends to complete
+    await Promise.all(sendPromises);
   }
 
   // Send notification to multiple users
   async sendToUsers(userIds: string[], notification: any): Promise<void> {
-    await Promise.all(
-      userIds.map(userId => this.sendToUser(userId, notification))
-    );
+    // Batch notifications to reduce overhead
+    const sendPromises = userIds.map(userId => this.sendToUser(userId, notification));
+    await Promise.all(sendPromises);
   }
 
   // Broadcast system-wide notification
@@ -97,17 +108,28 @@ export class RealTimeNotificationManager {
       timestamp: new Date().toISOString(),
     });
 
+    const sendPromises: Promise<void>[] = [];
+
     for (const [userId, connections] of this.connections.entries()) {
       for (const connection of connections) {
-        try {
-          connection.controller?.enqueue(encoder.encode(`data: ${data}\n\n`));
-          connection.lastSeen = new Date();
-        } catch (error) {
-          console.error(`Error broadcasting to user ${userId}:`, error);
-          this.removeConnection(userId, connection.controller!);
-        }
+        sendPromises.push(
+          new Promise((resolve) => {
+            try {
+              connection.controller?.enqueue(encoder.encode(`data: ${data}\n\n`));
+              connection.lastSeen = new Date();
+              resolve();
+            } catch (error) {
+              console.error(`Error broadcasting to user ${userId}:`, error);
+              this.removeConnection(userId, connection.controller!);
+              resolve();
+            }
+          })
+        );
       }
     }
+
+    // Wait for all sends to complete
+    await Promise.all(sendPromises);
   }
 
   // Get active users count
@@ -188,11 +210,27 @@ export class RealTimeNotificationManager {
       excludeUserId,
     });
   }
-}
 
-// Start cleanup interval when module loads
-setInterval(() => {
-  RealTimeNotificationManager.getInstance().cleanupStaleConnections();
-}, 60000); // Run cleanup every minute
+  // Clean up resources
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    
+    // Close all connections
+    for (const connections of this.connections.values()) {
+      for (const connection of connections) {
+        try {
+          connection.controller?.close();
+        } catch (error) {
+          console.error('Error closing connection:', error);
+        }
+      }
+    }
+    
+    this.connections.clear();
+  }
+}
 
 export default RealTimeNotificationManager;

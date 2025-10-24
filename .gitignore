@@ -1,27 +1,62 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
+# Node.js dependencies
 /node_modules
 
-# next.js
+# Next.js build output
 /.next/
 /out/
-
-# production
 /build
 
-# debug
+# Production
+/build
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
-.env*
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# vercel
+# Vercel
 .vercel
 
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Husky
+.husky/_
+
+# IDE / Editor settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# MacOS
+.DS_Store
+
+# Debug / temporary files
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Coverage reports
+/coverage
+
+# pnpm lock file (if you want reproducible installs, keep it tracked)
+# pnpm-lock.yaml
+
+# Storybook / front-end generated folders
+.out-tsc/
+.storybook/build/
+
+# Public folder assets that are generated (if any)
+public/generated/

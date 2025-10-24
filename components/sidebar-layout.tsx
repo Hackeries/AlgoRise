@@ -19,6 +19,7 @@ import {
   BarChart3,
   Cpu,
   Menu,
+  TestTube,
   Sword,
 } from 'lucide-react';
 
@@ -88,6 +89,7 @@ const getCFTier = (rating: number) => {
 const menuItems = [
   { href: '/', label: 'Dashboard', icon: Home },
   { href: '/train', label: 'Train', icon: Zap },
+  { href: '/problem-generator', label: 'Problem Generator', icon: TestTube },
   { href: '/adaptive-sheet', label: 'Practice Problems', icon: FileText },
   { href: '/contests', label: 'Contests', icon: Trophy },
   { href: '/battle-arena', label: 'Battle Arena', icon: Sword },

@@ -82,10 +82,10 @@ export const metadata: Metadata = {
     type: 'website',
     siteName: 'AlgoRise',
     locale: 'en_US',
-    url: 'https://myalgorise.in',
+    url: 'https://www.myalgorise.in',
     images: [
       {
-        url: 'https://myalgorise.in/og-image.jpg',
+        url: 'https://www.myalgorise.in/icon.jpg',
         width: 1200,
         height: 630,
         alt: 'AlgoRise - Master Competitive Programming',
@@ -98,7 +98,7 @@ export const metadata: Metadata = {
     title: 'AlgoRise - Master Competitive Programming & Algorithms',
     description: 'Practice that adapts. Compete when it counts.',
     creator: '@AlgoRise',
-    images: ['https://myalgorise.in/og-image.jpg'],
+    images: ['https://www.myalgorise.in/icon.jpg'],
   },
   robots: {
     index: true,
@@ -129,7 +129,7 @@ export default function RootLayout({
     >
       <head>
         <link rel='manifest' href='/manifest.json' />
-        <link rel='canonical' href='https://myalgorise.in' />
+        <link rel='canonical' href='https://www.myalgorise.in' />
         <meta
           name='theme-color'
           media='(prefers-color-scheme: light)'
@@ -149,7 +149,7 @@ export default function RootLayout({
               name: 'AlgoRise',
               description:
                 'Master competitive programming with adaptive practice, real-time contests, and AI-powered analytics.',
-              url: 'https://myalgorise.in',
+              url: 'https://www.myalgorise.in',
               applicationCategory: 'EducationalApplication',
               offers: {
                 '@type': 'Offer',

@@ -4,7 +4,7 @@ import ModernLanding from '@/components/landing-hero';
 import PixelBlast from '@/components/bg/pixelblast';
 import CFLevels from '@/components/landing/cf-levels';
 
-export default function VisualizersPage() {
+export default function HomePage() {
   return (
     <main className='relative w-full min-h-screen overflow-x-hidden'>
       {/* Background Animation */}

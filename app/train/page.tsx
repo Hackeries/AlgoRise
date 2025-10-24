@@ -16,6 +16,8 @@ import { CompanyGrid, type CompanySet } from "@/components/train/company-grid"
 import { DailyChallenge } from "@/components/train/daily-challenge"
 import { UpcomingContests } from "@/components/train/contests"
 import { ProblemRecos } from "@/components/train/problem-recos"
+import { Badge } from "@/components/ui/badge"
+import { CardContent, CardHeader } from "@/components/ui/card"
 
 // Mock data for progress tracking
 const progressData = {
@@ -144,6 +146,10 @@ const upcomingContests = [
   { id: 2, name: "Biweekly Contest 124", date: "2025-02-01", time: "02:30 PM", registered: false },
 ]
 
+  // Interview Grind data: merged and de-duplicated by link
+  const INTERVIEW_GRIND_BY_COMPANY: Record<string, { difficulty: string; title: string; link: string; topics?: string }[]> =
+    buildInterviewGrind();
+
 export default function TrainingHub() {
   const [bookmarkedProblems, setBookmarkedProblems] = useState<Set<number>>(new Set())
   const [filters, setFilters] = useState<Filters>({ query: "" })
@@ -212,6 +218,48 @@ export default function TrainingHub() {
 
             {/* AI-powered recommendations */}
             <ProblemRecos />
+
+          {/* Interview Grind (company questions) */}
+          <Card className="p-0 bg-gray-900/50 border-gray-800 shadow-xl backdrop-blur-sm">
+            <CardHeader className="px-6 pt-6 pb-2">
+              <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-purple-400" />
+                <span className="text-white">Interview GRIND</span>
+              </h2>
+              <p className="text-xs text-muted-foreground">Curated lists merged without duplicates across companies</p>
+            </CardHeader>
+            <CardContent className="px-6 pb-6">
+              <div className="grid gap-3 md:grid-cols-2">
+                {Object.entries(INTERVIEW_GRIND_BY_COMPANY).map(([company, list]) => (
+                  <div key={company} className="rounded-md border border-gray-800/80 p-3 bg-background/40">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="font-semibold">{company}</div>
+                      <Badge variant="outline" className="text-xs">
+                        {list.length} questions
+                      </Badge>
+                    </div>
+                    <div className="grid gap-1.5 max-h-56 overflow-auto">
+                      {list.slice(0, 12).map((q) => (
+                        <a
+                          key={q.link}
+                          href={q.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-300 hover:underline truncate"
+                          title={`${q.difficulty} • ${q.title}`}
+                        >
+                          {q.title}
+                        </a>
+                      ))}
+                      {list.length > 12 && (
+                        <div className="text-xs text-muted-foreground">+{list.length - 12} more…</div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
             {/* Recent Activity */}
             <Card className="p-6 bg-gray-900/50 border-gray-800 shadow-xl backdrop-blur-sm">
@@ -383,4 +431,95 @@ export default function TrainingHub() {
       </div>
     </div>
   )
+}
+
+function buildInterviewGrind() {
+  // Helper to add unique by link
+  const add = (
+    map: Map<string, { difficulty: string; title: string; link: string; topics?: string }[]>,
+    company: string,
+    item: { difficulty: string; title: string; link: string; topics?: string }
+  ) => {
+    const arr = map.get(company) ?? []
+    if (!arr.some((x) => x.link === item.link)) arr.push(item)
+    map.set(company, arr)
+  }
+
+  const data = new Map<string, { difficulty: string; title: string; link: string; topics?: string }[]>()
+
+  // TRILOGY
+  add(data, 'TRILOGY', { difficulty: 'MEDIUM', title: 'Substring XOR Queries', link: 'https://leetcode.com/problems/substring-xor-queries', topics: 'Array, Hash Table, String, Bit Manipulation' })
+  add(data, 'TRILOGY', { difficulty: 'HARD', title: 'Handling Sum Queries After Update', link: 'https://leetcode.com/problems/handling-sum-queries-after-update', topics: 'Array, Segment Tree' })
+  add(data, 'TRILOGY', { difficulty: 'MEDIUM', title: 'Bitwise XOR of All Pairings', link: 'https://leetcode.com/problems/bitwise-xor-of-all-pairings', topics: 'Array, Bit Manipulation, Brainteaser' })
+  add(data, 'TRILOGY', { difficulty: 'HARD', title: 'Minimum Time to Kill All Monsters', link: 'https://leetcode.com/problems/minimum-time-to-kill-all-monsters', topics: 'Array, Dynamic Programming, Bit Manipulation, Bitmask' })
+  add(data, 'TRILOGY', { difficulty: 'HARD', title: 'Distinct Subsequences', link: 'https://leetcode.com/problems/distinct-subsequences', topics: 'String, Dynamic Programming' })
+
+  // TowerResearch Capital
+  add(data, 'TowerResearch Capital', { difficulty: 'MEDIUM', title: 'Unique Binary Search Trees', link: 'https://leetcode.com/problems/unique-binary-search-trees', topics: 'Math, Dynamic Programming, Tree, Binary Search Tree, Binary Tree' })
+  add(data, 'TowerResearch Capital', { difficulty: 'HARD', title: 'Bricks Falling When Hit', link: 'https://leetcode.com/problems/bricks-falling-when-hit', topics: 'Array, Union Find, Matrix' })
+
+  // DIRECTI
+  add(data, 'DIRECTI', { difficulty: 'MEDIUM', title: 'Minimum Cost to Buy Apples', link: 'https://leetcode.com/problems/minimum-cost-to-buy-apples', topics: 'Array, Graph, Heap (Priority Queue), Shortest Path' })
+  add(data, 'DIRECTI', { difficulty: 'HARD', title: 'Maximum XOR of Two Non-Overlapping Subtrees', link: 'https://leetcode.com/problems/maximum-xor-of-two-non-overlapping-subtrees', topics: 'Tree, Depth-First Search, Graph, Trie' })
+  add(data, 'DIRECTI', { difficulty: 'HARD', title: 'Difference Between Maximum and Minimum Price Sum', link: 'https://leetcode.com/problems/difference-between-maximum-and-minimum-price-sum', topics: 'Array, Dynamic Programming, Tree, Depth-First Search' })
+  add(data, 'DIRECTI', { difficulty: 'MEDIUM', title: 'Number of Sub-arrays With Odd Sum', link: 'https://leetcode.com/problems/number-of-sub-arrays-with-odd-sum', topics: 'Array, Math, Dynamic Programming, Prefix Sum' })
+  add(data, 'DIRECTI', { difficulty: 'MEDIUM', title: 'Find the Winner of an Array Game', link: 'https://leetcode.com/problems/find-the-winner-of-an-array-game', topics: 'Array, Simulation' })
+  add(data, 'DIRECTI', { difficulty: 'HARD', title: 'Find Longest Awesome Substring', link: 'https://leetcode.com/problems/find-longest-awesome-substring', topics: 'Hash Table, String, Bit Manipulation' })
+  add(data, 'DIRECTI', { difficulty: 'MEDIUM', title: 'Min Cost to Connect All Points', link: 'https://leetcode.com/problems/min-cost-to-connect-all-points', topics: 'Array, Union Find, Graph, Minimum Spanning Tree' })
+  add(data, 'DIRECTI', { difficulty: 'MEDIUM', title: 'Largest Submatrix With Rearrangements', link: 'https://leetcode.com/problems/largest-submatrix-with-rearrangements', topics: 'Array, Greedy, Sorting, Matrix' })
+  add(data, 'DIRECTI', { difficulty: 'HARD', title: 'Binary Tree Maximum Path Sum', link: 'https://leetcode.com/problems/binary-tree-maximum-path-sum', topics: 'Dynamic Programming, Tree, Depth-First Search, Binary Tree' })
+
+  // JANE STREET (subset for brevity)
+  add(data, 'JANE STREET', { difficulty: 'EASY', title: 'Count Common Words With One Occurrence', link: 'https://leetcode.com/problems/count-common-words-with-one-occurrence', topics: 'Array, Hash Table, String, Counting' })
+  add(data, 'JANE STREET', { difficulty: 'MEDIUM', title: 'Walking Robot Simulation', link: 'https://leetcode.com/problems/walking-robot-simulation', topics: 'Array, Hash Table, Simulation' })
+  add(data, 'JANE STREET', { difficulty: 'HARD', title: 'Minimum Time to Make Array Sum At Most x', link: 'https://leetcode.com/problems/minimum-time-to-make-array-sum-at-most-x', topics: 'Array, Dynamic Programming, Sorting' })
+  add(data, 'JANE STREET', { difficulty: 'HARD', title: 'Trapping Rain Water', link: 'https://leetcode.com/problems/trapping-rain-water', topics: 'Array, Two Pointers, Dynamic Programming, Stack, Monotonic Stack' })
+
+  // GRAVITON (subset)
+  add(data, 'GRAVITON', { difficulty: 'MEDIUM', title: 'Keys and Rooms', link: 'https://leetcode.com/problems/keys-and-rooms', topics: 'Depth-First Search, Breadth-First Search, Graph' })
+  add(data, 'GRAVITON', { difficulty: 'MEDIUM', title: 'Course Schedule', link: 'https://leetcode.com/problems/course-schedule', topics: 'Depth-First Search, Breadth-First Search, Graph, Topological Sort' })
+
+  // RUBRIK (subset)
+  add(data, 'RUBRIK', { difficulty: 'MEDIUM', title: 'LRU Cache', link: 'https://leetcode.com/problems/lru-cache', topics: 'Hash Table, Linked List, Design, Doubly-Linked List' })
+  add(data, 'RUBRIK', { difficulty: 'HARD', title: 'Scramble String', link: 'https://leetcode.com/problems/scramble-string', topics: 'String, Dynamic Programming' })
+
+  // JP MORGAN (subset)
+  add(data, 'JP MORGAN', { difficulty: 'EASY', title: 'Two Sum', link: 'https://leetcode.com/problems/two-sum', topics: 'Array, Hash Table' })
+  add(data, 'JP MORGAN', { difficulty: 'MEDIUM', title: 'Group Anagrams', link: 'https://leetcode.com/problems/group-anagrams', topics: 'Array, Hash Table, String, Sorting' })
+  add(data, 'JP MORGAN', { difficulty: 'MEDIUM', title: 'LRU Cache', link: 'https://leetcode.com/problems/lru-cache', topics: 'Hash Table, Linked List, Design, Doubly-Linked List' })
+
+  // Stripe (subset)
+  add(data, 'Stripe', { difficulty: 'MEDIUM', title: 'Minimum Penalty for a Shop', link: 'https://leetcode.com/problems/minimum-penalty-for-a-shop', topics: 'String, Prefix Sum' })
+  add(data, 'Stripe', { difficulty: 'MEDIUM', title: 'Evaluate Division', link: 'https://leetcode.com/problems/evaluate-division', topics: 'Array, String, DFS, BFS, Union Find, Graph, Shortest Path' })
+
+  // SPRINKLER (subset)
+  add(data, 'SPRINKLER', { difficulty: 'HARD', title: 'Minimum Edge Weight Equilibrium Queries in a Tree', link: 'https://leetcode.com/problems/minimum-edge-weight-equilibrium-queries-in-a-tree', topics: 'Array, Tree, Graph, SCC' })
+  add(data, 'SPRINKLER', { difficulty: 'MEDIUM', title: 'Asteroid Collision', link: 'https://leetcode.com/problems/asteroid-collision', topics: 'Array, Stack, Simulation' })
+
+  // MEDIA.NET (subset)
+  add(data, 'MEDIA.NET', { difficulty: 'HARD', title: 'Minimum Operations to Form Subsequence With Target Sum', link: 'https://leetcode.com/problems/minimum-operations-to-form-subsequence-with-target-sum', topics: 'Array, Greedy, Bit Manipulation' })
+  add(data, 'MEDIA.NET', { difficulty: 'MEDIUM', title: 'Furthest Building You Can Reach', link: 'https://leetcode.com/problems/furthest-building-you-can-reach', topics: 'Array, Greedy, Heap' })
+
+  // META (subset)
+  add(data, 'META', { difficulty: 'EASY', title: 'Merge Sorted Array', link: 'https://leetcode.com/problems/merge-sorted-array', topics: 'Array, Two Pointers, Sorting' })
+  add(data, 'META', { difficulty: 'HARD', title: 'Minimum Window Substring', link: 'https://leetcode.com/problems/minimum-window-substring', topics: 'Hash Table, String, Sliding Window' })
+
+  // GOOGLE (subset)
+  add(data, 'GOOGLE', { difficulty: 'EASY', title: 'Two Sum', link: 'https://leetcode.com/problems/two-sum', topics: 'Array, Hash Table' })
+  add(data, 'GOOGLE', { difficulty: 'HARD', title: 'Maximal Rectangle', link: 'https://leetcode.com/problems/maximal-rectangle', topics: 'Array, DP, Stack, Matrix, Monotonic Stack' })
+
+  // GOLDMAN SACHS (subset)
+  add(data, 'GOLDMAN SACHS', { difficulty: 'HARD', title: 'Trapping Rain Water', link: 'https://leetcode.com/problems/trapping-rain-water', topics: 'Array, Two Pointers, DP, Stack' })
+  add(data, 'GOLDMAN SACHS', { difficulty: 'MEDIUM', title: 'Product of Array Except Self', link: 'https://leetcode.com/problems/product-of-array-except-self', topics: 'Array, Prefix Sum' })
+
+  // wells fargo (subset)
+  add(data, 'wells fargo', { difficulty: 'MEDIUM', title: 'Shortest and Lexicographically Smallest Beautiful String', link: 'https://leetcode.com/problems/shortest-and-lexicographically-smallest-beautiful-string', topics: 'String, Sliding Window' })
+  add(data, 'wells fargo', { difficulty: 'MEDIUM', title: 'Spiral Matrix', link: 'https://leetcode.com/problems/spiral-matrix', topics: 'Array, Matrix, Simulation' })
+
+  // VISA (subset)
+  add(data, 'VISA', { difficulty: 'HARD', title: 'Length of Longest V-Shaped Diagonal Segment', link: 'https://leetcode.com/problems/length-of-longest-v-shaped-diagonal-segment', topics: 'Array, DP, Memoization, Matrix' })
+  add(data, 'VISA', { difficulty: 'MEDIUM', title: 'LRU Cache', link: 'https://leetcode.com/problems/lru-cache', topics: 'Hash Table, Linked List, Design, Doubly-Linked List' })
+
+  // Convert to plain object
+  return Object.fromEntries(Array.from(data.entries()))
 }

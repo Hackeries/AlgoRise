@@ -50,7 +50,7 @@ function CompanyCard({ company }: { company: CompanySet }) {
           </div>
         </Card>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>{company.name} interview set</DialogTitle>
         </DialogHeader>
@@ -62,25 +62,48 @@ function CompanyCard({ company }: { company: CompanySet }) {
               <Badge variant="outline">Hard {company.distribution.hard}</Badge>
             </div>
           )}
-          <div className="grid gap-2 max-h-80 overflow-auto">
-            {company.problems?.map((p) => (
-              <div key={p.id} className="rounded-md border p-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium truncate flex-1">{p.title}</span>
-                  <Badge variant={p.difficulty === "Hard" ? "default" : "secondary"}>{p.difficulty}</Badge>
-                  {p.url && (
-                    <Button asChild size="sm" variant="outline">
-                      <a href={p.url} target="_blank" rel="noopener noreferrer">
-                        Solve
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <InterviewGrindList problems={company.problems ?? []} />
         </div>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function InterviewGrindList({
+  problems,
+}: {
+  problems: { id: string; title: string; difficulty: "Easy" | "Medium" | "Hard"; url?: string }[]
+}) {
+  // Group by difficulty for quick scan
+  const groups = ['Easy', 'Medium', 'Hard'] as const
+  return (
+    <div className="space-y-4">
+      {groups.map((g) => {
+        const items = problems.filter((p) => p.difficulty === g)
+        if (items.length === 0) return null
+        return (
+          <div key={g}>
+            <div className="mb-2 text-sm font-semibold text-muted-foreground">{g}</div>
+            <div className="grid gap-2 max-h-72 overflow-auto">
+              {items.map((p) => (
+                <div key={p.id} className="rounded-md border p-3">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium truncate flex-1">{p.title}</span>
+                    <Badge variant={g === 'Hard' ? 'default' : 'secondary'}>{g}</Badge>
+                    {p.url && (
+                      <Button asChild size="sm" variant="outline" className="bg-transparent">
+                        <a href={p.url} target="_blank" rel="noopener noreferrer">
+                          Solve
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })}
+    </div>
   )
 }

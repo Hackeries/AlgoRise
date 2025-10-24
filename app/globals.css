@@ -4,48 +4,47 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Light theme inspired by TLE Eliminators - Clean, Professional */
-  /* Neutrals - Off-white and light grays */
-  --background: 0 0% 98.5%;
-  --foreground: 240 10% 12%;
-  --card: 0 0% 100%;
-  --card-foreground: 240 10% 12%;
+  /* Light theme — modern, smooth neutrals */
+  --background: 210 20% 98%; /* slate-50 */
+  --foreground: 222 47% 11%; /* slate-900 */
+  --card: 0 0% 100%; /* white */
+  --card-foreground: 222 47% 11%;
   --popover: 0 0% 100%;
-  --popover-foreground: 240 10% 12%;
+  --popover-foreground: 222 47% 11%;
 
-  /* Brand Colors - AlgoRise Blue & Cyan */
-  --primary: 217 100% 50%;
+  /* Brand */
+  --primary: 221 83% 53%; /* blue-500 */
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 96%;
-  --secondary-foreground: 240 10% 12%;
+  --secondary: 210 20% 96%; /* slate-100 */
+  --secondary-foreground: 222 47% 11%;
 
   /* Accents & States */
-  --muted: 0 0% 92%;
-  --muted-foreground: 240 5% 35%;
-  --accent: 180 100% 50%;
+  --muted: 210 20% 96%;
+  --muted-foreground: 215 16% 47%; /* slate-500 */
+  --accent: 200 94% 56%; /* sky-500 */
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
   /* UI Elements */
-  --border: 0 0% 88%;
-  --input: var(--border);
-  --ring: 217 100% 50%;
+  --border: 214 32% 91%; /* slate-200 */
+  --input: 214 32% 91%;
+  --ring: 221 83% 53%;
 
   /* Charts */
-  --chart-1: 217 100% 50%;
-  --chart-2: 180 100% 50%;
-  --chart-3: 120 100% 50%;
+  --chart-1: 221 83% 53%;
+  --chart-2: 200 94% 56%;
+  --chart-3: 160 84% 39%;
   --chart-4: 0 84% 60%;
-  --chart-5: 240 100% 50%;
+  --chart-5: 262 83% 58%;
 
   /* Sidebar */
-  --sidebar: 0 0% 98.5%;
-  --sidebar-foreground: 240 10% 12%;
+  --sidebar: 210 20% 98%;
+  --sidebar-foreground: 222 47% 11%;
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: 0 0% 92%;
-  --sidebar-accent-foreground: 240 10% 12%;
+  --sidebar-accent: 210 20% 96%;
+  --sidebar-accent-foreground: 222 47% 11%;
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
 
@@ -55,42 +54,42 @@
 }
 
 .dark {
-  /* Dark theme - Pure black background */
-  --background: 0 0% 0%;
-  --foreground: 0 0% 98%;
-  --card: 0 0% 0%;
-  --card-foreground: 0 0% 98%;
-  --popover: 0 0% 0%;
-  --popover-foreground: 0 0% 98%;
+  /* Dark theme — deep slate, soft surfaces */
+  --background: 222 47% 11%; /* slate-900 */
+  --foreground: 210 40% 98%; /* slate-50 */
+  --card: 222 37% 13%; /* slightly lighter surface */
+  --card-foreground: 210 40% 98%;
+  --popover: 222 47% 11%;
+  --popover-foreground: 210 40% 98%;
 
-  --primary: 217 100% 60%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 5%;
-  --secondary-foreground: 0 0% 98%;
+  --primary: 217 92% 60%; /* blue-400/500 mix */
+  --primary-foreground: 222 47% 11%;
+  --secondary: 217 33% 17%; /* slate-800 */
+  --secondary-foreground: 210 40% 98%;
 
-  --muted: 0 0% 10%;
-  --muted-foreground: 0 0% 88%;
-  --accent: 180 100% 60%;
-  --accent-foreground: 0 0% 0%;
-  --destructive: 0 84% 52%;
-  --destructive-foreground: 0 0% 99%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%; /* slate-400 */
+  --accent: 200 94% 60%; /* sky-400 */
+  --accent-foreground: 222 47% 11%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
 
-  --border: 0 0% 10%;
-  --input: var(--border);
-  --ring: 217 100% 55%;
+  --border: 217 33% 17%;
+  --input: 217 33% 17%;
+  --ring: 217 92% 60%;
 
-  --chart-1: 217 100% 60%;
-  --chart-2: 180 100% 60%;
-  --chart-3: 120 100% 60%;
+  --chart-1: 217 92% 60%;
+  --chart-2: 200 94% 60%;
+  --chart-3: 160 84% 39%;
   --chart-4: 0 84% 63%;
-  --chart-5: 240 100% 65%;
+  --chart-5: 262 83% 58%;
 
-  --sidebar: 0 0% 0%;
-  --sidebar-foreground: 0 0% 98%;
+  --sidebar: 222 47% 11%;
+  --sidebar-foreground: 210 40% 98%;
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: 0 0% 5%;
-  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-accent: 217 33% 17%;
+  --sidebar-accent-foreground: 210 40% 98%;
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
 }

@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from 'react';
 
 declare global {
   interface Window {
@@ -10,18 +10,18 @@ declare global {
 
 type AdSenseAdProps = {
   slot?: string;
-  format?: string; // e.g., "auto"
-  responsive?: boolean; // true => data-full-width-responsive="true"
+  format?: string;
+  responsive?: boolean;
   className?: string;
   style?: React.CSSProperties;
-  layout?: string; // data-ad-layout
-  layoutKey?: string; // data-ad-layout-key
-  adTest?: boolean; // true => data-adtest="on"
+  layout?: string;
+  layoutKey?: string;
+  adTest?: boolean;
 };
 
 export function AdSenseAd({
   slot,
-  format = "auto",
+  format = 'auto',
   responsive = true,
   className,
   style,
@@ -33,7 +33,7 @@ export function AdSenseAd({
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    if (!slot) return; // do not attempt if not configured
+    if (!slot) return;
     if (initializedRef.current) return;
     initializedRef.current = true;
 
@@ -42,25 +42,58 @@ export function AdSenseAd({
     } catch (err) {
       initializedRef.current = false;
     }
+
+    // Force transparent background on iframe after ad loads
+    const checkIframe = setInterval(() => {
+      if (insRef.current) {
+        const iframes = insRef.current.querySelectorAll('iframe');
+        iframes.forEach(iframe => {
+          try {
+            iframe.style.background = 'transparent';
+            iframe.style.backgroundColor = 'transparent';
+          } catch (e) {
+            // Cross-origin restriction
+          }
+        });
+
+        if (iframes.length > 0) {
+          clearInterval(checkIframe);
+        }
+      }
+    }, 500);
+
+    return () => clearInterval(checkIframe);
   }, [slot]);
 
   if (!slot) return null;
 
-  const isProd = process.env.NODE_ENV === "production";
+  const isProd = process.env.NODE_ENV === 'production';
   const shouldAdTest = adTest ?? !isProd;
 
   return (
-    <div className={className} style={style}>
+    <div
+      className={`ad-wrapper ${className || ''}`}
+      style={{
+        background: 'transparent',
+        backgroundColor: 'transparent',
+        ...style,
+      }}
+    >
       <ins
-        className="adsbygoogle"
-        style={{ display: "block" }}
-        data-ad-client="ca-pub-3173433370339000"
+        className='adsbygoogle'
+        style={{
+          display: 'block',
+          background: 'transparent',
+          backgroundColor: 'transparent',
+          minHeight: '90px',
+        }}
+        data-ad-client='ca-pub-3173433370339000'
         data-ad-slot={slot}
         data-ad-format={format}
-        data-full-width-responsive={responsive ? "true" : "false"}
-        {...(layout ? { "data-ad-layout": layout } : {})}
-        {...(layoutKey ? { "data-ad-layout-key": layoutKey } : {})}
-        {...(shouldAdTest ? { "data-adtest": "on" } : {})}
+        data-full-width-responsive={responsive ? 'true' : 'false'}
+        {...(layout ? { 'data-ad-layout': layout } : {})}
+        {...(layoutKey ? { 'data-ad-layout-key': layoutKey } : {})}
+        {...(shouldAdTest ? { 'data-adtest': 'on' } : {})}
         ref={insRef as any}
       />
     </div>

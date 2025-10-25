@@ -1,63 +1,120 @@
-"use client"
+'use client';
 
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Sparkles, Search, Layers3, ListChecks, LineChart } from "lucide-react"
+import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+import { Sparkles, Layers3, ListChecks, LineChart, Trophy } from 'lucide-react';
 
 export function TrainHero({
   onQuickNav,
-  onSearch,
 }: {
-  onQuickNav: (key: "blind75" | "neet250" | "cses" | "leetcode") => void
-  onSearch: (query: string) => void
+  onQuickNav: (key: 'blind75' | 'neet250' | 'cses' | 'leetcode') => void;
 }) {
   return (
-    <div className="relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-purple-500/5 to-transparent pointer-events-none" />
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs text-muted-foreground bg-background/70">
-            <Sparkles className="h-3.5 w-3.5" />
-            Master DSA & Competitive Programming
-          </div>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-balance">
-            Master DSA & Competitive Programming – Train Like a Pro
-          </h1>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl">
-            Structured problem sheets, company-focused challenges, and real-time progress tracking.
-          </p>
+    <section className='relative overflow-hidden py-20 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950'>
+      {/* Background radial gradient */}
+      <div className='absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(99,102,241,0.08),transparent_70%)] animate-spin-slow -z-10' />
 
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative sm:flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search topics, companies, problems…"
-                className="pl-9"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") onSearch((e.target as HTMLInputElement).value)
-                }}
-              />
-            </div>
-          </div>
+      <div className='relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center'>
+        {/* Hero Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className='inline-flex items-center gap-2 px-6 py-2 rounded-full text-purple-400 font-semibold bg-purple-500/10 border border-purple-400/20 backdrop-blur-sm mb-6'
+        >
+          <Sparkles className='h-4 w-4' />
+          Accelerate Your DSA & ICPC Journey
+        </motion.div>
 
-          <div className="flex flex-wrap items-center gap-2 pt-2">
-            <Button size="sm" variant="outline" onClick={() => onQuickNav("blind75")}>
-              <ListChecks className="h-4 w-4 mr-1.5" /> Blind 75
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => onQuickNav("neet250")}>
-              <Layers3 className="h-4 w-4 mr-1.5" /> NeetCode 250
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => onQuickNav("cses")}>
-              <ListChecks className="h-4 w-4 mr-1.5" /> CSES
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => onQuickNav("leetcode")}>
-              <LineChart className="h-4 w-4 mr-1.5" /> LeetCode
-            </Button>
-          </div>
-        </div>
+        {/* Hero Title */}
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className='text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-400 mb-6'
+        >
+          Train Like a Pro — Master DSA, ICPC, and HFT Interviews
+        </motion.h1>
+
+        {/* Hero Description */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className='text-gray-400 text-lg max-w-2xl mx-auto mb-12 leading-relaxed'
+        >
+          Solve curated problems, track your growth, and prepare for world-class
+          competitions and interviews.
+        </motion.p>
+
+        {/* Quick Nav Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9 }}
+          className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto'
+        >
+          <QuickNavCard
+            icon={<ListChecks className='h-6 w-6' />}
+            title='Blind 75'
+            desc='Essential interview problems'
+            gradient='from-orange-400 to-pink-500'
+            onClick={() => onQuickNav('blind75')}
+          />
+          <QuickNavCard
+            icon={<Layers3 className='h-6 w-6' />}
+            title='NeetCode 250'
+            desc='Structured roadmap to mastery'
+            gradient='from-blue-400 to-cyan-400'
+            onClick={() => onQuickNav('neet250')}
+          />
+          <QuickNavCard
+            icon={<Trophy className='h-6 w-6' />}
+            title='CSES'
+            desc='Competitive programming grind'
+            gradient='from-green-400 to-emerald-400'
+            onClick={() => onQuickNav('cses')}
+          />
+          <QuickNavCard
+            icon={<LineChart className='h-6 w-6' />}
+            title='LeetCode'
+            desc='Real interview prep problems'
+            gradient='from-purple-400 to-indigo-400'
+            onClick={() => onQuickNav('leetcode')}
+          />
+        </motion.div>
       </div>
-    </div>
-  )
+    </section>
+  );
+}
+
+function QuickNavCard({
+  icon,
+  title,
+  desc,
+  gradient,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  gradient: string;
+  onClick: () => void;
+}) {
+  return (
+    <Card
+      onClick={onClick}
+      className={`cursor-pointer group border border-gray-800/50 bg-gray-950/40 backdrop-blur-md overflow-hidden transition-transform transform hover:-translate-y-2 hover:shadow-2xl`}
+    >
+      <CardContent className='p-6 flex flex-col items-center text-center space-y-3'>
+        <div
+          className={`w-14 h-14 rounded-lg flex items-center justify-center bg-gradient-to-r ${gradient} text-white shadow-lg group-hover:scale-110 transition-transform`}
+        >
+          {icon}
+        </div>
+        <h3 className='text-lg font-bold text-white'>{title}</h3>
+        <p className='text-gray-400 text-sm'>{desc}</p>
+      </CardContent>
+    </Card>
+  );
 }

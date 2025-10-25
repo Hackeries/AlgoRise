@@ -1,20 +1,20 @@
 'use client';
-import type React from 'react';
+
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
 import {
   InfoIcon,
   CheckCircle2,
   Zap,
   Trophy,
-  ArrowRight,
   Flame,
   Skull,
+  Sparkles,
+  Target,
+  TrendingUp,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { FlipPricingCard } from '@/components/landing/flip-pricing-card';
 import { InteractiveToggle } from '@/components/landing/interactive-toggle';
 
@@ -31,7 +31,6 @@ type PricePlan = {
   popular?: boolean;
   ctaLabel?: string;
   cfRatingColor?: string;
-  icon?: React.ReactNode;
   cardContent?: {
     topics: string[];
     divProblems: Record<string, number>;
@@ -61,9 +60,9 @@ const PLANS: PricePlan[] = [
     cfRatingColor: 'bg-gray-400',
     cardContent: {
       topics: ['Arrays', 'STL Basics', 'Two Pointers', 'Math-1', 'Strings'],
-      divProblems: { 'Div2 A': 25, 'Div2 B': 8 },
+      divProblems: { 'Div2 A': 45, 'Div3 B': 28, 'Div3 C': 20 },
       atcoderProblems: 32,
-      leetcodeProblems: { Easy: 30, Medium: 5 },
+      leetcodeProblems: { Easy: 30, Medium: 15 },
     },
   },
   {
@@ -92,9 +91,9 @@ const PLANS: PricePlan[] = [
         'Hashmaps',
         'Stacks/Queues',
       ],
-      divProblems: { 'Div2 B': 40, 'Div2 C': 22, 'Div3 A': 12 },
+      divProblems: { 'Div2 B': 40, 'Div2 C': 42, 'Div3 D': 32 },
       atcoderProblems: 38,
-      leetcodeProblems: { Easy: 15, Medium: 45 },
+      leetcodeProblems: { Easy: 35, Medium: 55 },
     },
   },
   {
@@ -117,9 +116,9 @@ const PLANS: PricePlan[] = [
     cfRatingColor: 'bg-cyan-400',
     cardContent: {
       topics: ['Graphs', 'Dijkstra', 'BFS/DFS', 'Intro DP', 'Number Theory I'],
-      divProblems: { 'Div2 C': 65, 'Div2 D': 25, 'Div3 B': 22 },
+      divProblems: { 'Div2 C': 65, 'Div2 D': 25, 'Div3 E': 22 },
       atcoderProblems: 42,
-      leetcodeProblems: { Medium: 35, Hard: 18 },
+      leetcodeProblems: { Medium: 35, Hard: 40 },
     },
   },
   {
@@ -196,10 +195,6 @@ function sheetCodeFor(name: string): string | undefined {
   return undefined;
 }
 
-function bulletsForPlan(p: PricePlan): string[] {
-  return p.benefits || [];
-}
-
 export default function PricingPage() {
   const [paymentsEnabled, setPaymentsEnabled] = useState<boolean | null>(null);
 
@@ -225,159 +220,234 @@ export default function PricingPage() {
   }, []);
 
   return (
-    <main className='min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950'>
-      {/* Hero Section */}
-      <section className='relative overflow-hidden px-6 py-20 md:py-32'>
-        <div className='absolute inset-0 overflow-hidden'>
-          <div className='absolute -top-40 -right-40 h-80 w-80 rounded-full bg-red-500/10 blur-3xl' />
-          <div className='absolute -bottom-40 -left-40 h-80 w-80 rounded-full bg-orange-500/10 blur-3xl' />
-        </div>
+    <main className='min-h-screen bg-gradient-to-br from-background via-muted/20 to-background'>
+      {/* Animated Background Orbs */}
+      <div className='fixed inset-0 overflow-hidden pointer-events-none'>
+        <motion.div
+          className='absolute -top-40 -right-40 h-96 w-96 rounded-full bg-primary/10 blur-3xl'
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.2, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+        <motion.div
+          className='absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-purple-500/10 blur-3xl'
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.3, 0.2],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      </div>
 
-        <div className='relative mx-auto max-w-4xl'>
+      {/* Hero Section */}
+      <section className='relative overflow-hidden px-4 sm:px-6 py-20 md:py-32'>
+        <div className='relative mx-auto max-w-6xl'>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
+            className='text-center'
           >
-            <Badge className='mb-4 bg-red-500/20 text-red-300 border-red-500/30 hover:bg-red-500/30 flex w-fit mx-auto'>
-              <Flame className='h-3 w-3 mr-2' />
-              No Sugar. No Fake Confidence. Just Grind.
-            </Badge>
-            <h1 className='text-5xl md:text-7xl font-black tracking-tight mb-6 bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent text-center'>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring' }}
+              className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6'
+            >
+              <Flame className='h-4 w-4 text-primary' />
+              <span className='text-sm font-medium text-primary'>
+                Elite Competitive Programming Training
+              </span>
+            </motion.div>
+
+            <h1 className='text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent'>
               Stop Wasting Time.
               <br />
-              Start Bleeding Ratings.
+              Start Climbing Ratings.
             </h1>
-            <p className='text-xl text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed text-center'>
+
+            <p className='text-lg sm:text-xl text-muted-foreground mb-8 max-w-3xl mx-auto leading-relaxed'>
               For coders who refuse easy wins. For coders who want CM → Master →
               ICPC glory.
               <br />
-              <span className='text-red-300 font-bold'>
+              <span className='text-primary font-semibold'>
                 Most platforms give you fake dopamine. We give you problems that
-                hurt.
+                build champions.
               </span>
             </p>
           </motion.div>
 
+          {/* Stats */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className='grid grid-cols-3 gap-4 md:gap-8 mb-12'
+            className='grid grid-cols-3 gap-4 md:gap-8 mb-12 max-w-3xl mx-auto'
           >
-            <motion.div className='text-center' whileHover={{ scale: 1.05 }}>
-              <motion.div className='text-3xl md:text-4xl font-black text-red-400'>
-                5
+            {[
+              { number: '5', label: 'Tier Levels', icon: Target },
+              { number: '1800+', label: 'Problem Ratings', icon: TrendingUp },
+              { number: '∞', label: 'Lifetime Access', icon: Sparkles },
+            ].map((stat, idx) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + idx * 0.1 }}
+                whileHover={{ scale: 1.05, y: -5 }}
+                className='relative p-4 sm:p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all group'
+              >
+                <stat.icon className='h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-2' />
+                <div className='text-2xl sm:text-4xl font-bold text-primary'>
+                  {stat.number}
+                </div>
+                <div className='text-xs sm:text-sm text-muted-foreground mt-1'>
+                  {stat.label}
+                </div>
+                <div className='absolute inset-0 rounded-2xl bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity -z-10' />
               </motion.div>
-              <div className='text-sm text-slate-400'>Tier Levels</div>
-            </motion.div>
-            <motion.div className='text-center' whileHover={{ scale: 1.05 }}>
-              <div className='text-3xl md:text-4xl font-black text-orange-400'>
-                1800+
-              </div>
-              <div className='text-sm text-slate-400'>Problem Ratings</div>
-            </motion.div>
-            <motion.div className='text-center' whileHover={{ scale: 1.05 }}>
-              <motion.div className='text-3xl md:text-4xl font-black text-yellow-400'>
-                ∞
-              </motion.div>
-              <div className='text-sm text-slate-400'>Lifetime Access</div>
-            </motion.div>
+            ))}
           </motion.div>
 
+          {/* Info Banner */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className='mb-12 p-6 bg-slate-800/50 border border-slate-700/50 rounded-lg text-center'
+            className='mb-12 p-6 sm:p-8 bg-card/80 backdrop-blur-xl border border-border/50 rounded-2xl max-w-3xl mx-auto'
           >
-            <p className='text-lg text-slate-200'>
+            <p className='text-base sm:text-lg text-foreground text-center'>
               Each tier includes{' '}
-              <span className='font-bold text-orange-400'>
+              <span className='font-bold text-primary'>
                 curated problem sets
               </span>{' '}
               from Codeforces, AtCoder, and LeetCode.
               <br />
-              <span className='text-sm text-slate-400 mt-2 block'>
-                Hover on cards to see exactly what you get.
+              <span className='text-sm text-muted-foreground mt-2 block'>
+                💡 Hover on cards to see exactly what you get.
               </span>
             </p>
           </motion.div>
 
+          {/* Payment Status Alert */}
           {paymentsEnabled === false && (
-            <Alert className='max-w-2xl mx-auto border-yellow-500/50 bg-yellow-500/10 mb-8'>
-              <InfoIcon className='h-4 w-4 text-yellow-500' />
-              <AlertDescription className='text-sm text-yellow-200'>
-                Payments are currently disabled. Please contact support to
-                enable checkout.
-              </AlertDescription>
-            </Alert>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className='max-w-2xl mx-auto'
+            >
+              <Alert className='border-yellow-500/50 bg-yellow-500/10'>
+                <InfoIcon className='h-4 w-4 text-yellow-500' />
+                <AlertDescription className='text-sm text-yellow-200'>
+                  Payments are currently disabled. Please contact support to
+                  enable checkout.
+                </AlertDescription>
+              </Alert>
+            </motion.div>
           )}
         </div>
       </section>
 
-      {/* Pricing Cards with Flip Animation */}
-      <section className='px-6 py-20'>
+      {/* Pricing Cards */}
+      <section className='px-4 sm:px-6 py-20'>
         <div className='mx-auto max-w-7xl'>
           <div className='text-center mb-16'>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6'
+            >
+              <Trophy className='h-4 w-4 text-primary' />
+              <span className='text-sm font-medium text-primary'>
+                Choose Your Path
+              </span>
+            </motion.div>
+
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className='text-4xl md:text-5xl font-black mb-4'
+              className='text-3xl sm:text-4xl md:text-5xl font-bold mb-4'
             >
               The Grind Levels
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className='text-lg text-slate-400'
+              className='text-lg text-muted-foreground max-w-2xl mx-auto'
             >
               Pick your pain. Pick your growth. Pick your rating climb.{' '}
-              <span className='text-slate-300'>
+              <span className='text-foreground font-medium'>
                 (Hover to flip and see what's inside)
               </span>
             </motion.p>
           </div>
 
           <div className='grid gap-8 md:grid-cols-2 lg:grid-cols-3'>
-            {PLANS.map(p => (
-              <FlipPricingCard
+            {PLANS.map((p, idx) => (
+              <motion.div
                 key={p.name}
-                name={p.name}
-                subtitle={p.subtitle}
-                amountInr={p.amountInr || 0}
-                description={p.description || ''}
-                gradient={p.gradient || ''}
-                benefits={bulletsForPlan(p)}
-                popular={p.popular}
-                ctaLabel={p.ctaLabel || 'Get Started'}
-                sheetCode={sheetCodeFor(p.name)}
-                cardContent={p.cardContent}
-              />
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{
+                  duration: 0.5,
+                  delay: idx * 0.1,
+                  ease: [0.16, 1, 0.3, 1] as any,
+                }}
+              >
+                <FlipPricingCard
+                  name={p.name}
+                  subtitle={p.subtitle}
+                  amountInr={p.amountInr || 0}
+                  description={p.description || ''}
+                  gradient={p.gradient || ''}
+                  benefits={p.benefits || []}
+                  popular={p.popular}
+                  ctaLabel={p.ctaLabel || 'Get Started'}
+                  sheetCode={sheetCodeFor(p.name)}
+                  cardContent={p.cardContent}
+                />
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Interactive Toggle Section */}
-      <section className='px-6 py-20 bg-slate-800/30'>
+      {/* Interactive Toggle */}
+      <section className='px-4 sm:px-6 py-20 bg-muted/30'>
         <div className='mx-auto max-w-4xl'>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className='text-4xl font-black text-center mb-12 flex items-center justify-center gap-3'
+            className='text-3xl sm:text-4xl font-bold text-center mb-12 flex items-center justify-center gap-3'
           >
-            <Skull className='h-8 w-8 text-red-400' />
+            <Skull className='h-7 w-7 sm:h-8 sm:w-8 text-primary' />
             The Harsh Truth
-            <Skull className='h-8 w-8 text-red-400' />
+            <Skull className='h-7 w-7 sm:h-8 sm:w-8 text-primary' />
           </motion.h2>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
             <InteractiveToggle
@@ -409,111 +479,101 @@ export default function PricingPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className='mt-12 p-6 bg-red-500/10 border border-red-500/30 rounded-lg'
+            className='mt-12 p-6 bg-primary/10 border border-primary/30 rounded-2xl backdrop-blur-sm'
           >
-            <p className='text-center text-slate-200'>
-              <span className='font-bold text-red-300'>Warning:</span> Not for
+            <p className='text-center text-foreground'>
+              <span className='font-bold text-primary'>Warning:</span> Not for
               casual coders. Only for those who want raw, unfiltered CP grind.
               If you're looking for easy wins, go elsewhere. If you're ready to
-              bleed ratings and climb to Master, you're in the right place.
+              climb to Master, you're in the right place.
             </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className='px-6 py-20'>
-        <div className='mx-auto max-w-4xl'>
+      {/* Features */}
+      <section className='px-4 sm:px-6 py-20'>
+        <div className='mx-auto max-w-5xl'>
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className='text-4xl font-black text-center mb-12'
+            className='text-3xl sm:text-4xl font-bold text-center mb-16'
           >
             What Every Level Includes
           </motion.h2>
 
-          <div className='grid md:grid-cols-2 gap-8'>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className='space-y-4'
-            >
-              <h3 className='text-xl font-bold flex items-center gap-2'>
-                <Zap className='h-5 w-5 text-yellow-400' />
-                Core Features
-              </h3>
-              <ul className='space-y-2 text-slate-300'>
-                <li className='flex items-center gap-2'>
-                  <CheckCircle2 className='h-4 w-4 text-green-400' />
-                  Curated problems from CF, AtCoder, ICPC
-                </li>
-                <li className='flex items-center gap-2'>
-                  <CheckCircle2 className='h-4 w-4 text-green-400' />
-                  Editorial links & detailed tags
-                </li>
-                <li className='flex items-center gap-2'>
-                  <CheckCircle2 className='h-4 w-4 text-green-400' />
-                  Built-in revision tracker
-                </li>
-                <li className='flex items-center gap-2'>
-                  <CheckCircle2 className='h-4 w-4 text-green-400' />
-                  Progress analytics & streak tracking
-                </li>
-              </ul>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              className='space-y-4'
-            >
-              <h3 className='text-xl font-bold flex items-center gap-2'>
-                <Trophy className='h-5 w-5 text-red-400' />
-                Elite Perks
-              </h3>
-              <ul className='space-y-2 text-slate-300'>
-                <li className='flex items-center gap-2'>
-                  <CheckCircle2 className='h-4 w-4 text-green-400' />
-                  Weekly elite problem sets
-                </li>
-                <li className='flex items-center gap-2'>
-                  <CheckCircle2 className='h-4 w-4 text-green-400' />
-                  Private forum for elite coders
-                </li>
-                <li className='flex items-center gap-2'>
-                  <CheckCircle2 className='h-4 w-4 text-green-400' />
-                  Lifetime access & revisions
-                </li>
-                <li className='flex items-center gap-2'>
-                  <CheckCircle2 className='h-4 w-4 text-green-400' />
-                  No-Editorial Mode for raw skill building
-                </li>
-              </ul>
-            </motion.div>
+          <div className='grid md:grid-cols-2 gap-8 lg:gap-12'>
+            {[
+              {
+                icon: Zap,
+                title: 'Core Features',
+                items: [
+                  'Curated problems from CF, AtCoder, ICPC',
+                  'Editorial links & detailed tags',
+                  'Built-in revision tracker',
+                  'Progress analytics & streak tracking',
+                ],
+                delay: 0,
+              },
+              {
+                icon: Trophy,
+                title: 'Elite Perks',
+                items: [
+                  'Weekly elite problem sets',
+                  'Private forum for elite coders',
+                  'Lifetime access & revisions',
+                  'No-Editorial Mode for raw skill building',
+                ],
+                delay: 0.2,
+              },
+            ].map(section => (
+              <motion.div
+                key={section.title}
+                initial={{ opacity: 0, x: section.delay === 0 ? -20 : 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: section.delay }}
+                className='space-y-4 p-6 sm:p-8 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all'
+              >
+                <div className='flex items-center gap-3'>
+                  <div className='p-3 rounded-xl bg-primary/10'>
+                    <section.icon className='h-6 w-6 text-primary' />
+                  </div>
+                  <h3 className='text-xl font-bold'>{section.title}</h3>
+                </div>
+                <ul className='space-y-3'>
+                  {section.items.map(item => (
+                    <li key={item} className='flex items-start gap-3'>
+                      <CheckCircle2 className='h-5 w-5 text-primary flex-shrink-0 mt-0.5' />
+                      <span className='text-muted-foreground'>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      
-
       {/* Footer */}
-      <footer className='border-t border-slate-700/50 px-6 py-8 text-center text-sm text-slate-400'>
+      <footer className='border-t border-border/50 px-4 sm:px-6 py-12 text-center'>
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.6 }}
+          className='max-w-2xl mx-auto space-y-4'
         >
-          <p>
+          <p className='text-sm text-muted-foreground'>
             Secured by Razorpay. 7-day refund guarantee on eligible purchases.
-            <br />
-            <span className='text-red-300 text-xs'>
-              AlgoRise — Brutal Competitive Programming Sheets. Not for
-              casual coders.
-            </span>
+          </p>
+          <p className='text-xs text-primary font-medium'>
+            AlgoRise — Elite Competitive Programming Training. Built for
+            champions.
           </p>
         </motion.div>
       </footer>

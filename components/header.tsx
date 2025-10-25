@@ -605,9 +605,11 @@ export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
         animate={{
           backgroundColor:
             isScrolled && !isLandingPage
-              ? 'rgba(var(--card-rgb, 255, 255, 255), 0.8)'
+              ? effectiveTheme === 'dark'
+                ? 'rgba(18, 18, 18, 0.9)' // dark mode
+                : 'rgba(255, 255, 255, 0.9)' // light mode
               : 'transparent',
-          backdropFilter: isScrolled && !isLandingPage ? 'blur(20px)' : 'none',
+          backdropFilter: isScrolled && !isLandingPage ? 'blur(12px)' : 'none',
         }}
         transition={{ duration: 0.3 }}
         className={cn(

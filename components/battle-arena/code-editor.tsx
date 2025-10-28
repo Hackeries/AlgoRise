@@ -10,7 +10,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Loader2, Terminal, FileCode2 } from 'lucide-react';
-import { useRef, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import { useMemo } from 'react';
+
+const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
+  ssr: false,
+  loading: () => null,
+});
 
 interface CodeEditorProps {
   language: string;
@@ -19,6 +25,7 @@ interface CodeEditorProps {
   onCodeChange: (code: string) => void;
   onSubmit: () => void;
   isSubmitting: boolean;
+  readOnly?: boolean;
 }
 
 export function CodeEditor({
@@ -28,15 +35,22 @@ export function CodeEditor({
   onCodeChange,
   onSubmit,
   isSubmitting,
+  readOnly = false,
 }: CodeEditorProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+  const monacoLanguage = useMemo(() => {
+    switch (language) {
+      case 'cpp':
+        return 'cpp';
+      case 'python':
+        return 'python';
+      case 'java':
+        return 'java';
+      case 'javascript':
+        return 'javascript';
+      default:
+        return 'plaintext';
     }
-  }, [code]);
+  }, [language]);
 
   return (
     <motion.div
@@ -46,7 +60,7 @@ export function CodeEditor({
       transition={{ duration: 0.4 }}
     >
       {/* Top Bar (File + Controls) */}
-      <div className='flex items-center justify-between px-4 py-3 border-b border-[#222] bg-[#141414]/80 rounded-t-xl backdrop-blur-md'>
+      <div className='flex items-center justify-between px-3 md:px-4 py-2.5 md:py-3 border-b border-[#222] bg-[#141414]/80 rounded-t-xl backdrop-blur-md'>
         <div className='flex items-center gap-2'>
           <motion.div
             className='w-3 h-3 bg-red-500 rounded-full'
@@ -63,7 +77,7 @@ export function CodeEditor({
 
         <div className='flex gap-2 items-center'>
           <Select value={language} onValueChange={onLanguageChange}>
-            <SelectTrigger className='w-32 border-[#333] bg-[#111] text-gray-300'>
+            <SelectTrigger className='w-28 md:w-32 border-[#333] bg-[#111] text-gray-300'>
               <SelectValue placeholder='Language' />
             </SelectTrigger>
             <SelectContent className='bg-[#111] border-[#333] text-gray-200'>
@@ -94,27 +108,27 @@ export function CodeEditor({
       </div>
 
       {/* Editor Area */}
-      <div className='flex-1 relative font-mono text-sm text-gray-200 overflow-hidden'>
-        <div className='absolute left-0 top-0 bottom-0 w-10 bg-[#1b1b1f] border-r border-[#222] text-[#555] text-right pr-2 py-3 select-none'>
-          {Array.from({ length: code.split('\n').length || 1 }).map((_, i) => (
-            <div key={i} className='leading-6'>
-              {i + 1}
-            </div>
-          ))}
-        </div>
-
-        <textarea
-          ref={textareaRef}
+      <div className='flex-1 relative font-mono text-sm text-gray-200 overflow-hidden rounded-b-xl'>
+        <MonacoEditor
           value={code}
-          onChange={e => onCodeChange(e.target.value)}
-          placeholder='// Write your solution here...'
-          className='w-full h-full pl-12 pr-4 py-3 bg-transparent resize-none outline-none border-none text-gray-200 leading-6 font-mono scrollbar-thin scrollbar-thumb-[#333] scrollbar-track-[#111]'
-          spellCheck='false'
+          onChange={(val) => onCodeChange(val || '')}
+          language={monacoLanguage}
+          theme='vs-dark'
+          options={{
+            minimap: { enabled: false },
+            fontSize: 14,
+            lineNumbers: 'on',
+            scrollBeyondLastLine: false,
+            smoothScrolling: true,
+            tabSize: 2,
+            readOnly,
+          }}
+          height='100%'
         />
       </div>
 
       {/* Bottom Status Bar */}
-      <div className='px-4 py-2 border-t border-[#222] bg-[#141414]/70 text-xs text-gray-400 flex items-center justify-between rounded-b-xl'>
+      <div className='px-3 md:px-4 py-2 border-t border-[#222] bg-[#141414]/70 text-xs text-gray-400 flex items-center justify-between rounded-b-xl'>
         <div className='flex items-center gap-2'>
           <Terminal className='w-3.5 h-3.5 text-sky-400' />
           <span>Ready</span>

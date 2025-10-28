@@ -34,7 +34,7 @@ export default function LeaderboardPage({
         .from('battle_ratings')
         .select('entity_id, elo, wins, losses')
         .eq('mode', params.mode)
-        .eq('entity_type', 'user')
+        .eq('entity_type', params.mode === '3v3' ? 'team' : 'user')
         .order('elo', { ascending: false })
         .limit(100);
 
@@ -42,7 +42,10 @@ export default function LeaderboardPage({
         const formatted: LeaderboardEntry[] = data.map(
           (entry: any, idx: number) => ({
             rank: idx + 1,
-            name: `Player ${entry.entity_id.slice(0, 8)}`,
+            name:
+              params.mode === '3v3'
+                ? `Team ${entry.entity_id.slice(0, 8)}`
+                : `Player ${entry.entity_id.slice(0, 8)}`,
             elo: entry.elo,
             wins: entry.wins || 0,
             losses: entry.losses || 0,

@@ -1,10 +1,26 @@
 'use client';
 
-import type React from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from 'react';
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import { motion, AnimatePresence, useScroll } from 'framer-motion';
+import { useAuth } from '@/lib/auth/context';
+import { useSearch } from '@/hooks/use-search';
+import { cn } from '@/lib/utils';
+
+// UI Components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Container } from '@/components/ui/container';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,10 +28,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/lib/auth/context';
-import { useSearch } from '@/hooks/use-search';
+
+// Icons
 import {
   Bell,
   User,
@@ -27,13 +41,14 @@ import {
   CreditCard,
   HelpCircle,
   Menu,
+  Sparkles,
 } from 'lucide-react';
-import { useTheme } from 'next-themes';
-import { usePathname } from 'next/navigation';
-import { AuthModal } from '@/components/auth/auth-modal';
-import { cn } from '@/lib/utils';
-import { AlgoRiseLogo } from '@/components/algorise-logo';
 
+// Components
+import { AlgoRiseLogo } from '@/components/algorise-logo';
+import { AuthModal } from '@/components/auth/auth-modal';
+
+// ==================== TYPES ====================
 interface Notification {
   id: number;
   text: string;
@@ -46,219 +61,162 @@ interface HeaderProps {
   isMobile?: boolean;
 }
 
-export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
-  const { user, loading, signOut } = useAuth();
-  const userInitials = user?.email?.charAt(0).toUpperCase() || 'U';
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const effectiveTheme = theme === 'system' ? resolvedTheme || 'light' : theme;
-  const [isMounted, setIsMounted] = useState(false);
-  const pathname = usePathname();
-  const showLandingAuth = pathname === '/';
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
-  const [showMobileSearch, setShowMobileSearch] = useState(false);
+// ==================== CUSTOM HOOKS ====================
+const useHeaderScroll = () => {
+  const { scrollY } = useScroll();
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const toggleTheme = () =>
-    setTheme(effectiveTheme === 'dark' ? 'light' : 'dark');
-
-  // ------------------- Search -------------------
-  const {
-    results,
-    suggestions,
-    loading: searchLoading,
-    search,
-    getSuggestions,
-    clearResults,
-  } = useSearch();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showSearchResults, setShowSearchResults] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchContainerRef = useRef<HTMLDivElement>(null);
-
-  const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-
-    if (value.trim().length >= 2) {
-      setShowSuggestions(true);
-      setShowSearchResults(false);
-      await getSuggestions(value);
-    } else {
-      setShowSuggestions(false);
-      setShowSearchResults(false);
-      clearResults();
-    }
-  };
-
-  const handleSearchSubmit = async () => {
-    if (searchQuery.trim().length >= 2) {
-      setShowSuggestions(false);
-      setShowSearchResults(true);
-      await search(searchQuery, {
-        categories: ['contest', 'group', 'handle', 'user'],
-        limit: 8,
-      });
-    }
-  };
-
-  const handleSuggestionClick = async (suggestion: string) => {
-    setSearchQuery(suggestion);
-    setShowSuggestions(false);
-    setShowSearchResults(true);
-    await search(suggestion, {
-      categories: ['contest', 'group', 'handle', 'user'],
-      limit: 8,
+    return scrollY.onChange(latest => {
+      setIsScrolled(latest > 20);
     });
-  };
+  }, [scrollY]);
 
-  const handleResultClick = (result: any) => {
-    setSearchQuery('');
-    setShowSearchResults(false);
-    setShowSuggestions(false);
-    clearResults();
-    if (result.url) window.location.href = result.url;
-  };
+  return { isScrolled };
+};
 
-  const handleClearSearch = () => {
-    setSearchQuery('');
-    setShowSearchResults(false);
-    setShowSuggestions(false);
-    clearResults();
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        searchContainerRef.current &&
-        !searchContainerRef.current.contains(event.target as Node)
-      ) {
-        setShowSearchResults(false);
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      handleClearSearch();
-      searchInputRef.current?.blur();
-    } else if (e.key === 'Enter') {
-      handleSearchSubmit();
-    }
-  };
-
-  // ------------------- Notifications -------------------
+const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const res = await fetch('/api/notifications');
       const data = await res.json();
       setNotifications(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch notifications:', err);
     }
-  };
+  }, []);
+
+  const markAllRead = useCallback(async () => {
+    try {
+      await fetch('/api/notifications/mark-all-read', { method: 'POST' });
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch (err) {
+      console.error('Failed to mark notifications as read:', err);
+    }
+  }, []);
 
   useEffect(() => {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchNotifications]);
 
-  const markAllRead = async () => {
-    try {
-      await fetch('/api/notifications/mark-all-read', { method: 'POST' });
-      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const unreadCount = useMemo(
+    () => notifications.filter(n => !n.read).length,
+    [notifications]
+  );
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  return { notifications, unreadCount, markAllRead };
+};
 
-  // ------------------- JSX -------------------
-  return (
-    <>
-      <header className='h-16 flex items-center justify-between px-3 sm:px-6 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-900 backdrop-blur z-50 w-full'>
-        {/* Left: Mobile Menu + Logo */}
-        <div className='flex items-center gap-2 sm:gap-4 flex-shrink-0'>
-          {/* Mobile Menu Button */}
-          {isMobile && (
-            <Button
-              variant='ghost'
-              size='sm'
-              onClick={onMobileMenuToggle}
-              className='md:hidden p-2 text-muted-foreground hover:text-foreground hover:bg-muted/40'
-              aria-label='Toggle sidebar'
-            >
-              <Menu className='h-5 w-5' />
-            </Button>
-          )}
+// ==================== SUB-COMPONENTS ====================
 
-          <Link
-            href='/'
-            className='flex-shrink-0 text-foreground hover:opacity-80 transition-opacity'
-          >
-            <AlgoRiseLogo className='h-7 sm:h-9 w-auto' />
-          </Link>
-        </div>
+// Modern Search Bar
+const ModernSearchBar = React.memo<{
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+  onClear: () => void;
+  onSubmit: () => void;
+  suggestions: any[];
+  results: any[];
+  showSuggestions: boolean;
+  showResults: boolean;
+  onSuggestionClick: (suggestion: string) => void;
+  onResultClick: (result: any) => void;
+  searchLoading: boolean;
+}>(
+  ({
+    searchQuery,
+    onSearchChange,
+    onClear,
+    onSubmit,
+    suggestions,
+    results,
+    showSuggestions,
+    showResults,
+    onSuggestionClick,
+    onResultClick,
+    searchLoading,
+  }) => {
+    const searchRef = useRef<HTMLDivElement>(null);
 
-        {/* Center: Search Bar - Hidden on mobile */}
-        <div
-          className='hidden md:flex flex-1 max-w-md mx-4 lg:mx-8 relative'
-          ref={searchContainerRef}
+    return (
+      <div className='relative w-full max-w-md' ref={searchRef}>
+        <motion.div
+          className='relative group'
+          whileHover={{ scale: 1.01 }}
+          transition={{ duration: 0.2 }}
         >
-          <div className='relative'>
-            <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+          <div className='absolute -inset-0.5 bg-gradient-to-r from-primary/20 via-purple-500/20 to-primary/20 rounded-xl opacity-0 group-hover:opacity-100 blur transition-opacity duration-300' />
+          <div className='relative flex items-center'>
+            <Search className='absolute left-4 h-4 w-4 text-muted-foreground z-10' />
             <Input
-              ref={searchInputRef}
               type='text'
-              placeholder='Search contests, groups, handles...'
+              placeholder='Search anything...'
               value={searchQuery}
-              onChange={handleSearchChange}
-              onKeyDown={handleKeyDown}
-              className='w-full pl-10 pr-10 py-2 bg-muted/40 border-border text-foreground placeholder:text-muted-foreground focus:bg-muted/60 focus:border-primary/50 transition-all'
+              onChange={e => onSearchChange(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') onSubmit();
+                if (e.key === 'Escape') onClear();
+              }}
+              className='w-full h-11 pl-11 pr-10 bg-background/60 backdrop-blur-xl border-border/50 rounded-xl focus:bg-background/80 focus:border-primary/50 transition-all duration-300 shadow-sm'
             />
-            {searchQuery && (
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={handleClearSearch}
-                className='absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 text-muted-foreground hover:text-foreground'
-              >
-                <X className='h-3 w-3' />
-              </Button>
-            )}
+            <AnimatePresence>
+              {searchQuery && (
+                <motion.button
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  onClick={onClear}
+                  className='absolute right-3 p-1 hover:bg-muted/80 rounded-md transition-colors z-10'
+                >
+                  <X className='h-3.5 w-3.5 text-muted-foreground' />
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
+        </motion.div>
 
-          {showSuggestions && suggestions.length > 0 && (
-            <div className='absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto'>
-              <div className='py-2'>
-                <div className='px-4 py-2 text-xs text-muted-foreground font-medium'>
-                  Suggestions
+        {/* Search Results Dropdown */}
+        <AnimatePresence>
+          {(showSuggestions || showResults) && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className='absolute top-full left-0 right-0 mt-2 bg-card/95 backdrop-blur-2xl border border-border/50 rounded-xl shadow-2xl overflow-hidden z-50'
+            >
+              {searchLoading ? (
+                <div className='p-8 flex flex-col items-center justify-center gap-3'>
+                  <div className='w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin' />
+                  <p className='text-sm text-muted-foreground'>Searching...</p>
                 </div>
-                {suggestions.map((suggestion, index) => (
-                  <button
-                    key={`${suggestion.suggestion}-${index}`}
-                    onClick={() => handleSuggestionClick(suggestion.suggestion)}
-                    className='w-full px-4 py-3 text-left hover:bg-muted/40 flex items-center gap-3 transition-colors'
-                  >
-                    <Search className='h-4 w-4 text-muted-foreground flex-shrink-0' />
-                    <div className='flex-1 min-w-0'>
-                      <div className='text-foreground font-medium truncate'>
-                        {suggestion.suggestion}
+              ) : showSuggestions && suggestions.length > 0 ? (
+                <div className='max-h-80 overflow-y-auto'>
+                  {suggestions.map((suggestion, idx) => (
+                    <motion.button
+                      key={idx}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      onClick={() => onSuggestionClick(suggestion.suggestion)}
+                      className='w-full px-4 py-3 hover:bg-muted/60 transition-colors flex items-center gap-3 group'
+                    >
+                      <div className='p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors'>
+                        <Search className='h-4 w-4' />
                       </div>
-                      <div className='text-muted-foreground text-xs capitalize'>
-                        {suggestion.type}
+                      <div className='flex-1 text-left'>
+                        <p className='text-sm font-medium'>
+                          {suggestion.suggestion}
+                        </p>
+                        <p className='text-xs text-muted-foreground capitalize'>
+                          {suggestion.type}
+                        </p>
                       </div>
+ feature/add-problem-generator-&-test-case
                     </div>
                     {suggestion.frequency > 1 && (
                       <Badge variant='secondary' className='text-xs'>
@@ -284,482 +242,552 @@ export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
                 <div className='p-4 text-center text-muted-foreground'>
                   <div className='animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full mx-auto'></div>
                   <span className='ml-2'>Searching...</span>
-                </div>
-              ) : results.length > 0 ? (
-                <div className='py-2'>
-                  {results.map((result, index) => (
-                    <button
-                      key={`${result.type}-${result.id}-${index}`}
-                      onClick={() => handleResultClick(result)}
-                      className='w-full px-4 py-3 text-left hover:bg-muted/40 flex items-start gap-3 transition-colors'
-                    >
-                      <Badge
-                        variant='outline'
-                        className='text-xs capitalize bg-primary/10 text-primary border-primary/30 flex-shrink-0 mt-1'
-                      >
-                        {result.type}
-                      </Badge>
-                      <div className='flex-1 min-w-0'>
-                        <div className='text-foreground font-medium truncate'>
-                          {result.title}
-                        </div>
-                        {result.subtitle && (
-                          <div className='text-muted-foreground text-sm truncate'>
-                            {result.subtitle}
-                          </div>
-                        )}
-                        {result.description && (
-                          <div className='text-muted-foreground text-xs mt-1 truncate'>
-                            {result.description}
-                          </div>
-                        )}
-                      </div>
-                      {result.relevanceScore && (
-                        <div className='flex-shrink-0 text-xs text-muted-foreground'>
-                          {Math.round(result.relevanceScore * 100)}%
-                        </div>
-                      )}
-                    </button>
+
+                    </motion.button>
                   ))}
-                  <div className='border-t border-border mt-2 pt-2'>
-                    <Link
-                      href={`/test-features?search=${encodeURIComponent(
-                        searchQuery
-                      )}`}
-                      className='block px-4 py-2 text-center text-primary hover:text-primary-foreground text-sm transition-colors'
-                      onClick={() => setShowSearchResults(false)}
+ main
+                </div>
+              ) : showResults && results.length > 0 ? (
+                <div className='max-h-80 overflow-y-auto'>
+                  {results.map((result, idx) => (
+                    <motion.button
+                      key={idx}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      onClick={() => onResultClick(result)}
+                      className='w-full px-4 py-3 hover:bg-muted/60 transition-colors text-left'
                     >
-                      View all results →
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <div className='p-4 text-center text-muted-foreground'>
-                  <div className='text-sm'>
-                    No results found for "{searchQuery}"
-                  </div>
-                  <div className='text-xs text-muted-foreground mt-1'>
-                    Try searching for contests, groups, or handles
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Right: Actions */}
-        <div className='flex items-center gap-1 sm:gap-2 md:gap-3'>
-          {/* Mobile Search Button */}
-          <Button
-            variant='ghost'
-            size='sm'
-            className='md:hidden text-muted-foreground hover:text-foreground p-2'
-            onClick={() => setShowMobileSearch(true)}
-            aria-label='Open search'
-          >
-            <Search className='h-4 w-4' />
-          </Button>
-
-          <Link href='/faqs' className='hidden sm:block'>
-            <Button
-              variant='ghost'
-              size='sm'
-              className='text-muted-foreground hover:text-foreground gap-2'
-            >
-              <HelpCircle className='h-4 w-4 sm:h-5 sm:w-5' />
-              <span className='hidden md:inline'>FAQs</span>
-            </Button>
-          </Link>
-
-          <Button
-            variant='ghost'
-            size='sm'
-            className='text-muted-foreground hover:text-foreground p-2'
-            onClick={toggleTheme}
-          >
-            {isMounted ? (
-              effectiveTheme === 'dark' ? (
-                <Sun className='h-4 w-4' />
-              ) : (
-                <Moon className='h-4 w-4' />
-              )
-            ) : (
-              <Sun className='h-4 w-4' />
-            )}
-          </Button>
-
-          {/* Notifications - Enhanced Design */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant='ghost'
-                size='sm'
-                className={cn(
-                  'relative text-muted-foreground hover:text-foreground p-2 hover:bg-muted/60 rounded-lg transition-all duration-200',
-                  unreadCount > 0 &&
-                    'text-primary hover:text-primary/80 hover:bg-primary/10'
-                )}
-              >
-                <Bell
-                  className={cn(
-                    'h-4 w-4 transition-transform duration-200',
-                    unreadCount > 0 && 'animate-pulse'
-                  )}
-                />
-                {unreadCount > 0 && (
-                  <>
-                    <div className='absolute -top-1 -right-1 h-4 w-4 bg-gradient-to-r from-red-500 to-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center min-w-[16px] shadow-lg z-10'>
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </div>
-                    <div className='absolute -top-1 -right-1 h-4 w-4 bg-red-500/30 rounded-full animate-ping'></div>
-                  </>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className='w-80 max-w-[calc(100vw-2rem)] bg-card/95 backdrop-blur-xl border border-border/50 shadow-2xl rounded-xl overflow-hidden'
-              align='end'
-              side='bottom'
-              sideOffset={12}
-              alignOffset={-8}
-            >
-              {/* Header */}
-              <div className='flex justify-between items-center p-4 bg-gradient-to-r from-primary/5 to-primary/10 border-b border-border/30'>
-                <div className='flex items-center gap-2'>
-                  <div className='p-1.5 bg-primary/20 rounded-lg'>
-                    <Bell className='h-3.5 w-3.5 text-primary' />
-                  </div>
-                  <span className='font-semibold text-foreground'>
-                    Notifications
-                  </span>
-                  {unreadCount > 0 && (
-                    <Badge className='bg-primary/20 text-primary border-primary/30 text-xs'>
-                      {unreadCount} new
-                    </Badge>
-                  )}
-                </div>
-                {unreadCount > 0 && (
-                  <Button
-                    size='sm'
-                    variant='ghost'
-                    className='text-xs text-primary hover:text-primary/80 hover:bg-primary/10 rounded-md'
-                    onClick={markAllRead}
-                  >
-                    Mark all read
-                  </Button>
-                )}
-              </div>
-
-              {/* Notifications List */}
-              <div className='max-h-72 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-muted/30'>
-                {notifications.length > 0 ? (
-                  notifications.map((n, index) => (
-                    <DropdownMenuItem
-                      key={n.id}
-                      className={`p-0 focus:bg-transparent ${
-                        index !== notifications.length - 1
-                          ? 'border-b border-border/20'
-                          : ''
-                      }`}
-                    >
-                      <div
-                        className={`w-full p-4 hover:bg-muted/30 transition-all duration-200 ${
-                          !n.read
-                            ? 'bg-primary/5 border-l-2 border-l-primary'
-                            : ''
-                        }`}
-                      >
-                        <div className='flex items-start gap-3'>
-                          {/* Notification Icon */}
-                          <div
-                            className={`p-1.5 rounded-lg flex-shrink-0 ${
-                              !n.read
-                                ? 'bg-primary/20 text-primary'
-                                : 'bg-muted/50 text-muted-foreground'
-                            }`}
-                          >
-                            <Bell className='h-3 w-3' />
-                          </div>
-
-                          {/* Notification Content */}
-                          <div className='flex-1 min-w-0'>
-                            <div
-                              className={`text-sm leading-relaxed ${
-                                n.read
-                                  ? 'text-muted-foreground'
-                                  : 'text-foreground font-medium'
-                              }`}
-                            >
-                              {n.href ? (
-                                <Link
-                                  href={n.href}
-                                  className='hover:text-primary transition-colors'
-                                >
-                                  {n.text}
-                                </Link>
-                              ) : (
-                                n.text
-                              )}
-                            </div>
-                            <div className='text-xs text-muted-foreground/70 mt-1'>
-                              Just now
-                            </div>
-                          </div>
-
-                          {/* Unread Indicator */}
-                          {!n.read && (
-                            <div className='w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2'></div>
+                      <div className='flex items-start gap-3'>
+                        <Badge className='mt-0.5 bg-primary/10 text-primary border-primary/30'>
+                          {result.type}
+                        </Badge>
+                        <div className='flex-1'>
+                          <p className='text-sm font-medium'>{result.title}</p>
+                          {result.subtitle && (
+                            <p className='text-xs text-muted-foreground mt-0.5'>
+                              {result.subtitle}
+                            </p>
                           )}
                         </div>
                       </div>
-                    </DropdownMenuItem>
-                  ))
-                ) : (
-                  <div className='p-8 text-center'>
-                    <div className='w-12 h-12 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-3'>
-                      <Bell className='h-5 w-5 text-muted-foreground/50' />
-                    </div>
-                    <div className='text-sm text-muted-foreground font-medium mb-1'>
-                      No notifications yet
-                    </div>
-                    <div className='text-xs text-muted-foreground/70'>
-                      We'll notify you when something happens
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Footer */}
-              {notifications.length > 0 && (
-                <div className='p-3 bg-muted/20 border-t border-border/30'>
-                  <Button
-                    variant='ghost'
-                    className='w-full text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-lg'
-                  >
-                    View all notifications
-                  </Button>
+                    </motion.button>
+                  ))}
                 </div>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* User / Auth */}
-          {loading ? (
-            <div className='w-8 h-8 bg-white/10 rounded-full animate-pulse' />
-          ) : !user ? (
-            <>
-              {showLandingAuth ? (
-                <>
-                  <Button
-                    variant='ghost'
-                    className='text-foreground hover:text-primary'
-                    onClick={() => {
-                      setAuthMode('signin');
-                      setAuthModalOpen(true);
-                    }}
-                  >
-                    Sign In
-                  </Button>
-                  <Button
-                    className='bg-primary text-primary-foreground hover:bg-primary/90'
-                    onClick={() => {
-                      setAuthMode('signup');
-                      setAuthModalOpen(true);
-                    }}
-                  >
-                    Sign Up
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Link href='/auth/login'>
-                    <Button
-                      variant='ghost'
-                      className='text-foreground hover:text-primary'
-                    >
-                      Sign In
-                    </Button>
-                  </Link>
-                  <Link href='/auth/sign-up'>
-                    <Button className='bg-primary text-primary-foreground hover:bg-primary/90'>
-                      Sign Up
-                    </Button>
-                  </Link>
-                </>
-              )}
-            </>
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant='ghost'
-                  className='relative h-8 w-8 rounded-full hover:bg-muted/40'
-                >
-                  <Avatar className='h-8 w-8'>
-                    <AvatarFallback className='bg-primary text-primary-foreground text-sm'>
-                      {userInitials}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className='w-56 max-w-[calc(100vw-2rem)] bg-card border-border'
-                align='end'
-                sideOffset={8}
-                forceMount
-              >
-                <div className='flex items-center gap-2 p-3 border-b border-border'>
-                  <Avatar className='h-10 w-10'>
-                    <AvatarFallback className='bg-primary text-primary-foreground'>
-                      {userInitials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className='flex flex-col space-y-1 leading-none truncate'>
-                    <p className='font-medium text-foreground truncate'>
-                      {user.email?.split('@')[0]}
-                    </p>
-                    <p className='text-xs text-muted-foreground truncate w-[150px]'>
-                      {user.email}
-                    </p>
-                  </div>
-                </div>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href='/profile/overview'
-                    className='flex items-center gap-2 text-foreground'
-                  >
-                    <User className='h-4 w-4' /> Profile
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className='bg-border' />
-                <DropdownMenuItem asChild>
-                  <Link
-                    href='/pricing'
-                    className='flex items-center gap-2 text-foreground'
-                  >
-                    <CreditCard className='h-4 w-4' /> Subscriptions
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className='bg-border' />
-                <DropdownMenuItem
-                  className='flex items-center gap-2 text-red-400 cursor-pointer hover:bg-red-500/10'
-                  onSelect={signOut}
-                >
-                  <LogOut className='h-4 w-4' /> Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              ) : null}
+            </motion.div>
           )}
-        </div>
-      </header>
+        </AnimatePresence>
+      </div>
+    );
+  }
+);
 
-      {/* Mobile Search Modal */}
-      {showMobileSearch && (
-        <div
-          className='fixed inset-0 z-50 bg-black/50 backdrop-blur-sm md:hidden'
-          onClick={e => {
-            if (e.target === e.currentTarget) {
-              setShowMobileSearch(false);
-            }
-          }}
-        >
-          <div className='fixed top-0 left-0 right-0 bg-card border-b border-border p-4 shadow-xl'>
-            <div className='flex items-center gap-3'>
-              <div className='relative flex-1'>
-                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
-                <Input
-                  type='text'
-                  placeholder='Search contests, groups, handles...'
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      handleSearchSubmit();
-                      setShowMobileSearch(false);
-                    }
-                    if (e.key === 'Escape') {
-                      setShowMobileSearch(false);
-                    }
-                  }}
-                  className='w-full pl-10 pr-4 py-3 bg-muted/40 border-border text-foreground placeholder:text-muted-foreground focus:bg-muted/60 focus:border-primary/50 transition-all rounded-lg'
-                  autoFocus
-                />
+ModernSearchBar.displayName = 'ModernSearchBar';
+
+// Notifications Dropdown
+const NotificationsDropdown = React.memo<{
+  notifications: Notification[];
+  unreadCount: number;
+  onMarkAllRead: () => void;
+}>(({ notifications, unreadCount, onMarkAllRead }) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={cn(
+          'relative p-2.5 rounded-xl transition-all duration-300',
+          'hover:bg-muted/80 backdrop-blur-sm',
+          unreadCount > 0 && 'bg-primary/10 hover:bg-primary/20'
+        )}
+      >
+        <Bell className={cn('h-5 w-5', unreadCount > 0 && 'text-primary')} />
+        <AnimatePresence>
+          {unreadCount > 0 && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              className='absolute -top-1 -right-1'
+            >
+              <div className='relative'>
+                <div className='h-5 w-5 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg'>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </div>
+                <div className='absolute inset-0 bg-red-500 rounded-full animate-ping opacity-30' />
               </div>
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={() => setShowMobileSearch(false)}
-                className='text-muted-foreground hover:text-foreground p-2 rounded-lg'
-                aria-label='Close search'
-              >
-                <X className='h-5 w-5' />
-              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.button>
+    </DropdownMenuTrigger>
+
+    <DropdownMenuContent
+      className='w-80 bg-card/95 backdrop-blur-2xl border-border/50 shadow-2xl rounded-2xl overflow-hidden'
+      align='end'
+      sideOffset={12}
+    >
+      {/* Header with gradient */}
+      <div className='p-4 bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 border-b border-border/30'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-2'>
+            <div className='p-2 bg-primary/20 rounded-lg'>
+              <Bell className='h-4 w-4 text-primary' />
             </div>
-
-            {/* Mobile Search Results */}
-            {showSuggestions && suggestions.length > 0 && (
-              <div className='mt-4 bg-card border border-border rounded-lg shadow-xl max-h-96 overflow-y-auto'>
-                <div className='py-2'>
-                  <div className='px-4 py-2 text-xs text-muted-foreground font-medium'>
-                    Suggestions
-                  </div>
-                  {suggestions.map((suggestion, index) => (
-                    <button
-                      key={`${suggestion.suggestion}-${index}`}
-                      onClick={() => {
-                        handleSuggestionClick(suggestion.suggestion);
-                        setShowMobileSearch(false);
-                      }}
-                      className='w-full px-4 py-3 text-left hover:bg-muted/40 flex items-center gap-3 transition-colors'
-                    >
-                      <Search className='h-4 w-4 text-muted-foreground flex-shrink-0' />
-                      <div className='flex-1 min-w-0'>
-                        <div className='text-foreground font-medium truncate'>
-                          {suggestion.suggestion}
-                        </div>
-                        <div className='text-muted-foreground text-xs capitalize'>
-                          {suggestion.type}
-                        </div>
-                      </div>
-                      {suggestion.frequency > 1 && (
-                        <Badge variant='secondary' className='text-xs'>
-                          {suggestion.frequency}
-                        </Badge>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {showSearchResults && results.length > 0 && (
-              <div className='mt-4 bg-card border border-border rounded-lg shadow-xl max-h-96 overflow-y-auto'>
-                <div className='py-2'>
-                  <div className='px-4 py-2 text-xs text-muted-foreground font-medium'>
-                    Search Results
-                  </div>
-                  {results.map((result, index) => (
-                    <div
-                      key={`${result.id}-${index}`}
-                      onClick={() => setShowMobileSearch(false)}
-                      className='block px-4 py-3 hover:bg-muted/40 transition-colors cursor-pointer'
-                    >
-                      <div className='text-foreground font-medium truncate'>
-                        {result.title}
-                      </div>
-                      <div className='text-muted-foreground text-xs capitalize'>
-                        {result.type}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <span className='font-semibold'>Notifications</span>
+            {unreadCount > 0 && (
+              <Badge className='bg-primary/20 text-primary border-primary/30'>
+                {unreadCount} new
+              </Badge>
             )}
           </div>
+          {unreadCount > 0 && (
+            <Button
+              size='sm'
+              variant='ghost'
+              className='text-xs text-primary hover:bg-primary/10'
+              onClick={onMarkAllRead}
+            >
+              Mark all read
+            </Button>
+          )}
         </div>
-      )}
+      </div>
 
-      {showLandingAuth && !user && (
+      {/* Notifications List */}
+      <div className='max-h-80 overflow-y-auto'>
+        {notifications.length > 0 ? (
+          notifications.map((n, idx) => (
+            <motion.div
+              key={n.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className={cn(
+                'p-4 hover:bg-muted/60 transition-all duration-200 border-l-2',
+                !n.read
+                  ? 'border-l-primary bg-primary/5'
+                  : 'border-l-transparent'
+              )}
+            >
+              <div className='flex items-start gap-3'>
+                <div
+                  className={cn(
+                    'p-2 rounded-lg',
+                    !n.read ? 'bg-primary/20 text-primary' : 'bg-muted/50'
+                  )}
+                >
+                  <Bell className='h-3.5 w-3.5' />
+                </div>
+                <div className='flex-1 min-w-0'>
+                  <p className={cn('text-sm', !n.read && 'font-medium')}>
+                    {n.href ? (
+                      <Link
+                        href={n.href}
+                        className='hover:text-primary transition-colors'
+                      >
+                        {n.text}
+                      </Link>
+                    ) : (
+                      n.text
+                    )}
+                  </p>
+                  <p className='text-xs text-muted-foreground mt-1'>Just now</p>
+                </div>
+                {!n.read && (
+                  <div className='w-2 h-2 bg-primary rounded-full mt-2' />
+                )}
+              </div>
+            </motion.div>
+          ))
+        ) : (
+          <div className='p-12 text-center'>
+            <div className='w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4'>
+              <Bell className='h-7 w-7 text-muted-foreground/50' />
+            </div>
+            <p className='text-sm font-medium mb-1'>No notifications yet</p>
+            <p className='text-xs text-muted-foreground'>
+              We'll notify you when something happens
+            </p>
+          </div>
+        )}
+      </div>
+    </DropdownMenuContent>
+  </DropdownMenu>
+));
+
+NotificationsDropdown.displayName = 'NotificationsDropdown';
+
+// User Dropdown
+const UserDropdown = React.memo<{
+  user: any;
+  userInitials: string;
+  onSignOut: () => void;
+}>(({ user, userInitials, onSignOut }) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className='relative'
+      >
+        <Avatar className='h-9 w-9 ring-2 ring-primary/20 ring-offset-2 ring-offset-background'>
+          <AvatarFallback className='bg-gradient-to-br from-primary to-primary/60 text-primary-foreground font-semibold'>
+            {userInitials}
+          </AvatarFallback>
+        </Avatar>
+      </motion.button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent
+      className='w-64 bg-card/95 backdrop-blur-2xl border-border/50 rounded-xl'
+      align='end'
+      sideOffset={12}
+    >
+      <div className='p-4 border-b border-border/30'>
+        <div className='flex items-center gap-3'>
+          <Avatar className='h-12 w-12'>
+            <AvatarFallback className='bg-gradient-to-br from-primary to-primary/60 text-primary-foreground text-base font-semibold'>
+              {userInitials}
+            </AvatarFallback>
+          </Avatar>
+          <div className='flex-1 min-w-0'>
+            <p className='font-semibold truncate'>
+              {user.email?.split('@')[0]}
+            </p>
+            <p className='text-xs text-muted-foreground truncate'>
+              {user.email}
+            </p>
+          </div>
+        </div>
+      </div>
+      <DropdownMenuItem asChild>
+        <Link
+          href='/profile/overview'
+          className='flex items-center gap-2 cursor-pointer'
+        >
+          <User className='h-4 w-4' /> Profile
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem asChild>
+        <Link
+          href='/pricing'
+          className='flex items-center gap-2 cursor-pointer'
+        >
+          <CreditCard className='h-4 w-4' /> Subscriptions
+        </Link>
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem
+        className='flex items-center gap-2 text-red-400 cursor-pointer hover:bg-red-500/10'
+        onSelect={onSignOut}
+      >
+        <LogOut className='h-4 w-4' /> Logout
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+));
+
+UserDropdown.displayName = 'UserDropdown';
+
+// Theme Toggle with Animation
+const ThemeToggle = React.memo<{
+  theme: string | undefined;
+  onToggle: () => void;
+}>(({ theme, onToggle }) => (
+  <motion.button
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    onClick={onToggle}
+    className='p-2.5 rounded-xl hover:bg-muted/80 transition-colors backdrop-blur-sm'
+  >
+    <AnimatePresence mode='wait'>
+      {theme === 'dark' ? (
+        <motion.div
+          key='sun'
+          initial={{ rotate: -90, opacity: 0 }}
+          animate={{ rotate: 0, opacity: 1 }}
+          exit={{ rotate: 90, opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Sun className='h-5 w-5 text-amber-500' />
+        </motion.div>
+      ) : (
+        <motion.div
+          key='moon'
+          initial={{ rotate: 90, opacity: 0 }}
+          animate={{ rotate: 0, opacity: 1 }}
+          exit={{ rotate: -90, opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Moon className='h-5 w-5 text-blue-500' />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </motion.button>
+));
+
+ThemeToggle.displayName = 'ThemeToggle';
+
+// ==================== MAIN COMPONENT ====================
+export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
+  const pathname = usePathname();
+  const { user, loading, signOut } = useAuth();
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { notifications, unreadCount, markAllRead } = useNotifications();
+  const { isScrolled } = useHeaderScroll();
+
+  const [isMounted, setIsMounted] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+
+  // Search state
+  const {
+    results,
+    suggestions,
+    loading: searchLoading,
+    search,
+    getSuggestions,
+    clearResults,
+  } = useSearch();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const isLandingPage = pathname === '/';
+  const effectiveTheme = theme === 'system' ? resolvedTheme || 'light' : theme;
+  const userInitials = useMemo(
+    () => user?.email?.charAt(0).toUpperCase() || 'U',
+    [user]
+  );
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(effectiveTheme === 'dark' ? 'light' : 'dark');
+  }, [effectiveTheme, setTheme]);
+
+  // Search handlers
+  const handleSearchChange = useCallback(
+    async (value: string) => {
+      setSearchQuery(value);
+      if (value.trim().length >= 2) {
+        setShowSuggestions(true);
+        setShowSearchResults(false);
+        await getSuggestions(value);
+      } else {
+        setShowSuggestions(false);
+        setShowSearchResults(false);
+        clearResults();
+      }
+    },
+    [getSuggestions, clearResults]
+  );
+
+  const handleSearchSubmit = useCallback(async () => {
+    if (searchQuery.trim().length >= 2) {
+      setShowSuggestions(false);
+      setShowSearchResults(true);
+      await search(searchQuery, {
+        categories: ['contest', 'group', 'handle', 'user'],
+        limit: 8,
+      });
+    }
+  }, [searchQuery, search]);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+    setShowSearchResults(false);
+    setShowSuggestions(false);
+    clearResults();
+  }, [clearResults]);
+
+  const handleSuggestionClick = useCallback(
+    async (suggestion: string) => {
+      setSearchQuery(suggestion);
+      setShowSuggestions(false);
+      setShowSearchResults(true);
+      await search(suggestion, {
+        categories: ['contest', 'group', 'handle', 'user'],
+        limit: 8,
+      });
+    },
+    [search]
+  );
+
+  const handleResultClick = useCallback(
+    (result: any) => {
+      handleClearSearch();
+      if (result.url) window.location.href = result.url;
+    },
+    [handleClearSearch]
+  );
+
+  return (
+    <>
+      <motion.header
+        initial={false}
+        animate={{
+          backgroundColor:
+            isScrolled && !isLandingPage
+              ? effectiveTheme === 'dark'
+                ? 'rgba(18, 18, 18, 0.9)' // dark mode
+                : 'rgba(255, 255, 255, 0.9)' // light mode
+              : 'transparent',
+          backdropFilter: isScrolled && !isLandingPage ? 'blur(12px)' : 'none',
+        }}
+        transition={{ duration: 0.3 }}
+        className={cn(
+          'sticky top-0 left-0 right-0 z-50 h-16 border-b transition-colors duration-300',
+          isScrolled && !isLandingPage
+            ? 'border-border/50 shadow-lg'
+            : 'border-transparent',
+          isLandingPage && 'bg-transparent'
+        )}
+      >
+        <Container
+          size={isLandingPage ? 'full' : '7xl'}
+          padding={!isLandingPage}
+          className='h-16 flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8'
+        >
+          {/* Left: Menu + Logo */}
+          <div className='flex items-center gap-3'>
+            {isMobile && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onMobileMenuToggle}
+                className='md:hidden p-2 rounded-xl hover:bg-muted/80 transition-colors'
+              >
+                <Menu className='h-5 w-5' />
+              </motion.button>
+            )}
+            <Link href='/' className='block'>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                <AlgoRiseLogo className='h-8 sm:h-9 w-auto' />
+              </motion.div>
+            </Link>
+          </div>
+
+          {/* Center: Search */}
+          <div className='hidden md:flex flex-1 justify-center max-w-2xl mx-4'>
+            <ModernSearchBar
+              searchQuery={searchQuery}
+              onSearchChange={handleSearchChange}
+              onClear={handleClearSearch}
+              onSubmit={handleSearchSubmit}
+              suggestions={suggestions}
+              results={results}
+              showSuggestions={showSuggestions}
+              showResults={showSearchResults}
+              onSuggestionClick={handleSuggestionClick}
+              onResultClick={handleResultClick}
+              searchLoading={searchLoading}
+            />
+          </div>
+
+          {/* Right: Actions */}
+          <div className='flex items-center gap-2'>
+            <Link href='/faqs' className='hidden sm:block'>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button variant='ghost' size='sm' className='gap-2 rounded-xl'>
+                  <HelpCircle className='h-4 w-4' />
+                  <span className='hidden md:inline'>FAQs</span>
+                </Button>
+              </motion.div>
+            </Link>
+
+            {isMounted && (
+              <ThemeToggle theme={effectiveTheme} onToggle={toggleTheme} />
+            )}
+
+            <NotificationsDropdown
+              notifications={notifications}
+              unreadCount={unreadCount}
+              onMarkAllRead={markAllRead}
+            />
+
+            {loading ? (
+              <div className='w-9 h-9 bg-muted/40 rounded-full animate-pulse' />
+            ) : !user ? (
+              <div className='flex items-center gap-2'>
+                {isLandingPage ? (
+                  <>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        variant='ghost'
+                        onClick={() => {
+                          setAuthMode('signin');
+                          setAuthModalOpen(true);
+                        }}
+                        className='rounded-xl'
+                      >
+                        Sign In
+                      </Button>
+                    </motion.div>
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Button
+                        onClick={() => {
+                          setAuthMode('signup');
+                          setAuthModalOpen(true);
+                        }}
+                        className='rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70'
+                      >
+                        <Sparkles className='h-4 w-4 mr-2' />
+                        Sign Up
+                      </Button>
+                    </motion.div>
+                  </>
+                ) : (
+                  <>
+                    <Link href='/auth/login'>
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Button variant='ghost' className='rounded-xl'>
+                          Sign In
+                        </Button>
+                      </motion.div>
+                    </Link>
+                    <Link href='/auth/sign-up'>
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Button className='rounded-xl'>Sign Up</Button>
+                      </motion.div>
+                    </Link>
+                  </>
+                )}
+              </div>
+            ) : (
+              <UserDropdown
+                user={user}
+                userInitials={userInitials}
+                onSignOut={signOut}
+              />
+            )}
+          </div>
+        </Container>
+      </motion.header>
+
+      {isLandingPage && !user && (
         <AuthModal
           open={authModalOpen}
           mode={authMode}

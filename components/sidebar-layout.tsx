@@ -1,7 +1,7 @@
 'use client';
 
-import type React from 'react';
-import { useState, useEffect } from 'react';
+import React from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,67 +21,128 @@ import {
   Menu,
   TestTube,
   Sword,
+  X,
 } from 'lucide-react';
 
-// ------------------ CF Rating System ------------------
-const getRatingAbbreviation = (label: string): string => {
-  const abbreviations: { [key: string]: string } = {
-    'Candidate Master': 'CM',
-    'International Master': 'IM',
-    'International GM': 'IGM',
-    'Legendary GM': 'LGM',
-    Grandmaster: 'GM',
-  };
-  return abbreviations[label] || label.split(' ')[0];
+// ==================== TYPES ====================
+interface MenuItem {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+}
+
+interface CFTier {
+  label: string;
+  color: string;
+  bg: string;
+}
+
+interface CFData {
+  handle: string;
+  rating: number;
+  maxRating?: number;
+  rank?: string;
+}
+
+// ==================== CONSTANTS ====================
+const MENU_ITEMS: MenuItem[] = [
+  { href: '/', label: 'Dashboard', icon: Home },
+  { href: '/train', label: 'Train', icon: Zap },
+  { href: '/adaptive-sheet', label: 'Practice', icon: FileText },
+  { href: '/contests', label: 'Contests', icon: Trophy },
+  { href: '/battle-arena', label: 'Battle Arena', icon: Sword },
+  { href: '/paths', label: 'Learning Paths', icon: BookOpen },
+  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/visualizers', label: 'Visualizers', icon: Cpu },
+  { href: '/groups', label: 'Groups', icon: Users },
+];
+
+const RATING_TIERS: Record<string, string> = {
+  'Candidate Master': 'CM',
+  'International Master': 'IM',
+  'International GM': 'IGM',
+  'Legendary GM': 'LGM',
+  Grandmaster: 'GM',
 };
 
-const getCFTier = (rating: number) => {
-  if (rating < 1200)
+const MOBILE_BREAKPOINT = 768;
+const SIDEBAR_WIDTH_OPEN = 256;
+const SIDEBAR_WIDTH_CLOSED = 64;
+const SIDEBAR_WIDTH_MOBILE = 280;
+
+// ==================== UTILITIES ====================
+const getRatingAbbreviation = (label: string): string => {
+  return RATING_TIERS[label] || label.split(' ')[0];
+};
+
+const getCFTier = (rating: number): CFTier => {
+  if (rating < 1200) {
     return {
       label: 'Newbie',
       color: 'text-gray-400',
-      bg: 'bg-black dark:border dark:border-gray-800',
+      bg: 'bg-gray-900/20 border-gray-700/50',
     };
-  if (rating < 1400)
-    return { label: 'Pupil', color: 'text-green-400', bg: 'bg-green-900/40' };
-  if (rating < 1600)
+  }
+  if (rating < 1400) {
+    return {
+      label: 'Pupil',
+      color: 'text-green-400',
+      bg: 'bg-green-900/20 border-green-700/50',
+    };
+  }
+  if (rating < 1600) {
     return {
       label: 'Specialist',
       color: 'text-cyan-400',
-      bg: 'bg-cyan-900/40',
+      bg: 'bg-cyan-900/20 border-cyan-700/50',
     };
-  if (rating < 1900)
-    return { label: 'Expert', color: 'text-blue-400', bg: 'bg-blue-900/40' };
-  if (rating < 2100)
+  }
+  if (rating < 1900) {
+    return {
+      label: 'Expert',
+      color: 'text-blue-400',
+      bg: 'bg-blue-900/20 border-blue-700/50',
+    };
+  }
+  if (rating < 2100) {
     return {
       label: 'Candidate Master',
       color: 'text-purple-400',
-      bg: 'bg-purple-900/40',
+      bg: 'bg-purple-900/20 border-purple-700/50',
     };
-  if (rating < 2300)
+  }
+  if (rating < 2300) {
     return {
       label: 'Master',
       color: 'text-orange-400',
-      bg: 'bg-orange-900/40',
+      bg: 'bg-orange-900/20 border-orange-700/50',
     };
-  if (rating < 2400)
+  }
+  if (rating < 2400) {
     return {
       label: 'International Master',
       color: 'text-red-400',
-      bg: 'bg-red-900/40',
+      bg: 'bg-red-900/20 border-red-700/50',
     };
-  if (rating < 2600)
-    return { label: 'Grandmaster', color: 'text-red-500', bg: 'bg-red-900/40' };
-  if (rating < 3000)
+  }
+  if (rating < 2600) {
+    return {
+      label: 'Grandmaster',
+      color: 'text-red-500',
+      bg: 'bg-red-900/30 border-red-700/60',
+    };
+  }
+  if (rating < 3000) {
     return {
       label: 'International GM',
       color: 'text-red-600',
-      bg: 'bg-red-950/40',
+      bg: 'bg-red-950/30 border-red-800/60',
     };
+  }
   return {
     label: 'Legendary GM',
     color: 'text-yellow-400',
-    bg: 'bg-yellow-900/40',
+    bg: 'bg-yellow-900/30 border-yellow-700/60',
   };
 };
 
@@ -99,147 +160,183 @@ const menuItems = [
   { href: '/groups', label: 'Groups', icon: Users },
 ];
 
-// ------------------ Sidebar Item ------------------
-const SidebarItem = ({
-  href,
-  label,
-  icon: Icon,
-  isActive,
-  isOpen,
-  delay,
-}: {
+// Sidebar Item Component
+const SidebarItem = React.memo<{
   href: string;
   label: string;
   icon: React.ElementType;
   isActive: boolean;
   isOpen: boolean;
-  delay: number;
-}) => (
+  onClick?: () => void;
+}>(({ href, label, icon: Icon, isActive, isOpen, onClick }) => (
   <Link
     href={href}
-    title={!isOpen ? label : undefined}
+    onClick={onClick}
     className={cn(
-      'relative flex items-center rounded-lg transition-all duration-200 cursor-pointer group w-full overflow-hidden',
-      // Enhanced mobile touch targets
-      isOpen ? 'p-3 justify-start gap-3' : 'p-2 justify-center',
+      'group relative flex items-center rounded-xl transition-all duration-200',
+      'hover:scale-[1.02] active:scale-95',
+      isOpen ? 'px-3 py-3 gap-3' : 'p-3 justify-center',
       isActive
-        ? 'bg-[#2563EB]/40 text-[#2563EB] shadow-glow'
-        : 'text-sidebar-foreground hover:text-sidebar-foreground hover:bg-[#2563EB]/20 hover:scale-105 active:scale-95'
+        ? 'bg-primary/15 text-primary shadow-lg shadow-primary/20'
+        : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
     )}
-    style={{
-      transitionDelay: `${delay}ms`,
-      maxWidth: '100%',
-    }}
     aria-current={isActive ? 'page' : undefined}
+    title={!isOpen ? label : undefined}
   >
-    <Icon className='h-5 w-5 flex-shrink-0' />
-    {isOpen && (
-      <span className='text-sm font-medium transition-opacity duration-200 select-none truncate flex-1'>
-        {label}
-      </span>
+    {/* Active indicator */}
+    {isActive && (
+      <motion.div
+        layoutId='activeTab'
+        className='absolute inset-0 bg-primary/10 rounded-xl'
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      />
+    )}
+
+    <Icon
+      className={cn(
+        'h-5 w-5 flex-shrink-0 relative z-10',
+        isActive && 'drop-shadow-[0_0_8px_currentColor]'
+      )}
+    />
+
+    <AnimatePresence>
+      {isOpen && (
+        <motion.span
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -10 }}
+          transition={{ duration: 0.15 }}
+          className='text-sm font-medium truncate relative z-10'
+        >
+          {label}
+        </motion.span>
+      )}
+    </AnimatePresence>
+
+    {/* Hover glow effect */}
+    {!isActive && (
+      <div className='absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-primary/5 to-transparent' />
     )}
   </Link>
-);
+));
 
-const SidebarFooter = ({
-  cfData,
-  isOpen,
-}: {
-  cfData: any;
+SidebarItem.displayName = 'SidebarItem';
+
+// CF Badge Component
+const CFBadge = React.memo<{
+  cfData: CFData;
   isOpen: boolean;
-}) => {
-  if (!cfData) return null;
-  const tier = getCFTier(cfData.rating);
-  const displayLabel = isOpen ? tier.label : getRatingAbbreviation(tier.label);
+}>(({ cfData, isOpen }) => {
+  const tier = useMemo(() => getCFTier(cfData.rating), [cfData.rating]);
+  const displayLabel = useMemo(
+    () => (isOpen ? tier.label : getRatingAbbreviation(tier.label)),
+    [tier.label, isOpen]
+  );
+
+  if (isOpen) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={cn(
+          'p-4 rounded-xl border-2 backdrop-blur-sm',
+          'transition-all duration-300 hover:scale-[1.02]',
+          tier.bg,
+          tier.color
+        )}
+      >
+        <div className='flex items-center justify-between mb-2'>
+          <p className='text-sm font-bold truncate'>{cfData.handle}</p>
+          <div className='px-2 py-0.5 rounded-md bg-background/30 backdrop-blur-sm'>
+            <span className='text-xs font-mono'>{cfData.rating}</span>
+          </div>
+        </div>
+        <p className='text-xs opacity-80 truncate'>{tier.label}</p>
+      </motion.div>
+    );
+  }
 
   return (
-    <div
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
       className={cn(
-        'cursor-pointer transition-transform duration-150 hover:scale-105 flex items-center w-full overflow-hidden',
-        isOpen ? 'gap-2' : 'justify-center'
+        'w-14 h-14 flex items-center justify-center rounded-xl border-2',
+        'transition-all duration-300 backdrop-blur-sm',
+        tier.bg,
+        tier.color,
+        'text-xs font-bold'
       )}
       title={`${cfData.handle} (${cfData.rating}) - ${tier.label}`}
     >
-      {isOpen ? (
-        <div
-          className={`p-3 rounded-xl border ${tier.bg} ${tier.color} w-full overflow-hidden hover:bg-opacity-80 transition-all duration-200`}
-        >
-          <p className='text-sm font-bold truncate'>{cfData.handle}</p>
-          <p className='text-xs truncate'>
-            {tier.label} · {cfData.rating}
-          </p>
-        </div>
-      ) : (
-        <div
-          className={`w-12 h-12 flex items-center justify-center rounded-full border ${tier.bg} ${tier.color} text-[10px] font-bold flex-shrink-0 hover:bg-opacity-80 transition-all duration-200`}
-          title={tier.label}
-        >
-          {displayLabel}
-        </div>
-      )}
-    </div>
+      {displayLabel}
+    </motion.div>
   );
-};
+});
 
-// ------------------ Sidebar Layout ------------------
+CFBadge.displayName = 'CFBadge';
+
+// ==================== MAIN COMPONENT ====================
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isVerified, verificationData } = useCFVerification();
-  const [isOpen, setIsOpen] = useState(false); // Start closed on mobile
-  const [isMobile, setIsMobile] = useState(false);
-  const [cfData, setCfData] = useState(verificationData);
 
-  // Handle mobile detection and responsive behavior
+  const [isOpen, setIsOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const [cfData, setCfData] = useState<CFData | null>(verificationData);
+
+  // Mobile detection
   useEffect(() => {
-    const checkIfMobile = () => {
-      const mobile = window.innerWidth < 768;
+    const checkMobile = () => {
+      const mobile = window.innerWidth < MOBILE_BREAKPOINT;
       setIsMobile(mobile);
-      // Auto-close sidebar on mobile, auto-open on desktop
-      if (mobile) {
-        setIsOpen(false);
-      } else {
-        setIsOpen(true);
-      }
+      setIsOpen(!mobile);
     };
 
-    checkIfMobile();
-    window.addEventListener('resize', checkIfMobile);
-    return () => window.removeEventListener('resize', checkIfMobile);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Fetch latest CF data
   useEffect(() => {
-    const fetchLatestCFData = async () => {
-      if (verificationData?.handle) {
-        try {
-          const res = await fetch(
-            `https://codeforces.com/api/user.info?handles=${verificationData.handle}`
-          );
-          const data = await res.json();
-          if (data.status === 'OK') {
-            const user = data.result[0];
-            setCfData({
-              ...verificationData,
-              rating: user.rating || 0,
-              maxRating: user.maxRating || 0,
-              rank: user.rank,
-            });
-          }
-        } catch (err) {
-          console.error('Failed to fetch CF data:', err);
+    if (!verificationData?.handle) return;
+
+    const fetchCFData = async () => {
+      try {
+        const res = await fetch(
+          `https://codeforces.com/api/user.info?handles=${verificationData.handle}`,
+          { cache: 'no-store' }
+        );
+        const data = await res.json();
+
+        if (data.status === 'OK') {
+          const user = data.result[0];
+          setCfData({
+            handle: verificationData.handle,
+            rating: user.rating || 0,
+            maxRating: user.maxRating || 0,
+            rank: user.rank,
+          });
         }
+      } catch (error) {
+        console.error('Failed to fetch CF data:', error);
       }
     };
-    fetchLatestCFData();
+
+    fetchCFData();
   }, [verificationData]);
 
-  // Close sidebar when clicking outside on mobile
+  // Close sidebar on outside click (mobile)
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (isMobile && isOpen) {
-        const sidebar = document.querySelector('[data-sidebar]');
-        if (sidebar && !sidebar.contains(event.target as Node)) {
-          setIsOpen(false);
-        }
+    if (!isMobile || !isOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const sidebar = document.querySelector('[data-sidebar]');
+      const target = e.target as Node;
+
+      if (sidebar && !sidebar.contains(target)) {
+        setIsOpen(false);
       }
     };
 
@@ -247,19 +344,25 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMobile, isOpen]);
 
+  const toggleSidebar = useCallback(() => setIsOpen(prev => !prev), []);
+  const closeSidebar = useCallback(() => setIsOpen(false), []);
+
+  const sidebarWidth = useMemo(() => {
+    if (isMobile) return SIDEBAR_WIDTH_MOBILE;
+    return isOpen ? SIDEBAR_WIDTH_OPEN : SIDEBAR_WIDTH_CLOSED;
+  }, [isMobile, isOpen]);
+
   return (
-    <div className='flex min-h-screen bg-background text-foreground'>
+    <div className='flex min-h-screen bg-background'>
+      {/* Mobile overlay */}
       <AnimatePresence>
-        {/* Mobile Overlay - Removed blur for better performance */}
         {isMobile && isOpen && (
           <motion.div
-            className='fixed inset-0 bg-black/40 z-40 md:hidden'
-            onClick={() => setIsOpen(false)}
-            aria-hidden='true'
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            onClick={closeSidebar}
+            className='fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden'
           />
         )}
       </AnimatePresence>
@@ -267,67 +370,43 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <motion.aside
         data-sidebar
-        className={cn(
-          'fixed top-0 left-0 z-50 h-screen flex flex-col bg-white dark:bg-black backdrop-blur-md border-r border-gray-200 dark:border-gray-900 shadow-2xl',
-          // Enhanced mobile styling
-          isMobile
-            ? 'w-72' // Slightly wider on mobile for better touch targets
-            : isOpen
-            ? 'w-64'
-            : 'w-16'
-        )}
-        initial={isMobile ? { x: -288 } : false}
+        initial={isMobile ? { x: -sidebarWidth } : false}
         animate={
-          isMobile ? { x: isOpen ? 0 : -288 } : { width: isOpen ? 256 : 64 }
+          isMobile ? { x: isOpen ? 0 : -sidebarWidth } : { width: sidebarWidth }
         }
-        transition={{
-          type: 'spring',
-          stiffness: 300,
-          damping: 30,
-          duration: 0.3,
-        }}
-        style={{
-          overflowX: 'hidden',
-          overflowY: 'hidden',
-        }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className={cn(
+          'fixed top-0 left-0 h-screen z-50',
+          'bg-card/80 backdrop-blur-xl border-r border-border/50',
+          'flex flex-col shadow-2xl'
+        )}
+        style={{ width: sidebarWidth }}
       >
-        {/* Hamburger - Enhanced for mobile */}
+        {/* Header - Logo removed, only menu button */}
         <div
           className={cn(
-            'flex items-center p-4 border-b border-gray-200 dark:border-gray-900',
-            isOpen ? 'justify-between' : 'justify-center'
+            'flex items-center border-b border-border/50 p-4',
+            isOpen ? 'justify-end' : 'justify-center'
           )}
         >
-          {isOpen && isMobile && (
-            <div className='flex items-center gap-3'>
-              <div className='w-8 h-8 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center'>
-                <span className='text-primary font-bold text-sm'>AR</span>
-              </div>
-              <span className='font-semibold text-foreground'>AlgoRise</span>
-            </div>
-          )}
-
-          <button
-            className='flex items-center justify-center w-8 h-8 rounded-md hover:bg-muted transition-colors duration-200'
-            onClick={() => setIsOpen(!isOpen)}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={toggleSidebar}
+            className='p-2 rounded-lg hover:bg-muted/80 transition-colors'
             aria-label='Toggle sidebar'
           >
-            <Menu className='h-5 w-5' />
-          </button>
+            {isMobile && isOpen ? (
+              <X className='h-5 w-5' />
+            ) : (
+              <Menu className='h-5 w-5' />
+            )}
+          </motion.button>
         </div>
 
-        {/* Menu - Enhanced spacing for mobile */}
-        <nav
-          className={cn(
-            'flex-1 mt-4 overflow-x-hidden overflow-y-auto',
-            isMobile ? 'px-3 space-y-1' : 'px-4 space-y-2'
-          )}
-          style={{
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(255, 255, 255, 0.2) transparent',
-          }}
-        >
-          {menuItems.map((item, idx) => (
+        {/* Navigation */}
+        <nav className='flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1 scrollbar-thin'>
+          {MENU_ITEMS.map(item => (
             <SidebarItem
               key={item.href}
               {...item}
@@ -336,53 +415,33 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                 (item.href !== '/' && pathname?.startsWith(item.href))
               }
               isOpen={isOpen}
-              delay={idx * 30}
+              onClick={isMobile ? closeSidebar : undefined}
             />
           ))}
         </nav>
 
-        {/* Footer */}
-        {isVerified && (
+        {/* CF Badge Footer */}
+        {isVerified && cfData && (
           <div
             className={cn(
-              'border-t border-border/30 flex flex-col items-start overflow-hidden',
-              isMobile ? 'p-3' : 'p-4'
+              'border-t border-border/50 p-4',
+              !isOpen && 'flex justify-center'
             )}
           >
-            <div className='w-full overflow-hidden'>
-              <SidebarFooter cfData={cfData} isOpen={isOpen} />
-            </div>
-
-            {/* Mobile hint */}
-            {isMobile && isOpen && (
-              <motion.div
-                className='w-full mt-3 text-center'
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
-              >
-                <div className='text-xs text-muted-foreground/60 flex items-center justify-center gap-1'>
-                  <span>Tap outside to close</span>
-                </div>
-              </motion.div>
-            )}
+            <CFBadge cfData={cfData} isOpen={isOpen} />
           </div>
         )}
       </motion.aside>
 
-      {/* Main Content */}
+      {/* Main content */}
       <div
         className={cn(
-          'flex-1 flex flex-col min-h-screen transition-all duration-300',
-          // Mobile: no margin (sidebar overlays), Desktop: margin based on sidebar state
-          isMobile ? 'ml-0' : isOpen ? 'ml-64' : 'ml-16'
+          'flex-1 flex flex-col transition-all duration-300',
+          isMobile ? 'ml-0' : isOpen ? `ml-64` : 'ml-16'
         )}
       >
-        <Header
-          onMobileMenuToggle={() => setIsOpen(!isOpen)}
-          isMobile={isMobile}
-        />
-        <main className='flex-1 overflow-y-auto p-2 sm:p-4'>{children}</main>
+        <Header onMobileMenuToggle={toggleSidebar} isMobile={isMobile} />
+        <main className='flex-1 overflow-auto'>{children}</main>
         <Footer />
       </div>
     </div>

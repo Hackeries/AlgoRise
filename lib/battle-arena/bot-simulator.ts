@@ -17,7 +17,7 @@ export async function simulateBotSubmissions(
   botTeamId: string,
   botRating: number,
   userRating: number,
-  problemCount = 5
+  problemCount = 3
 ) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -49,7 +49,7 @@ export async function simulateBotSubmissions(
 
   if (!problems?.problems) return;
 
-  // Simulate submissions with delays
+  // Simulate submissions with delays (45 min contest)
   const submissions: BotSubmission[] = [];
   const ratingDiff = botRating - userRating;
 
@@ -57,11 +57,11 @@ export async function simulateBotSubmissions(
   // If bot is stronger, higher success rate
   const baseSuccessRate = 0.6 + (ratingDiff / 500) * 0.2; // 40-80% success rate
 
-  for (let i = 0; i < Math.min(problemCount, 5); i++) {
+  for (let i = 0; i < Math.min(problemCount, 3); i++) {
     const problemId = problems.problems[i]?.id || `problem_${i}`;
 
-    // Random delay: 5-30 minutes
-    const delay = Math.random() * 25 * 60 * 1000 + 5 * 60 * 1000;
+    // Random delay: 5-35 minutes
+    const delay = Math.random() * 30 * 60 * 1000 + 5 * 60 * 1000;
 
     // Determine verdict
     const rand = Math.random();

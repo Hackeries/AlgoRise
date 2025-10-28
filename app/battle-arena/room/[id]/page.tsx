@@ -4,12 +4,13 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Trophy, CheckCircle2, Flag, Code2 } from 'lucide-react';
-import { useBattleRealtime } from '@/hooks/use-battle-realtime';
+import { Clock, Trophy, CheckCircle2, Flag, Code2, Send, Users } from 'lucide-react';
+import { useBattleRealtime, useTeamChat, broadcastCodeUpdate } from '@/hooks/use-battle-realtime';
 import { CodeEditor } from '@/components/battle-arena/code-editor';
 import { ProblemDetails } from '@/components/battle-arena/problem-details';
 import { SubmissionsList } from '@/components/battle-arena/submissions-list';
 import { motion } from 'framer-motion';
+import { createClient as createSupabaseClient } from '@/lib/supabase/client';
 
 interface BattleRoomData {
   battle: any;
@@ -26,10 +27,19 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
     null
   );
   const [submitting, setSubmitting] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(3600);
+  const [timeRemaining, setTimeRemaining] = useState(45 * 60);
   const [showStats, setShowStats] = useState(false);
+  const [myTeamId, setMyTeamId] = useState<string | null>(null);
+  const [isSpectator, setIsSpectator] = useState(false);
+  const [scoreboard, setScoreboard] = useState<Array<{ teamId: string; teamName: string; score: number; penaltyTime: number }>>([]);
+  const [chatInput, setChatInput] = useState('');
 
-  const { battleUpdate, isConnected } = useBattleRealtime(params.id);
+  const { battleUpdate, isConnected, latestCode } = useBattleRealtime(
+    params.id,
+    true,
+    myTeamId || undefined
+  );
+  const teamChat = useTeamChat(params.id, myTeamId || '', room?.battle?.mode === '3v3' && !!myTeamId);
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -37,9 +47,26 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
         const response = await fetch(`/api/arena/room/${params.id}`);
         const data = await response.json();
         setRoom(data);
+        setScoreboard(data.scoreboard || []);
         if (data.problems?.length > 0) {
           setSelectedProblemId(data.problems[0].id);
         }
+        // determine my team membership and spectator mode
+        try {
+          const supabase = createSupabaseClient();
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          if (user && data.teams) {
+            const myTeam = data.teams.find((t: any) =>
+              (t.battle_team_players || []).some((p: any) => p.user_id === user.id)
+            );
+            setMyTeamId(myTeam?.id || null);
+            setIsSpectator(!myTeam);
+          } else {
+            setIsSpectator(true);
+          }
+        } catch {}
       } catch (error) {
         console.error('Error fetching room:', error);
       }
@@ -58,11 +85,12 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
   }, []);
 
   useEffect(() => {
-    if (battleUpdate?.type === 'submission') {
+    if (battleUpdate?.type === 'submission' || battleUpdate?.type === 'scoreboard_update') {
       const fetchRoom = async () => {
         const response = await fetch(`/api/arena/room/${params.id}`);
         const data = await response.json();
         setRoom(data);
+        if (data.scoreboard) setScoreboard(data.scoreboard);
       };
       fetchRoom();
     }
@@ -80,6 +108,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
           code,
           language,
           problemId: selectedProblemId,
+          teamId: myTeamId,
         }),
       });
 
@@ -94,6 +123,35 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
       console.error('Submission error:', error);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Live code sync: broadcast on change (debounced at consumer level)
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      if (code) {
+        broadcastCodeUpdate(params.id, code, language, myTeamId || undefined);
+      }
+    }, 400);
+    return () => clearTimeout(handle);
+  }, [code, language, params.id, myTeamId]);
+
+  // Apply incoming code updates if from teammates (basic demo; in prod add author separation)
+  useEffect(() => {
+    if (latestCode && latestCode.content !== code) {
+      setCode(latestCode.content);
+      setLanguage(latestCode.language || 'cpp');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latestCode]);
+
+  const handleSendTeamMessage = async () => {
+    if (!teamChat || !chatInput.trim()) return;
+    try {
+      await teamChat.sendMessage(chatInput.trim());
+      setChatInput('');
+    } catch (e) {
+      console.error('chat send failed', e);
     }
   };
 
@@ -133,7 +191,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className='max-w-7xl mx-auto flex items-center justify-between'>
+        <div className='max-w-screen-2xl xl:max-w-[1800px] mx-auto px-2 sm:px-4 flex items-center justify-between'>
           <div className='flex items-center gap-6'>
             {/* Timer with warning state */}
             <motion.div
@@ -198,6 +256,13 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                 variant='destructive'
                 size='sm'
                 className='bg-red-600/80 hover:bg-red-700 text-white'
+                onClick={async () => {
+                  try {
+                    await fetch(`/api/arena/room/${params.id}/end`, { method: 'POST' });
+                  } catch (e) {
+                    console.error('surrender failed', e);
+                  }
+                }}
               >
                 Surrender
               </Button>
@@ -207,28 +272,28 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
       </motion.div>
 
       {/* Main Content Grid */}
-      <div className='grid grid-cols-1 lg:grid-cols-4 gap-4 p-4 h-[calc(100vh-80px)] max-w-7xl mx-auto'>
+      <div className='grid grid-cols-1 xl:grid-cols-12 gap-5 p-3 md:p-5 h-[calc(100vh-80px)] max-w-screen-2xl xl:max-w-[1800px] mx-auto'>
         {/* Left Sidebar: Problems & Scoreboard */}
         <motion.div
-          className='lg:col-span-1 flex flex-col gap-4 overflow-hidden'
+          className='min-w-0 xl:col-span-3 flex flex-col gap-4 overflow-hidden'
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           {/* Problems Card */}
-          <Card className='flex-1 p-4 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-blue-900/30 border-blue-500/20 backdrop-blur-sm'>
+          <Card className='grow-[3] min-h-0 p-4 md:p-5 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-blue-900/30 border-blue-500/20 backdrop-blur-sm rounded-xl'>
             <h3 className='font-bold text-white mb-3 flex items-center gap-2'>
               <Code2 className='w-4 h-4 text-cyan-400' />
               Problems
             </h3>
-            <div className='space-y-2'>
+            <div className='space-y-2.5'>
               {room.problems.map((problem, idx) => (
                 <motion.button
                   key={problem.id}
                   onClick={() => setSelectedProblemId(problem.id)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`w-full p-3 text-left rounded-lg border transition-all duration-300 ${
+                  className={`w-full p-3.5 md:p-4 text-left rounded-lg border transition-all duration-300 ${
                     selectedProblemId === problem.id
                       ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white border-blue-400 shadow-lg shadow-blue-500/30'
                       : 'border-blue-500/20 hover:bg-blue-900/30 hover:border-blue-400/50 text-blue-100'
@@ -237,30 +302,28 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                   <p className='font-semibold text-sm'>
                     {String.fromCharCode(65 + idx)}. {problem.name}
                   </p>
-                  <p className='text-xs opacity-75 mt-1'>
-                    Rating: {problem.rating || 'N/A'}
-                  </p>
+                  {/* Rating hidden for contest feel */}
                 </motion.button>
               ))}
             </div>
           </Card>
 
           {/* Scoreboard Card */}
-          <Card className='flex-1 p-4 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-purple-900/30 border-purple-500/20 backdrop-blur-sm'>
+          <Card className='grow-[2] min-h-0 p-4 md:p-5 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-purple-900/30 border-purple-500/20 backdrop-blur-sm rounded-xl'>
             <h3 className='font-bold text-white mb-3 flex items-center gap-2'>
               <Trophy className='w-4 h-4 text-yellow-400' />
               Scoreboard
             </h3>
             <div className='space-y-2'>
-              {room.teams.map((team: any, idx: number) => (
+              {(scoreboard.length ? scoreboard : (room.teams || []).map((t: any) => ({ teamId: t.id, teamName: t.team_name, score: t.score ?? 0, penaltyTime: t.penalty_time ?? 0 })) ).map((team: any, idx: number) => (
                 <motion.div
-                  key={team.id}
+                  key={team.teamId}
                   className='p-3 bg-gradient-to-r from-purple-900/40 to-pink-900/40 rounded-lg border border-purple-500/20 hover:border-purple-400/50 transition-all'
                   whileHover={{ scale: 1.02 }}
                 >
                   <div className='flex items-center justify-between mb-1'>
                     <p className='font-semibold text-sm text-white'>
-                      {team.team_name}
+                      {team.teamName}
                     </p>
                     <motion.div
                       className='text-xs font-bold text-yellow-400'
@@ -275,7 +338,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                   </div>
                   <div className='flex items-center justify-between text-xs text-purple-200/70'>
                     <span>Score: {team.score}</span>
-                    <span>Penalty: {team.penalty_time}m</span>
+                    <span>Penalty: {team.penaltyTime}m</span>
                   </div>
                 </motion.div>
               ))}
@@ -285,29 +348,29 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
 
         {/* Middle: Problem Details */}
         <motion.div
-          className='lg:col-span-1 overflow-hidden'
+          className='min-w-0 xl:col-span-4 overflow-hidden'
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className='h-full p-4 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-cyan-900/30 border-cyan-500/20 backdrop-blur-sm'>
+          <Card className='h-full p-4 md:p-6 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-cyan-900/30 border-cyan-500/20 backdrop-blur-sm rounded-xl'>
             <ProblemDetails problem={selectedProblem} />
           </Card>
         </motion.div>
 
         {/* Right: Editor & Submissions */}
         <motion.div
-          className='lg:col-span-2 flex flex-col gap-4 overflow-hidden'
+          className='min-w-0 xl:col-span-5 flex flex-col gap-4 overflow-hidden'
           initial={{ x: 20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          <Card className='flex-1 p-4 flex flex-col overflow-hidden bg-gradient-to-br from-slate-900/50 to-blue-900/30 border-blue-500/20 backdrop-blur-sm'>
+          <Card className='flex-1 p-4 md:p-5 flex flex-col overflow-hidden bg-gradient-to-br from-slate-900/50 to-blue-900/30 border-blue-500/20 backdrop-blur-sm rounded-xl'>
             <Tabs
               defaultValue='editor'
               className='flex-1 flex flex-col overflow-hidden'
             >
-              <TabsList className='grid w-full grid-cols-2 bg-slate-800/50 border border-blue-500/20 rounded-lg p-1 mb-4'>
+              <TabsList className={`grid w-full ${room.battle?.mode === '3v3' && myTeamId ? 'grid-cols-3' : 'grid-cols-2'} bg-slate-800/50 border border-blue-500/20 rounded-lg p-1 mb-4 sticky top-0 z-10`}>
                 <TabsTrigger
                   value='editor'
                   className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 rounded-md transition-all'
@@ -315,6 +378,14 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                   <Code2 className='w-4 h-4 mr-2' />
                   Editor
                 </TabsTrigger>
+                {room.battle?.mode === '3v3' && myTeamId && (
+                  <TabsTrigger
+                    value='chat'
+                    className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 rounded-md transition-all'
+                  >
+                    <Users className='w-4 h-4 mr-2' /> Team Chat
+                  </TabsTrigger>
+                )}
                 <TabsTrigger
                   value='submissions'
                   className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 rounded-md transition-all'
@@ -332,14 +403,42 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                   onCodeChange={setCode}
                   onSubmit={handleSubmit}
                   isSubmitting={submitting}
+                  readOnly={isSpectator}
                 />
               </TabsContent>
+
+              {room.battle?.mode === '3v3' && myTeamId && (
+                <TabsContent value='chat' className='flex-1 overflow-hidden'>
+                  <div className='flex flex-col h-full'>
+                    <div className='flex-1 overflow-y-auto space-y-3 p-2'>
+                      {teamChat?.messages?.map((m, idx) => (
+                        <div key={idx} className='flex items-start gap-2'>
+                          <span className='text-xs text-cyan-300 font-mono'>{m.handle}</span>
+                          <span className='text-sm text-white'>{m.message}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className='flex gap-2 pt-2'>
+                      <input
+                        className='flex-1 px-3 py-2 rounded-md bg-slate-900/50 border border-slate-700 text-white'
+                        placeholder='Type a message...'
+                        value={chatInput}
+                        onChange={(e) => setChatInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSendTeamMessage()}
+                      />
+                      <Button size='icon' onClick={handleSendTeamMessage}>
+                        <Send className='w-4 h-4' />
+                      </Button>
+                    </div>
+                  </div>
+                </TabsContent>
+              )}
 
               <TabsContent
                 value='submissions'
                 className='flex-1 overflow-hidden'
               >
-                <SubmissionsList submissions={room.submissions} />
+                <SubmissionsList submissions={room.submissions as any} />
               </TabsContent>
             </Tabs>
           </Card>

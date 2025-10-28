@@ -27,8 +27,8 @@ export function RatingTrend({ range }: { range: '7d' | '30d' }) {
         <AreaChart data={points}>
           <defs>
             <linearGradient id='ratingFill' x1='0' y1='0' x2='0' y2='1'>
-              <stop offset='0%' stopColor='#2563EB' stopOpacity={0.5} />
-              <stop offset='100%' stopColor='#2563EB' stopOpacity={0.05} />
+              <stop offset='0%' stopColor={'hsl(var(--primary))'} stopOpacity={0.5} />
+              <stop offset='100%' stopColor={'hsl(var(--primary))'} stopOpacity={0.05} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray='3 3' className='stroke-muted' />
@@ -38,7 +38,7 @@ export function RatingTrend({ range }: { range: '7d' | '30d' }) {
           <Area
             type='monotone'
             dataKey='rating'
-            stroke='#2563EB'
+            stroke={'hsl(var(--primary))'}
             fill='url(#ratingFill)'
             strokeWidth={2}
           />

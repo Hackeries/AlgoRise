@@ -14,7 +14,11 @@ import CFVerificationTrigger from '@/components/auth/cf-verification-trigger';
 import { useCFVerification } from '@/lib/context/cf-verification';
 import { useAuth } from '@/lib/auth/context';
 import Link from 'next/link';
-import { CPAnalyticsDashboard } from '@/components/analytics/cp-analytics-dashboard';
+import dynamic from 'next/dynamic';
+const CPAnalyticsDashboard = dynamic(
+  () => import('@/components/analytics/cp-analytics-dashboard').then(m => m.CPAnalyticsDashboard),
+  { ssr: false, loading: () => <div className='h-[600px] animate-pulse rounded-xl border border-border/50 bg-muted/20' /> }
+);
 
 export default function AnalyticsPageClient() {
   const { user, loading } = useAuth();

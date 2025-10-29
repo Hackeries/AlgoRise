@@ -1,469 +1,291 @@
-// app/profile/overview/page.tsx
-import type React from 'react';
+'use client';
+
+import React from 'react';
 import Link from 'next/link';
-import { cookies } from 'next/headers';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, AlertCircle, ExternalLink } from 'lucide-react';
+import {
+  CheckCircle2,
+  AlertCircle,
+  ExternalLink,
+  Star,
+  Target,
+  Rocket,
+} from 'lucide-react';
 import LinksEditor from '@/components/profile/links-editor';
-// import { ReportBugButton } from "@/components/report-bug-button"
 
-export const dynamic = 'force-dynamic';
-
-function formatYear(year: string | null): string {
-  if (!year) return '—';
-  const yearNum = Number.parseInt(year);
-  if (isNaN(yearNum)) return year;
-
-  const suffix =
-    yearNum === 1 ? 'st' : yearNum === 2 ? 'nd' : yearNum === 3 ? 'rd' : 'th';
-  return `${yearNum}${suffix} Year`;
+interface ProfileProps {
+  name?: string;
+  status?: 'student' | 'working';
+  degree?: string;
+  college?: string;
+  company?: string;
+  year?: string;
+  cf?: string;
+  lc?: string;
+  cc?: string;
+  ac?: string;
+  gfg?: string;
+  cfVerified?: boolean;
+  completion: number;
 }
 
-function formatDegreeType(degreeType: string | null): string {
-  if (!degreeType) return '';
-
-  const degreeMap: Record<string, string> = {
-    btech: 'B.Tech / B.E.',
-    mtech: 'M.Tech / M.E.',
-    bsc: 'B.Sc.',
-    msc: 'M.Sc.',
-    bca: 'BCA',
-    mca: 'MCA',
-    mba: 'MBA',
-    phd: 'Ph.D.',
-    other: 'Other',
-  };
-
-  return degreeMap[degreeType] || degreeType;
-}
-
-function calculateProfileStrength(data: any): number {
-  let totalWeight = 0;
-  let earnedWeight = 0;
-
-  // Core: CF Verification (25%)
-  if (data?.cf_verified) {
-    earnedWeight += 25;
-  }
-  totalWeight += 25;
-
-  // Core: Status (15%)
-  if (data?.status) {
-    earnedWeight += 15;
-  }
-  totalWeight += 15;
-
-  // Status-specific requirements (35%)
-  if (data?.status === 'student') {
-    // Student requirements
-    if (data?.degree_type) earnedWeight += 8;
-    if (data?.college_id) earnedWeight += 9;
-    if (data?.year) earnedWeight += 9;
-    totalWeight += 26;
-  } else if (data?.status === 'working') {
-    // Working requirements
-    if (data?.company_id) earnedWeight += 26;
-    totalWeight += 26;
-  } else {
-    totalWeight += 26;
-  }
-
-  // Coding profiles (25%)
-  const codingProfiles = [
-    data?.leetcode_handle,
-    data?.codechef_handle,
-    data?.atcoder_handle,
-    data?.gfg_handle,
-  ].filter(Boolean).length;
-
-  const profilesWeight = (codingProfiles / 4) * 25;
-  earnedWeight += profilesWeight;
-  totalWeight += 25;
-
-  return Math.round((earnedWeight / totalWeight) * 100);
-}
-
-// Fetch profile data from API (SSR-safe)
-async function getProfile() {
-  try {
-    // Await cookies if your Next.js version requires it
-    const cookieStore = await cookies(); // type is inferred automatically
-
-    // Map cookies; define type inline for TS
-    const cookieHeader = cookieStore
-      .getAll()
-      .map((c: { name: string; value: string }) => `${c.name}=${c.value}`)
-      .join('; ');
-
-    const base = process.env.NEXT_PUBLIC_SITE_URL?.trim() || '';
-    const url = base ? `${base}/api/profile` : '/api/profile';
-
-    const res = await fetch(url, {
-      cache: 'no-store',
-      headers: { cookie: cookieHeader },
-    });
-
-    if (!res.ok) return null;
-    return await res.json();
-  } catch (err) {
-    console.error('Failed to fetch profile:', err);
-    return null;
-  }
-}
-
-// Reusable row component
-interface ProfileRowProps {
-  label: React.ReactNode;
-  value?: string | null;
-}
-function ProfileRow({ label, value }: ProfileRowProps) {
+function ProgressBar({ value }: { value: number }) {
+  const color =
+    value >= 90
+      ? 'bg-green-500'
+      : value >= 70
+      ? 'bg-blue-500'
+      : value >= 50
+      ? 'bg-yellow-500'
+      : 'bg-orange-500';
   return (
-    <div className='flex items-center justify-between'>
-      <span className='text-muted-foreground'>{label}</span>
-      <span className='font-medium capitalize'>{value || '—'}</span>
+    <div className='w-full bg-muted h-3 rounded-full overflow-hidden'>
+      <div
+        className={`h-3 ${color} transition-all duration-700 ease-out`}
+        style={{ width: `${value}%` }}
+      />
     </div>
   );
 }
 
-// Main page component
-export default async function ProfileOverviewPage() {
-  const data = await getProfile();
-
-  const name = data?.name || data?.full_name || 'Your Profile';
-  const status = data?.status as 'student' | 'working' | null;
-  const degreeType = data?.degree_type || null;
-  const college = data?.college_name || data?.college || null;
-  const year = data?.year || null;
-  const company =
-    data?.company_name || data?.company || data?.custom_company || null;
-  const cf = data?.cf_handle || data?.cf || null;
-  const cfVerified = data?.cf_verified || false;
-  const lc = data?.leetcode_handle || null;
-  const cc = data?.codechef_handle || null;
-  const ac = data?.atcoder_handle || null;
-  const gfg = data?.gfg_handle || null;
-
-  const completion = calculateProfileStrength(data);
-
-  const getStrengthLevel = (score: number) => {
-    if (score >= 90)
-      return {
-        label: 'Excellent',
-        color: 'text-green-600',
-        bg: 'bg-green-50 dark:bg-green-950',
-      };
-    if (score >= 70)
-      return {
-        label: 'Good',
-        color: 'text-blue-600',
-        bg: 'bg-blue-50 dark:bg-blue-950',
-      };
-    if (score >= 50)
-      return {
-        label: 'Fair',
-        color: 'text-yellow-600',
-        bg: 'bg-yellow-50 dark:bg-yellow-950',
-      };
-    return {
-      label: 'Incomplete',
-      color: 'text-orange-600',
-      bg: 'bg-orange-50 dark:bg-orange-950',
-    };
-  };
-
-  const strengthLevel = getStrengthLevel(completion);
-
+export default function ProfileOverviewPage({
+  name = 'Your Profile',
+  status = 'student',
+  degree = 'B.Tech',
+  college = 'IIT Delhi',
+  company = '',
+  year = '3',
+  cf = 'algorise_user',
+  lc = 'algoriseLC',
+  cc = 'algoriseCC',
+  ac = '',
+  gfg = '',
+  cfVerified = true,
+  completion = 84,
+}: ProfileProps) {
   return (
-    <main className='min-h-screen w-full bg-gradient-to-b from-background to-muted/20'>
-      <div className='mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 space-y-8'>
-        <div className='flex items-center justify-between mb-6'>
+    <main className='min-h-screen bg-gradient-to-br from-background via-muted/20 to-background py-10 px-6 lg:px-10'>
+      <div className='max-w-7xl mx-auto space-y-12'>
+        {/* Page Header */}
+        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'>
           <div>
             <h1 className='text-4xl font-bold tracking-tight'>
               Profile Overview
             </h1>
-            <p className='text-muted-foreground mt-2'>
-              Manage your profile and track your competitive programming journey
+            <p className='text-muted-foreground'>
+              Your competitive programming progress & career overview
             </p>
           </div>
+          <Link href='/profile'>
+            <Button variant='default' className='gap-2'>
+              Edit Profile
+            </Button>
+          </Link>
         </div>
 
-        {/* Profile Strength Card */}
-        <Card className={`border-2 ${strengthLevel.bg}`}>
-          <CardHeader className='pb-3'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <CardTitle className='text-2xl'>Profile Strength</CardTitle>
-                <p
-                  className={`text-sm mt-1 font-semibold ${strengthLevel.color}`}
-                >
-                  {strengthLevel.label}
-                </p>
-              </div>
-              <div className='text-right'>
-                <div className={`text-4xl font-bold ${strengthLevel.color}`}>
-                  {completion}%
-                </div>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div
-              className='h-3 w-full rounded-full bg-muted overflow-hidden'
-              aria-label='Profile completion progress'
-            >
-              <div
-                className={`h-full ${
-                  completion >= 90
-                    ? 'bg-green-600'
-                    : completion >= 70
-                    ? 'bg-blue-600'
-                    : completion >= 50
-                    ? 'bg-yellow-600'
-                    : 'bg-orange-600'
-                } transition-all duration-500`}
-                style={{ width: `${completion}%` }}
-                role='progressbar'
-                aria-valuenow={completion}
-                aria-valuemin={0}
-                aria-valuemax={100}
-              />
-            </div>
-            <p className='mt-4 text-sm text-muted-foreground'>
-              {completion >= 100
-                ? 'Perfect! Your profile is complete and ready to shine.'
-                : completion >= 90
-                ? 'Almost perfect! Add more coding profiles to reach 100%.'
-                : completion >= 70
-                ? 'Great progress! Complete your profile details to unlock full potential.'
-                : completion >= 50
-                ? 'Good start! Add more information to improve your profile.'
-                : 'Complete your profile to unlock personalized recommendations.'}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Main Profile Info + Quick Actions */}
-        <div className='grid gap-6 lg:grid-cols-3'>
-          <Card className='lg:col-span-2 border-l-4 border-l-primary'>
-            <CardHeader className='flex flex-row items-center justify-between pb-4'>
-              <div>
-                <CardTitle className='text-3xl'>{name}</CardTitle>
-                <p className='text-muted-foreground mt-1'>
-                  Competitive Programmer
-                </p>
-              </div>
-              <Link href='/profile'>
-                <Button variant='outline' size='sm'>
-                  Edit Profile
-                </Button>
-              </Link>
+        {/* Stats Cards */}
+        <div className='grid md:grid-cols-3 gap-6'>
+          {/* Strength */}
+          <Card className='border-none shadow-lg bg-gradient-to-tr from-primary/10 to-green-500/10 backdrop-blur'>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <Star className='h-5 w-5 text-primary' /> Profile Completion
+              </CardTitle>
             </CardHeader>
-            <CardContent className='space-y-6'>
-              <div className='grid gap-4 sm:grid-cols-2'>
-                <div className='space-y-2 p-3 rounded-lg bg-muted/50'>
-                  <div className='text-sm text-muted-foreground font-medium'>
-                    Status
+            <CardContent>
+              <div className='flex justify-between items-center'>
+                <h3 className='text-4xl font-extrabold'>{completion}%</h3>
+                <Badge variant='outline' className='text-sm'>
+                  {completion >= 90
+                    ? 'Excellent'
+                    : completion >= 70
+                    ? 'Good'
+                    : completion >= 50
+                    ? 'Fair'
+                    : 'Incomplete'}
+                </Badge>
+              </div>
+              <div className='mt-3'>
+                <ProgressBar value={completion} />
+              </div>
+              <p className='text-sm text-muted-foreground mt-3'>
+                {completion >= 90
+                  ? 'Almost perfect! Add more profiles to reach 100%.'
+                  : completion >= 70
+                  ? 'Solid progress! Complete academic info for full score.'
+                  : completion >= 50
+                  ? 'Good start! Fill out your handles to improve.'
+                  : 'Add more details to unlock insights and personalized learning.'}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Rating Potential */}
+          <Card className='border-none shadow-lg bg-gradient-to-br from-blue-500/10 to-purple-500/10'>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <Target className='h-5 w-5 text-primary' /> Progress Potential
+              </CardTitle>
+            </CardHeader>
+            <CardContent className='text-sm'>
+              <p>
+                Track your CF and LeetCode metrics to see projected rank gains
+                as you solve tougher problems weekly.
+              </p>
+              <p className='text-sm text-muted-foreground mt-2'>
+                Based on your current activity patterns and contest frequency.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Growth Focus */}
+          <Card className='border-none shadow-lg bg-gradient-to-br from-orange-500/10 to-yellow-500/10'>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <Rocket className='h-5 w-5 text-primary' /> Growth Focus
+              </CardTitle>
+            </CardHeader>
+            <CardContent className='text-sm'>
+              <p>
+                Your upcoming seasonal goal: reach Specialist → Expert on
+                Codeforces in 8 weeks through targeted practice sets.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Profile Base Info */}
+        <div className='grid lg:grid-cols-3 gap-6'>
+          <Card className='lg:col-span-2 border-l-4 border-primary/80 shadow-md bg-card/80 backdrop-blur'>
+            <CardHeader>
+              <CardTitle className='text-2xl font-bold'>{name}</CardTitle>
+              <p className='text-muted-foreground'>
+                {status === 'student'
+                  ? `Student at ${college || 'Unknown Institution'}`
+                  : `Working at ${company || '—'}`}
+              </p>
+            </CardHeader>
+            <CardContent className='grid sm:grid-cols-2 gap-4'>
+              <div className='rounded-lg p-3 bg-muted/40'>
+                <p className='text-xs text-muted-foreground'>Status</p>
+                <p className='font-semibold capitalize'>{status}</p>
+              </div>
+              {status === 'student' && (
+                <>
+                  <div className='rounded-lg p-3 bg-muted/40'>
+                    <p className='text-xs text-muted-foreground'>Degree</p>
+                    <p className='font-semibold'>{degree}</p>
                   </div>
-                  <div className='font-semibold text-lg capitalize'>
-                    {status || '—'}
+                  <div className='rounded-lg p-3 bg-muted/40'>
+                    <p className='text-xs text-muted-foreground'>Year</p>
+                    <p className='font-semibold'>{year}</p>
                   </div>
+                  <div className='rounded-lg p-3 bg-muted/40'>
+                    <p className='text-xs text-muted-foreground'>College</p>
+                    <p className='font-semibold'>{college}</p>
+                  </div>
+                </>
+              )}
+              {status === 'working' && (
+                <div className='rounded-lg p-3 bg-muted/40'>
+                  <p className='text-xs text-muted-foreground'>Organization</p>
+                  <p className='font-semibold'>{company}</p>
                 </div>
-
-                <div className='space-y-2 p-3 rounded-lg bg-muted/50'>
-                  <div className='text-sm text-muted-foreground font-medium'>
-                    Codeforces
-                  </div>
-                  <div className='flex items-center gap-2'>
-                    <span className='font-semibold text-lg'>{cf || '—'}</span>
-                    {cf ? (
-                      cfVerified ? (
-                        <Badge className='bg-green-600 hover:bg-green-600'>
-                          <CheckCircle2 className='h-3 w-3 mr-1' /> Verified
-                        </Badge>
-                      ) : (
-                        <Badge variant='destructive'>
-                          <AlertCircle className='h-3 w-3 mr-1' /> Unverified
-                        </Badge>
-                      )
-                    ) : null}
-                  </div>
+              )}
+              <div className='rounded-lg p-3 bg-muted/40 flex items-center justify-between'>
+                <div>
+                  <p className='text-xs text-muted-foreground'>Codeforces</p>
+                  <p className='font-semibold'>{cf || '—'}</p>
                 </div>
-
-                {status === 'student' && degreeType && (
-                  <div className='space-y-2 p-3 rounded-lg bg-muted/50'>
-                    <div className='text-sm text-muted-foreground font-medium'>
-                      Degree
-                    </div>
-                    <div className='font-semibold text-lg'>
-                      {formatDegreeType(degreeType)}
-                    </div>
-                  </div>
-                )}
-
-                {status === 'student' && (
-                  <div className='space-y-2 p-3 rounded-lg bg-muted/50'>
-                    <div className='text-sm text-muted-foreground font-medium'>
-                      College
-                    </div>
-                    <div className='font-semibold text-lg'>
-                      {college || '—'}
-                    </div>
-                  </div>
-                )}
-
-                {status === 'working' && (
-                  <div className='space-y-2 p-3 rounded-lg bg-muted/50'>
-                    <div className='text-sm text-muted-foreground font-medium'>
-                      Company
-                    </div>
-                    <div className='font-semibold text-lg'>
-                      {company || '—'}
-                    </div>
-                  </div>
-                )}
-
-                {status === 'student' && (
-                  <div className='space-y-2 p-3 rounded-lg bg-muted/50'>
-                    <div className='text-sm text-muted-foreground font-medium'>
-                      Year
-                    </div>
-                    <div className='font-semibold text-lg'>
-                      {formatYear(year)}
-                    </div>
-                  </div>
-                )}
+                {cf &&
+                  (cfVerified ? (
+                    <Badge className='bg-green-600 hover:bg-green-600'>
+                      <CheckCircle2 className='h-3 w-3 mr-1' /> Verified
+                    </Badge>
+                  ) : (
+                    <Badge variant='destructive'>
+                      <AlertCircle className='h-3 w-3 mr-1' /> Unverified
+                    </Badge>
+                  ))}
               </div>
             </CardContent>
           </Card>
 
-          {/* Quick Actions */}
-          <Card className='border-l-4 border-l-green-500'>
+          {/* Quick Links */}
+          <Card className='shadow-md border-l-4 border-green-500 bg-card/80'>
             <CardHeader>
-              <CardTitle className='text-lg'>Quick Actions</CardTitle>
+              <CardTitle className='text-lg font-semibold'>
+                Quick Actions
+              </CardTitle>
             </CardHeader>
             <CardContent className='flex flex-col gap-3'>
-              <Link href='/adaptive-sheet' className='w-full'>
-                <Button className='w-full bg-primary hover:bg-primary/90'>
-                  Open Adaptive Sheet
-                </Button>
+              <Link href='/adaptive-sheet'>
+                <Button className='w-full'>Open Adaptive Sheet</Button>
               </Link>
-              <Link href='/paths' className='w-full'>
+              <Link href='/paths'>
                 <Button variant='secondary' className='w-full'>
-                  Browse Learning Paths
+                  Explore Learning Paths
                 </Button>
               </Link>
-              <Link href='/contests' className='w-full'>
+              <Link href='/contests'>
                 <Button variant='outline' className='w-full'>
-                  View Contests
+                  Join Contests
                 </Button>
               </Link>
             </CardContent>
           </Card>
         </div>
 
-        {/* Coding Profiles */}
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between pb-4'>
-            <CardTitle className='text-xl'>Coding Profiles</CardTitle>
+        {/* Platform Integration */}
+        <Card className='shadow-md border-none bg-muted/30'>
+          <CardHeader className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4'>
+            <CardTitle className='text-xl font-bold'>
+              Connected Platforms
+            </CardTitle>
             <LinksEditor
               defaultValues={{
-                leetcode: lc || '',
-                codechef: cc || '',
-                atcoder: ac || '',
-                gfg: gfg || '',
+                leetcode: lc,
+                codechef: cc,
+                atcoder: ac,
+                gfg: gfg,
               }}
             />
           </CardHeader>
-          <CardContent>
-            <div className='flex flex-wrap gap-3'>
-              {cf ? (
+          <CardContent className='flex flex-wrap gap-3'>
+            {[
+              { name: 'Codeforces', link: cf, color: 'blue' },
+              { name: 'LeetCode', link: lc, color: 'yellow' },
+              { name: 'CodeChef', link: cc, color: 'orange' },
+              { name: 'AtCoder', link: ac, color: 'purple' },
+              { name: 'GeeksforGeeks', link: gfg, color: 'green' },
+            ].map(({ name, link, color }) =>
+              link ? (
                 <a
-                  href={`https://codeforces.com/profile/${encodeURIComponent(
-                    cf
+                  key={name}
+                  href={`https://${name
+                    .toLowerCase()
+                    .replace(/\s/g, '')}.com/profile/${encodeURIComponent(
+                    link
                   )}`}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className='inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500/20 to-blue-600/20 hover:from-blue-500/30 hover:to-blue-600/30 transition-colors border border-blue-500/30'
+                  className={`flex items-center gap-2 px-4 py-2 border border-${color}-500/40 bg-${color}-500/10 rounded-md hover:bg-${color}-500/20 transition`}
                 >
-                  <span className='font-semibold text-blue-600 dark:text-blue-400'>
-                    Codeforces
+                  <span
+                    className={`font-semibold text-${color}-600 dark:text-${color}-400`}
+                  >
+                    {name}
                   </span>
                   <ExternalLink className='h-4 w-4' />
                 </a>
               ) : (
-                <Badge variant='outline'>Add Codeforces</Badge>
-              )}
-
-              {lc ? (
-                <a
-                  href={`https://leetcode.com/${encodeURIComponent(lc)}/`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-yellow-500/20 to-yellow-600/20 hover:from-yellow-500/30 hover:to-yellow-600/30 transition-colors border border-yellow-500/30'
-                >
-                  <span className='font-semibold text-yellow-600 dark:text-yellow-400'>
-                    LeetCode
-                  </span>
-                  <ExternalLink className='h-4 w-4' />
-                </a>
-              ) : (
-                <Badge variant='outline'>Add LeetCode</Badge>
-              )}
-
-              {cc ? (
-                <a
-                  href={`https://www.codechef.com/users/${encodeURIComponent(
-                    cc
-                  )}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500/20 to-orange-600/20 hover:from-orange-500/30 hover:to-orange-600/30 transition-colors border border-orange-500/30'
-                >
-                  <span className='font-semibold text-orange-600 dark:text-orange-400'>
-                    CodeChef
-                  </span>
-                  <ExternalLink className='h-4 w-4' />
-                </a>
-              ) : (
-                <Badge variant='outline'>Add CodeChef</Badge>
-              )}
-
-              {ac ? (
-                <a
-                  href={`https://atcoder.jp/users/${encodeURIComponent(ac)}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-purple-500/20 to-purple-600/20 hover:from-purple-500/30 hover:to-purple-600/30 transition-colors border border-purple-500/30'
-                >
-                  <span className='font-semibold text-purple-600 dark:text-purple-400'>
-                    AtCoder
-                  </span>
-                  <ExternalLink className='h-4 w-4' />
-                </a>
-              ) : (
-                <Badge variant='outline'>Add AtCoder</Badge>
-              )}
-
-              {gfg ? (
-                <a
-                  href={`https://auth.geeksforgeeks.org/user/${encodeURIComponent(
-                    gfg
-                  )}/`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-green-500/20 to-green-600/20 hover:from-green-500/30 hover:to-green-600/30 transition-colors border border-green-500/30'
-                >
-                  <span className='font-semibold text-green-600 dark:text-green-400'>
-                    GeeksforGeeks
-                  </span>
-                  <ExternalLink className='h-4 w-4' />
-                </a>
-              ) : (
-                <Badge variant='outline'>Add GeeksforGeeks</Badge>
-              )}
-            </div>
+                <Badge key={name} variant='outline'>
+                  Add {name}
+                </Badge>
+              )
+            )}
           </CardContent>
         </Card>
       </div>

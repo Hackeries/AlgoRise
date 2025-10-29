@@ -43,8 +43,12 @@ export function createClient() {
           gte: () => builder,
           lte: () => builder,
           is: () => builder,
+          ilike: () => builder,
+          like: () => builder,
+          not: () => builder,
           order: () => builder,
           range: () => builder,
+          limit: () => builder,
           single: async () => ({
             data: null,
             error: new Error('Supabase disabled'),
@@ -53,6 +57,8 @@ export function createClient() {
             data: null,
             error: new Error('Supabase disabled'),
           }),
+          then: (resolve: (v: any) => void) =>
+            resolve({ data: null, error: new Error('Supabase disabled') }),
         };
         return builder;
       },

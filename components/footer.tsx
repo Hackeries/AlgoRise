@@ -1,7 +1,60 @@
 'use client';
+
+import React from 'react';
 import Link from 'next/link';
-import { Github, Mail, Linkedin, Sparkles, Code2 } from 'lucide-react';
+import {
+  Github,
+  Mail,
+  Linkedin,
+  Code2,
+  Heart,
+  ArrowUpRight,
+  Trophy,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Container } from '@/components/ui/container';
+
+const footerLinks = {
+  quickLinks: [
+    { name: 'Train', href: '/train' },
+    { name: 'Contests', href: '/contests' },
+    { name: 'Learning Paths', href: '/paths' },
+    { name: 'Visualizers', href: '/visualizers' },
+  ],
+  resources: [
+    { name: 'Analytics', href: '/analytics' },
+    { name: 'Groups', href: '/groups' },
+    { name: 'Practice Problems', href: '/adaptive-sheet' },
+    { name: 'Profile', href: '/profile/overview' },
+  ],
+  legal: [
+    { name: 'Privacy Policy', href: '/privacy' },
+    { name: 'Terms of Service', href: '/terms' },
+    { name: 'Cookie Policy', href: '/cookies' },
+  ],
+};
+
+const socialLinks = [
+  {
+    name: 'GitHub',
+    href: 'https://github.com/Hackeries',
+    icon: Github,
+    hoverColor:
+      'hover:bg-gray-900 dark:hover:bg-white hover:text-white dark:hover:text-gray-900',
+  },
+  {
+    name: 'LinkedIn',
+    href: 'https://www.linkedin.com/in/aviral-joshi15/',
+    icon: Linkedin,
+    hoverColor: 'hover:bg-[#0A66C2] hover:text-white',
+  },
+  {
+    name: 'Email',
+    href: 'mailto:algo.rise2025@gmail.com',
+    icon: Mail,
+    hoverColor: 'hover:bg-red-500 hover:text-white',
+  },
+];
 
 export function Footer() {
   const containerVariants = {
@@ -10,6 +63,7 @@ export function Footer() {
       opacity: 1,
       transition: {
         staggerChildren: 0.1,
+        delayChildren: 0.1,
       },
     },
   };
@@ -19,75 +73,114 @@ export function Footer() {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6 },
+      transition: {
+        duration: 0.5,
+        ease: [0.16, 1, 0.3, 1] as any, // Fixed TypeScript error
+      },
     },
   };
 
   return (
     <motion.footer
-      className='relative border-t border-gray-200 dark:border-white/5 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-black dark:via-gray-950 dark:to-black backdrop-blur-md mt-auto overflow-hidden'
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      className='relative border-t border-border/50 bg-card/30 backdrop-blur-xl mt-auto overflow-hidden'
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.8 }}
+      transition={{ duration: 0.6 }}
     >
-      {/* Animated background blobs */}
-      <div className='absolute top-0 left-0 w-96 h-96 bg-blue-400/10 dark:bg-[#63EDA1]/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2' />
-      <div className='absolute bottom-0 right-0 w-96 h-96 bg-purple-400/10 dark:bg-purple-500/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2' />
-      
-      <div className='mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 relative z-10'>
+      {/* Animated gradient orbs */}
+      <div className='absolute inset-0 overflow-hidden pointer-events-none'>
         <motion.div
-          className='grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4'
+          className='absolute -top-1/2 -left-1/4 w-96 h-96 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-full blur-3xl'
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.2, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+        <motion.div
+          className='absolute -bottom-1/2 -right-1/4 w-96 h-96 bg-gradient-to-tl from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl'
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.3, 0.2],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      </div>
+
+      <Container className='py-12 sm:py-16 relative z-10'>
+        <motion.div
+          className='grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4'
           variants={containerVariants}
           initial='hidden'
           whileInView='visible'
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: '-100px' }}
         >
-          {/* About Section */}
-          <motion.div variants={itemVariants}>
-            <div className='flex items-center gap-2 mb-4'>
-              <Code2 className='h-5 w-5 text-blue-600 dark:text-[#63EDA1]' />
-              <h3 className='text-base font-bold bg-gradient-to-r from-blue-700 to-purple-700 dark:from-[#63EDA1] dark:via-emerald-400 dark:to-cyan-400 bg-clip-text text-transparent'>
+          {/* Brand Section */}
+          <motion.div variants={itemVariants} className='lg:col-span-1'>
+            <Link
+              href='/'
+              className='inline-flex items-center gap-2 mb-4 group'
+            >
+              <motion.div
+                className='p-2 rounded-xl bg-gradient-to-br from-primary to-primary/60 shadow-lg'
+                whileHover={{ scale: 1.05, rotate: 5 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Code2 className='h-5 w-5 text-primary-foreground' />
+              </motion.div>
+              <h3 className='text-xl font-bold bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent'>
                 AlgoRise
               </h3>
-            </div>
-            <p className='text-sm text-slate-700 dark:text-gray-300 leading-relaxed'>
-              Practice that adapts. Compete when it counts. Master competitive
-              programming with personalized learning paths and real-time
-              contests.
+            </Link>
+
+            <p className='text-sm text-muted-foreground leading-relaxed mb-4'>
+              Master competitive programming through ICPC-focused training,
+              Codeforces contests, and comprehensive DSA practice.
             </p>
+
             <motion.div
-              className='mt-4 flex items-center gap-2 text-xs text-slate-600 dark:text-gray-400'
-              whileHover={{ scale: 1.05 }}
+              className='flex items-center gap-2 text-sm text-muted-foreground'
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
             >
-              <Sparkles className='h-3 w-3 text-yellow-500 dark:text-[#63EDA1]' />
-              <span>Empowering 10K+ developers</span>
+              <Trophy className='h-4 w-4 text-primary' />
+              <span className='font-medium'>
+                CF • AtCoder • LeetCode • ICPC
+              </span>
             </motion.div>
           </motion.div>
 
           {/* Quick Links */}
           <motion.div variants={itemVariants}>
-            <h3 className='text-sm font-bold text-slate-800 dark:text-gray-200 mb-4 tracking-wide'>
+            <h3 className='text-sm font-semibold mb-4 text-foreground'>
               Quick Links
             </h3>
-            <ul className='space-y-2.5 text-sm'>
-              {[
-                { name: 'Train', href: '/train' },
-                { name: 'Contests', href: '/contests' },
-                { name: 'Learning Paths', href: '/paths' },
-                { name: 'Visualizers', href: '/visualizers' },
-              ].map(item => (
+            <ul className='space-y-3'>
+              {footerLinks.quickLinks.map((item, idx) => (
                 <motion.li
                   key={item.name}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05 }}
                   whileHover={{ x: 5 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
                 >
                   <Link
                     href={item.href}
-                    className='text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-[#63EDA1] transition-colors inline-flex items-center gap-2 group'
+                    className='text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-2 group'
                   >
-                    <span className='w-1 h-1 rounded-full bg-slate-400 dark:bg-gray-500 group-hover:bg-blue-600 dark:group-hover:bg-[#63EDA1] transition-colors' />
+                    <span className='w-1.5 h-1.5 rounded-full bg-muted-foreground/40 group-hover:bg-primary transition-colors' />
                     {item.name}
+                    <ArrowUpRight className='h-3 w-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all' />
                   </Link>
                 </motion.li>
               ))}
@@ -96,133 +189,118 @@ export function Footer() {
 
           {/* Resources */}
           <motion.div variants={itemVariants}>
-            <h3 className='text-sm font-bold text-slate-800 dark:text-gray-200 mb-4 tracking-wide'>
+            <h3 className='text-sm font-semibold mb-4 text-foreground'>
               Resources
             </h3>
-            <ul className='space-y-2.5 text-sm'>
-              {[
-                { name: 'Analytics', href: '/analytics' },
-                { name: 'Groups', href: '/groups' },
-                { name: 'Practice Problems', href: '/adaptive-sheet' },
-                { name: 'Profile', href: '/profile/overview' },
-              ].map(item => (
+            <ul className='space-y-3'>
+              {footerLinks.resources.map((item, idx) => (
                 <motion.li
                   key={item.name}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05 }}
                   whileHover={{ x: 5 }}
-                  transition={{ type: 'spring', stiffness: 300 }}
                 >
                   <Link
                     href={item.href}
-                    className='text-slate-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-[#63EDA1] transition-colors inline-flex items-center gap-2 group'
+                    className='text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-2 group'
                   >
-                    <span className='w-1 h-1 rounded-full bg-slate-400 dark:bg-gray-500 group-hover:bg-blue-600 dark:group-hover:bg-[#63EDA1] transition-colors' />
+                    <span className='w-1.5 h-1.5 rounded-full bg-muted-foreground/40 group-hover:bg-primary transition-colors' />
                     {item.name}
+                    <ArrowUpRight className='h-3 w-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all' />
                   </Link>
                 </motion.li>
               ))}
             </ul>
           </motion.div>
 
-          {/* Connect */}
+          {/* Connect & Social */}
           <motion.div variants={itemVariants}>
-            <h3 className='text-sm font-bold text-slate-800 dark:text-gray-200 mb-4 tracking-wide'>
+            <h3 className='text-sm font-semibold mb-4 text-foreground'>
               Connect
             </h3>
-            <div className='flex gap-3'>
-              <motion.a
-                href='https://github.com/Hackeries'
-                target='_blank'
-                rel='noopener noreferrer'
-                className='p-2.5 rounded-xl bg-slate-200 dark:bg-black text-slate-700 dark:text-gray-300 hover:bg-slate-300 dark:hover:bg-gray-950 hover:text-slate-900 dark:hover:text-[#63EDA1] transition-all border dark:border-gray-800'
-                aria-label='GitHub'
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Github className='h-5 w-5' />
-              </motion.a>
 
-              <motion.a
-                href='https://www.linkedin.com/in/aviral-joshi15/'
-                target='_blank'
-                rel='noopener noreferrer'
-                aria-label='LinkedIn'
-                className='p-2.5 rounded-xl bg-slate-200 dark:bg-black text-slate-700 dark:text-gray-300 hover:bg-blue-100 dark:hover:bg-gray-950 hover:text-blue-600 dark:hover:text-[#0A66C2] transition-all border dark:border-gray-800'
-                whileHover={{ scale: 1.1, rotate: -5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Linkedin className='h-5 w-5' />
-              </motion.a>
-
-              <motion.a
-                href='mailto:algo.rise2025@gmail.com'
-                className='p-2.5 rounded-xl bg-slate-200 dark:bg-black text-slate-700 dark:text-gray-300 hover:bg-slate-300 dark:hover:bg-gray-950 hover:text-slate-900 dark:hover:text-[#63EDA1] transition-all border dark:border-gray-800'
-                aria-label='Email'
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Mail className='h-5 w-5' />
-              </motion.a>
+            <div className='flex gap-3 mb-6'>
+              {socialLinks.map(social => (
+                <motion.a
+                  key={social.name}
+                  href={social.href}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className={`p-2.5 rounded-xl bg-muted/50 backdrop-blur-sm border border-border/50 transition-all ${social.hoverColor}`}
+                  aria-label={social.name}
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <social.icon className='h-5 w-5' />
+                </motion.a>
+              ))}
             </div>
 
-            <motion.p
-              className='text-xs text-slate-600 dark:text-gray-400 mt-5 leading-relaxed'
+            <motion.div
+              className='space-y-2'
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              Built with <span className='text-red-500'>❤️</span> for competitive programmers
-            </motion.p>
-            <p className='text-xs text-slate-600 dark:text-gray-400 mt-2'>
-              by{' '}
-              <a
-                href='https://www.linkedin.com/in/aviral-joshi15/'
-                target='_blank'
-                rel='noopener noreferrer'
-                className='font-medium text-slate-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-[#0A66C2] transition-colors'
-              >
-                Aviral Joshi 💻
-              </a>
-            </p>
+              <p className='text-xs text-muted-foreground leading-relaxed'>
+                Built with{' '}
+                <Heart className='inline h-3 w-3 text-red-500 fill-red-500' />{' '}
+                for competitive programmers
+              </p>
+              <p className='text-xs text-muted-foreground'>
+                by{' '}
+                <a
+                  href='https://www.linkedin.com/in/aviral-joshi15/'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='font-medium text-foreground hover:text-primary transition-colors'
+                >
+                  Aviral Joshi
+                </a>
+              </p>
+            </motion.div>
           </motion.div>
         </motion.div>
 
         {/* Bottom Bar */}
         <motion.div
-          className='mt-10 pt-8 border-t border-gray-300 dark:border-gray-800'
+          className='mt-12 pt-8 border-t border-border/50'
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
         >
           <div className='flex flex-col sm:flex-row justify-between items-center gap-4'>
-            <p className='text-xs text-slate-600 dark:text-gray-400'>
+            <p className='text-xs text-muted-foreground'>
               © {new Date().getFullYear()}{' '}
               <Link
                 href='/'
-                className='font-semibold text-slate-800 dark:text-gray-200 hover:text-blue-600 dark:hover:text-[#63EDA1] transition-colors'
+                className='font-semibold text-foreground hover:text-primary transition-colors'
               >
                 AlgoRise
               </Link>
               . All rights reserved.
             </p>
-            <div className='flex gap-6 text-xs text-slate-600 dark:text-gray-400'>
-              <Link
-                href='/privacy'
-                className='hover:text-blue-600 dark:hover:text-[#63EDA1] transition-colors'
-              >
-                Privacy Policy
-              </Link>
-              <span className='text-slate-400 dark:text-gray-600'>•</span>
-              <Link
-                href='/terms'
-                className='hover:text-blue-600 dark:hover:text-[#63EDA1] transition-colors'
-              >
-                Terms of Service
-              </Link>
+
+            <div className='flex items-center gap-4 text-xs'>
+              {footerLinks.legal.map((item, idx) => (
+                <React.Fragment key={item.name}>
+                  {idx > 0 && (
+                    <span className='text-muted-foreground/30'>•</span>
+                  )}
+                  <Link
+                    href={item.href}
+                    className='text-muted-foreground hover:text-primary transition-colors'
+                  >
+                    {item.name}
+                  </Link>
+                </React.Fragment>
+              ))}
             </div>
           </div>
         </motion.div>
-      </div>
+      </Container>
     </motion.footer>
   );
 }

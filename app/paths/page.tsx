@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { LEARNING_PATH_DATA, getTotalProblems } from '@/lib/learning-path-data';
+import { LEARNING_PATH_DATA } from '@/lib/learning-path-data';
 
 export default function LearningPathsPage() {
   const supabase = createClient();
@@ -38,7 +38,14 @@ export default function LearningPathsPage() {
   >({});
   const [loading, setLoading] = useState(true);
 
-  const totalProblems = getTotalProblems();
+  // Compute totals dynamically from subsection problem counts
+  const totalProblems = LEARNING_PATH_DATA.reduce((sum, section) => {
+    const sectionTotal = section.subsections.reduce(
+      (subSum, sub) => subSum + sub.problems.length,
+      0
+    );
+    return sum + sectionTotal;
+  }, 0);
 
   useEffect(() => {
     loadAllProgress();
@@ -136,7 +143,11 @@ export default function LearningPathsPage() {
     const totalSolved = Object.values(sectionProgress).reduce(
       (sum, progress, index) => {
         const section = LEARNING_PATH_DATA[index];
-        return sum + Math.round((progress * section.totalProblems) / 100);
+        const sectionTotal = section.subsections.reduce(
+          (subSum, sub) => subSum + sub.problems.length,
+          0
+        );
+        return sum + Math.round((progress * sectionTotal) / 100);
       },
       0
     );
@@ -164,82 +175,69 @@ export default function LearningPathsPage() {
   return (
     <main className='mx-auto max-w-6xl px-4 py-10'>
       <div className='mb-10'>
-        <div className='flex items-center justify-between mb-6'>
-          <div>
-            <h1 className='text-4xl font-bold flex items-center gap-3'>
-              <TrendingUp className='h-10 w-10 text-primary' />
-              Learning Paths
-            </h1>
-            <p className='text-muted-foreground mt-2 text-lg'>
-              Master competitive programming with our structured, gamified
-              learning journey
-            </p>
+        {/* Hero */}
+        <div className='relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-transparent to-transparent dark:from-primary/15 p-8 mb-8'>
+          <div className='flex items-start justify-between gap-6'>
+            <div>
+              <h1 className='text-4xl font-bold tracking-tight flex items-center gap-3'>
+                <TrendingUp className='h-10 w-10 text-primary' />
+                Learning Paths
+              </h1>
+              <p className='text-muted-foreground mt-3 text-lg'>
+                Master competitive programming with a clean, professional experience.
+              </p>
+            </div>
           </div>
-        </div>
 
-        {/* Stats Cards */}
-        <div className='grid gap-4 md:grid-cols-4 mb-8'>
-          <Card className='border-l-4 border-l-blue-500'>
-            <CardContent className='p-5'>
-              <div className='text-sm text-muted-foreground font-medium'>
-                Total Problems
-              </div>
-              <div className='mt-2 text-3xl font-bold'>{totalProblems}</div>
-            </CardContent>
-          </Card>
-          <Card className='border-l-4 border-l-green-500'>
-            <CardContent className='p-5'>
-              <div className='text-sm text-muted-foreground font-medium'>
-                Completed
-              </div>
-              <div className='mt-2 text-3xl font-bold'>
-                {Math.round((overallProgress * totalProblems) / 100)}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className='border-l-4 border-l-yellow-500'>
-            <CardContent className='p-5'>
-              <div className='text-sm text-muted-foreground font-medium'>
-                Estimated Time
-              </div>
-              <div className='mt-2 text-3xl font-bold'>30+ weeks</div>
-            </CardContent>
-          </Card>
-          <Card className='border-l-4 border-l-purple-500'>
-            <CardContent className='p-5'>
-              <div className='text-sm text-muted-foreground font-medium'>
-                Overall Progress
-              </div>
-              <div className='mt-2 text-3xl font-bold'>{overallProgress}%</div>
-            </CardContent>
-          </Card>
-        </div>
+          {/* Stats */}
+          <div className='mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
+            <Card className='shadow-sm'>
+              <CardContent className='p-5'>
+                <div className='text-sm text-muted-foreground font-medium'>
+                  Total Problems
+                </div>
+                <div className='mt-2 text-3xl font-bold'>{totalProblems}</div>
+              </CardContent>
+            </Card>
+            <Card className='shadow-sm'>
+              <CardContent className='p-5'>
+                <div className='text-sm text-muted-foreground font-medium'>
+                  Completed
+                </div>
+                <div className='mt-2 text-3xl font-bold'>
+                  {Math.round((overallProgress * totalProblems) / 100)}
+                </div>
+              </CardContent>
+            </Card>
+            <Card className='shadow-sm'>
+              <CardContent className='p-5'>
+                <div className='text-sm text-muted-foreground font-medium'>
+                  Estimated Time
+                </div>
+                <div className='mt-2 text-3xl font-bold'>30+ weeks</div>
+              </CardContent>
+            </Card>
+            <Card className='shadow-sm'>
+              <CardContent className='p-5'>
+                <div className='text-sm text-muted-foreground font-medium'>
+                  Overall Progress
+                </div>
+                <div className='mt-2 text-3xl font-bold'>{overallProgress}%</div>
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Overall Progress Bar */}
-        <Card className='bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20'>
-          <CardContent className='p-6'>
-            <div className='flex justify-between items-center mb-3'>
-              <span className='font-semibold text-lg'>
-                Your Journey Progress
-              </span>
-              <Badge variant='default' className='text-base px-3 py-1'>
+          {/* Progress */}
+          <div className='mt-6'>
+            <div className='flex justify-between items-center mb-2'>
+              <span className='font-semibold'>Your Journey Progress</span>
+              <Badge variant='default' className='px-3 py-1'>
                 {overallProgress}% Complete
               </Badge>
             </div>
-            <Progress value={overallProgress} className='h-4' />
-            <p className='text-sm text-muted-foreground mt-3'>
-              {overallProgress === 100
-                ? 'Congratulations! You have completed the entire learning path!'
-                : overallProgress >= 75
-                ? 'You are almost there! Keep pushing to complete the path.'
-                : overallProgress >= 50
-                ? 'Great progress! You are halfway through the journey.'
-                : overallProgress >= 25
-                ? 'Good start! Continue solving problems to advance.'
-                : 'Start your journey by completing the first section.'}
-            </p>
-          </CardContent>
-        </Card>
+            <Progress value={overallProgress} className='h-3' />
+          </div>
+        </div>
       </div>
 
       {/* Learning Path Sections */}
@@ -250,20 +248,13 @@ export default function LearningPathsPage() {
           const isCompleted = progress === 100;
 
           return (
-            <Card
-              key={section.id}
-              className={`border-2 transition-all hover:shadow-lg ${
-                isCompleted
-                  ? 'border-green-500/50 bg-gradient-to-r from-green-500/5 to-green-600/5'
-                  : 'border-primary/30 hover:border-primary/50'
-              }`}
-            >
+            <Card key={section.id} className='border transition-all hover:shadow-md'>
               <CardHeader>
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-4 flex-1'>
                     <div
                       className={`p-3 rounded-lg text-3xl ${
-                        isCompleted ? 'bg-green-500/20' : 'bg-primary/20'
+                        isCompleted ? 'bg-green-500/15' : 'bg-primary/15'
                       }`}
                     >
                       {section.icon}
@@ -285,7 +276,13 @@ export default function LearningPathsPage() {
                       <div className='flex items-center gap-4 mt-3 text-sm text-muted-foreground'>
                         <span className='flex items-center gap-1'>
                           <Target className='h-4 w-4' />
-                          {section.totalProblems} problems
+                          {
+                            section.subsections.reduce(
+                              (s, sub) => s + sub.problems.length,
+                              0
+                            )
+                          }{' '}
+                          problems
                         </span>
                         <span className='flex items-center gap-1'>
                           <Clock className='h-4 w-4' />
@@ -335,10 +332,7 @@ export default function LearningPathsPage() {
                       const subCompleted = subProgress === 100;
 
                       return (
-                        <Card
-                          key={subsection.id}
-                          className='border-l-4 border-l-primary/50 bg-muted/30'
-                        >
+                        <Card key={subsection.id} className='bg-muted/30'>
                           <CardContent className='p-4'>
                             <div className='flex items-center justify-between'>
                               <div className='flex-1'>
@@ -403,7 +397,7 @@ export default function LearningPathsPage() {
       </div>
 
       {/* Getting Started Section */}
-      <div className='mt-12 p-8 rounded-lg border-2 border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5'>
+      <div className='mt-12 p-8 rounded-xl border bg-gradient-to-r from-primary/10 to-primary/5 dark:from-primary/15'>
         <div className='flex items-center gap-4 mb-4'>
           <Trophy className='h-8 w-8 text-primary' />
           <h2 className='text-2xl font-bold'>

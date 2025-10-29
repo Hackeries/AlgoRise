@@ -5,6 +5,8 @@ import {
   getUserCodeforcesRating,
   calculateProblemRatingRange,
 } from '@/lib/battle-arena/matchmaking';
+import { generateBattleProblems } from '@/lib/arena/problem-generator';
+import { simulateBotSubmissions } from '@/lib/battle-arena/bot-simulator';
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,7 +40,7 @@ export async function POST(request: NextRequest) {
     // Bot difficulty = user rating ± configurable offset (let's use ±50)
     const botRating = userRating + (Math.random() > 0.5 ? 50 : -50);
 
-    // Create battle
+    // Create battle (45 minute duration)
     const { data: battle, error: battleError } = await supabase
       .from('battles')
       .insert({
@@ -69,7 +71,7 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
 
-    // Create bot team
+    // Create bot team (embed bot rating into name for quick identification)
     const { data: botTeam } = await supabase
       .from('battle_teams')
       .insert({
@@ -90,8 +92,52 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Get problem rating range
+    // Generate and persist internal problems for this battle (fixed for duration)
+    const internalProblems = generateBattleProblems({ rating: userRating, count: 3, seed: battle.id });
+
+    // Option A: store directly on battles via a JSONB column (not present in schema)
+    // Option B: create a private contests row and link problem_set_id
+    // We'll use a simple private contest with three problems for re-use.
+    const { data: contest, error: contestErr } = await supabase
+      .from('contests')
+      .insert({
+        name: `Arena Set ${battle.id.slice(0, 8)}`,
+        description: 'Arena problem set',
+        visibility: 'private',
+        status: 'running',
+        host_user_id: user.id,
+        duration_minutes: 45,
+        problem_count: 3,
+        rating_min: Math.max(800, userRating),
+        rating_max: userRating + 200,
+        contest_mode: 'icpc',
+      })
+      .select()
+      .single();
+
+    if (!contest && contestErr) {
+      // If contest table not usable due to RLS or schema, we will continue without linking
+    } else if (contest) {
+      // Insert the problems as contest_problems for consistency
+      const rows = internalProblems.map((p, idx) => ({
+        contest_id: contest.id,
+        problem_id: p.id,
+        title: p.name,
+        points: idx === 0 ? 1 : idx === 1 ? 2 : 3,
+        rating: p.rating ?? null,
+      }));
+      await supabase.from('contest_problems').insert(rows);
+      // Link battle to this problem set
+      await supabase.from('battles').update({ problem_set_id: contest.id }).eq('id', battle.id);
+    }
+
     const ratingRange = calculateProblemRatingRange(userRating, botRating);
+
+    // Fire-and-forget bot simulation (best-effort in long-lived runtimes)
+    if (botTeam?.id) {
+      // Do not await; let it schedule timeouts
+      simulateBotSubmissions(battle.id, botTeam.id, botRating, userRating, 3).catch(() => {});
+    }
 
     return NextResponse.json({
       battleId: battle.id,

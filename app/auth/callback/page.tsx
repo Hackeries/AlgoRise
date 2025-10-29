@@ -82,12 +82,26 @@ export default function AuthCallback() {
 
         let redirectTarget = "/profile"
         try {
-          const { data: cf } = await supabase.from("cf_handles").select("verified").single()
-          const { data: prof } = await supabase.from("profiles").select("status").single()
+          const currentUserId = finalSession.session?.user?.id;
+          if (currentUserId) {
+            const { data: cf } = await supabase
+              .from('cf_handles')
+              .select('verified')
+              .eq('user_id', currentUserId)
+              .single();
 
-          // If user has verified CF handle and profile status, they're an existing user
-          if (cf?.verified && prof?.status) {
-            redirectTarget = "/profile/overview"
+            const { data: prof } = await supabase
+              .from('profiles')
+              .select('status')
+              .eq('user_id', currentUserId)
+              .single();
+
+            // If user has verified CF handle and profile status, they're an existing user
+            if (cf?.verified && prof?.status) {
+              redirectTarget = '/profile/overview';
+            } else {
+              redirectTarget = '/profile';
+            }
           } else {
             redirectTarget = "/profile"
           }

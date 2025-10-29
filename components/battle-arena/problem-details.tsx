@@ -41,20 +41,15 @@ export function ProblemDetails({ problem }: ProblemDetailsProps) {
   };
 
   return (
-    <div className='space-y-5 overflow-y-auto h-full pr-4'>
+    <div className='space-y-5 overflow-y-auto h-full pr-1 md:pr-3 scrollbar-thin scrollbar-thumb-cyan-500/30 scrollbar-track-transparent'>
       {/* Header */}
       <div>
         <div className='flex flex-wrap items-center gap-2 mb-2'>
-          <h2 className='text-2xl font-semibold'>{problem.name}</h2>
+          <h2 className='text-2xl font-semibold leading-tight'>{problem.name}</h2>
           <Badge className={difficultyColor[problem.difficulty]}>
             {problem.difficulty}
           </Badge>
-          {problem.rating && (
-            <div className='flex items-center text-yellow-600 text-sm'>
-              <Star className='w-4 h-4 mr-1 fill-yellow-400' />
-              {problem.rating}
-            </div>
-          )}
+          {/* Rating intentionally hidden in arena for contest feel */}
           {problem.source && (
             <Badge variant='outline' className='text-xs'>
               {problem.source}
@@ -98,7 +93,7 @@ export function ProblemDetails({ problem }: ProblemDetailsProps) {
       <div>
         <h3 className='font-semibold mb-2 text-lg'>Description</h3>
         <div
-          className='text-sm text-foreground leading-relaxed prose prose-sm max-w-none'
+          className='text-sm text-foreground leading-relaxed prose prose-invert prose-sm max-w-none'
           dangerouslySetInnerHTML={{
             __html: DOMPurify.sanitize(problem.description),
           }}
@@ -111,7 +106,7 @@ export function ProblemDetails({ problem }: ProblemDetailsProps) {
           <h3 className='font-semibold mb-2 text-lg'>Examples</h3>
           <div className='space-y-3'>
             {problem.examples.map((example, idx) => (
-              <Card key={idx} className='p-4 bg-muted'>
+              <Card key={idx} className='p-4 bg-muted/60 border-muted-foreground/10'>
                 <p className='text-xs font-semibold mb-2 text-muted-foreground'>
                   Example {idx + 1}
                 </p>

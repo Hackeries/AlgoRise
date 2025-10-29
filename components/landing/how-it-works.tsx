@@ -1,116 +1,230 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
-import { UserPlus, Target, TrendingUp, Award, Sword } from 'lucide-react';
+import {
+  UserPlus,
+  Target,
+  TrendingUp,
+  Award,
+  Sword,
+  ArrowRight,
+} from 'lucide-react';
+
+const steps = [
+  {
+    icon: UserPlus,
+    title: 'Sign Up & Verify',
+    description:
+      'Create your account and connect your Codeforces handle to get started with personalized learning.',
+    gradient: 'from-blue-500 to-cyan-500',
+    bgGradient: 'from-blue-500/20 to-cyan-500/20',
+  },
+  {
+    icon: Target,
+    title: 'Adaptive Practice',
+    description:
+      'Our AI analyzes your skill level and recommends problems that match your current abilities.',
+    gradient: 'from-purple-500 to-pink-500',
+    bgGradient: 'from-purple-500/20 to-pink-500/20',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Track Progress',
+    description:
+      'Monitor your improvement with detailed analytics, streaks, and performance insights.',
+    gradient: 'from-orange-500 to-red-500',
+    bgGradient: 'from-orange-500/20 to-red-500/20',
+  },
+  {
+    icon: Sword,
+    title: 'Battle Arena',
+    description:
+      'Challenge other programmers in real-time 1v1 duels or team-based 3v3 battles with ELO ratings.',
+    gradient: 'from-emerald-500 to-teal-500',
+    bgGradient: 'from-emerald-500/20 to-teal-500/20',
+  },
+  {
+    icon: Award,
+    title: 'Compete & Excel',
+    description:
+      'Join contests, compete with peers, and climb the leaderboards as you master algorithms.',
+    gradient: 'from-yellow-500 to-orange-500',
+    bgGradient: 'from-yellow-500/20 to-orange-500/20',
+  },
+];
 
 export default function HowItWorks() {
-  const steps = [
-    {
-      icon: UserPlus,
-      title: 'Sign Up & Verify',
-      description:
-        'Create your account and connect your Codeforces handle to get started with personalized learning.',
-      step: '01',
-    },
-    {
-      icon: Target,
-      title: 'Start Adaptive Practice',
-      description:
-        'Our AI analyzes your skill level and recommends problems that match your current abilities.',
-      step: '02',
-    },
-    {
-      icon: TrendingUp,
-      title: 'Track Your Progress',
-      description:
-        'Monitor your improvement with detailed analytics, streaks, and performance insights.',
-      step: '03',
-    },
-    {
-      icon: Sword,
-      title: 'Compete in Battle Arena',
-      description:
-        'Challenge other programmers in real-time 1v1 duels or team-based 3v3 battles with ELO ratings.',
-      step: '04',
-    },
-    {
-      icon: Award,
-      title: 'Compete & Excel',
-      description:
-        'Join contests, compete with peers, and climb the leaderboards as you master algorithms.',
-      step: '05',
-    },
-  ];
-
   return (
-    <section className='relative z-10 py-12 sm:py-16 lg:py-24 px-3 sm:px-4 lg:px-6 overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-transparent dark:via-transparent dark:to-transparent'>
-      <div className='absolute top-[-100px] left-[-80px] sm:top-[-120px] sm:left-[-100px] lg:top-[-150px] lg:left-[-100px] w-[250px] h-[250px] sm:w-[300px] sm:h-[300px] lg:w-[350px] lg:h-[350px] bg-purple-500/20 dark:bg-purple-600/15 rounded-full blur-3xl animate-blob' />
-      <div className='absolute bottom-[-80px] right-[-60px] sm:bottom-[-100px] sm:right-[-80px] lg:bottom-[-120px] lg:right-[-80px] w-[280px] h-[280px] sm:w-[350px] sm:h-[350px] lg:w-[400px] lg:h-[400px] bg-green-400/20 dark:bg-green-600/15 rounded-full blur-3xl animate-blob animation-delay-2000' />
+    <section className='relative py-20 sm:py-24 lg:py-32 overflow-hidden bg-gradient-to-br from-background via-background to-muted/30'>
+      {/* Animated gradient orbs */}
+      <div className='absolute inset-0 overflow-hidden pointer-events-none'>
+        <motion.div
+          className='absolute top-1/4 -left-1/4 w-96 h-96 bg-gradient-to-br from-primary/30 to-purple-500/30 rounded-full blur-3xl'
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.2, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+        <motion.div
+          className='absolute bottom-1/4 -right-1/4 w-96 h-96 bg-gradient-to-tl from-blue-500/30 to-cyan-500/30 rounded-full blur-3xl'
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.3, 0.2],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      </div>
 
-      <div className='max-w-6xl mx-auto relative'>
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10'>
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className='text-center mb-8 sm:mb-12 lg:mb-20'
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6 }}
+          className='text-center mb-16 sm:mb-20'
         >
-          <h2 className='text-2xl sm:text-3xl lg:text-5xl font-bold mb-3 sm:mb-4 lg:mb-6'>
-            <span className='bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 dark:from-emerald-400 dark:via-teal-400 dark:to-cyan-400 bg-clip-text text-transparent'>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6'
+          >
+            <div className='w-2 h-2 rounded-full bg-primary animate-pulse' />
+            <span className='text-sm font-medium text-primary'>
               How It Works
             </span>
+          </motion.div>
+
+          <h2 className='text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6'>
+            <span className='bg-gradient-to-r from-primary via-purple-500 to-primary bg-clip-text text-transparent'>
+              Your Path to Mastery
+            </span>
           </h2>
-          <p className='text-sm sm:text-base lg:text-lg text-slate-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed'>
+          <p className='text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed'>
             Get started in minutes and begin your journey to competitive
-            programming mastery
+            programming excellence
           </p>
         </motion.div>
 
-        {/* Steps */}
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 lg:gap-8 relative'>
+        {/* Steps Grid */}
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 lg:gap-4'>
           {steps.map((step, index) => (
             <motion.div
               key={step.title}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.15 }}
-              className='relative'
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{
+                duration: 0.5,
+                delay: index * 0.1,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              className='relative group'
             >
-              {/* Connecting line */}
+              {/* Connecting Arrow - Desktop Only */}
               {index < steps.length - 1 && (
-                <div className='hidden lg:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-white/20 dark:from-white/20 to-transparent -translate-x-1/2 z-0' />
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 + 0.3 }}
+                  className='hidden lg:flex absolute top-20 -right-4 z-10 items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-primary/20 to-transparent'
+                >
+                  <ArrowRight className='h-4 w-4 text-primary' />
+                </motion.div>
               )}
 
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                className='relative bg-white/60 dark:bg-black/40 backdrop-blur-xl border border-gray-300 dark:border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-6 hover:border-primary/50 dark:hover:border-[#63EDA1]/50 transition-all duration-300 shadow-lg'
+                whileHover={{ y: -8, scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+                className={`
+                  relative h-full p-6 rounded-2xl 
+                  bg-card/50 backdrop-blur-xl border border-border/50
+                  hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/20
+                  transition-all duration-300
+                `}
               >
-                {/* Step number */}
-                <div className='absolute -top-3 -right-3 sm:-top-4 sm:-right-4 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 dark:from-[#63EDA1] dark:to-green-600 flex items-center justify-center text-white font-bold text-sm sm:text-lg shadow-xl'>
-                  {step.step}
-                </div>
+                {/* Step Number Badge */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  whileInView={{ scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 + 0.2, type: 'spring' }}
+                  className={`
+                    absolute -top-3 -right-3 w-12 h-12 rounded-full 
+                    bg-gradient-to-br ${step.gradient}
+                    flex items-center justify-center
+                    shadow-lg shadow-primary/30
+                  `}
+                >
+                  <span className='text-white font-bold text-lg'>
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                </motion.div>
 
                 {/* Icon */}
                 <motion.div
-                  whileHover={{ scale: 1.15 }}
-                  className='inline-flex p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-500/30 dark:to-purple-500/30 mb-4 sm:mb-6 transition-transform duration-300'
+                  whileHover={{ rotate: 360, scale: 1.1 }}
+                  transition={{ duration: 0.6 }}
+                  className={`
+                    inline-flex p-4 rounded-xl mb-4
+                    bg-gradient-to-br ${step.bgGradient}
+                    border border-primary/20
+                  `}
                 >
-                  <step.icon className='h-6 w-6 sm:h-8 sm:w-8 text-blue-600 dark:text-[#63EDA1]' />
+                  <step.icon className='h-7 w-7 text-primary' />
                 </motion.div>
 
                 {/* Content */}
-                <h3 className='text-base sm:text-lg lg:text-xl font-semibold text-slate-800 dark:text-white mb-2 sm:mb-3 hover:text-blue-600 dark:hover:text-[#63EDA1] transition-colors'>
+                <h3 className='text-lg font-semibold mb-2 text-foreground group-hover:text-primary transition-colors'>
                   {step.title}
                 </h3>
-                <p className='text-slate-600 dark:text-white/70 leading-relaxed text-xs sm:text-sm lg:text-base'>
+                <p className='text-sm text-muted-foreground leading-relaxed'>
                   {step.description}
                 </p>
+
+                {/* Hover Glow Effect */}
+                <div
+                  className={`
+                  absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 
+                  bg-gradient-to-br ${step.bgGradient}
+                  blur-xl -z-10 transition-opacity duration-300
+                `}
+                />
               </motion.div>
             </motion.div>
           ))}
         </div>
+
+        {/* CTA Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.5 }}
+          className='text-center mt-16'
+        >
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className='inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all'
+          >
+            Get Started Now
+            <ArrowRight className='h-5 w-5' />
+          </motion.button>
+        </motion.div>
       </div>
     </section>
   );

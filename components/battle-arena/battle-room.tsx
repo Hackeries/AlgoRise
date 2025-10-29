@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Trophy, Send } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 
 interface BattleRoomProps {
   battleId: string;
@@ -28,10 +29,12 @@ export function BattleRoom({
     teamId,
     mode === '3v3'
   );
-  const [timeRemaining, setTimeRemaining] = useState(3600);
+  const initialTime = 3600;
+  const [timeRemaining, setTimeRemaining] = useState(initialTime);
   const [chatInput, setChatInput] = useState('');
   const [scoreboard, setScoreboard] = useState<any[]>([]);
   const [problems, setProblems] = useState<any[]>([]);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -45,6 +48,14 @@ export function BattleRoom({
       setScoreboard(battleUpdate.scoreboard);
     }
   }, [battleUpdate]);
+
+  useEffect(() => {
+    if (timeRemaining === 0) {
+      setShowCelebration(true);
+      const t = setTimeout(() => setShowCelebration(false), 4000);
+      return () => clearTimeout(t);
+    }
+  }, [timeRemaining]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -64,17 +75,13 @@ export function BattleRoom({
 
   return (
     <motion.div
-      className={`h-screen flex flex-col ${
-        mode === '3v3'
-          ? 'bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900'
-          : 'bg-gradient-to-br from-gray-900 via-sky-950 to-gray-900'
-      } text-white`}
+      className={`h-screen flex flex-col bg-background text-foreground`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.6 }}
     >
       {/* Top Bar */}
-      <div className='border-b border-border/20 bg-black/30 backdrop-blur-sm p-4 flex items-center justify-between'>
+      <div className='border-b border-border/20 bg-card/60 backdrop-blur-sm p-4 flex items-center justify-between sticky top-0 z-10'>
         <div className='flex items-center gap-4'>
           <motion.div
             initial={{ scale: 0.9 }}
@@ -99,7 +106,7 @@ export function BattleRoom({
               {isConnected ? 'Connected' : 'Connecting...'}
             </Badge>
           ) : (
-            <Badge variant='secondary' className='bg-purple-700 text-white'>
+            <Badge variant='secondary' className='bg-primary/20 text-primary'>
               vs Bot
             </Badge>
           )}
@@ -109,29 +116,33 @@ export function BattleRoom({
           <Button
             variant='outline'
             size='sm'
-            className='hover:scale-105 transition-all'
+            className='btn-hover'
           >
             Pause
           </Button>
           <Button
             variant='destructive'
             size='sm'
-            className='hover:scale-105 transition-all hover:shadow-lg hover:shadow-red-500/40'
+            className='btn-hover hover:shadow-red-500/40'
           >
             Surrender
           </Button>
         </div>
       </div>
+      {/* Timer progress */}
+      <div className='px-4 py-2 border-b border-border/20 bg-card/40'>
+        <Progress value={((initialTime - timeRemaining) / initialTime) * 100} />
+      </div>
 
       {/* Main */}
       <div className='flex-1 flex overflow-hidden'>
         {/* Left: Problems */}
-        <div className='w-1/3 border-r border-border/10 overflow-y-auto p-4 space-y-4'>
+        <div className='w-1/3 border-r border-border/10 overflow-y-auto p-4 space-y-4 hidden md:block'>
           <motion.h3
             initial={{ x: -10, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className='font-bold text-xl text-sky-300'
+            className='font-bold text-xl text-primary'
           >
             Problems
           </motion.h3>
@@ -147,13 +158,13 @@ export function BattleRoom({
                 whileHover={{ scale: 1.05, rotateY: 5 }}
                 className='[perspective:1000px]'
               >
-                <Card className='p-4 bg-gray-800/60 border border-gray-700 hover:shadow-lg hover:shadow-sky-500/30 cursor-pointer transition-all rounded-2xl'>
+                <Card className='p-4 bg-card/80 border hover:shadow-elevation2 cursor-pointer transition-all rounded-xl hover:border-primary/30'>
                   <div className='flex justify-between items-center'>
                     <div>
-                      <p className='font-semibold text-white'>
+                      <p className='font-semibold'>
                         {String.fromCharCode(65 + idx)}. {problem.name}
                       </p>
-                      <p className='text-xs text-gray-400'>
+                      <p className='text-xs text-muted-foreground'>
                         Rating: {problem.rating}
                       </p>
                     </div>
@@ -176,7 +187,7 @@ export function BattleRoom({
         {/* Right: Editor, Chat, Scoreboard */}
         <div className='flex-1 flex flex-col'>
           <Tabs defaultValue='editor' className='flex-1 flex flex-col'>
-            <TabsList className='w-full rounded-none border-b border-border/20 bg-black/30 backdrop-blur-md'>
+            <TabsList className='w-full rounded-none border-b border-border/20 bg-card/60 backdrop-blur-md'>
               <TabsTrigger value='editor'>Editor</TabsTrigger>
               {mode === '3v3' && (
                 <TabsTrigger value='chat'>Team Chat</TabsTrigger>
@@ -189,23 +200,19 @@ export function BattleRoom({
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className='flex-1 bg-gray-900 rounded-xl p-4 font-mono text-sm mb-4 overflow-auto border border-gray-700'
+                className='flex-1 bg-card rounded-xl p-4 font-mono text-sm mb-4 overflow-auto border'
               >
-                <div className='text-gray-400'>
-                  <div>// Write your solution here</div>
-                  <div>#include &lt;bits/stdc++.h&gt;</div>
-                  <div>using namespace std;</div>
-                  <div>&nbsp;</div>
-                  <div>int main() {'{}'}</div>
+                <div className='text-muted-foreground'>
+                  <div>// Editor moved to dedicated room page</div>
                 </div>
               </motion.div>
               <div className='flex gap-2'>
-                <select className='px-3 py-2 border border-gray-700 rounded-lg bg-black text-gray-200'>
+                <select className='px-3 py-2 border rounded-lg bg-background text-foreground'>
                   <option>C++</option>
                   <option>Python</option>
                   <option>Java</option>
                 </select>
-                <Button className='flex-1 bg-sky-600 hover:bg-sky-700 hover:shadow-sky-500/40 shadow-md transition-all'>
+                <Button className='flex-1 btn-hover'>
                   Submit
                 </Button>
               </div>
@@ -224,11 +231,11 @@ export function BattleRoom({
                     >
                       <Badge
                         variant='outline'
-                        className='text-xs text-sky-400 border-sky-600'
+                        className='text-xs text-primary border-primary'
                       >
                         {msg.handle}
                       </Badge>
-                      <p className='text-gray-200'>{msg.message}</p>
+                      <p className='text-foreground'>{msg.message}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -239,12 +246,12 @@ export function BattleRoom({
                     value={chatInput}
                     onChange={e => setChatInput(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-                    className='flex-1 px-3 py-2 border border-gray-700 rounded-lg bg-black text-gray-200'
+                    className='flex-1 px-3 py-2 border rounded-lg bg-background text-foreground'
                   />
                   <Button
                     size='icon'
                     onClick={handleSendMessage}
-                    className='bg-sky-700 hover:bg-sky-600'
+                    className='btn-hover'
                   >
                     <Send className='w-4 h-4' />
                   </Button>
@@ -258,7 +265,7 @@ export function BattleRoom({
               className='flex-1 overflow-y-auto p-4 space-y-2'
             >
               {scoreboard.length === 0 ? (
-                <p className='text-gray-400 text-center'>No submissions yet</p>
+                <p className='text-muted-foreground text-center'>No submissions yet</p>
               ) : (
                 scoreboard.map((team, idx) => (
                   <motion.div
@@ -267,19 +274,19 @@ export function BattleRoom({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.1 }}
                   >
-                    <Card className='p-4 bg-gray-800/70 border border-gray-700 rounded-xl hover:shadow-md hover:shadow-sky-500/30 transition-all'>
+                    <Card className='p-4 bg-card/80 border rounded-xl hover:shadow-elevation2 transition-all'>
                       <div className='flex justify-between items-center'>
                         <div className='flex items-center gap-2'>
-                          <Trophy className='w-4 h-4 text-sky-400' />
-                          <span className='font-semibold text-gray-100'>
+                          <Trophy className='w-4 h-4 text-primary' />
+                          <span className='font-semibold'>
                             {team.teamName}
                           </span>
                         </div>
                         <div className='text-right'>
-                          <p className='font-bold text-sky-300'>
+                          <p className='font-bold text-primary'>
                             {team.score} problems
                           </p>
-                          <p className='text-xs text-gray-400'>
+                          <p className='text-xs text-muted-foreground'>
                             {team.penaltyTime} penalty
                           </p>
                         </div>
@@ -292,6 +299,28 @@ export function BattleRoom({
           </Tabs>
         </div>
       </div>
+      {/* Celebration overlay */}
+      {showCelebration && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className='pointer-events-none fixed inset-0 z-20 grid place-items-center bg-gradient-to-br from-primary/10 to-accent/10'
+        >
+          <motion.div
+            initial={{ scale: 0.9 }}
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ repeat: Infinity, duration: 1.6 }}
+            className='rounded-2xl border border-primary/30 bg-card/80 px-8 py-6 shadow-elevation3 text-center'
+          >
+            <div className='flex items-center justify-center gap-2 text-primary'>
+              <Trophy className='h-6 w-6' />
+              <span className='font-semibold'>Match Completed</span>
+            </div>
+            <p className='mt-2 text-sm text-muted-foreground'>Great job! Review the scoreboard and share your results.</p>
+          </motion.div>
+        </motion.div>
+      )}
     </motion.div>
   );
 }

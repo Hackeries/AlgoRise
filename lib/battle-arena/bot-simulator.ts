@@ -1,6 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
-import { broadcastBattleUpdate } from '@/hooks/use-battle-realtime';
+import { RealTimeNotificationManager } from '@/lib/realtime-notifications';
 
 interface BotSubmission {
   problemId: string;
@@ -14,7 +14,7 @@ interface BotSubmission {
  */
 export async function simulateBotSubmissions(
   battleId: string,
-  botTeamId: string,
+  botUserId: string,
   botRating: number,
   userRating: number,
   problemCount = 5
@@ -83,35 +83,43 @@ export async function simulateBotSubmissions(
   // Schedule submissions
   for (const submission of submissions) {
     setTimeout(async () => {
-      // Insert submission
-      const { data: newSubmission } = await supabase
-        .from('battle_submissions')
-        .insert({
-          battle_id: battleId,
-          team_id: botTeamId,
-          user_id: 'bot', // Placeholder
-          problem_id: submission.problemId,
-          verdict: submission.verdict,
-          penalty:
-            submission.verdict === 'AC'
-              ? Math.floor(submission.delay / 60000)
-              : 0,
-          code: '// Bot solution',
-          language: 'C++',
-        })
-        .select()
-        .single();
+      try {
+        // Insert submission
+        const { data: newSubmission, error } = await supabase
+          .from('battle_submissions')
+          .insert({
+            battle_id: battleId,
+            user_id: botUserId,
+            problem_id: submission.problemId,
+            status: submission.verdict === 'AC' ? 'solved' : 
+                    submission.verdict === 'WA' ? 'failed' : 'timeout',
+            language: 'cpp',
+            code_text: '// Bot solution',
+            submitted_at: new Date().toISOString(),
+            execution_time_ms: submission.verdict === 'AC' ? 
+                              Math.floor(submission.delay / 1000) : null,
+            memory_kb: submission.verdict === 'AC' ? 
+                       Math.floor(Math.random() * 10000) + 1000 : null
+          })
+          .select()
+          .single();
 
-      // Broadcast update
-      await broadcastBattleUpdate(battleId, {
-        type: 'submission',
-        submission: {
-          userId: 'bot',
-          problemId: submission.problemId,
-          verdict: submission.verdict,
-          timestamp: new Date().toISOString(),
-        },
-      });
+        if (error) {
+          console.error('Error creating bot submission:', error);
+          return;
+        }
+
+        // Notify participants about the bot submission
+        const rtManager = RealTimeNotificationManager.getInstance();
+        await rtManager.broadcast({
+          type: 'battle_submission_created',
+          battleId,
+          submission: newSubmission,
+          message: `Bot submitted solution for problem ${submission.problemId}`
+        });
+      } catch (error) {
+        console.error('Error processing bot submission:', error);
+      }
     }, submission.delay);
   }
 }
@@ -127,4 +135,93 @@ export function calculateBotPerformance(botRating: number, userRating: number) {
     avgSubmissionTime: 15 * 60 * 1000 - (ratingDiff / 500) * 5 * 60 * 1000, // 10-20 minutes
     problemsSolved: Math.max(1, Math.floor(3 + (ratingDiff / 500) * 2)), // 1-5 problems
   };
+}
+
+/**
+ * Create a bot user for practice battles
+ */
+export async function createBotUser(): Promise<{ id: string; rating: number }> {
+  // In a real implementation, this would create a bot user in the database
+  // For now, we'll return a placeholder bot
+  return {
+    id: `bot_${Date.now()}`,
+    rating: Math.floor(Math.random() * 1000) + 800 // Random rating between 800-1800
+  };
+}
+
+/**
+ * Start a practice battle with a bot
+ */
+export async function startPracticeBattle(
+  userId: string,
+  userRating: number
+): Promise<{ battleId: string; botId: string } | null> {
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+      },
+    }
+  );
+
+  try {
+    // Create a bot user
+    const bot = await createBotUser();
+    
+    // Create a practice battle
+    const { data: battle, error: battleError } = await supabase
+      .from('battles')
+      .insert({
+        host_user_id: userId,
+        guest_user_id: bot.id,
+        status: 'waiting',
+        format: 'best_of_3',
+        is_practice: true
+      })
+      .select()
+      .single();
+
+    if (battleError) {
+      console.error('Error creating practice battle:', battleError);
+      return null;
+    }
+
+    // Create participant records
+    const { error: participantError } = await supabase
+      .from('battle_participants')
+      .insert([
+        {
+          battle_id: battle.id,
+          user_id: userId,
+          rating_before: userRating,
+          is_host: true
+        },
+        {
+          battle_id: battle.id,
+          user_id: bot.id,
+          rating_before: bot.rating,
+          is_host: false
+        }
+      ]);
+
+    if (participantError) {
+      console.error('Error creating battle participants:', participantError);
+      return null;
+    }
+
+    // Start simulating bot submissions after a delay
+    setTimeout(() => {
+      simulateBotSubmissions(battle.id, bot.id, bot.rating, userRating);
+    }, 5000); // Start after 5 seconds
+
+    return { battleId: battle.id, botId: bot.id };
+  } catch (error) {
+    console.error('Error starting practice battle:', error);
+    return null;
+  }
 }

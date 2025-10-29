@@ -1,20 +1,16 @@
-# Code Battle Arena API Documentation
+# Battle Arena API Documentation
 
-## Overview
-
-This document provides detailed information about the Code Battle Arena API endpoints, request/response formats, and authentication requirements.
-
-## Authentication
-
-All API endpoints require authentication through Supabase Auth. Requests must include a valid session token.
+This document provides documentation for the Battle Arena API endpoints that were created or enhanced as part of the upgrade.
 
 ## Base URL
 
-```
-/api/battles
-```
+All endpoints are relative to: `/api/battles`
 
-## Battle Management Endpoints
+## Authentication
+
+All endpoints require authentication via Supabase session. Users must be logged in to access these endpoints.
+
+## Battle Management
 
 ### Get User's Battles
 
@@ -27,17 +23,15 @@ Retrieve a list of battles for the authenticated user.
 {
   "battles": [
     {
-      "id": "uuid",
-      "name": "string",
-      "format": "best_of_1|best_of_3|best_of_5",
-      "status": "waiting|in_progress|completed|cancelled",
-      "host_user_id": "uuid",
-      "guest_user_id": "uuid",
-      "winner_user_id": "uuid",
-      "is_public": "boolean",
-      "created_at": "timestamp",
-      "started_at": "timestamp",
-      "ended_at": "timestamp",
+      "id": "battle_123",
+      "host_user_id": "user_1",
+      "guest_user_id": "user_2",
+      "status": "completed",
+      "format": "best_of_3",
+      "created_at": "2023-05-15T10:30:00Z",
+      "started_at": "2023-05-15T10:31:00Z",
+      "ended_at": "2023-05-15T10:45:00Z",
+      "winner_user_id": "user_1",
       "battle_participants": [...],
       "battle_rounds": [...]
     }
@@ -45,31 +39,108 @@ Retrieve a list of battles for the authenticated user.
 }
 ```
 
-### Create/Join Battles
+### Join Matchmaking Queue
 
 **POST** `/api/battles`
 
-Create a new battle or join the matchmaking queue.
+Join the matchmaking queue for a new battle.
 
 **Request Body:**
 ```json
 {
-  "action": "join_queue|create_private|spectate|set_visibility",
-  "format": "best_of_1|best_of_3|best_of_5", // for join_queue and create_private
-  "guestUserId": "uuid", // for create_private
-  "battleId": "uuid", // for spectate and set_visibility
-  "isPublic": "boolean" // for create_private and set_visibility
+  "action": "join_queue",
+  "format": "best_of_3" // Optional, defaults to "best_of_3"
 }
 ```
 
 **Response:**
 ```json
 {
-  "success": "boolean",
-  "message": "string",
-  "battleId": "uuid" // when applicable
+  "success": true,
+  "message": "Joined queue successfully",
+  "battleId": "battle_123" // If matched immediately
 }
 ```
+
+### Create Private Battle
+
+**POST** `/api/battles`
+
+Create a private battle with a specific opponent.
+
+**Request Body:**
+```json
+{
+  "action": "create_private",
+  "guestUserId": "user_2",
+  "format": "best_of_3", // Optional
+  "isPublic": false // Optional
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Private battle created",
+  "battleId": "battle_123"
+}
+```
+
+### Spectator Management
+
+**POST** `/api/battles`
+
+Join or leave spectator mode for a battle.
+
+**Request Body (Join):**
+```json
+{
+  "action": "spectate",
+  "battleId": "battle_123"
+}
+```
+
+**Request Body (Leave):**
+```json
+{
+  "action": "unspectate",
+  "battleId": "battle_123"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Successfully joined as spectator" // or "Successfully left spectator mode"
+}
+```
+
+### Set Battle Visibility
+
+**POST** `/api/battles`
+
+Set whether a battle is public or private.
+
+**Request Body:**
+```json
+{
+  "action": "set_visibility",
+  "battleId": "battle_123",
+  "isPublic": true
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Battle is now public"
+}
+```
+
+## Battle Details
 
 ### Get Battle Details
 
@@ -81,60 +152,16 @@ Retrieve detailed information about a specific battle.
 ```json
 {
   "battle": {
-    "id": "uuid",
-    "name": "string",
-    "format": "best_of_1|best_of_3|best_of_5",
-    "status": "waiting|in_progress|completed|cancelled",
-    "host_user_id": "uuid",
-    "guest_user_id": "uuid",
-    "winner_user_id": "uuid",
-    "is_public": "boolean",
-    "created_at": "timestamp",
-    "started_at": "timestamp",
-    "ended_at": "timestamp",
-    "battle_participants": [
-      {
-        "id": "uuid",
-        "battle_id": "uuid",
-        "user_id": "uuid",
-        "rating_before": "integer",
-        "rating_after": "integer",
-        "rating_delta": "integer",
-        "is_host": "boolean",
-        "joined_at": "timestamp"
-      }
-    ],
-    "battle_rounds": [
-      {
-        "id": "uuid",
-        "battle_id": "uuid",
-        "round_number": "integer",
-        "problem_id": "string",
-        "title": "string",
-        "rating": "integer",
-        "winner_user_id": "uuid",
-        "started_at": "timestamp",
-        "ended_at": "timestamp"
-      }
-    ],
-    "battle_submissions": [
-      {
-        "id": "uuid",
-        "battle_id": "uuid",
-        "round_id": "uuid",
-        "user_id": "uuid",
-        "problem_id": "string",
-        "status": "pending|solved|failed|compiling|running|internal_error",
-        "language": "string",
-        "code_text": "string",
-        "submitted_at": "timestamp",
-        "execution_time_ms": "integer",
-        "memory_kb": "integer",
-        "stdout": "string",
-        "stderr": "string",
-        "compile_output": "string"
-      }
-    ]
+    "id": "battle_123",
+    "host_user_id": "user_1",
+    "guest_user_id": "user_2",
+    "status": "in_progress",
+    "format": "best_of_3",
+    "created_at": "2023-05-15T10:30:00Z",
+    "started_at": "2023-05-15T10:31:00Z",
+    "battle_participants": [...],
+    "battle_rounds": [...],
+    "battle_submissions": [...]
   }
 }
 ```
@@ -145,13 +172,50 @@ Retrieve detailed information about a specific battle.
 
 Start a battle (host only).
 
+**Request Body:**
+```json
+{
+  "action": "start"
+}
+```
+
 **Response:**
 ```json
 {
-  "success": "boolean",
-  "message": "string"
+  "success": true,
+  "message": "Battle started successfully"
 }
 ```
+
+### Spectator Actions
+
+**POST** `/api/battles/[id]`
+
+Join or leave spectator mode for a specific battle.
+
+**Request Body (Join):**
+```json
+{
+  "action": "spectate"
+}
+```
+
+**Request Body (Leave):**
+```json
+{
+  "action": "unspectate"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Successfully joined as spectator" // or "Successfully left spectator mode"
+}
+```
+
+## Battle Submission
 
 ### Submit Solution
 
@@ -162,67 +226,147 @@ Submit a solution for a battle round.
 **Request Body:**
 ```json
 {
-  "roundId": "uuid",
-  "codeText": "string",
-  "language": "cpp|c|java|python|javascript"
+  "roundId": "round_123",
+  "codeText": "// Solution code here",
+  "language": "cpp" // Optional, defaults to "cpp"
 }
 ```
 
 **Response:**
 ```json
 {
-  "success": "boolean",
-  "message": "string",
-  "submissionId": "uuid"
+  "success": true,
+  "message": "Solution submitted successfully",
+  "submissionId": "submission_123"
 }
 ```
 
-## Chat Endpoints
+## Tournament Management
 
-### Get Chat Messages
+### Get Tournaments
 
-**GET** `/api/battles/[id]/chat`
+**GET** `/api/tournaments`
 
-Retrieve chat messages for a battle.
+Retrieve a list of available tournaments.
 
 **Response:**
 ```json
 {
-  "messages": [
+  "tournaments": [
     {
-      "id": "uuid",
-      "battle_id": "uuid",
-      "user_id": "uuid",
-      "message": "string",
-      "created_at": "timestamp",
-      "users": {
-        "email": "string"
-      }
+      "id": "tournament_123",
+      "name": "Weekly ICPC Challenge",
+      "description": "Weekly competitive programming tournament",
+      "status": "registration",
+      "start_date": "2023-05-20T10:00:00Z",
+      "end_date": "2023-05-27T10:00:00Z",
+      "max_participants": 64,
+      "current_participants": 42,
+      "entry_fee": 0,
+      "prize_pool": 1000,
+      "format": "single_elimination"
     }
   ]
 }
 ```
 
-### Send Chat Message
+### Join Tournament
 
-**POST** `/api/battles/[id]/chat`
+**POST** `/api/tournaments/[id]/join`
 
-Send a chat message to a battle.
-
-**Request Body:**
-```json
-{
-  "message": "string",
-  "action": "send|delete",
-  "messageId": "uuid" // for delete action
-}
-```
+Join a tournament.
 
 **Response:**
 ```json
 {
-  "success": "boolean",
-  "message": "string"
+  "success": true,
+  "message": "Successfully registered for tournament"
+}
+```
+
+### Get Tournament Details
+
+**GET** `/api/tournaments/[id]`
+
+Retrieve detailed information about a specific tournament.
+
+**Response:**
+```json
+{
+  "tournament": {
+    "id": "tournament_123",
+    "name": "Weekly ICPC Challenge",
+    "description": "Weekly competitive programming tournament",
+    "status": "in_progress",
+    "start_date": "2023-05-20T10:00:00Z",
+    "end_date": "2023-05-27T10:00:00Z",
+    "max_participants": 64,
+    "current_participants": 64,
+    "entry_fee": 0,
+    "prize_pool": 1000,
+    "format": "single_elimination",
+    "participants": [...],
+    "matches": [...]
+  }
+}
+```
+
+## Replay System
+
+### Get Replays
+
+**GET** `/api/replays`
+
+Retrieve a list of available battle replays.
+
+**Response:**
+```json
+{
+  "replays": [
+    {
+      "id": "replay_123",
+      "battle_id": "battle_123",
+      "title": "Alice Johnson vs Bob Smith",
+      "date": "2023-05-15T10:30:00Z",
+      "duration": 900,
+      "players": ["Alice Johnson", "Bob Smith"],
+      "winner": "Alice Johnson",
+      "is_public": true
+    }
+  ]
+}
+```
+
+### Get Replay Details
+
+**GET** `/api/replays/[id]`
+
+Retrieve detailed information about a specific replay.
+
+**Response:**
+```json
+{
+  "replay": {
+    "id": "replay_123",
+    "battle_id": "battle_123",
+    "title": "Alice Johnson vs Bob Smith",
+    "date": "2023-05-15T10:30:00Z",
+    "duration": 900,
+    "players": [
+      {
+        "id": "user_1",
+        "name": "Alice Johnson",
+        "rating": 1850
+      },
+      {
+        "id": "user_2",
+        "name": "Bob Smith",
+        "rating": 1780
+      }
+    ],
+    "problems": [...],
+    "events": [...]
+  }
 }
 ```
 
@@ -230,28 +374,28 @@ Send a chat message to a battle.
 
 All endpoints may return the following error responses:
 
-**401 Unauthorized**
+**401 Unauthorized:**
 ```json
 {
   "error": "Unauthorized"
 }
 ```
 
-**403 Forbidden**
+**403 Forbidden:**
 ```json
 {
   "error": "Access denied"
 }
 ```
 
-**404 Not Found**
+**404 Not Found:**
 ```json
 {
   "error": "Battle not found"
 }
 ```
 
-**500 Internal Server Error**
+**500 Internal Server Error:**
 ```json
 {
   "error": "Internal server error"
@@ -260,34 +404,22 @@ All endpoints may return the following error responses:
 
 ## Rate Limiting
 
-The API implements rate limiting to prevent abuse:
+All endpoints are subject to rate limiting to prevent abuse:
 - 100 requests per minute per user
-- 10 requests per second per user
+- 1000 requests per hour per user
 
 Exceeding these limits will result in a 429 Too Many Requests response.
 
-## WebSockets/Real-time Updates
+## WebSockets
 
-The battle arena uses Server-Sent Events (SSE) for real-time updates:
+Real-time updates are provided via WebSockets through the Supabase real-time service. Clients should subscribe to relevant channels to receive live updates about battles, tournaments, and other events.
 
-**Endpoint:** `/api/notifications/sse`
+## Version History
 
-**Events:**
-- `battle_started`: Battle has started
-- `battle_round_started`: New round has started
-- `battle_submission_received`: Solution submitted
-- `battle_submission_judged`: Submission judged
-- `battle_round_ended`: Round completed
-- `battle_ended`: Battle completed
-- `battle_spectator_joined`: New spectator joined
-- `battle_chat_message`: New chat message
-- `battle_updated`: Battle status updated
+- v1.0.0 (2023-05-15): Initial release with core battle functionality
+- v1.1.0 (2023-05-20): Added tournament and replay system
+- v1.2.0 (2023-05-25): Added AI-based matchmaking and spectator mode
 
-**Example Event:**
-```json
-{
-  "type": "battle_started",
-  "battleId": "uuid",
-  "message": "Battle started! First round beginning now."
-}
-```
+## Support
+
+For API support, please contact the development team or refer to the main documentation.

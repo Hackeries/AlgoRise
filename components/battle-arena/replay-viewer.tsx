@@ -1,16 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Play, 
+  Pause, 
   Square, 
   RotateCcw, 
   Settings, 
@@ -23,12 +21,13 @@ import {
   Zap,
   Crown,
   Flag,
-  Eye,
-  EyeOff
+  Rewind,
+  FastForward,
+  SkipBack,
+  SkipForward
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Scoreboard } from '@/components/battle-arena/scoreboard';
-import { SpectatorView } from '@/components/battle-arena/spectator-view';
 import dynamic from 'next/dynamic';
 
 // Dynamically import the code editor to avoid SSR issues
@@ -77,122 +76,148 @@ interface Submission {
   time: number;
   memory: number;
   timestamp: number;
+  codeText: string;
 }
 
-export default function BattleRoomPage({ params }: { params: { id: string } }) {
-  const router = useRouter();
-  const [time, setTime] = useState(0);
-  const [isRunning, setIsRunning] = useState(false);
+interface ReplayEvent {
+  id: string;
+  type: 'submission' | 'chat' | 'round_start' | 'round_end' | 'battle_start' | 'battle_end';
+  timestamp: number;
+  data: any;
+}
+
+interface ReplayViewerProps {
+  battleId: string;
+  players: Player[];
+  problems: Problem[];
+  events: ReplayEvent[];
+}
+
+export function ReplayViewer({ 
+  battleId, 
+  players, 
+  problems,
+  events
+}: ReplayViewerProps) {
+  const [currentTime, setCurrentTime] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [activeTab, setActiveTab] = useState('problem');
   const [language, setLanguage] = useState('cpp');
   const [code, setCode] = useState('');
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [isSpectator, setIsSpectator] = useState(false);
-  const [spectators, setSpectators] = useState<Player[]>([]);
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const [currentEventIndex, setCurrentEventIndex] = useState(0);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Mock data - in a real implementation, this would come from the backend
-  const players: Player[] = [
-    {
-      id: "1",
-      name: "You",
-      rating: 1850,
-      solved: 2,
-      penalty: 32,
-      isOnline: true
-    },
-    {
-      id: "2",
-      name: "Opponent",
-      rating: 1780,
-      solved: 1,
-      penalty: 25,
-      isOnline: true
-    }
-  ];
+  // Get the total duration from the last event
+  const totalDuration = events.length > 0 ? events[events.length - 1].timestamp : 3600;
 
-  const problems: Problem[] = [
-    {
-      id: "A",
-      name: "A",
-      title: "Sum of Two Numbers",
-      description: "Given two integers a and b, return their sum.",
-      input: "Two integers a and b (1 ≤ a, b ≤ 1000)",
-      output: "Print the sum of a and b",
-      sampleInput: "3 5",
-      sampleOutput: "8",
-      timeLimit: 1000,
-      memoryLimit: 256,
-      solved: 4,
-      attempts: 6
-    },
-    {
-      id: "B",
-      name: "B",
-      title: "Array Rotation",
-      description: "Given an array of n integers and a number k, rotate the array to the right by k steps.",
-      input: "First line contains two integers n and k. Second line contains n integers.",
-      output: "Print the rotated array.",
-      sampleInput: "5 2\n1 2 3 4 5",
-      sampleOutput: "4 5 1 2 3",
-      timeLimit: 2000,
-      memoryLimit: 512,
-      solved: 2,
-      attempts: 5
-    }
-  ];
-
-  const currentProblem = problems[0];
-
-  // Mock spectators data
-  const mockSpectators: Player[] = [
-    {
-      id: "3",
-      name: "Spectator1",
-      rating: 1650,
-      solved: 0,
-      penalty: 0,
-      isOnline: true
-    },
-    {
-      id: "4",
-      name: "Spectator2",
-      rating: 1420,
-      solved: 0,
-      penalty: 0,
-      isOnline: true
-    },
-    {
-      id: "5",
-      name: "Spectator3",
-      rating: 1980,
-      solved: 0,
-      penalty: 0,
-      isOnline: true
-    }
-  ];
-
-  // Timer effect
+  // Process events as we progress through the replay
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    
-    if (isRunning) {
-      interval = setInterval(() => {
-        setTime(prev => prev + 1);
+    // Find the event index that corresponds to the current time
+    const eventIndex = events.findIndex(event => event.timestamp > currentTime);
+    if (eventIndex !== -1 && eventIndex !== currentEventIndex) {
+      setCurrentEventIndex(eventIndex);
+      
+      // Process the event
+      const event = events[eventIndex];
+      processEvent(event);
+    }
+  }, [currentTime, events, currentEventIndex]);
+
+  const processEvent = (event: ReplayEvent) => {
+    switch (event.type) {
+      case 'submission':
+        const newSubmission: Submission = {
+          id: event.data.id,
+          playerId: event.data.playerId,
+          problemId: event.data.problemId,
+          status: event.data.status,
+          language: event.data.language,
+          time: event.data.time,
+          memory: event.data.memory,
+          timestamp: event.data.timestamp,
+          codeText: event.data.codeText
+        };
+        setSubmissions(prev => [newSubmission, ...prev]);
+        break;
+        
+      case 'chat':
+        setChatMessages(prev => [...prev, event.data]);
+        break;
+        
+      case 'round_start':
+        // Handle round start
+        break;
+        
+      case 'round_end':
+        // Handle round end
+        break;
+        
+      default:
+        break;
+    }
+  };
+
+  // Playback controls
+  const play = () => {
+    setIsPlaying(true);
+  };
+
+  const pause = () => {
+    setIsPlaying(false);
+  };
+
+  const stop = () => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setCurrentEventIndex(0);
+    setSubmissions([]);
+    setChatMessages([]);
+  };
+
+  const skipBack = () => {
+    const newTime = Math.max(0, currentTime - 10);
+    setCurrentTime(newTime);
+  };
+
+  const skipForward = () => {
+    const newTime = Math.min(totalDuration, currentTime + 10);
+    setCurrentTime(newTime);
+  };
+
+  const rewind = () => {
+    setPlaybackSpeed(prev => Math.max(0.25, prev / 2));
+  };
+
+  const fastForward = () => {
+    setPlaybackSpeed(prev => Math.min(4, prev * 2));
+  };
+
+  // Timer effect for playback
+  useEffect(() => {
+    if (isPlaying) {
+      intervalRef.current = setInterval(() => {
+        setCurrentTime(prev => {
+          const newTime = prev + playbackSpeed;
+          if (newTime >= totalDuration) {
+            setIsPlaying(false);
+            return totalDuration;
+          }
+          return newTime;
+        });
       }, 1000);
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current);
     }
-    
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isRunning]);
 
-  // Auto-scroll chat to bottom
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isPlaying, playbackSpeed, totalDuration]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -200,80 +225,12 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleSubmit = () => {
-    const newSubmission: Submission = {
-      id: Date.now().toString(),
-      playerId: "1",
-      problemId: currentProblem.id,
-      status: 'pending',
-      language,
-      time: 0,
-      memory: 0,
-      timestamp: Date.now()
-    };
-    
-    setSubmissions(prev => [newSubmission, ...prev]);
-    
-    // Simulate submission processing
-    setTimeout(() => {
-      setSubmissions(prev => prev.map(sub => 
-        sub.id === newSubmission.id 
-          ? { ...sub, status: 'accepted', time: 42, memory: 128 } 
-          : sub
-      ));
-    }, 2000);
+  const handleTimelineChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTime = parseInt(e.target.value);
+    setCurrentTime(newTime);
   };
 
-  const handleChatSend = () => {
-    if (newMessage.trim()) {
-      const message = {
-        id: Date.now().toString(),
-        sender: "You",
-        content: newMessage,
-        timestamp: Date.now()
-      };
-      
-      setChatMessages(prev => [...prev, message]);
-      setNewMessage('');
-      
-      // Simulate opponent response
-      setTimeout(() => {
-        const responses = [
-          "Good luck with that problem!",
-          "I'm working on problem B right now",
-          "This is a tough one!",
-          "How's your solution coming along?"
-        ];
-        
-        const opponentMessage = {
-          id: (Date.now() + 1).toString(),
-          sender: "Opponent",
-          content: responses[Math.floor(Math.random() * responses.length)],
-          timestamp: Date.now()
-        };
-        
-        setChatMessages(prev => [...prev, opponentMessage]);
-      }, 3000);
-    }
-  };
-
-  const toggleSpectatorMode = () => {
-    setIsSpectator(!isSpectator);
-    setSpectators(mockSpectators);
-  };
-
-  // If user is a spectator, show spectator view
-  if (isSpectator) {
-    return (
-      <SpectatorView 
-        battleId={params.id}
-        players={players}
-        problems={problems}
-        spectators={mockSpectators}
-        isPublic={true}
-      />
-    );
-  }
+  const currentProblem = problems[0];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950 p-2 md:p-4">
@@ -282,63 +239,119 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 md:mb-6 gap-3 md:gap-4">
           <div>
             <h1 className="text-lg md:text-2xl font-bold flex items-center gap-2 text-blue-200">
-              <Zap className="h-5 w-5 md:h-6 md:w-6 text-yellow-400" />
-              Battle Room
-              <Badge variant="secondary" className="ml-2 bg-blue-500/20 text-blue-300 text-xs md:text-sm">
-                1v1 Duel
+              <Trophy className="h-5 w-5 md:h-6 md:w-6 text-yellow-400" />
+              Battle Replay
+              <Badge variant="secondary" className="ml-2 bg-yellow-500/20 text-yellow-300 text-xs md:text-sm">
+                {players[0]?.name} vs {players[1]?.name}
               </Badge>
             </h1>
             <p className="text-xs md:text-sm text-muted-foreground">
-              Best of 3 - Round 1 of 3
+              Replay of battle #{battleId}
             </p>
           </div>
           
           <div className="flex items-center gap-2 md:gap-4">
             <div className="flex items-center gap-1 md:gap-2 bg-slate-900/50 px-2 md:px-3 py-1 rounded-lg">
-              <Clock className="h-3 w-3 md:h-4 md:w-4 text-cyan-400" />
-              <span className="font-mono text-sm md:text-base text-blue-200">{formatTime(time)}</span>
+              <Clock className="h-3 w-3 md:h-4 md:w-4 text-yellow-400" />
+              <span className="font-mono text-sm md:text-base text-blue-200">
+                {formatTime(currentTime)} / {formatTime(totalDuration)}
+              </span>
             </div>
-            
-            <Button 
-              onClick={() => setIsRunning(!isRunning)}
-              variant={isRunning ? "destructive" : "default"}
-              className="text-xs md:text-sm flex items-center gap-1 md:gap-2 h-8 md:h-10"
-            >
-              {isRunning ? (
-                <>
-                  <Square className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="hidden xs:inline">Stop</span>
-                </>
-              ) : (
-                <>
-                  <Play className="h-3 w-3 md:h-4 md:w-4" />
-                  <span className="hidden xs:inline">Start</span>
-                </>
-              )}
-            </Button>
-            
-            <Button 
-              onClick={toggleSpectatorMode}
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 md:h-10 md:w-10"
-            >
-              <Eye className="h-3 w-3 md:h-4 md:w-4" />
-            </Button>
-            
-            <Button variant="outline" size="icon" className="h-8 w-8 md:h-10 md:w-10">
-              <Settings className="h-3 w-3 md:h-4 md:w-4" />
-            </Button>
           </div>
         </div>
 
+        {/* Playback Controls */}
+        <Card className="mb-4 md:mb-6 bg-gradient-to-br from-slate-900/80 to-slate-950/80 border-yellow-500/20 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex items-center justify-center gap-2">
+                <Button 
+                  onClick={rewind}
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <Rewind className="h-4 w-4" />
+                </Button>
+                
+                <Button 
+                  onClick={skipBack}
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <SkipBack className="h-4 w-4" />
+                </Button>
+                
+                <Button 
+                  onClick={isPlaying ? pause : play}
+                  variant="default"
+                  size="icon"
+                  className="h-10 w-10"
+                >
+                  {isPlaying ? (
+                    <Pause className="h-5 w-5" />
+                  ) : (
+                    <Play className="h-5 w-5" />
+                  )}
+                </Button>
+                
+                <Button 
+                  onClick={skipForward}
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <SkipForward className="h-4 w-4" />
+                </Button>
+                
+                <Button 
+                  onClick={fastForward}
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <FastForward className="h-4 w-4" />
+                </Button>
+                
+                <Button 
+                  onClick={stop}
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <Square className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="flex-1">
+                <input
+                  type="range"
+                  min="0"
+                  max={totalDuration}
+                  value={currentTime}
+                  onChange={handleTimelineChange}
+                  className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
+                />
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Speed:</span>
+                <Badge variant="secondary" className="bg-slate-800/50">
+                  {playbackSpeed}x
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Main Content - Split View - Mobile responsive */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6 h-[calc(100vh-140px)] md:h-[calc(100vh-180px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6 h-[calc(100vh-240px)] md:h-[calc(100vh-280px)]">
           {/* Left Column - Problem and Editor */}
           <div className="lg:col-span-2 flex flex-col gap-3 md:gap-6">
             {/* Problem/Editor Tabs - Mobile responsive */}
-            <Card className="flex-1 flex flex-col bg-gradient-to-br from-slate-900/80 to-slate-950/80 border-blue-500/20 backdrop-blur-sm">
-              <div className="border-b border-blue-500/20">
+            <Card className="flex-1 flex flex-col bg-gradient-to-br from-slate-900/80 to-slate-950/80 border-yellow-500/20 backdrop-blur-sm">
+              <div className="border-b border-yellow-500/20">
                 <div className="flex overflow-x-auto">
                   <Button
                     variant={activeTab === 'problem' ? 'default' : 'ghost'}
@@ -390,7 +403,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                         </Badge>
                       </div>
                       
-                      <Separator className="my-6 bg-blue-500/20" />
+                      <Separator className="my-6 bg-yellow-500/20" />
                       
                       <div className="space-y-6">
                         <div>
@@ -410,14 +423,14 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                         
                         <div>
                           <h3 className="text-lg font-semibold mb-2 text-blue-300">Sample Input</h3>
-                          <pre className="bg-slate-900/50 p-4 rounded-lg border border-blue-500/20 text-blue-100">
+                          <pre className="bg-slate-900/50 p-4 rounded-lg border border-yellow-500/20 text-blue-100">
                             {currentProblem.sampleInput}
                           </pre>
                         </div>
                         
                         <div>
                           <h3 className="text-lg font-semibold mb-2 text-blue-300">Sample Output</h3>
-                          <pre className="bg-slate-900/50 p-4 rounded-lg border border-blue-500/20 text-blue-100">
+                          <pre className="bg-slate-900/50 p-4 rounded-lg border border-yellow-500/20 text-blue-100">
                             {currentProblem.sampleOutput}
                           </pre>
                         </div>
@@ -428,29 +441,16 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                 
                 {activeTab === 'editor' && (
                   <div className="h-full flex flex-col">
-                    <div className="flex items-center justify-between p-4 border-b border-blue-500/20">
+                    <div className="flex items-center justify-between p-4 border-b border-yellow-500/20">
                       <div className="flex items-center gap-2">
-                        <Select value={language} onValueChange={setLanguage}>
-                          <SelectTrigger className="w-32 bg-slate-900/50 border-blue-500/20">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="cpp">C++</SelectItem>
-                            <SelectItem value="c">C</SelectItem>
-                            <SelectItem value="java">Java</SelectItem>
-                            <SelectItem value="python">Python</SelectItem>
-                            <SelectItem value="javascript">JavaScript</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Badge variant="secondary" className="bg-slate-800/50">
+                          {language.toUpperCase()}
+                        </Badge>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" className="border-blue-500/20">
+                        <Button variant="outline" size="sm" className="border-yellow-500/20">
                           <RotateCcw className="h-4 w-4 mr-2" />
                           Reset
-                        </Button>
-                        <Button onClick={handleSubmit} className="flex items-center gap-2">
-                          <Play className="h-4 w-4" />
-                          Run Code
                         </Button>
                       </div>
                     </div>
@@ -474,7 +474,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                         </div>
                         <p className="text-muted-foreground">No submissions yet</p>
                         <p className="text-sm text-muted-foreground mt-1">
-                          Submit your solution to see results here
+                          Submissions will appear as the replay progresses
                         </p>
                       </div>
                     ) : (
@@ -484,14 +484,14 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                             key={submission.id}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="bg-slate-900/50 rounded-lg p-4 border border-blue-500/20"
+                            className="bg-slate-900/50 rounded-lg p-4 border border-yellow-500/20"
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 {submission.status === 'accepted' ? (
                                   <CheckCircle className="h-5 w-5 text-green-500" />
                                 ) : submission.status === 'pending' ? (
-                                  <div className="h-5 w-5 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
+                                  <div className="h-5 w-5 rounded-full border-2 border-yellow-500 border-t-transparent animate-spin"></div>
                                 ) : (
                                   <XCircle className="h-5 w-5 text-red-500" />
                                 )}
@@ -533,16 +533,16 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
               <Scoreboard 
                 players={players} 
                 problems={problems} 
-                currentTime={time} 
-                totalDuration={3600}
+                currentTime={currentTime} 
+                totalDuration={totalDuration}
               />
             </div>
             
             {/* Chat */}
-            <Card className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 border-blue-500/20 backdrop-blur-sm">
+            <Card className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 border-yellow-500/20 backdrop-blur-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-blue-200">
-                  <MessageCircle className="h-5 w-5 text-cyan-400" />
+                  <MessageCircle className="h-5 w-5 text-yellow-400" />
                   Battle Chat
                 </CardTitle>
               </CardHeader>
@@ -558,7 +558,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                       >
                         <div className={`inline-block max-w-xs px-3 py-2 rounded-lg ${
                           message.sender === 'You' 
-                            ? 'bg-blue-500/20 text-blue-100 rounded-br-none' 
+                            ? 'bg-yellow-500/20 text-blue-100 rounded-br-none' 
                             : 'bg-slate-800/50 text-blue-100 rounded-bl-none'
                         }`}>
                           <div className="font-medium text-xs text-muted-foreground mb-1">
@@ -572,31 +572,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
                       </motion.div>
                     ))}
                   </AnimatePresence>
-                  <div ref={chatEndRef} />
                 </ScrollArea>
-                <div className="p-4 border-t border-blue-500/20">
-                  <div className="flex gap-2">
-                    <Textarea
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleChatSend();
-                        }
-                      }}
-                      placeholder="Type a message..."
-                      className="flex-1 bg-slate-900/50 border-blue-500/20 min-h-12"
-                    />
-                    <Button 
-                      onClick={handleChatSend}
-                      size="icon"
-                      className="h-12"
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>

@@ -97,15 +97,27 @@ export class BattleService {
     roundNumber: number
   ): Promise<{ success: boolean; message: string; roundId?: string }> {
     try {
-      // Get a random problem (in a real implementation, this would select an appropriate problem)
-      // For now, we'll use a placeholder
-      const problem = {
-        id: `PROB_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-        title: `Problem ${roundNumber}`,
-        rating: 1200 + (roundNumber - 1) * 200,
-        contestId: 1000 + roundNumber,
-        index: String.fromCharCode(64 + roundNumber) // A, B, C, etc.
-      };
+      // Get battle participants to determine appropriate problem rating
+      const { data: participants, error: participantsError } = await this.supabase
+        .from('battle_participants')
+        .select('user_id, rating_before')
+        .eq('battle_id', battleId);
+
+      if (participantsError || !participants) {
+        console.error('Error fetching battle participants:', participantsError);
+        return { success: false, message: 'Failed to fetch battle participants' };
+      }
+
+      // Calculate average rating of participants
+      const avgRating = participants.reduce((sum: number, p: any) => sum + p.rating_before, 0) / participants.length;
+      
+      // Determine problem rating range based on participant ratings
+      // Use ±200 rating range for problem selection
+      const minRating = Math.max(800, Math.floor(avgRating - 200));
+      const maxRating = Math.floor(avgRating + 200);
+
+      // Get a problem within the rating range from Codeforces
+      const problem = await this.selectProblemFromCodeforces(minRating, maxRating);
 
       // Create round record
       const { data: round, error: roundError } = await this.supabase
@@ -129,31 +141,58 @@ export class BattleService {
       }
 
       // Notify participants about new round
-      const { data: participants, error: participantsError } = await this.supabase
-        .from('battle_participants')
-        .select('user_id')
-        .eq('battle_id', battleId);
-
-      if (!participantsError && participants) {
-        const userIds = participants.map((p: any) => p.user_id);
-        await this.rtManager.sendToUsers(userIds, {
-          type: 'battle_round_started',
-          battleId,
-          roundNumber,
-          roundId: round.id,
-          problem: {
-            id: problem.id,
-            title: problem.title,
-            rating: problem.rating
-          },
-          message: `Round ${roundNumber} started with problem: ${problem.title}`
-        });
-      }
+      const userIds = participants.map((p: any) => p.user_id);
+      await this.rtManager.sendToUsers(userIds, {
+        type: 'battle_round_started',
+        battleId,
+        roundNumber,
+        roundId: round.id,
+        problem: {
+          id: problem.id,
+          title: problem.title,
+          rating: problem.rating
+        },
+        message: `Round ${roundNumber} started with problem: ${problem.title}`
+      });
 
       return { success: true, message: 'Round created', roundId: round.id };
     } catch (error) {
       console.error('Error creating round:', error);
       return { success: false, message: 'Failed to create round' };
+    }
+  }
+
+  // Select a problem from Codeforces based on rating range
+  private async selectProblemFromCodeforces(minRating: number, maxRating: number): Promise<{
+    id: string;
+    title: string;
+    rating: number;
+    contestId: number;
+    index: string;
+  }> {
+    try {
+      // In a real implementation, this would fetch actual problems from Codeforces API
+      // or from a local database of problems
+      // For now, we'll use a placeholder with appropriate rating
+      const rating = Math.floor((minRating + maxRating) / 2);
+      
+      return {
+        id: `CF_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+        title: `Problem (${rating} rating)`,
+        rating: rating,
+        contestId: 1000 + Math.floor(Math.random() * 1000),
+        index: String.fromCharCode(65 + Math.floor(Math.random() * 5)) // A-E
+      };
+    } catch (error) {
+      console.error('Error selecting problem from Codeforces:', error);
+      // Fallback to a default problem
+      return {
+        id: `DEFAULT_${Date.now()}`,
+        title: 'Default Problem',
+        rating: 1200,
+        contestId: 1000,
+        index: 'A'
+      };
     }
   }
 
@@ -639,80 +678,89 @@ export class BattleService {
         return;
       }
 
-      // Calculate rating changes using ELO system
-      const ratings: RatingRow[] = participants.map((p: any) => ({
-        user_id: p.user_id,
-        rating: p.rating_before
-      }));
+      // Check if any participant is a bot (user_id starting with 'bot')
+      const hasBot = participants.some((p: any) => p.user_id.startsWith('bot'));
+      
+      // Initialize deltas variable
+      let deltas: { user_id: string; delta: number }[] = [];
 
-      // Create rank rows (winner gets rank 1, others get rank 2)
-      const ranks: RankRow[] = participants.map((p: any) => ({
-        user_id: p.user_id,
-        score: p.user_id === winnerUserId ? 1 : 0,
-        penalty_s: 0
-      }));
+      // Only update ratings if no bot is involved
+      if (!hasBot) {
+        // Calculate rating changes using ELO system
+        const ratings: RatingRow[] = participants.map((p: any) => ({
+          user_id: p.user_id,
+          rating: p.rating_before
+        }));
 
-      // Sort ranks by score (descending)
-      ranks.sort((a, b) => b.score - a.score);
+        // Create rank rows (winner gets rank 1, others get rank 2)
+        const ranks: RankRow[] = participants.map((p: any) => ({
+          user_id: p.user_id,
+          score: p.user_id === winnerUserId ? 1 : 0,
+          penalty_s: 0
+        }));
 
-      // Calculate rating deltas with K=32 factor
-      const deltas = simulateRatings({ ranks, ratings, K: 32 });
+        // Sort ranks by score (descending)
+        ranks.sort((a, b) => b.score - a.score);
 
-      // Update participant records with new ratings
-      for (const participant of participants) {
-        const delta = deltas.find(d => d.user_id === participant.user_id)?.delta || 0;
-        const newRating = participant.rating_before + delta;
+        // Calculate rating deltas with K=32 factor
+        deltas = simulateRatings({ ranks, ratings, K: 32 });
 
-        await this.supabase
-          .from('battle_participants')
-          .update({
-            rating_after: newRating,
-            rating_delta: delta
-          })
-          .eq('battle_id', battleId)
-          .eq('user_id', participant.user_id);
+        // Update participant records with new ratings
+        for (const participant of participants) {
+          const delta = deltas.find(d => d.user_id === participant.user_id)?.delta || 0;
+          const newRating = participant.rating_before + delta;
 
-        // Update or create user's overall rating
-        const { data: existingRating, error: ratingError } = await this.supabase
-          .from('battle_ratings')
-          .select('battles_count, wins, losses')
-          .eq('user_id', participant.user_id)
-          .single();
-
-        if (ratingError && ratingError.code !== 'PGRST116') {
-          console.error('Error fetching user rating:', ratingError);
-          continue;
-        }
-
-        const isWinner = participant.user_id === winnerUserId;
-        const battlesCount = (existingRating?.battles_count || 0) + 1;
-        const wins = (existingRating?.wins || 0) + (isWinner ? 1 : 0);
-        const losses = (existingRating?.losses || 0) + (isWinner ? 0 : 1);
-
-        if (existingRating) {
-          // Update existing rating
           await this.supabase
-            .from('battle_ratings')
+            .from('battle_participants')
             .update({
-              rating: newRating,
-              battles_count: battlesCount,
-              wins,
-              losses,
-              last_updated: new Date().toISOString()
+              rating_after: newRating,
+              rating_delta: delta
             })
+            .eq('battle_id', battleId)
             .eq('user_id', participant.user_id);
-        } else {
-          // Create new rating record
-          await this.supabase
+
+          // Update or create user's overall rating
+          const { data: existingRating, error: ratingError } = await this.supabase
             .from('battle_ratings')
-            .insert({
-              user_id: participant.user_id,
-              rating: newRating,
-              battles_count: battlesCount,
-              wins,
-              losses,
-              last_updated: new Date().toISOString()
-            });
+            .select('battles_count, wins, losses')
+            .eq('user_id', participant.user_id)
+            .single();
+
+          if (ratingError && ratingError.code !== 'PGRST116') {
+            console.error('Error fetching user rating:', ratingError);
+            continue;
+          }
+
+          const isWinner = participant.user_id === winnerUserId;
+          const battlesCount = (existingRating?.battles_count || 0) + 1;
+          const wins = (existingRating?.wins || 0) + (isWinner ? 1 : 0);
+          const losses = (existingRating?.losses || 0) + (isWinner ? 0 : 1);
+
+          if (existingRating) {
+            // Update existing rating
+            await this.supabase
+              .from('battle_ratings')
+              .update({
+                rating: newRating,
+                battles_count: battlesCount,
+                wins,
+                losses,
+                last_updated: new Date().toISOString()
+              })
+              .eq('user_id', participant.user_id);
+          } else {
+            // Create new rating record
+            await this.supabase
+              .from('battle_ratings')
+              .insert({
+                user_id: participant.user_id,
+                rating: newRating,
+                battles_count: battlesCount,
+                wins,
+                losses,
+                last_updated: new Date().toISOString()
+              });
+          }
         }
       }
 
@@ -723,7 +771,7 @@ export class BattleService {
         battleId,
         winnerUserId,
         message: `Battle completed! Winner: ${winnerUserId}`,
-        ratings: deltas
+        ratings: hasBot ? [] : deltas // Only send rating updates if no bot was involved
       });
     } catch (error) {
       console.error('Error ending battle:', error);

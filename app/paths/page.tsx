@@ -183,9 +183,9 @@ export default function LearningPathsPage() {
           </div>
           <div className='flex items-start justify-between gap-6'>
             <div className='flex-1'>
-              <h1 className='text-4xl sm:text-5xl font-bold tracking-tight flex items-center gap-3'>
+              <h1 className='text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-3'>
                 <div className='p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30'>
-                  <TrendingUp className='h-10 w-10 text-blue-500 animate-pulse' />
+                  <TrendingUp className='h-6 w-6 text-blue-500' />
                 </div>
                 <span className='gradient-text'>Learning Paths</span>
               </h1>
@@ -205,7 +205,7 @@ export default function LearningPathsPage() {
                 <div className='text-sm text-muted-foreground font-medium'>
                   Total Problems
                 </div>
-                <div className='mt-2 text-3xl font-bold'>{totalProblems}</div>
+                <div className='mt-2 text-xl font-bold'>{totalProblems}</div>
               </CardContent>
             </Card>
             <Card className='card-3d border-l-4 border-l-green-500 hover-lift'>
@@ -216,7 +216,7 @@ export default function LearningPathsPage() {
                 <div className='text-sm text-muted-foreground font-medium'>
                   Completed
                 </div>
-                <div className='mt-2 text-3xl font-bold'>
+                <div className='mt-2 text-xl font-bold'>
                   {Math.round((overallProgress * totalProblems) / 100)}
                 </div>
               </CardContent>
@@ -229,7 +229,7 @@ export default function LearningPathsPage() {
                 <div className='text-sm text-muted-foreground font-medium'>
                   Estimated Time
                 </div>
-                <div className='mt-2 text-3xl font-bold'>30+ weeks</div>
+                <div className='mt-2 text-xl font-bold'>30+ weeks</div>
               </CardContent>
             </Card>
             <Card className='card-3d border-l-4 border-l-orange-500 hover-lift'>
@@ -240,7 +240,7 @@ export default function LearningPathsPage() {
                 <div className='text-sm text-muted-foreground font-medium'>
                   Overall Progress
                 </div>
-                <div className='mt-2 text-3xl font-bold'>{overallProgress}%</div>
+                <div className='mt-2 text-xl font-bold'>{overallProgress}%</div>
               </CardContent>
             </Card>
           </div>
@@ -271,7 +271,7 @@ export default function LearningPathsPage() {
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-4 flex-1'>
                     <div
-                      className={`p-3 rounded-lg text-3xl shadow-lg ${
+                      className={`p-3 rounded-lg text-2xl shadow-lg ${
                         isCompleted ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20' : 'bg-gradient-to-br from-primary/20 to-accent/20'
                       }`}
                     >

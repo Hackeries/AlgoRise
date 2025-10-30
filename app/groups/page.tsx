@@ -158,7 +158,7 @@ export default function GroupsPage() {
       if (!res.ok) throw new Error(json?.error || 'Unable to create group');
 
       toast({
-        title: '🎉 Your team is ready!',
+        title: 'Your team is ready!',
         description: `${groupName} is all set! Time to invite your teammates and start crushing problems together.`,
       });
 

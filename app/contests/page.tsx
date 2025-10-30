@@ -631,22 +631,20 @@ export default function ContestsPage() {
   }, [privateContests, notifiedContestIds, toast]);
 
   return (
-    <main className='mx-auto max-w-7xl px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-10'>
+    <main className='mx-auto max-w-7xl px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8'>
       {/* Enhanced Hero Section */}
-      <div className='relative overflow-hidden rounded-2xl glass-intense p-8 sm:p-10 mb-8 hover-lift'>
+      <div className='relative overflow-hidden rounded-xl glass-intense p-4 sm:p-6 mb-6 hover-lift'>
         <div className='absolute inset-0 -z-10'>
           <div className='absolute top-0 right-0 w-1/2 h-1/2 bg-primary/20 rounded-full blur-[100px]' />
           <div className='absolute bottom-0 left-0 w-1/2 h-1/2 bg-accent/20 rounded-full blur-[100px]' />
         </div>
         <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6'>
           <div className='flex-1'>
-            <h1 className='text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-3 gradient-text'>
-              <Trophy className='h-8 w-8 text-yellow-500 animate-pulse' />
-              Contests Arena
+            <h1 className='text-xl sm:text-2xl font-bold tracking-tight gradient-text'>
+              Contests
             </h1>
-            <p className='mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl'>
-              <span className='font-semibold text-foreground'>Host or join</span> Codeforces contests and private training sessions. 
-              Perfect for practice, team training, and competitive preparation.
+            <p className='mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl'>
+              Host or join Codeforces contests and private training sessions
             </p>
           </div>
 
@@ -1065,7 +1063,7 @@ export default function ContestsPage() {
                 size='lg'
                 className='min-w-[150px] bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 font-semibold shadow-lg hover:shadow-xl transition-all'
               >
-                {creating ? '⏳ Creating...' : '🚀 Create Contest'}
+                {creating ? 'Creating...' : 'Create Contest'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -1089,10 +1087,10 @@ export default function ContestsPage() {
                   <Trophy className='w-6 h-6 text-yellow-500' />
                 </div>
                 <div>
-                  <h2 className='text-xl sm:text-2xl font-bold text-foreground'>
-                    Upcoming Codeforces Contests
+                  <h2 className='text-base sm:text-lg font-bold text-foreground'>
+                    Codeforces Contests
                   </h2>
-                  <p className='text-xs sm:text-sm text-muted-foreground'>Compete on the global stage</p>
+                  <p className='text-xs text-muted-foreground'>Compete globally</p>
                 </div>
               </div>
               <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1'>
@@ -1181,10 +1179,10 @@ export default function ContestsPage() {
                   <Zap className='w-6 h-6 text-purple-500' />
                 </div>
                 <div>
-                  <h2 className='text-xl sm:text-2xl font-bold text-foreground'>
-                    🎯 Private Training Contests
+                  <h2 className='text-base sm:text-lg font-bold text-foreground'>
+                    Private Training
                   </h2>
-                  <p className='text-xs sm:text-sm text-muted-foreground'>Custom practice sessions • Separate from Battle Arena</p>
+                  <p className='text-xs text-muted-foreground'>Custom practice sessions</p>
                 </div>
               </div>
               <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1'>
@@ -1193,25 +1191,13 @@ export default function ContestsPage() {
             </div>
 
             {/* Info Banner */}
-            <div className='mb-6 p-4 sm:p-5 rounded-xl bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 border border-blue-500/30'>
-              <div className='flex items-start gap-3'>
-                <div className='mt-0.5'>
-                  <div className='p-2 rounded-lg bg-blue-500/20'>
-                    <Trophy className='w-5 h-5 text-blue-500' />
-                  </div>
-                </div>
+            <div className='mb-4 p-3 sm:p-4 rounded-lg bg-gradient-to-r from-purple-500/5 via-blue-500/5 to-purple-500/5 border border-purple-500/20'>
+              <div className='flex items-start gap-2'>
                 <div className='flex-1'>
-                  <h3 className='font-semibold text-foreground mb-2 text-sm sm:text-base'>Private Contests vs Battle Arena</h3>
-                  <div className='space-y-2 text-sm text-muted-foreground'>
-                    <p>
-                      <strong className='text-purple-500'>🎯 Private Contests:</strong> Create custom practice sessions with your own problem sets, timing, and rules. 
-                      Perfect for team training, mock contests, and group preparation.
-                    </p>
-                    <p>
-                      <strong className='text-orange-500'>⚔️ Battle Arena:</strong> Real-time competitive matches with instant matchmaking and live battles. 
-                      Find it in the <strong>Battle Arena</strong> section!
-                    </p>
-                  </div>
+                  <p className='text-xs text-muted-foreground'>
+                    <strong className='text-purple-400'>Private Contests:</strong> Custom practice with your own problems and rules. 
+                    <strong className='text-orange-400'>Battle Arena:</strong> Real-time competitive matches (see Battle Arena section).
+                  </p>
                 </div>
               </div>
             </div>

@@ -162,93 +162,93 @@
    ============================================ */
 
 .dark {
-  /* Base Colors - Rich & Deep */
-  --background: 224 71% 4%; /* Deep blue-black */
+  /* Base Colors - Modern Dark Aesthetics */
+  --background: 222 47% 7%; /* Rich dark blue-gray */
   --foreground: 210 40% 98%; /* Soft white */
   
-  /* Surface Colors - Elevated layers */
-  --card: 224 63% 8%; /* Slightly lighter */
+  /* Surface Colors - Elevated layers with depth */
+  --card: 222 47% 11%; /* Elevated surface */
   --card-foreground: 210 40% 98%;
-  --popover: 224 71% 4%;
+  --popover: 222 47% 9%;
   --popover-foreground: 210 40% 98%;
   
-  /* Brand Colors - Glowing & Prominent */
-  --primary: 217 91% 60%; /* Bright blue */
-  --primary-foreground: 224 71% 4%;
-  --primary-hover: 217 91% 65%;
-  --primary-active: 217 91% 70%;
+  /* Brand Colors - Vibrant & Modern */
+  --primary: 217 91% 65%; /* Bright electric blue */
+  --primary-foreground: 222 47% 7%;
+  --primary-hover: 217 91% 70%;
+  --primary-active: 217 91% 75%;
   
-  --secondary: 215 20% 15%; /* Dark gray-blue */
+  --secondary: 217 19% 18%; /* Sophisticated gray-blue */
   --secondary-foreground: 210 40% 98%;
-  --secondary-hover: 215 20% 18%;
-  --secondary-active: 215 20% 22%;
+  --secondary-hover: 217 19% 22%;
+  --secondary-active: 217 19% 26%;
   
-  /* State Colors - Vivid in darkness */
-  --muted: 215 20% 15%;
-  --muted-foreground: 217 15% 65%;
+  /* State Colors - Enhanced contrast */
+  --muted: 217 19% 18%;
+  --muted-foreground: 217 15% 70%;
   
-  --accent: 199 95% 58%; /* Electric cyan */
-  --accent-foreground: 224 71% 4%;
-  --accent-hover: 199 95% 63%;
+  --accent: 199 95% 60%; /* Vivid cyan */
+  --accent-foreground: 222 47% 7%;
+  --accent-hover: 199 95% 65%;
   
-  --destructive: 0 72% 58%; /* Bright red */
+  --destructive: 0 84% 60%; /* Vibrant red */
   --destructive-foreground: 210 40% 98%;
-  --destructive-hover: 0 72% 63%;
+  --destructive-hover: 0 84% 65%;
   
-  --success: 142 71% 50%; /* Vibrant green */
-  --success-foreground: 224 71% 4%;
+  --success: 142 76% 50%; /* Bright green */
+  --success-foreground: 222 47% 7%;
   
-  --warning: 38 92% 58%; /* Warm amber */
-  --warning-foreground: 224 71% 4%;
+  --warning: 38 92% 60%; /* Warm amber */
+  --warning-foreground: 222 47% 7%;
   
-  --info: 199 89% 55%; /* Cool blue */
-  --info-foreground: 224 71% 4%;
+  --info: 199 89% 58%; /* Cool blue */
+  --info-foreground: 222 47% 7%;
   
-  /* UI Elements - Subtle contrast */
-  --border: 215 20% 20%;
-  --input: 215 20% 15%;
-  --ring: 217 91% 60%;
-  --ring-offset: 224 71% 4%;
+  /* UI Elements - Enhanced depth */
+  --border: 217 19% 24%;
+  --input: 217 19% 18%;
+  --ring: 217 91% 65%;
+  --ring-offset: 222 47% 7%;
   
-  /* Charts - Bright & Clear */
-  --chart-1: 217 91% 60%;
-  --chart-2: 199 95% 58%;
-  --chart-3: 142 71% 50%;
-  --chart-4: 0 72% 58%;
-  --chart-5: 262 83% 63%;
-  --chart-6: 38 92% 58%;
-  --chart-7: 340 82% 60%;
-  --chart-8: 173 80% 48%;
+  /* Charts - Vibrant & Clear */
+  --chart-1: 217 91% 65%;
+  --chart-2: 199 95% 60%;
+  --chart-3: 142 76% 50%;
+  --chart-4: 0 84% 60%;
+  --chart-5: 262 83% 68%;
+  --chart-6: 38 92% 60%;
+  --chart-7: 340 82% 62%;
+  --chart-8: 173 80% 50%;
   
-  /* Sidebar */
-  --sidebar-background: 224 71% 4%;
+  /* Sidebar - Modern depth */
+  --sidebar-background: 222 47% 9%;
   --sidebar-foreground: 210 40% 98%;
-  --sidebar-accent: 215 20% 15%;
+  --sidebar-accent: 217 19% 18%;
   --sidebar-accent-foreground: 210 40% 98%;
   
-  /* Shadows - Deeper in dark mode */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.4);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.5);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.6);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.7), 0 8px 10px -6px rgb(0 0 0 / 0.7);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.85);
-  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.4);
+  /* Shadows - Enhanced depth */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.6), 0 1px 2px -1px rgb(0 0 0 / 0.6);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.6), 0 2px 4px -2px rgb(0 0 0 / 0.6);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.7), 0 4px 6px -4px rgb(0 0 0 / 0.7);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.75), 0 8px 10px -6px rgb(0 0 0 / 0.75);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.9);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.5);
   
-  /* 3D & Elevated Shadows - Dark Mode */
-  --shadow-3d-sm: 0 2px 4px rgb(0 0 0 / 0.4), 0 4px 8px rgb(0 0 0 / 0.5);
-  --shadow-3d-md: 0 4px 8px rgb(0 0 0 / 0.5), 0 8px 16px rgb(0 0 0 / 0.6);
-  --shadow-3d-lg: 0 8px 16px rgb(0 0 0 / 0.6), 0 16px 32px rgb(0 0 0 / 0.7);
-  --shadow-3d-xl: 0 16px 32px rgb(0 0 0 / 0.7), 0 32px 64px rgb(0 0 0 / 0.8);
+  /* 3D & Elevated Shadows - Enhanced */
+  --shadow-3d-sm: 0 2px 4px rgb(0 0 0 / 0.5), 0 4px 8px rgb(0 0 0 / 0.6);
+  --shadow-3d-md: 0 4px 8px rgb(0 0 0 / 0.6), 0 8px 16px rgb(0 0 0 / 0.7);
+  --shadow-3d-lg: 0 8px 16px rgb(0 0 0 / 0.7), 0 16px 32px rgb(0 0 0 / 0.8);
+  --shadow-3d-xl: 0 16px 32px rgb(0 0 0 / 0.8), 0 32px 64px rgb(0 0 0 / 0.85);
 
-  /* Dark mode glow effects */
-  --glow-primary: 0 0 20px rgb(59 130 246 / 0.3);
-  --glow-primary-intense: 0 0 30px rgb(59 130 246 / 0.5), 0 0 50px rgb(59 130 246 / 0.2);
-  --glow-accent: 0 0 20px rgb(6 182 212 / 0.3);
-  --glow-accent-intense: 0 0 30px rgb(6 182 212 / 0.5), 0 0 50px rgb(6 182 212 / 0.2);
-  --glow-success: 0 0 20px rgb(34 197 94 / 0.3);
-  --glow-warning: 0 0 20px rgb(251 146 60 / 0.3);
-  --glow-danger: 0 0 20px rgb(239 68 68 / 0.3);
+  /* Dark mode glow effects - Enhanced */
+  --glow-primary: 0 0 24px rgb(59 130 246 / 0.35), 0 0 48px rgb(59 130 246 / 0.15);
+  --glow-primary-intense: 0 0 32px rgb(59 130 246 / 0.55), 0 0 64px rgb(59 130 246 / 0.25);
+  --glow-accent: 0 0 24px rgb(6 182 212 / 0.35), 0 0 48px rgb(6 182 212 / 0.15);
+  --glow-accent-intense: 0 0 32px rgb(6 182 212 / 0.55), 0 0 64px rgb(6 182 212 / 0.25);
+  --glow-success: 0 0 24px rgb(34 197 94 / 0.35), 0 0 48px rgb(34 197 94 / 0.15);
+  --glow-warning: 0 0 24px rgb(251 146 60 / 0.35), 0 0 48px rgb(251 146 60 / 0.15);
+  --glow-danger: 0 0 24px rgb(239 68 68 / 0.35), 0 0 48px rgb(239 68 68 / 0.15);
 }
 
 /* ============================================
@@ -376,12 +376,12 @@
     transition: color var(--duration-normal) var(--ease-out);
   }
   
-  h1 { font-size: var(--font-size-4xl); }
-  h2 { font-size: var(--font-size-3xl); }
-  h3 { font-size: var(--font-size-2xl); }
-  h4 { font-size: var(--font-size-xl); }
-  h5 { font-size: var(--font-size-lg); }
-  h6 { font-size: var(--font-size-base); }
+  h1 { font-size: 1.875rem; } /* Reduced from 2.25rem */
+  h2 { font-size: 1.5rem; } /* Reduced from 1.875rem */
+  h3 { font-size: 1.25rem; } /* Reduced from 1.5rem */
+  h4 { font-size: 1.125rem; } /* Reduced from 1.25rem */
+  h5 { font-size: 1rem; } /* Reduced from 1.125rem */
+  h6 { font-size: 0.875rem; } /* Reduced from 1rem */
   
   p {
     margin: 0 0 1rem;
@@ -1015,9 +1015,9 @@
   @media (min-width: 1536px) { .container-custom { max-width: 1536px; } }
   
   /* ========== Spacing Utilities ========== */
-  .section-spacing { @apply space-y-6 lg:space-y-8; }
-  .card-spacing { @apply gap-4 md:gap-6; }
-  .content-padding { @apply p-4 sm:p-6 md:p-8; }
+  .section-spacing { @apply space-y-4 lg:space-y-6; }
+  .card-spacing { @apply gap-3 md:gap-4; }
+  .content-padding { @apply p-3 sm:p-4 md:p-6; }
   
   /* ========== Backdrop Effects ========== */
   .backdrop-blur-custom {

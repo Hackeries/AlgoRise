@@ -31,7 +31,7 @@ export default function BannerLanding() {
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className='text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight font-[Bricolage_Grotesque] mb-4 sm:mb-6 md:mb-8
+        className='text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight font-[Bricolage_Grotesque] mb-4 sm:mb-6
           bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-500 
           bg-clip-text text-transparent animate-gradient-x'
       >

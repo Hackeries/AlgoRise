@@ -37,7 +37,7 @@ export function TrainHero({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-          className='text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6'
+          className='text-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4'
         >
           <span className='block bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-primary bg-[length:200%_auto] animate-gradient'>
             Master DSA, ICPC & Tech Interviews
@@ -117,7 +117,7 @@ function StatCard({ icon, value, label }: { icon: React.ReactNode; value: string
   return (
     <div className='glass-intense rounded-xl p-4 text-center hover-lift'>
       <div className='text-primary mb-2 flex justify-center'>{icon}</div>
-      <div className='text-2xl font-bold text-foreground mb-1'>{value}</div>
+      <div className='text-lg font-bold text-foreground mb-1'>{value}</div>
       <div className='text-xs text-muted-foreground uppercase tracking-wide'>{label}</div>
     </div>
   );

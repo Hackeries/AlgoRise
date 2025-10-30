@@ -21,6 +21,7 @@ import {
   TestTube,
   Sword,
   X,
+  Sparkles,
 } from 'lucide-react';
 
 // ==================== TYPES ====================
@@ -54,6 +55,7 @@ const MENU_ITEMS: MenuItem[] = [
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/visualizers', label: 'Visualizers', icon: Cpu },
   { href: '/groups', label: 'Groups', icon: Users },
+  { href: '/mentorship', label: 'Mentorship', icon: Sparkles },
 ];
 
 const RATING_TIERS: Record<string, string> = {
@@ -157,6 +159,13 @@ const menuItems = [
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/visualizers', label: 'Visualizers', icon: Cpu },
   { href: '/groups', label: 'Groups', icon: Users },
+  { href: '/mentorship', label: 'Mentorship', icon: Sparkles },
+];
+
+const MOBILE_TABS = [
+  { href: '/battle-arena', label: 'Battle', icon: Sword },
+  { href: '/train', label: 'Problems', icon: FileText },
+  { href: '/profile/overview', label: 'Profile', icon: User },
 ];
 
 // Sidebar Item Component
@@ -399,8 +408,31 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         )}
       >
         <Header onMobileMenuToggle={toggleSidebar} isMobile={isMobile} />
-        <main className='flex-1 overflow-auto'>{children}</main>
+        <main className={cn('flex-1 overflow-auto', isMobile && 'pb-20')}>{children}</main>
         <Footer />
+        {isMobile && !pathname?.startsWith('/battle-arena') && (
+          <nav className='fixed bottom-0 inset-x-0 border-t border-border/60 bg-background/95 backdrop-blur shadow-lg'>
+            <div className='mx-auto flex max-w-md items-center justify-between px-6 py-2'>
+              {MOBILE_TABS.map(tab => {
+                const Icon = tab.icon;
+                const active = pathname?.startsWith(tab.href);
+                return (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    className={cn(
+                      'flex flex-col items-center gap-1 text-xs font-medium transition-colors',
+                      active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    <Icon className='h-5 w-5' />
+                    <span>{tab.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
+        )}
       </div>
     </div>
   );

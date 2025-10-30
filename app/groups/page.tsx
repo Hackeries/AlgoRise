@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/dialog';
 import { GroupLeaderboard } from '@/components/groups/group-leaderboard';
 import { GroupManagement } from '@/components/groups/group-management';
+import { GroupChallenges } from '@/components/groups/group-challenges';
 import {
   Users,
   Plus,
@@ -78,6 +79,7 @@ export default function GroupsPage() {
     | 'overview'
     | 'leaderboard'
     | 'members'
+    | 'challenges'
     | 'practice'
     | 'contests'
     | 'analytics'
@@ -384,6 +386,10 @@ export default function GroupsPage() {
               <Users className='h-4 w-4' />
               Members
             </TabsTrigger>
+            <TabsTrigger value='challenges' className='flex items-center gap-2'>
+              <Target className='h-4 w-4' />
+              Challenges
+            </TabsTrigger>
             <TabsTrigger value='practice' className='hidden md:inline-flex'>
               Practice
             </TabsTrigger>
@@ -481,6 +487,13 @@ export default function GroupsPage() {
               groupType={selectedGroup.group.type}
               userRole={selectedGroup.role}
               maxMembers={selectedGroup.group.maxMembers}
+            />
+          </TabsContent>
+
+          <TabsContent value='challenges' className='space-y-6'>
+            <GroupChallenges
+              groupId={selectedGroup.group.id}
+              isAdmin={selectedGroup.role === 'admin'}
             />
           </TabsContent>
 

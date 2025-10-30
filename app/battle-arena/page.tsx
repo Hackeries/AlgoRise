@@ -44,6 +44,30 @@ export default function BattleArenaPage() {
   const supabase = createClient();
   const { toast } = useToast();
 
+  // Animation variants for framer-motion
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+        ease: [0.16, 1, 0.3, 1] as any,
+      },
+    },
+  };
+
   // Fetch user rating and queue status on mount
   useEffect(() => {
     fetchUserRating();
@@ -820,8 +844,6 @@ export default function BattleArenaPage() {
               </Card>
             </motion.div>
           </TabsContent>
-        </Tabs>
-
         </Tabs>
         <motion.div
           className='mt-12 grid grid-cols-1 md:grid-cols-3 gap-4'

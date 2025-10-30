@@ -144,61 +144,122 @@ export class CodeExecutionService {
    * Execute a single submission with Judge0
    */
   private async executeSingleSubmission(request: CodeExecutionRequest): Promise<CodeExecutionResult> {
-    try {
-      const languageId = this.getJudge0LanguageId(request.language);
-      
-      if (!languageId) {
-        return {
-          success: false,
-          status: 'internal_error',
-          message: `Unsupported language: ${request.language}`
-        };
+    const maxRetries = 3;
+    const retryDelay = 2000; // 2 seconds
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const languageId = this.getJudge0LanguageId(request.language);
+        
+        if (!languageId) {
+          return {
+            success: false,
+            status: 'internal_error',
+            message: `Unsupported language: ${request.language}`
+          };
+        }
+
+        // Create submission with timeout
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+
+        try {
+          const submissionResponse = await fetch(`${this.judge0Url}/submissions?base64_encoded=false&wait=true`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-RapidAPI-Key': this.judge0ApiKey!,
+              'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
+            },
+            body: JSON.stringify({
+              source_code: request.sourceCode,
+              language_id: languageId,
+              stdin: request.stdin || '',
+              cpu_time_limit: request.timeLimit || 5,
+              memory_limit: (request.memoryLimit || 256) * 1024, // Convert MB to KB
+            }),
+            signal: controller.signal
+          });
+
+          clearTimeout(timeout);
+
+          // Handle rate limiting (429)
+          if (submissionResponse.status === 429) {
+            if (attempt < maxRetries - 1) {
+              console.warn(`Rate limited by Judge0, retrying in ${retryDelay}ms...`);
+              await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, attempt)));
+              continue;
+            }
+            throw new Error('Judge0 rate limit exceeded. Please try again later.');
+          }
+
+          // Handle server errors (5xx)
+          if (submissionResponse.status >= 500) {
+            if (attempt < maxRetries - 1) {
+              console.warn(`Judge0 server error ${submissionResponse.status}, retrying...`);
+              await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, attempt)));
+              continue;
+            }
+            throw new Error('Judge0 is currently unavailable. Please try again later.');
+          }
+
+          if (!submissionResponse.ok) {
+            throw new Error(`Judge0 API error: ${submissionResponse.status}`);
+          }
+
+          const submission = await submissionResponse.json();
+
+          // Map Judge0 status to our status
+          const status = this.mapJudge0Status(submission.status.id, submission);
+
+          return {
+            success: status === 'success' || status === 'solved',
+            status,
+            stdout: submission.stdout || undefined,
+            stderr: submission.stderr || undefined,
+            compileOutput: submission.compile_output || undefined,
+            executionTimeMs: submission.time ? parseFloat(submission.time) * 1000 : undefined,
+            memoryUsedKb: submission.memory || undefined,
+            message: submission.status.description
+          };
+        } catch (error: any) {
+          clearTimeout(timeout);
+          
+          // Don't retry on timeout
+          if (error.name === 'AbortError') {
+            return {
+              success: false,
+              status: 'time_limit_exceeded',
+              message: 'Execution timed out (60 seconds)'
+            };
+          }
+          
+          throw error;
+        }
+      } catch (error: any) {
+        lastError = error;
+        console.error(`Judge0 execution attempt ${attempt + 1} failed:`, error);
+        
+        // Don't retry on certain errors
+        if (error.message?.includes('Unsupported language') ||
+            error.message?.includes('rate limit')) {
+          break;
+        }
+        
+        // Wait before retrying (exponential backoff)
+        if (attempt < maxRetries - 1) {
+          await new Promise(resolve => setTimeout(resolve, retryDelay * Math.pow(2, attempt)));
+        }
       }
-
-      // Create submission
-      const submissionResponse = await fetch(`${this.judge0Url}/submissions?base64_encoded=false&wait=true`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-RapidAPI-Key': this.judge0ApiKey!,
-          'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
-        },
-        body: JSON.stringify({
-          source_code: request.sourceCode,
-          language_id: languageId,
-          stdin: request.stdin || '',
-          cpu_time_limit: request.timeLimit || 5,
-          memory_limit: (request.memoryLimit || 256) * 1024, // Convert MB to KB
-        })
-      });
-
-      if (!submissionResponse.ok) {
-        throw new Error(`Judge0 API error: ${submissionResponse.status}`);
-      }
-
-      const submission = await submissionResponse.json();
-
-      // Map Judge0 status to our status
-      const status = this.mapJudge0Status(submission.status.id, submission);
-
-      return {
-        success: status === 'success' || status === 'solved',
-        status,
-        stdout: submission.stdout || undefined,
-        stderr: submission.stderr || undefined,
-        compileOutput: submission.compile_output || undefined,
-        executionTimeMs: submission.time ? parseFloat(submission.time) * 1000 : undefined,
-        memoryUsedKb: submission.memory || undefined,
-        message: submission.status.description
-      };
-    } catch (error) {
-      console.error('Error in Judge0 execution:', error);
-      return {
-        success: false,
-        status: 'internal_error',
-        message: 'Failed to execute code with Judge0'
-      };
     }
+
+    console.error('All Judge0 execution attempts failed:', lastError);
+    return {
+      success: false,
+      status: 'internal_error',
+      message: 'Failed to execute code. Please try again.'
+    };
   }
 
   /**

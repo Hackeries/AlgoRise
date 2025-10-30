@@ -1079,7 +1079,7 @@ export default function ContestsPage() {
         </div>
       ) : (
         <div className='space-y-8'>
-          {/* Upcoming Codeforces Contests */}
+          {/* Arena Contests Section */}
           <section>
             <div className='flex items-center gap-3 mb-6'>
               <div className='flex items-center gap-3 flex-1'>
@@ -1088,13 +1088,13 @@ export default function ContestsPage() {
                 </div>
                 <div>
                   <h2 className='text-base sm:text-lg font-bold text-foreground'>
-                    Codeforces Contests
+                    Arena
                   </h2>
-                  <p className='text-xs text-muted-foreground'>Compete globally</p>
+                  <p className='text-xs text-muted-foreground'>Upcoming Codeforces contests</p>
                 </div>
               </div>
               <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1'>
-                {upcomingCfContests.length} contests
+                {upcomingCfContests.length} upcoming
               </Badge>
             </div>
 
@@ -1102,7 +1102,7 @@ export default function ContestsPage() {
               <Card className='card-3d'>
                 <CardContent className='p-6'>
                   <p className='text-foreground/60 text-center'>
-                    No upcoming Codeforces contests found.
+                    No upcoming arena contests at the moment.
                   </p>
                 </CardContent>
               </Card>
@@ -1171,7 +1171,7 @@ export default function ContestsPage() {
             )}
           </section>
 
-          {/* Private Contests */}
+          {/* Private Contest Section */}
           <section>
             <div className='flex items-center gap-3 mb-6'>
               <div className='flex items-center gap-3 flex-1'>
@@ -1180,27 +1180,16 @@ export default function ContestsPage() {
                 </div>
                 <div>
                   <h2 className='text-base sm:text-lg font-bold text-foreground'>
-                    Private Training
+                    Private Contest
                   </h2>
-                  <p className='text-xs text-muted-foreground'>Custom practice sessions</p>
+                  <p className='text-xs text-muted-foreground'>Custom training sessions</p>
                 </div>
               </div>
               <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1'>
-                {privateContests.length} active
+                {privateContests.length} available
               </Badge>
             </div>
 
-            {/* Info Banner */}
-            <div className='mb-4 p-3 sm:p-4 rounded-lg bg-gradient-to-r from-purple-500/5 via-blue-500/5 to-purple-500/5 border border-purple-500/20'>
-              <div className='flex items-start gap-2'>
-                <div className='flex-1'>
-                  <p className='text-xs text-muted-foreground'>
-                    <strong className='text-purple-400'>Private Contests:</strong> Custom practice with your own problems and rules. 
-                    <strong className='text-orange-400'>Battle Arena:</strong> Real-time competitive matches (see Battle Arena section).
-                  </p>
-                </div>
-              </div>
-            </div>
 
             {privateContests.length === 0 ? (
               <Card className='card-3d border-2 border-dashed border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-pink-500/5'>

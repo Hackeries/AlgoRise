@@ -608,24 +608,31 @@ export default function ContestsPage() {
 
   return (
     <main className='mx-auto max-w-7xl px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-10'>
-      <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 sm:mb-8'>
-        <div>
-          <h1 className='text-2xl sm:text-3xl font-semibold text-foreground'>
-            Contests
-          </h1>
-          <p className='mt-2 text-sm sm:text-base text-foreground/70 leading-relaxed max-w-2xl'>
-            Host or join private training contests. After the contest, view
-            rating simulation and get a recovery set.
-          </p>
+      {/* Enhanced Hero Section */}
+      <div className='relative overflow-hidden rounded-2xl glass-intense p-8 sm:p-10 mb-8 hover-lift'>
+        <div className='absolute inset-0 -z-10'>
+          <div className='absolute top-0 right-0 w-1/2 h-1/2 bg-primary/20 rounded-full blur-[100px]' />
+          <div className='absolute bottom-0 left-0 w-1/2 h-1/2 bg-accent/20 rounded-full blur-[100px]' />
         </div>
+        <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6'>
+          <div className='flex-1'>
+            <h1 className='text-4xl sm:text-5xl font-bold tracking-tight flex items-center gap-3 gradient-text'>
+              <Trophy className='h-10 w-10 text-yellow-500 animate-pulse' />
+              Contests Arena
+            </h1>
+            <p className='mt-3 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl'>
+              <span className='font-semibold text-foreground'>Host or join</span> private training contests. After the contest, view
+              rating simulation and get a recovery set.
+            </p>
+          </div>
 
-        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className='w-full sm:w-auto'>
-              <PlusIcon className='w-4 h-4 mr-2' />
-              Create Contest
-            </Button>
-          </DialogTrigger>
+          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size='lg' className='w-full sm:w-auto gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:scale-105 transition-all'>
+                <PlusIcon className='w-5 h-5' />
+                Create Contest
+              </Button>
+            </DialogTrigger>
 
           <DialogContent className='max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col'>
             <DialogHeader className='border-b pb-4'>
@@ -1022,6 +1029,7 @@ export default function ContestsPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {loading ? (
@@ -1033,13 +1041,20 @@ export default function ContestsPage() {
         <div className='space-y-8'>
           {/* Upcoming Codeforces Contests */}
           <section>
-            <div className='flex items-center gap-2 mb-4'>
-              <h2 className='text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2'>
-                <Trophy className='w-5 h-5 text-yellow-500' />
-                Upcoming Codeforces Contests
-              </h2>
-              <Badge variant='secondary' className='text-xs sm:text-sm'>
-                {upcomingCfContests.length}
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='flex items-center gap-3 flex-1'>
+                <div className='p-2 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30'>
+                  <Trophy className='w-6 h-6 text-yellow-500' />
+                </div>
+                <div>
+                  <h2 className='text-2xl sm:text-3xl font-bold text-foreground'>
+                    Upcoming Codeforces Contests
+                  </h2>
+                  <p className='text-sm text-muted-foreground'>Compete on the global stage</p>
+                </div>
+              </div>
+              <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1'>
+                {upcomingCfContests.length} contests
               </Badge>
             </div>
 
@@ -1118,13 +1133,20 @@ export default function ContestsPage() {
 
           {/* Private Contests */}
           <section>
-            <div className='flex items-center gap-2 mb-4'>
-              <h2 className='text-xl sm:text-2xl font-semibold text-foreground flex items-center gap-2'>
-                <Zap className='w-5 h-5 text-purple-500' />
-                Private Contests
-              </h2>
-              <Badge variant='secondary' className='text-xs sm:text-sm'>
-                {privateContests.length}
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='flex items-center gap-3 flex-1'>
+                <div className='p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30'>
+                  <Zap className='w-6 h-6 text-purple-500' />
+                </div>
+                <div>
+                  <h2 className='text-2xl sm:text-3xl font-bold text-foreground'>
+                    Private Contests
+                  </h2>
+                  <p className='text-sm text-muted-foreground'>Your custom training sessions</p>
+                </div>
+              </div>
+              <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1'>
+                {privateContests.length} contests
               </Badge>
             </div>
 

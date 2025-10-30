@@ -173,38 +173,46 @@ export default function LearningPathsPage() {
   const overallProgress = calculateOverallProgress();
 
   return (
-    <main className='mx-auto max-w-6xl px-4 py-10'>
+    <main className='mx-auto max-w-6xl px-4 py-10 bg-gradient-to-br from-background via-background to-muted/20 min-h-screen'>
       <div className='mb-10'>
-        {/* Hero */}
+        {/* Enhanced Hero */}
         <div className='relative overflow-hidden rounded-2xl glass-intense p-8 sm:p-10 mb-8 hover-lift'>
           <div className='absolute inset-0 -z-10'>
             <div className='absolute top-0 right-0 w-1/2 h-1/2 bg-primary/20 rounded-full blur-[100px] animate-pulse' />
             <div className='absolute bottom-0 left-0 w-1/2 h-1/2 bg-accent/20 rounded-full blur-[100px] animate-pulse' style={{ animationDelay: '1s' }} />
           </div>
           <div className='flex items-start justify-between gap-6'>
-            <div>
+            <div className='flex-1'>
               <h1 className='text-4xl sm:text-5xl font-bold tracking-tight flex items-center gap-3'>
-                <TrendingUp className='h-10 w-10 text-primary animate-pulse' />
+                <div className='p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30'>
+                  <TrendingUp className='h-10 w-10 text-blue-500 animate-pulse' />
+                </div>
                 <span className='gradient-text'>Learning Paths</span>
               </h1>
               <p className='text-muted-foreground mt-3 text-base sm:text-lg leading-relaxed'>
-                <span className='font-semibold text-foreground'>Master competitive programming</span> with structured, curated learning paths.
+                <span className='font-semibold text-foreground'>Master competitive programming</span> with structured, curated learning paths designed for success.
               </p>
             </div>
           </div>
 
           {/* Stats */}
           <div className='mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4'>
-            <Card className='shadow-sm'>
+            <Card className='card-3d border-l-4 border-l-blue-500 hover-lift'>
               <CardContent className='p-5'>
+                <div className='flex items-center justify-between mb-2'>
+                  <Target className='h-7 w-7 text-blue-500' />
+                </div>
                 <div className='text-sm text-muted-foreground font-medium'>
                   Total Problems
                 </div>
                 <div className='mt-2 text-3xl font-bold'>{totalProblems}</div>
               </CardContent>
             </Card>
-            <Card className='shadow-sm'>
+            <Card className='card-3d border-l-4 border-l-green-500 hover-lift'>
               <CardContent className='p-5'>
+                <div className='flex items-center justify-between mb-2'>
+                  <CheckCircle className='h-7 w-7 text-green-500' />
+                </div>
                 <div className='text-sm text-muted-foreground font-medium'>
                   Completed
                 </div>
@@ -213,16 +221,22 @@ export default function LearningPathsPage() {
                 </div>
               </CardContent>
             </Card>
-            <Card className='shadow-sm'>
+            <Card className='card-3d border-l-4 border-l-purple-500 hover-lift'>
               <CardContent className='p-5'>
+                <div className='flex items-center justify-between mb-2'>
+                  <Clock className='h-7 w-7 text-purple-500' />
+                </div>
                 <div className='text-sm text-muted-foreground font-medium'>
                   Estimated Time
                 </div>
                 <div className='mt-2 text-3xl font-bold'>30+ weeks</div>
               </CardContent>
             </Card>
-            <Card className='shadow-sm'>
+            <Card className='card-3d border-l-4 border-l-orange-500 hover-lift'>
               <CardContent className='p-5'>
+                <div className='flex items-center justify-between mb-2'>
+                  <Zap className='h-7 w-7 text-orange-500' />
+                </div>
                 <div className='text-sm text-muted-foreground font-medium'>
                   Overall Progress
                 </div>

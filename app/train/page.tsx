@@ -1,16 +1,17 @@
 'use client';
 
 import { useRef, useState, useMemo, useCallback, useId } from 'react';
-import { Sparkles, ChevronRight, Search, X } from 'lucide-react';
+import { Sparkles, ChevronRight, Search, X, BookOpen, Trophy, Target, Zap, Filter, Grid3x3, List } from 'lucide-react';
 import { TrainHero } from '@/components/train/hero';
 import { SheetsGrid, type Sheet } from '@/components/train/sheets-grid';
 import { CompanyGrid, type CompanySet } from '@/components/train/company-grid';
 import { ActivityHeatmap } from '@/components/train/activity-heatmap';
 import { buildInterviewGrindFull } from '@/data/interview-grind';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -19,15 +20,91 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-// Constants
+// Enhanced ICPC & DSA Focused Sheets
 const SHEETS: Sheet[] = [
-  /* ...your sheets data... */
+  {
+    id: 'blind-75',
+    title: 'Blind 75',
+    platform: 'LeetCode',
+    difficulty: 'Medium',
+    topics: ['Arrays', 'Strings', 'Dynamic Programming', 'Trees', 'Graphs'],
+    companies: ['Google', 'Meta', 'Amazon', 'Microsoft', 'Apple'],
+    completed: 35,
+    total: 75,
+  },
+  {
+    id: 'neetcode-150',
+    title: 'NeetCode 150',
+    platform: 'LeetCode',
+    difficulty: 'Medium',
+    topics: ['Arrays', 'Two Pointers', 'Stack', 'Binary Search', 'Sliding Window'],
+    companies: ['Google', 'Amazon', 'Microsoft'],
+    completed: 72,
+    total: 150,
+  },
+  {
+    id: 'cses-problemset',
+    title: 'CSES Problem Set',
+    platform: 'CSES',
+    difficulty: 'Hard',
+    topics: ['DP', 'Graph Algorithms', 'Range Queries', 'Tree Algorithms', 'Math'],
+    companies: ['ICPC', 'Google', 'Meta'],
+    completed: 120,
+    total: 300,
+  },
+  {
+    id: 'striver-a2z',
+    title: 'Striver A2Z DSA Sheet',
+    platform: 'LeetCode',
+    difficulty: 'Medium',
+    topics: ['Arrays', 'Strings', 'Recursion', 'DP', 'Graphs', 'Trees'],
+    companies: ['Amazon', 'Google', 'Microsoft', 'Adobe'],
+    completed: 180,
+    total: 456,
+  },
+  {
+    id: 'icpc-practice',
+    title: 'ICPC Preparation',
+    platform: 'CSES',
+    difficulty: 'Hard',
+    topics: ['Advanced DP', 'Segment Trees', 'Graph Theory', 'Number Theory'],
+    companies: ['ICPC', 'ACM'],
+    completed: 45,
+    total: 100,
+  },
+  {
+    id: 'leetcode-75',
+    title: 'LeetCode 75',
+    platform: 'LeetCode',
+    difficulty: 'Easy',
+    topics: ['Arrays', 'Strings', 'Hash Table', 'Linked List', 'Two Pointers'],
+    companies: ['Amazon', 'Microsoft', 'Apple'],
+    completed: 60,
+    total: 75,
+  },
+  {
+    id: 'graph-theory',
+    title: 'Graph Theory Mastery',
+    platform: 'CSES',
+    difficulty: 'Hard',
+    topics: ['DFS', 'BFS', 'Shortest Path', 'MST', 'Network Flow'],
+    companies: ['Google', 'Meta', 'ICPC'],
+    completed: 28,
+    total: 50,
+  },
+  {
+    id: 'dynamic-programming',
+    title: 'DP Patterns',
+    platform: 'LeetCode',
+    difficulty: 'Hard',
+    topics: ['DP', 'Memoization', 'Tabulation', 'State Machine'],
+    companies: ['Google', 'Amazon', 'Bloomberg'],
+    completed: 42,
+    total: 80,
+  },
 ];
 
-const COMPANIES: CompanySet[] = [
-  /* ...your companies data... */
-];
-
+const COMPANIES: CompanySet[] = [];
 const INTERVIEW_GRIND_BY_COMPANY = buildInterviewGrindFull();
 
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'] as const;
@@ -45,7 +122,10 @@ type Filters = {
 
 export default function TrainingHub() {
   const sheetsRef = useRef<HTMLDivElement | null>(null);
+  const companiesRef = useRef<HTMLDivElement | null>(null);
+  const activityRef = useRef<HTMLDivElement | null>(null);
   const searchInputId = useId();
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const [filters, setFilters] = useState<Filters>({
     query: '',
@@ -90,6 +170,21 @@ export default function TrainingHub() {
     setFilters(prev => ({ ...prev, query: '' }));
   }, []);
 
+  const handleQuickNav = useCallback((key: 'blind75' | 'neet250' | 'cses' | 'leetcode') => {
+    sheetsRef.current?.scrollIntoView({ behavior: 'smooth' });
+    
+    // Set appropriate filters based on quick nav
+    const filterMap = {
+      blind75: { query: 'Blind 75', platform: 'LeetCode' as Platform },
+      neet250: { query: 'NeetCode', platform: 'LeetCode' as Platform },
+      cses: { query: '', platform: 'CSES' as Platform },
+      leetcode: { query: '', platform: 'LeetCode' as Platform },
+    };
+    
+    const filter = filterMap[key];
+    setFilters(prev => ({ ...prev, ...filter }));
+  }, []);
+
   // Check if any filters are active
   const hasActiveFilters = useMemo(
     () =>
@@ -100,21 +195,78 @@ export default function TrainingHub() {
     [filters]
   );
 
+  // Stats calculation
+  const stats = useMemo(() => {
+    const totalProblems = SHEETS.reduce((acc, sheet) => acc + sheet.total, 0);
+    const completedProblems = SHEETS.reduce((acc, sheet) => acc + sheet.completed, 0);
+    const completionRate = totalProblems > 0 ? Math.round((completedProblems / totalProblems) * 100) : 0;
+    
+    return {
+      totalSheets: SHEETS.length,
+      totalProblems,
+      completedProblems,
+      completionRate,
+    };
+  }, []);
+
   return (
     <div className='min-h-screen bg-gradient-to-br from-background via-background to-muted/20'>
       {/* Hero Section */}
       <header className='sticky top-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80'>
         <div className='container mx-auto px-4 sm:px-6 lg:px-8 py-6'>
-          <TrainHero
-            onQuickNav={() =>
-              sheetsRef.current?.scrollIntoView({ behavior: 'smooth' })
-            }
-          />
+          <TrainHero onQuickNav={handleQuickNav} />
         </div>
       </header>
 
       {/* Main Content */}
       <main className='container mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12'>
+        {/* Stats Overview */}
+        <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+          <Card className='card-3d border-l-4 border-l-blue-500 hover-lift'>
+            <CardContent className='p-6'>
+              <div className='flex items-center justify-between mb-2'>
+                <BookOpen className='h-8 w-8 text-blue-500' />
+                <Badge variant='secondary' className='text-lg font-bold'>{stats.totalSheets}</Badge>
+              </div>
+              <h3 className='text-sm font-medium text-muted-foreground'>Problem Sheets</h3>
+              <p className='text-2xl font-bold mt-1'>Available</p>
+            </CardContent>
+          </Card>
+
+          <Card className='card-3d border-l-4 border-l-green-500 hover-lift'>
+            <CardContent className='p-6'>
+              <div className='flex items-center justify-between mb-2'>
+                <Target className='h-8 w-8 text-green-500' />
+                <Badge variant='secondary' className='text-lg font-bold'>{stats.totalProblems}</Badge>
+              </div>
+              <h3 className='text-sm font-medium text-muted-foreground'>Total Problems</h3>
+              <p className='text-2xl font-bold mt-1'>To Master</p>
+            </CardContent>
+          </Card>
+
+          <Card className='card-3d border-l-4 border-l-purple-500 hover-lift'>
+            <CardContent className='p-6'>
+              <div className='flex items-center justify-between mb-2'>
+                <Trophy className='h-8 w-8 text-purple-500' />
+                <Badge variant='secondary' className='text-lg font-bold'>{stats.completedProblems}</Badge>
+              </div>
+              <h3 className='text-sm font-medium text-muted-foreground'>Solved Problems</h3>
+              <p className='text-2xl font-bold mt-1'>Progress</p>
+            </CardContent>
+          </Card>
+
+          <Card className='card-3d border-l-4 border-l-orange-500 hover-lift'>
+            <CardContent className='p-6'>
+              <div className='flex items-center justify-between mb-2'>
+                <Zap className='h-8 w-8 text-orange-500' />
+                <Badge variant='secondary' className='text-lg font-bold'>{stats.completionRate}%</Badge>
+              </div>
+              <h3 className='text-sm font-medium text-muted-foreground'>Completion Rate</h3>
+              <p className='text-2xl font-bold mt-1'>Overall</p>
+            </CardContent>
+          </Card>
+        </section>
+
         {/* Problem Sheets Section */}
         <section
           ref={sheetsRef}
@@ -123,32 +275,51 @@ export default function TrainingHub() {
         >
           {/* Section Header */}
           <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
-            <h2
-              id='sheets-heading'
-              className='text-3xl font-bold tracking-tight text-foreground'
-            >
-              Problem Sheets
-            </h2>
-            <Button
-              variant='ghost'
-              size='sm'
-              className='text-primary hover:text-primary/90 hover:bg-primary/10 transition-colors'
-            >
-              View All
-              <ChevronRight className='h-4 w-4 ml-1' aria-hidden='true' />
-            </Button>
+            <div>
+              <h2
+                id='sheets-heading'
+                className='text-3xl sm:text-4xl font-bold tracking-tight text-foreground flex items-center gap-3'
+              >
+                <Sparkles className='h-8 w-8 text-primary animate-pulse' />
+                DSA & ICPC Problem Sheets
+              </h2>
+              <p className='text-muted-foreground mt-2'>
+                Curated collections for competitive programming excellence
+              </p>
+            </div>
+            <div className='flex items-center gap-2'>
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                size='sm'
+                onClick={() => setViewMode('grid')}
+                className='gap-2'
+              >
+                <Grid3x3 className='h-4 w-4' />
+                Grid
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size='sm'
+                onClick={() => setViewMode('list')}
+                className='gap-2'
+              >
+                <List className='h-4 w-4' />
+                List
+              </Button>
+            </div>
           </div>
 
           {/* Filters Card */}
-          <Card className='border-border/50 bg-card/50 backdrop-blur-sm'>
+          <Card className='border-border/50 bg-card/50 backdrop-blur-sm shadow-lg'>
             <CardContent className='p-4 sm:p-6'>
               <div className='space-y-4'>
                 {/* Filter Label and Clear Button */}
                 <div className='flex items-center justify-between'>
                   <label
                     htmlFor={searchInputId}
-                    className='text-sm font-medium text-muted-foreground'
+                    className='text-sm font-semibold text-foreground flex items-center gap-2'
                   >
+                    <Filter className='h-4 w-4 text-primary' />
                     Filter Problem Sheets
                   </label>
                   {hasActiveFilters && (
@@ -271,7 +442,7 @@ export default function TrainingHub() {
                 {/* Active Filters Display */}
                 {hasActiveFilters && (
                   <div className='flex flex-wrap gap-2 pt-2 border-t border-border/50'>
-                    <span className='text-xs text-muted-foreground self-center'>
+                    <span className='text-xs text-muted-foreground self-center font-medium'>
                       Active filters:
                     </span>
                     {filters.difficulty && (
@@ -314,14 +485,47 @@ export default function TrainingHub() {
           <SheetsGrid sheets={SHEETS} filters={filters} />
         </section>
 
-        {/* Interview Grind Section */}
-        {/* …existing code for Interview Grind… */}
-
         {/* Activity Heatmap Section */}
-        {/* …existing code for Activity Heatmap… */}
+        <section ref={activityRef} className='space-y-6'>
+          <div className='flex items-center justify-between'>
+            <h2 className='text-3xl font-bold tracking-tight text-foreground flex items-center gap-3'>
+              <Zap className='h-8 w-8 text-orange-500' />
+              Your Practice Activity
+            </h2>
+          </div>
+          <ActivityHeatmap />
+        </section>
 
-        {/* Company Sets Section */}
-        {/* …existing code for Company Sets… */}
+        {/* Interview Grind Section */}
+        <section ref={companiesRef} className='space-y-6'>
+          <div className='flex items-center justify-between'>
+            <div>
+              <h2 className='text-3xl font-bold tracking-tight text-foreground flex items-center gap-3'>
+                <Trophy className='h-8 w-8 text-yellow-500' />
+                Company-Specific Practice
+              </h2>
+              <p className='text-muted-foreground mt-2'>
+                Target problems from top tech companies
+              </p>
+            </div>
+          </div>
+          <Card className='border-primary/20 bg-gradient-to-br from-primary/5 to-transparent'>
+            <CardHeader>
+              <CardTitle className='flex items-center gap-2'>
+                <Sparkles className='h-5 w-5 text-primary' />
+                Coming Soon
+              </CardTitle>
+              <CardDescription>
+                Company-specific problem collections based on actual interview questions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className='text-sm text-muted-foreground'>
+                We're curating problems from Google, Meta, Amazon, Microsoft, and more. Stay tuned!
+              </p>
+            </CardContent>
+          </Card>
+        </section>
       </main>
     </div>
   );

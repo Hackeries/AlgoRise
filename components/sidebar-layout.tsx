@@ -4,7 +4,6 @@ import React from 'react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
@@ -390,7 +389,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
             <CFBadge cfData={cfData} isOpen={isOpen} />
           </div>
         )}
-      </motion.aside>
+      </aside>
 
       {/* Main content */}
       <div

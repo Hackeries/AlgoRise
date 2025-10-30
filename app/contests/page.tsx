@@ -39,6 +39,7 @@ import {
   ExternalLinkIcon,
   Zap,
   Trophy,
+  RefreshCw,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
@@ -107,6 +108,7 @@ export default function ContestsPage() {
   const [notifiedContestIds, setNotifiedContestIds] = useState<Set<string>>(
     new Set()
   );
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -143,11 +145,22 @@ export default function ContestsPage() {
     fetchCurrentUser();
     fetchUserRating();
     fetchContests();
+
+    // Auto-refresh contests every 5 minutes for real-time updates
+    const refreshInterval = setInterval(() => {
+      fetchContests();
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(refreshInterval);
   }, []);
 
-  const fetchContests = async () => {
+  const fetchContests = async (isManualRefresh = false) => {
     try {
-      setLoading(true);
+      if (isManualRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
 
       // Fetch Codeforces contests
       try {
@@ -179,13 +192,24 @@ export default function ContestsPage() {
       }
     } catch (error) {
       console.error('Error fetching contests:', error);
-      toast({
-        title: '⚠️ Connection hiccup',
-        description: 'Couldn\'t load contests right now. Check your connection and try again!',
-        variant: 'destructive',
-      });
+      if (!isManualRefresh) {
+        toast({
+          title: '⚠️ Connection hiccup',
+          description: 'Couldn\'t load contests right now. Check your connection and try again!',
+          variant: 'destructive',
+        });
+      }
     } finally {
-      setLoading(false);
+      if (isManualRefresh) {
+        setRefreshing(false);
+        toast({
+          title: '✅ Refreshed',
+          description: 'Contest list updated successfully!',
+          variant: 'default',
+        });
+      } else {
+        setLoading(false);
+      }
     }
   };
 
@@ -626,13 +650,24 @@ export default function ContestsPage() {
             </p>
           </div>
 
-          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size='lg' className='w-full sm:w-auto gap-2 bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:via-purple-800 hover:to-pink-700 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200'>
-                <PlusIcon className='w-5 h-5' />
-                <span className='font-semibold'>Create Private Contest</span>
-              </Button>
-            </DialogTrigger>
+          <div className='flex gap-2 w-full sm:w-auto'>
+            <Button 
+              size='lg' 
+              variant='outline'
+              onClick={() => fetchContests(true)}
+              disabled={refreshing}
+              className='gap-2 hover:bg-primary/10'
+            >
+              <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+              <span className='font-semibold hidden sm:inline'>Refresh</span>
+            </Button>
+            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size='lg' className='flex-1 sm:flex-none gap-2 bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:via-purple-800 hover:to-pink-700 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200'>
+                  <PlusIcon className='w-5 h-5' />
+                  <span className='font-semibold'>Create Private Contest</span>
+                </Button>
+              </DialogTrigger>
 
           <DialogContent className='max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col bg-gradient-to-br from-background via-background to-purple-500/5'>
             <DialogHeader className='border-b pb-4 border-purple-500/20'>
@@ -1034,7 +1069,8 @@ export default function ContestsPage() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+            </Dialog>
+          </div>
         </div>
       </div>
 

@@ -1,9 +1,11 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, Clock, AlertTriangle, Code } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, Code, ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 export type SubmissionVerdict = 
   | 'AC'  // Accepted
@@ -23,6 +25,10 @@ export interface SubmissionResult {
   memoryUsed?: number;
   points?: number;
   hint?: string;
+  expectedOutput?: string;
+  actualOutput?: string;
+  compileError?: string;
+  runtimeError?: string;
 }
 
 interface SubmissionFeedbackProps {
@@ -149,9 +155,13 @@ export function SubmissionFeedback({ result, isSubmitting }: SubmissionFeedbackP
 
   if (!result) return null;
 
+  const [showExpectedOutput, setShowExpectedOutput] = useState(false);
   const config = getVerdictConfig(result.verdict);
   const Icon = config.icon;
   const hint = result.hint || getHintMessage(result.verdict);
+
+  // Show expected output toggle for WA verdicts
+  const hasOutputComparison = result.verdict === 'WA' && result.expectedOutput && result.actualOutput;
 
   return (
     <AnimatePresence>
@@ -185,7 +195,7 @@ export function SubmissionFeedback({ result, isSubmitting }: SubmissionFeedbackP
                       {config.title}
                     </h3>
                     {result.verdict === 'AC' && result.points && (
-                      <Badge className="bg-green-600 text-white">
+                      <Badge className="bg-green-600 text-white animate-pulse">
                         +{result.points} points
                       </Badge>
                     )}
@@ -230,6 +240,102 @@ export function SubmissionFeedback({ result, isSubmitting }: SubmissionFeedbackP
                     {result.memoryUsed && (
                       <span>💾 {result.memoryUsed}KB</span>
                     )}
+                  </motion.div>
+                )}
+
+                {/* Compilation Error Details */}
+                {result.verdict === 'CE' && result.compileError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.35 }}
+                    className="mt-3 p-3 rounded-lg bg-slate-800 border border-slate-700"
+                  >
+                    <div className="text-xs font-semibold text-yellow-300 mb-1">
+                      Compilation Output:
+                    </div>
+                    <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono">
+                      {result.compileError}
+                    </pre>
+                  </motion.div>
+                )}
+
+                {/* Runtime Error Details */}
+                {result.verdict === 'RE' && result.runtimeError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.35 }}
+                    className="mt-3 p-3 rounded-lg bg-slate-800 border border-slate-700"
+                  >
+                    <div className="text-xs font-semibold text-yellow-300 mb-1">
+                      Runtime Error:
+                    </div>
+                    <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono">
+                      {result.runtimeError}
+                    </pre>
+                  </motion.div>
+                )}
+
+                {/* Expected vs Actual Output (WA only) */}
+                {hasOutputComparison && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.35 }}
+                    className="mt-3"
+                  >
+                    <Button
+                      onClick={() => setShowExpectedOutput(!showExpectedOutput)}
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs text-slate-400 hover:text-slate-300 hover:bg-slate-800 mb-2"
+                    >
+                      {showExpectedOutput ? (
+                        <>
+                          <ChevronUp className="h-3 w-3 mr-1" />
+                          Hide Output Comparison
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-3 w-3 mr-1" />
+                          Show Expected Output
+                        </>
+                      )}
+                    </Button>
+
+                    <AnimatePresence>
+                      {showExpectedOutput && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="space-y-2"
+                        >
+                          <div className="p-3 rounded-lg bg-slate-800 border border-slate-700">
+                            <div className="text-xs font-semibold text-green-300 mb-1">
+                              Expected Output:
+                            </div>
+                            <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono max-h-32 overflow-y-auto">
+                              {result.expectedOutput}
+                            </pre>
+                          </div>
+
+                          <div className="p-3 rounded-lg bg-slate-800 border border-slate-700">
+                            <div className="text-xs font-semibold text-red-300 mb-1">
+                              Your Output:
+                            </div>
+                            <pre className="text-xs text-slate-300 whitespace-pre-wrap font-mono max-h-32 overflow-y-auto">
+                              {result.actualOutput}
+                            </pre>
+                          </div>
+
+                          <div className="text-xs text-slate-500 italic">
+                            💡 Compare the outputs carefully to spot differences
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </motion.div>
                 )}
 

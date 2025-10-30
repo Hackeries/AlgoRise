@@ -171,17 +171,34 @@ export class BattleService {
     index: string;
   }> {
     try {
-      // In a real implementation, this would fetch actual problems from Codeforces API
-      // or from a local database of problems
-      // For now, we'll use a placeholder with appropriate rating
-      const rating = Math.floor((minRating + maxRating) / 2);
+      // Use the problem sourcing service to get a real problem
+      const ProblemSourcingService = (await import('@/lib/problem-sourcing-service')).default;
+      const problemService = ProblemSourcingService.getInstance();
       
+      const problem = await problemService.getRandomProblem({
+        minRating,
+        maxRating,
+        source: 'codeforces'
+      });
+      
+      if (problem && problem.contestId && problem.index) {
+        return {
+          id: problem.id,
+          title: problem.title,
+          rating: problem.rating || Math.floor((minRating + maxRating) / 2),
+          contestId: problem.contestId,
+          index: problem.index
+        };
+      }
+      
+      // Fallback if no problem found
+      const rating = Math.floor((minRating + maxRating) / 2);
       return {
         id: `CF_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
         title: `Problem (${rating} rating)`,
         rating: rating,
         contestId: 1000 + Math.floor(Math.random() * 1000),
-        index: String.fromCharCode(65 + Math.floor(Math.random() * 5)) // A-E
+        index: String.fromCharCode(65 + Math.floor(Math.random() * 5))
       };
     } catch (error) {
       console.error('Error selecting problem from Codeforces:', error);

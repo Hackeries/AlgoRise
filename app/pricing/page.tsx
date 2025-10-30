@@ -14,8 +14,11 @@ import {
   Zap,
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { SubscriptionCheckoutButton } from '@/components/subscriptions/subscription-checkout-button';
+import { SubscriptionPlanCode } from '@/lib/subscriptions/types';
 
 type PricePlan = {
+  code: SubscriptionPlanCode;
   name: string;
   subtitle?: string;
   amountInr?: number;
@@ -35,6 +38,7 @@ type PricePlan = {
 
 const PLANS: PricePlan[] = [
   {
+    code: 'entry-gate',
     name: 'Entry Gate',
     subtitle: 'Newbie → Pupil',
     amountInr: 49,
@@ -56,6 +60,7 @@ const PLANS: PricePlan[] = [
     },
   },
   {
+    code: 'core-builder',
     name: 'Core Builder',
     subtitle: 'Pupil → Specialist',
     amountInr: 99,
@@ -83,6 +88,7 @@ const PLANS: PricePlan[] = [
     },
   },
   {
+    code: 'algorithmic-ascend',
     name: 'Algorithmic Ascend',
     subtitle: 'Specialist → Expert',
     amountInr: 169,
@@ -105,6 +111,7 @@ const PLANS: PricePlan[] = [
     },
   },
   {
+    code: 'competitive-forge',
     name: 'Competitive Forge',
     subtitle: 'Expert → Candidate Master',
     amountInr: 259,
@@ -120,6 +127,7 @@ const PLANS: PricePlan[] = [
     ctaLabel: 'Enter Div 1',
   },
   {
+    code: 'master-craft',
     name: 'Master Craft',
     subtitle: 'Candidate Master → Master',
     amountInr: 419,
@@ -138,6 +146,7 @@ const PLANS: PricePlan[] = [
 
 // Core pricing card
 function PricingCard({
+  code,
   name,
   subtitle,
   amountInr,
@@ -185,12 +194,14 @@ function PricingCard({
         </ul>
       </div>
 
-      <button
+      <SubscriptionCheckoutButton
+        planCode={code}
+        planName={name}
+        amount={amountInr || 0}
+        label={ctaLabel || 'Purchase Now'}
         className={`mt-8 py-3 rounded-lg text-white font-semibold w-full bg-gradient-to-r ${gradient} 
         hover:opacity-90 transition shadow-md shadow-primary/20`}
-      >
-        {ctaLabel}
-      </button>
+      />
     </motion.div>
   );
 }
@@ -201,9 +212,9 @@ export default function PricingPage() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch('/api/razorpay/create-order');
-        const data = await res.json();
-        setPaymentsEnabled(res.ok && data?.enabled);
+        // Check if Razorpay credentials are configured
+        const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY;
+        setPaymentsEnabled(!!keyId);
       } catch {
         setPaymentsEnabled(false);
       }

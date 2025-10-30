@@ -21,34 +21,20 @@ interface Contest {
 }
 
 const getBadgeClass = (type: string) => {
-  switch (true) {
-    case type.includes('Div. 1'):
-      return 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/50';
-    case type.includes('Div. 2'):
-      return 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/50';
-    case type.includes('Div. 3'):
-      return 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/50';
-    case type.includes('Div. 4'):
-      return 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg shadow-green-500/50';
-    case type.includes('Global'):
-      return 'bg-gradient-to-r from-yellow-600 to-yellow-500 text-black shadow-lg shadow-yellow-500/50';
-    case type.includes('Educational'):
-      return 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-lg shadow-cyan-500/50';
-    default:
-      return 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-lg shadow-gray-500/50';
-  }
+  // Simple, clean badge styling for all types
+  return 'bg-secondary text-secondary-foreground';
 };
 
 const getDifficultyIndicator = (type: string) => {
   if (type.includes('Div. 1'))
-    return { level: 'Expert', color: 'text-red-400', icon: '⚡⚡⚡' };
+    return { level: 'Expert', color: 'text-muted-foreground' };
   if (type.includes('Div. 2'))
-    return { level: 'Advanced', color: 'text-blue-400', icon: '⚡⚡' };
+    return { level: 'Advanced', color: 'text-muted-foreground' };
   if (type.includes('Div. 3'))
-    return { level: 'Intermediate', color: 'text-purple-400', icon: '⚡' };
+    return { level: 'Intermediate', color: 'text-muted-foreground' };
   if (type.includes('Div. 4'))
-    return { level: 'Beginner', color: 'text-green-400', icon: '✓' };
-  return { level: 'Mixed', color: 'text-cyan-400', icon: '◆' };
+    return { level: 'Beginner', color: 'text-muted-foreground' };
+  return { level: 'Mixed', color: 'text-muted-foreground' };
 };
 
 // Countdown component
@@ -164,10 +150,7 @@ export default function ContestSection() {
     return (
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {Array.from({ length: 3 }).map((_, i) => (
-          <Card
-            key={i}
-            className='bg-white/80 dark:bg-black/80 backdrop-blur-sm'
-          >
+          <Card key={i}>
             <CardHeader>
               <Skeleton className='h-6 w-3/4' />
             </CardHeader>
@@ -190,16 +173,16 @@ export default function ContestSection() {
           transition={{ duration: 0.6 }}
           className='text-center mb-16'
         >
-          <div className='inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full bg-primary/10 border border-primary/30'>
-            <Trophy className='w-4 h-4 text-primary' />
-            <span className='text-sm font-semibold text-primary'>
+          <div className='inline-flex items-center gap-2 mb-6 px-5 py-3 rounded-lg border-2 bg-muted/50 shadow-sm'>
+            <Trophy className='w-5 h-5 text-foreground' />
+            <span className='text-sm font-bold text-foreground tracking-wider'>
               LIVE CONTESTS
             </span>
           </div>
-          <h2 className='text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent'>
+          <h2 className='text-3xl md:text-4xl font-bold mb-4'>
             Upcoming Contests
           </h2>
-          <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>
+          <p className='text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed'>
             Compete in real-time contests with live countdowns. Choose your
             division and challenge yourself against the community.
           </p>
@@ -219,7 +202,7 @@ export default function ContestSection() {
                   className='block h-full'
                   initial={{ opacity: 0, y: 40 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.15 }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
                   viewport={{ once: true }}
                   onClick={() => handleContestClick(contest)}
                   role='link'
@@ -231,71 +214,67 @@ export default function ContestSection() {
                   )}`}
                 >
                   <motion.div
-                    whileHover={{ scale: 1.02, y: -8 }}
+                    whileHover={{ scale: 1.02, y: -4 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    className={`rounded-xl h-full cursor-pointer overflow-hidden group relative ${
-                      urgent
-                        ? 'border-2 border-red-500/60 shadow-2xl shadow-red-500/30'
-                        : 'border border-border/50 shadow-lg hover:shadow-2xl'
-                    } transition-all duration-300`}
+                    className='h-full'
                   >
-                    <div className='absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
-
-                    {urgent && (
-                      <div className='absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/20 via-transparent to-red-500/20 animate-pulse' />
-                    )}
-
-                    <Card className='bg-card/80 backdrop-blur-sm border-0 rounded-xl h-full relative z-10'>
-                      <CardHeader className='pb-3'>
-                        <div className='flex justify-between items-start gap-3 mb-2'>
-                          <div className='flex-1'>
-                            <CardTitle className='text-lg line-clamp-2 group-hover:text-primary transition-colors'>
+                    <Card className='group relative overflow-hidden h-full cursor-pointer border-2 hover:border-foreground/20 hover:shadow-xl transition-all duration-300 bg-card/50 backdrop-blur-sm'>
+                      {/* Subtle gradient overlay on hover */}
+                      <div className='absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+                      
+                      <CardHeader className='pb-4 relative z-10'>
+                        <div className='flex justify-between items-start gap-3 mb-3'>
+                          <div className='flex-1 min-w-0'>
+                            <CardTitle className='text-base font-semibold line-clamp-2 mb-2 group-hover:text-primary transition-colors'>
                               {contest.name}
                             </CardTitle>
+                            <div className='flex items-center gap-2 flex-wrap'>
+                              <Badge
+                                className='text-xs font-medium border-foreground/20'
+                                variant='outline'
+                              >
+                                {contest.type}
+                              </Badge>
+                              <Badge variant='secondary' className='text-xs font-medium'>
+                                {difficulty.level}
+                              </Badge>
+                            </div>
                           </div>
-                          <Badge
-                            className={`${getBadgeClass(
-                              contest.type
-                            )} whitespace-nowrap flex-shrink-0 text-xs font-bold`}
-                            variant='secondary'
-                          >
-                            {contest.type}
-                          </Badge>
-                        </div>
-
-                        <div
-                          className={`text-xs font-semibold ${difficulty.color} flex items-center gap-1`}
-                        >
-                          <span>{difficulty.icon}</span>
-                          <span>{difficulty.level}</span>
+                          <div className='p-2 rounded-md bg-muted/50 group-hover:bg-primary/10 transition-colors shrink-0'>
+                            <Target className='h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors' />
+                          </div>
                         </div>
                       </CardHeader>
 
-                      <CardContent className='space-y-4'>
-                        <div className='bg-primary/10 rounded-lg p-3 border border-primary/20'>
-                          <div className='flex items-center gap-2 mb-1'>
-                            <Zap className='h-4 w-4 text-primary' />
-                            <span className='text-xs font-semibold text-muted-foreground uppercase tracking-wide'>
+                      <CardContent className='space-y-4 relative z-10'>
+                        <div className='rounded-lg p-4 border-2 bg-muted/30 group-hover:bg-muted/50 transition-colors'>
+                          <div className='flex items-center gap-2 mb-2'>
+                            <Zap className='h-4 w-4 text-foreground/70' />
+                            <span className='text-xs font-medium text-muted-foreground uppercase tracking-wider'>
                               Starts in
                             </span>
                           </div>
-                          <div className='text-2xl font-mono font-bold text-primary'>
+                          <div className='text-2xl font-mono font-bold text-foreground'>
                             <Countdown startTime={contest.startTimeSeconds} />
                           </div>
                         </div>
 
-                        <div className='space-y-2'>
-                          <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                            <Calendar className='h-4 w-4 flex-shrink-0' />
-                            <span className='truncate'>
+                        <div className='space-y-3'>
+                          <div className='flex items-center gap-3 text-sm'>
+                            <div className='p-2 rounded-md bg-muted/50'>
+                              <Calendar className='h-4 w-4 text-foreground/70' />
+                            </div>
+                            <span className='truncate text-foreground/80 font-medium'>
                               {new Date(
                                 contest.startTimeSeconds * 1000
                               ).toLocaleString()}
                             </span>
                           </div>
-                          <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                            <Timer className='h-4 w-4 flex-shrink-0' />
-                            <span>
+                          <div className='flex items-center gap-3 text-sm'>
+                            <div className='p-2 rounded-md bg-muted/50'>
+                              <Timer className='h-4 w-4 text-foreground/70' />
+                            </div>
+                            <span className='text-foreground/80 font-medium'>
                               {Math.floor(contest.durationSeconds / 3600)}h{' '}
                               {Math.floor(
                                 (contest.durationSeconds % 3600) / 60
@@ -307,11 +286,10 @@ export default function ContestSection() {
 
                         <Button
                           asChild
-                          className={`w-full mt-4 font-semibold transition-all duration-300 ${
-                            urgent
-                              ? 'bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 shadow-lg shadow-red-500/50'
-                              : 'bg-gradient-to-r from-primary to-accent hover:shadow-lg'
+                          className={`w-full mt-4 font-semibold shadow-md hover:shadow-lg transition-all ${
+                            urgent ? 'bg-primary hover:bg-primary/90' : ''
                           }`}
+                          variant={urgent ? 'default' : 'outline'}
                           onClick={e => e.stopPropagation()}
                         >
                           <a
@@ -332,8 +310,10 @@ export default function ContestSection() {
             })
           ) : (
             <div className='col-span-full text-center py-16'>
-              <Trophy className='w-16 h-16 text-muted-foreground/30 mx-auto mb-4' />
-              <p className='text-lg text-muted-foreground'>
+              <div className='inline-flex p-6 rounded-lg border-2 bg-muted/50 mb-4'>
+                <Trophy className='w-16 h-16 text-muted-foreground/50' />
+              </div>
+              <p className='text-base text-muted-foreground font-medium'>
                 No upcoming contests found. Check back soon!
               </p>
             </div>

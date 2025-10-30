@@ -46,74 +46,105 @@ export function SheetsGrid({
     });
   }, [sheets, filters]);
 
+  if (filtered.length === 0) {
+    return (
+      <div className='text-center py-16'>
+        <div className='glass-intense rounded-2xl p-12 max-w-md mx-auto'>
+          <div className='text-muted-foreground text-lg mb-4'>No problem sheets match your filters</div>
+          <p className='text-sm text-muted-foreground'>Try adjusting your search criteria or clear all filters</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className='grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-      {filtered.map(s => {
+    <div className='grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
+      {filtered.map((s, index) => {
         const pct = s.total
           ? Math.min(100, Math.round((s.completed / s.total) * 100))
           : 0;
 
+        const difficultyColor =
+          s.difficulty === 'Easy'
+            ? 'from-green-500/20 to-emerald-500/20 border-green-500/30'
+            : s.difficulty === 'Medium'
+            ? 'from-yellow-500/20 to-orange-500/20 border-yellow-500/30'
+            : 'from-red-500/20 to-rose-500/20 border-red-500/30';
+
         return (
           <Card
             key={s.id}
-            className='group cursor-pointer border border-gray-800/50 bg-gray-950/50 backdrop-blur-md rounded-xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-2 transition-transform duration-300'
+            className={cn(
+              'group cursor-pointer card-3d hover-shine overflow-hidden',
+              'transition-all duration-300',
+              'animate-fade-in'
+            )}
+            style={{ animationDelay: `${index * 50}ms` }}
           >
-            <CardContent className='flex flex-col h-full p-6'>
+            <CardContent className='flex flex-col h-full p-5 sm:p-6 relative'>
               {/* Header */}
-              <div className='flex items-center justify-between mb-4'>
-                <h3 className='font-bold text-lg text-white truncate'>
+              <div className='flex items-start justify-between mb-4 gap-3'>
+                <h3 className='font-bold text-base sm:text-lg text-foreground truncate flex-1 group-hover:text-primary transition-colors'>
                   {s.title}
                 </h3>
-                <Badge variant='outline' className='text-xs text-gray-300'>
+                <Badge variant='outline' className='text-xs shrink-0 glass'>
                   {s.platform}
                 </Badge>
               </div>
 
-              {/* Difficulty */}
-              <Badge
-                variant={
-                  s.difficulty === 'Easy'
-                    ? 'secondary'
-                    : s.difficulty === 'Medium'
-                    ? 'destructive'
-                    : 'destructive'
-                }
-                className='text-xs mb-3 px-2 py-1'
-              >
-                {s.difficulty}
-              </Badge>
+              {/* Difficulty with gradient background */}
+              <div className={`bg-gradient-to-r ${difficultyColor} border rounded-lg px-3 py-1.5 mb-4 inline-flex items-center justify-center w-fit`}>
+                <span className='text-xs font-semibold'>{s.difficulty}</span>
+              </div>
 
               {/* Topics */}
-              <div className='flex flex-wrap gap-2 mb-4'>
-                {s.topics.map(t => (
+              <div className='flex flex-wrap gap-1.5 mb-4'>
+                {s.topics.slice(0, 3).map(t => (
                   <Badge
                     key={t}
-                    variant='outline'
-                    className='text-[10px] bg-gray-800/30 hover:bg-gray-800/50 transition'
+                    variant='secondary'
+                    className='text-[10px] px-2 py-0.5 hover:bg-primary/20 hover:text-primary transition-colors'
                   >
                     {t}
                   </Badge>
                 ))}
+                {s.topics.length > 3 && (
+                  <Badge variant='secondary' className='text-[10px] px-2 py-0.5'>
+                    +{s.topics.length - 3}
+                  </Badge>
+                )}
               </div>
 
-              {/* Progress Bar */}
-              <div className='mb-4'>
-                <div className='relative w-full h-3 rounded-full overflow-hidden bg-gray-800'>
+              {/* Progress Bar with enhanced styling */}
+              <div className='mb-5 mt-auto'>
+                <div className='flex justify-between items-center mb-2'>
+                  <span className='text-xs text-muted-foreground font-medium'>
+                    Progress
+                  </span>
+                  <span className='text-xs font-bold text-foreground'>
+                    {pct}%
+                  </span>
+                </div>
+                <div className='relative w-full h-2.5 rounded-full overflow-hidden bg-muted/50 shadow-inner'>
                   <div
-                    className='h-full bg-gradient-to-r from-purple-500 to-indigo-500 transition-all duration-500'
+                    className={cn(
+                      'h-full rounded-full transition-all duration-700 ease-out',
+                      'bg-gradient-to-r from-primary to-accent',
+                      pct === 100 && 'from-green-500 to-emerald-500'
+                    )}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
-                <span className='text-xs text-gray-400 mt-1 block'>
-                  {s.completed} / {s.total} solved ({pct}%)
+                <span className='text-[11px] text-muted-foreground mt-1.5 block'>
+                  {s.completed} of {s.total} problems solved
                 </span>
               </div>
 
-              {/* Action Buttons */}
-              <div className='mt-auto flex gap-2'>
+              {/* Action Buttons with improved styling */}
+              <div className='flex gap-2'>
                 <Button
                   size='sm'
-                  className='flex-1 bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:scale-105 transition-transform'
+                  className='flex-1 bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:scale-105 transition-all'
                   onClick={() =>
                     window.open(
                       `https://leetcode.com/problems/${s.title
@@ -123,21 +154,14 @@ export function SheetsGrid({
                     )
                   }
                 >
-                  Open
+                  Start
                 </Button>
                 <Button
                   size='sm'
                   variant='outline'
-                  className='flex-1 hover:bg-gray-800 hover:text-white transition'
+                  className='flex-1 hover:bg-primary/10 hover:border-primary transition-all'
                 >
                   Continue
-                </Button>
-                <Button
-                  size='sm'
-                  variant='ghost'
-                  className='flex-1 text-green-400 hover:text-green-500 transition'
-                >
-                  Mark Done
                 </Button>
               </div>
             </CardContent>

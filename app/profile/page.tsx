@@ -189,8 +189,8 @@ export default function ProfilePage() {
   async function addNewCollege() {
     if (!newCollegeName.trim()) {
       toast({
-        title: 'Error',
-        description: 'Please enter a college name',
+        title: '🏫 College name needed',
+        description: 'Enter your college name to connect with teammates!',
         variant: 'destructive',
       });
       return;
@@ -211,8 +211,8 @@ export default function ProfilePage() {
       }
 
       toast({
-        title: 'Success',
-        description: data.message || 'College added successfully',
+        title: '✅ College added!',
+        description: data.message || 'Your college profile is all set. Ready to compete!',
       });
 
       // Select the newly added college
@@ -224,8 +224,8 @@ export default function ProfilePage() {
       await loadColleges();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message,
+        title: '⚠️ Couldn\'t add college',
+        description: error.message || 'Something went wrong. Try again!',
         variant: 'destructive',
       });
     } finally {
@@ -236,8 +236,8 @@ export default function ProfilePage() {
   async function addNewCompany() {
     if (!newCompanyName.trim()) {
       toast({
-        title: 'Error',
-        description: 'Please enter a company name',
+        title: '🏭 Company name needed',
+        description: 'Add your dream company to track your interview prep progress!',
         variant: 'destructive',
       });
       return;
@@ -258,8 +258,8 @@ export default function ProfilePage() {
       }
 
       toast({
-        title: 'Success',
-        description: data.message || 'Company added successfully',
+        title: '✅ Company added!',
+        description: data.message || 'Great choice! Start crushing those interview problems.',
       });
 
       // Select the newly added company
@@ -271,8 +271,8 @@ export default function ProfilePage() {
       await loadCompanies();
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message,
+        title: '⚠️ Couldn\'t add company',
+        description: error.message || 'Something went wrong. Try again!',
         variant: 'destructive',
       });
     } finally {

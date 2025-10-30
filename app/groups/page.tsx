@@ -133,8 +133,8 @@ export default function GroupsPage() {
   const createGroup = async () => {
     if (!groupName.trim()) {
       toast({
-        title: 'Error',
-        description: 'Please enter a group name',
+        title: '🤔 Group name needed',
+        description: "Give your awesome team a name! It's the first step to greatness.",
         variant: 'destructive',
       });
       return;
@@ -158,10 +158,8 @@ export default function GroupsPage() {
       if (!res.ok) throw new Error(json?.error || 'Unable to create group');
 
       toast({
-        title: 'Group created',
-        description: `Your ${
-          groupType === 'icpc' ? 'ICPC team' : 'friends group'
-        } "${groupName}" has been created.`,
+        title: 'Your team is ready!',
+        description: `${groupName} is all set! Time to invite your teammates and start crushing problems together.`,
       });
 
       setGroupName('');
@@ -170,8 +168,8 @@ export default function GroupsPage() {
       mutate('/api/groups/mine');
     } catch (e: any) {
       toast({
-        title: 'Error',
-        description: e?.message || 'Unable to create group',
+        title: '⚠️ Couldn\'t create group',
+        description: e?.message || 'Something went wrong. Mind trying again?',
         variant: 'destructive',
       });
     } finally {
@@ -188,13 +186,13 @@ export default function GroupsPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Unable to leave group');
-      toast({ title: 'Left group', description: 'You have left this group.' });
+      toast({ title: '👋 You\'ve left the group', description: 'Catch you on the leaderboard! You can always rejoin later.' });
       setSelectedGroup(null);
       mutate('/api/groups/mine');
     } catch (e: any) {
       toast({
-        title: 'Error',
-        description: e?.message || 'Unable to leave group',
+        title: '⚠️ Couldn\'t leave group',
+        description: e?.message || 'Something went wrong. Try again in a moment.',
         variant: 'destructive',
       });
     }
@@ -554,24 +552,33 @@ export default function GroupsPage() {
   }
 
   return (
-    <main className='mx-auto max-w-7xl px-4 py-10'>
-      {/* Hero */}
-      <div className='relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-transparent to-transparent dark:from-primary/15 p-8 mb-8'>
+    <main className='mx-auto max-w-7xl px-4 py-10 bg-gradient-to-br from-background via-background to-muted/20 min-h-screen'>
+      {/* Enhanced Hero */}
+      <div className='relative overflow-hidden rounded-2xl glass-intense p-8 sm:p-10 mb-8 hover-lift'>
+        <div className='absolute inset-0 -z-10'>
+          <div className='absolute top-0 right-0 w-1/2 h-1/2 bg-primary/20 rounded-full blur-[100px] animate-pulse' />
+          <div className='absolute bottom-0 left-0 w-1/2 h-1/2 bg-accent/20 rounded-full blur-[100px] animate-pulse' style={{ animationDelay: '1s' }} />
+        </div>
         <div className='flex items-center justify-between gap-6'>
-          <div>
-            <h1 className='text-4xl font-bold tracking-tight'>Groups & Teams</h1>
-            <p className='text-muted-foreground mt-3 text-lg'>
-              Practice together, run mock contests, and track progress as a team.
+          <div className='flex-1'>
+            <h1 className='text-4xl sm:text-5xl font-bold tracking-tight flex items-center gap-3'>
+              <div className='p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30'>
+                <Users className='h-10 w-10 text-purple-500' />
+              </div>
+              <span className='gradient-text'>Groups & Teams</span>
+            </h1>
+            <p className='text-muted-foreground mt-3 text-base sm:text-lg leading-relaxed'>
+              <span className='font-semibold text-foreground'>Practice together</span>, run mock contests, and track progress as a team.
             </p>
           </div>
 
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button size='lg' className='gap-2'>
-              <Plus className='h-5 w-5' />
-              Create Group
-            </Button>
-          </DialogTrigger>
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <DialogTrigger asChild>
+              <Button size='lg' className='gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:scale-105 transition-all'>
+                <Plus className='h-5 w-5' />
+                Create Group
+              </Button>
+            </DialogTrigger>
           <DialogContent className='max-w-2xl'>
             <DialogHeader>
               <DialogTitle className='text-2xl'>Create a Group</DialogTitle>
@@ -718,7 +725,11 @@ export default function GroupsPage() {
 
       {/* Discover Tabs */}
       <div className='mb-8'>
-        <div className='inline-flex rounded-lg border bg-background p-1 gap-1'>
+        <div className='mb-4'>
+          <h2 className='text-2xl font-bold text-foreground'>Discover Groups</h2>
+          <p className='text-sm text-muted-foreground'>Find your perfect training squad</p>
+        </div>
+        <div className='inline-flex rounded-lg border bg-background p-1 gap-1 flex-wrap'>
           {[
             { v: 'all', label: 'All Groups', icon: Users },
             { v: 'top-icpc', label: 'Top ICPC Teams', icon: Trophy },
@@ -733,7 +744,7 @@ export default function GroupsPage() {
                 onClick={() => setDiscoverTab(t.v as any)}
                 className={`px-4 py-2 text-sm rounded-md font-medium transition-all flex items-center gap-2 ${
                   discoverTab === t.v
-                    ? 'bg-primary text-primary-foreground'
+                    ? 'bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg'
                     : 'hover:bg-muted/60'
                 }`}
               >
@@ -795,7 +806,7 @@ export default function GroupsPage() {
                   key={m.group.id}
                   role='button'
                   onClick={() => setSelectedGroup(m)}
-                  className={`hover:shadow-md transition-all cursor-pointer border bg-gradient-to-br ${typeBadge.color}`}
+                  className={`card-3d-ultra hover-shine transition-all cursor-pointer border bg-gradient-to-br ${typeBadge.color}`}
                 >
                   <CardContent className='p-6'>
                     <div className='flex flex-col gap-4'>

@@ -44,6 +44,38 @@ export async function GET(
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+    const userIds = (rows || []).map((r: any) => r.user_id).filter(Boolean);
+    const { data: skillData, error: skillError } = userIds.length
+      ? await supabase
+          .from('user_skill_profiles')
+          .select(
+            'user_id,total_problems_solved,current_streak,longest_streak,last_activity_at'
+          )
+          .in('user_id', userIds)
+      : { data: null, error: null };
+
+    if (skillError) {
+      console.warn('Group leaderboard skill fetch error:', skillError);
+    }
+
+    const skillMap = new Map<string, {
+      total_problems_solved: number;
+      current_streak: number;
+      longest_streak: number;
+      last_activity_at: string | null;
+    }>();
+
+    (skillData || []).forEach((snapshot: any) => {
+      if (snapshot?.user_id) {
+        skillMap.set(snapshot.user_id, {
+          total_problems_solved: snapshot.total_problems_solved ?? 0,
+          current_streak: snapshot.current_streak ?? 0,
+          longest_streak: snapshot.longest_streak ?? 0,
+          last_activity_at: snapshot.last_activity_at ?? null,
+        });
+      }
+    });
+
     const leaderboard = (rows || [])
       .map((r: any) => {
         const handles = r.profiles?.cf_handles || [];
@@ -52,16 +84,18 @@ export async function GET(
           null as any
         );
         const name = r.profiles?.full_name || best?.handle || 'Member';
+        const skill = skillMap.get(r.user_id) || null;
         return {
           id: r.user_id,
           name,
           handle: best?.handle || 'unknown',
           avatar: r.profiles?.avatar_url || null,
           rating: best?.rating || 0,
-          problemsSolved: 0, // future: compute from user_problems
-          streakCurrent: 0, // future: compute from streak table
-          streakLongest: 0,
-          lastActive: r.profiles?.last_active_at || new Date().toISOString(),
+          problemsSolved: skill?.total_problems_solved ?? 0,
+          streakCurrent: skill?.current_streak ?? 0,
+          streakLongest: skill?.longest_streak ?? 0,
+          lastActive:
+            skill?.last_activity_at || r.profiles?.last_active_at || new Date().toISOString(),
         };
       })
       .sort((a, b) => {
@@ -88,9 +122,12 @@ export async function GET(
     // Placeholder stats until activity tables are wired
     const stats = {
       totalMembers: totalMembers || leaderboard.length,
-      activeMembers: leaderboard.filter(e => e.lastActive).length, // naive
+      activeMembers: leaderboard.filter(e => e.lastActive).length,
       avgRating,
-      totalProblems: 0,
+      totalProblems: leaderboard.reduce(
+        (acc, entry) => acc + (entry.problemsSolved ?? 0),
+        0
+      ),
     };
 
     return NextResponse.json({ leaderboard, stats });

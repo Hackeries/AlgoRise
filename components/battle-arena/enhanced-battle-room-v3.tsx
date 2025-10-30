@@ -39,6 +39,7 @@ import { ConnectionQualityIndicator } from './connection-status-banner';
 import { BattleSyncProvider, useBattleSync, useBattleEvent, useOpponentActivity, useTypingIndicator } from './battle-sync-provider';
 import { useSubmission } from '@/hooks/use-submission';
 import { formatSubmissionTime } from '@/lib/battle/race-condition-prevention';
+import { useToast } from '@/hooks/use-toast';
 
 interface Problem {
   id: string;
@@ -92,6 +93,7 @@ function BattleRoomContent({
   teamId,
 }: BattleRoomLayoutProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const [selectedProblem, setSelectedProblem] = useState<Problem>(initialProblems[0]);
   const [problems, setProblems] = useState<Problem[]>(initialProblems);
   const [timeRemaining, setTimeRemaining] = useState(initialTime);
@@ -321,6 +323,21 @@ function BattleRoomContent({
     await submit(code, language);
   };
 
+  const handleRun = useCallback(() => {
+    toast({
+      title: 'Run code (coming soon)',
+      description:
+        'We will execute sample tests without affecting your ELO in the next update. For now, use Submit to validate your solution.',
+    });
+  }, [toast]);
+
+  const handleHint = useCallback(() => {
+    toast({
+      title: 'Hints are on the way',
+      description: 'Mentor-generated hints unlock once your study group challenges are active.',
+    });
+  }, [toast]);
+
   // ============================================================================
   // HANDLE CHAT
   // ============================================================================
@@ -391,7 +408,7 @@ function BattleRoomContent({
   // ============================================================================
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950 pb-24 md:pb-0">
       {/* Top Bar */}
       <div className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-blue-500/20">
         <div className="max-w-[2000px] mx-auto px-4 py-3">
@@ -477,9 +494,9 @@ function BattleRoomContent({
 
       {/* Main Content */}
       <div className="max-w-[2000px] mx-auto p-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
-          {/* Left: Code Editor (2/3 width on desktop) */}
-          <div className="lg:col-span-2 flex flex-col gap-4">
+        <div className="grid gap-4 items-start h-[calc(100vh-220px)] sm:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          {/* Left: Code Editor (dominant column) */}
+          <div className="flex flex-col gap-4 min-h-[480px]">
             {/* Problem Description */}
             <Card className="bg-slate-900/50 border-slate-700">
               <CardContent className="p-4">
@@ -524,7 +541,7 @@ function BattleRoomContent({
             </Card>
 
             {/* Submission Controls */}
-            <Card className="bg-slate-900/50 border-slate-700">
+            <Card className="bg-slate-900/50 border-slate-700 hidden md:block">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3 mb-3">
                   <select
@@ -696,6 +713,33 @@ function BattleRoomContent({
               </CardContent>
             </Card>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile action bar */}
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-blue-500/20 bg-slate-950/95 backdrop-blur md:hidden">
+        <div className="max-w-[2000px] mx-auto px-4 py-3 grid grid-cols-3 gap-2">
+          <Button
+            variant="outline"
+            onClick={handleRun}
+            className="text-sm"
+          >
+            Run
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting || !isConnected}
+            className="text-sm bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit'}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={handleHint}
+            className="text-sm"
+          >
+            Hints
+          </Button>
         </div>
       </div>
     </div>

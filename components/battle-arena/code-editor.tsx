@@ -71,7 +71,7 @@ export default function CodeEditor({ language, value, onChange }: CodeEditorProp
   const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
 
   return (
-    <div className="h-full flex bg-slate-900/50 font-mono text-sm">
+    <div className="h-full flex bg-slate-900/50 font-mono text-[14px] sm:text-sm">
       {/* Line Numbers */}
       <div className="bg-slate-900/80 text-slate-500 p-4 pt-3 text-right select-none overflow-hidden">
         {lineNumbers.map((num) => (
@@ -94,14 +94,14 @@ export default function CodeEditor({ language, value, onChange }: CodeEditorProp
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onScroll={handleScroll}
-          className="absolute inset-0 w-full h-full bg-transparent text-blue-100 p-4 pt-3 resize-none outline-none leading-6"
+          className="absolute inset-0 w-full h-full bg-transparent text-blue-100 p-4 pt-3 resize-none outline-none leading-6 text-[14px] sm:text-sm"
           style={{ tabSize: 4 }}
           spellCheck={false}
         />
         
         {/* Syntax highlighting overlay */}
         <div 
-          className="absolute inset-0 pointer-events-none p-4 pt-3 overflow-hidden"
+          className="absolute inset-0 pointer-events-none p-4 pt-3 overflow-hidden text-[14px] sm:text-sm"
           style={{ 
             background: 'transparent',
             color: 'transparent',

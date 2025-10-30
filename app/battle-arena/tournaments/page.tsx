@@ -44,56 +44,11 @@ export default function TournamentsPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  // Mock data for tournaments
+  // Fetch tournaments data
   useEffect(() => {
-    const mockTournaments: Tournament[] = [
-      {
-        id: '1',
-        name: 'Weekly ICPC Challenge',
-        description: 'Weekly competitive programming tournament with ICPC-style problems',
-        status: 'registration',
-        startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-        maxParticipants: 64,
-        currentParticipants: 42,
-        entryFee: 0,
-        prizePool: 1000,
-        format: 'single_elimination',
-        minRating: 1200,
-        maxRating: 2500
-      },
-      {
-        id: '2',
-        name: 'Grandmaster Showdown',
-        description: 'Exclusive tournament for top-rated programmers',
-        status: 'upcoming',
-        startDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
-        endDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000),
-        maxParticipants: 32,
-        currentParticipants: 0,
-        entryFee: 10,
-        prizePool: 5000,
-        format: 'double_elimination',
-        minRating: 2000,
-        maxRating: 3000
-      },
-      {
-        id: '3',
-        name: 'Beginner\'s Cup',
-        description: 'Tournament designed for newcomers to competitive programming',
-        status: 'in_progress',
-        startDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-        endDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
-        maxParticipants: 128,
-        currentParticipants: 128,
-        entryFee: 0,
-        prizePool: 500,
-        format: 'single_elimination',
-        minRating: 800,
-        maxRating: 1500
-      }
-    ];
-    setTournaments(mockTournaments);
+    // In a real implementation, this would fetch from the tournaments table
+    // For now, we'll use empty array
+    setTournaments([]);
   }, []);
 
   const getStatusColor = (status: string) => {

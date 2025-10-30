@@ -51,112 +51,13 @@ export default function TournamentDetailPage({ params }: { params: { id: string 
   const router = useRouter();
   const { toast } = useToast();
 
-  // Mock data for tournament detail
+  // Fetch tournament data
   useEffect(() => {
-    // Mock tournament data
-    const mockTournament = {
-      id: params.id,
-      name: 'Weekly ICPC Challenge',
-      description: 'Weekly competitive programming tournament with ICPC-style problems',
-      status: 'in_progress',
-      startDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-      endDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000),
-      maxParticipants: 64,
-      currentParticipants: 64,
-      entryFee: 0,
-      prizePool: 1000,
-      format: 'single_elimination',
-      minRating: 1200,
-      maxRating: 2500
-    };
-    
-    setTournament(mockTournament);
-    
-    // Mock participants
-    const mockParticipants: Participant[] = Array.from({ length: 64 }, (_, i) => ({
-      id: `user_${i + 1}`,
-      name: `User ${i + 1}`,
-      rating: 1200 + Math.floor(Math.random() * 800),
-      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=User${i + 1}`
-    }));
-    
-    setParticipants(mockParticipants);
-    
-    // Mock matches for single elimination bracket
-    const mockMatches: Match[] = [];
-    let matchId = 1;
-    
-    // Round 1 (32 matches)
-    for (let i = 0; i < 32; i++) {
-      mockMatches.push({
-        id: `match_${matchId++}`,
-        round: 1,
-        player1: mockParticipants[i * 2],
-        player2: mockParticipants[i * 2 + 1],
-        winner: Math.random() > 0.5 ? mockParticipants[i * 2].id : mockParticipants[i * 2 + 1].id,
-        status: 'completed'
-      });
-    }
-    
-    // Round 2 (16 matches)
-    for (let i = 0; i < 16; i++) {
-      mockMatches.push({
-        id: `match_${matchId++}`,
-        round: 2,
-        player1: null, // Will be determined by previous round winners
-        player2: null, // Will be determined by previous round winners
-        winner: null,
-        status: Math.random() > 0.7 ? 'completed' : 'in_progress'
-      });
-    }
-    
-    // Round 3 (8 matches)
-    for (let i = 0; i < 8; i++) {
-      mockMatches.push({
-        id: `match_${matchId++}`,
-        round: 3,
-        player1: null,
-        player2: null,
-        winner: null,
-        status: Math.random() > 0.9 ? 'completed' : 'pending'
-      });
-    }
-    
-    // Round 4 (4 matches)
-    for (let i = 0; i < 4; i++) {
-      mockMatches.push({
-        id: `match_${matchId++}`,
-        round: 4,
-        player1: null,
-        player2: null,
-        winner: null,
-        status: 'pending'
-      });
-    }
-    
-    // Semifinals (2 matches)
-    for (let i = 0; i < 2; i++) {
-      mockMatches.push({
-        id: `match_${matchId++}`,
-        round: 5,
-        player1: null,
-        player2: null,
-        winner: null,
-        status: 'pending'
-      });
-    }
-    
-    // Final (1 match)
-    mockMatches.push({
-      id: `match_${matchId++}`,
-      round: 6,
-      player1: null,
-      player2: null,
-      winner: null,
-      status: 'pending'
-    });
-    
-    setMatches(mockMatches);
+    // In a real implementation, this would fetch from the tournaments table
+    // For now, we'll use empty data
+    setTournament(null);
+    setParticipants([]);
+    setMatches([]);
   }, [params.id]);
 
   const joinTournament = () => {
@@ -195,6 +96,17 @@ export default function TournamentDetailPage({ params }: { params: { id: string 
     }
     matchesByRound[match.round].push(match);
   });
+
+  if (!tournament) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500 mb-4"></div>
+          <p className="text-blue-200">Loading tournament...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950 p-4 md:p-8">

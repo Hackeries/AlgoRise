@@ -73,14 +73,14 @@ export default function BattleArenaPage() {
   const fetchQueueStatus = async () => {
     try {
       // In a real implementation, this would call an API endpoint
-      // For now, we'll simulate the data
+      // For now, we'll initialize with empty data
       setQueueStatus({
-        totalPlayers: Math.floor(Math.random() * 10),
-        averageWaitTime: Math.floor(Math.random() * 120),
+        totalPlayers: 0,
+        averageWaitTime: 0,
         formatDistribution: { 
-          best_of_1: Math.floor(Math.random() * 5), 
-          best_of_3: Math.floor(Math.random() * 7), 
-          best_of_5: Math.floor(Math.random() * 3) 
+          best_of_1: 0, 
+          best_of_3: 0, 
+          best_of_5: 0 
         }
       });
     } catch (error) {
@@ -91,7 +91,7 @@ export default function BattleArenaPage() {
   const fetchUserBattles = async () => {
     try {
       // In a real implementation, this would fetch from the battles table
-      // For now, we'll use mock data
+      // For now, we'll use empty array
       setUserBattles([]);
     } catch (error) {
       console.error('Error fetching user battles:', error);

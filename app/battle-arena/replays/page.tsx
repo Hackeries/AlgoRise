@@ -40,63 +40,12 @@ export default function ReplaysPage() {
   const [activeFilter, setActiveFilter] = useState('all');
   const router = useRouter();
 
-  // Mock data for replays
+  // Fetch replays data
   useEffect(() => {
-    const mockReplays: Replay[] = [
-      {
-        id: '1',
-        title: 'Alice Johnson vs Bob Smith',
-        date: new Date(Date.now() - 24 * 60 * 60 * 1000),
-        duration: 320,
-        players: ['Alice Johnson', 'Bob Smith'],
-        winner: 'Alice Johnson',
-        ratingChange: '+25',
-        isPublic: true
-      },
-      {
-        id: '2',
-        title: 'Charlie Brown vs Diana Prince',
-        date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-        duration: 450,
-        players: ['Charlie Brown', 'Diana Prince'],
-        winner: 'Diana Prince',
-        ratingChange: '+18',
-        isPublic: true
-      },
-      {
-        id: '3',
-        title: 'Eve Wilson vs Frank Miller',
-        date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-        duration: 280,
-        players: ['Eve Wilson', 'Frank Miller'],
-        winner: 'Eve Wilson',
-        ratingChange: '+32',
-        isPublic: false
-      },
-      {
-        id: '4',
-        title: 'Grace Lee vs Henry Taylor',
-        date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-        duration: 620,
-        players: ['Grace Lee', 'Henry Taylor'],
-        winner: 'Henry Taylor',
-        ratingChange: '+15',
-        isPublic: true
-      },
-      {
-        id: '5',
-        title: 'Ivy Chen vs Jack Davis',
-        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-        duration: 380,
-        players: ['Ivy Chen', 'Jack Davis'],
-        winner: 'Ivy Chen',
-        ratingChange: '+22',
-        isPublic: true
-      }
-    ];
-    
-    setReplays(mockReplays);
-    setFilteredReplays(mockReplays);
+    // In a real implementation, this would fetch from the replays table
+    // For now, we'll use empty array
+    setReplays([]);
+    setFilteredReplays([]);
   }, []);
 
   // Filter replays based on search term and filter

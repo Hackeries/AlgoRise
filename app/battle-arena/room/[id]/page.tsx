@@ -93,86 +93,10 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
   const [spectators, setSpectators] = useState<Player[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Mock data - in a real implementation, this would come from the backend
-  const players: Player[] = [
-    {
-      id: "1",
-      name: "You",
-      rating: 1850,
-      solved: 2,
-      penalty: 32,
-      isOnline: true
-    },
-    {
-      id: "2",
-      name: "Opponent",
-      rating: 1780,
-      solved: 1,
-      penalty: 25,
-      isOnline: true
-    }
-  ];
-
-  const problems: Problem[] = [
-    {
-      id: "A",
-      name: "A",
-      title: "Sum of Two Numbers",
-      description: "Given two integers a and b, return their sum.",
-      input: "Two integers a and b (1 ≤ a, b ≤ 1000)",
-      output: "Print the sum of a and b",
-      sampleInput: "3 5",
-      sampleOutput: "8",
-      timeLimit: 1000,
-      memoryLimit: 256,
-      solved: 4,
-      attempts: 6
-    },
-    {
-      id: "B",
-      name: "B",
-      title: "Array Rotation",
-      description: "Given an array of n integers and a number k, rotate the array to the right by k steps.",
-      input: "First line contains two integers n and k. Second line contains n integers.",
-      output: "Print the rotated array.",
-      sampleInput: "5 2\n1 2 3 4 5",
-      sampleOutput: "4 5 1 2 3",
-      timeLimit: 2000,
-      memoryLimit: 512,
-      solved: 2,
-      attempts: 5
-    }
-  ];
-
-  const currentProblem = problems[0];
-
-  // Mock spectators data
-  const mockSpectators: Player[] = [
-    {
-      id: "3",
-      name: "Spectator1",
-      rating: 1650,
-      solved: 0,
-      penalty: 0,
-      isOnline: true
-    },
-    {
-      id: "4",
-      name: "Spectator2",
-      rating: 1420,
-      solved: 0,
-      penalty: 0,
-      isOnline: true
-    },
-    {
-      id: "5",
-      name: "Spectator3",
-      rating: 1980,
-      solved: 0,
-      penalty: 0,
-      isOnline: true
-    }
-  ];
+  // Initialize with empty data
+  const players: Player[] = [];
+  const problems: Problem[] = [];
+  const currentProblem = problems[0] || null;
 
   // Timer effect
   useEffect(() => {
@@ -204,7 +128,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
     const newSubmission: Submission = {
       id: Date.now().toString(),
       playerId: "1",
-      problemId: currentProblem.id,
+      problemId: currentProblem?.id || "",
       status: 'pending',
       language,
       time: 0,
@@ -259,7 +183,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
 
   const toggleSpectatorMode = () => {
     setIsSpectator(!isSpectator);
-    setSpectators(mockSpectators);
+    setSpectators([]);
   };
 
   // If user is a spectator, show spectator view
@@ -269,7 +193,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
         battleId={params.id}
         players={players}
         problems={problems}
-        spectators={mockSpectators}
+        spectators={spectators}
         isPublic={true}
       />
     );
@@ -365,7 +289,7 @@ export default function BattleRoomPage({ params }: { params: { id: string } }) {
               </div>
               
               <CardContent className="flex-1 p-0">
-                {activeTab === 'problem' && (
+                {activeTab === 'problem' && currentProblem && (
                   <ScrollArea className="h-full p-6">
                     <div className="max-w-3xl mx-auto">
                       <div className="flex items-center justify-between mb-6">

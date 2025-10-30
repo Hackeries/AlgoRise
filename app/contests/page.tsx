@@ -149,7 +149,7 @@ export default function ContestsPage() {
     // Auto-refresh contests every 5 minutes for real-time updates
     const refreshInterval = setInterval(() => {
       fetchContests();
-    }, 5 * 60 * 1000); // 5 minutes
+    }, 360 * 60 * 1000); // 360 minutes
 
     return () => clearInterval(refreshInterval);
   }, []);

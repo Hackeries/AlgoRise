@@ -18,10 +18,11 @@ import {
   BarChart3,
   Cpu,
   Menu,
-  TestTube,
   Sword,
   X,
   Sparkles,
+  Brain,
+  User,
 } from 'lucide-react';
 
 // ==================== TYPES ====================
@@ -49,6 +50,7 @@ const MENU_ITEMS: MenuItem[] = [
   { href: '/', label: 'Dashboard', icon: Home },
   { href: '/train', label: 'Train', icon: Zap },
   { href: '/adaptive-sheet', label: 'Practice', icon: FileText },
+  { href: '/adaptive-learning', label: 'Adaptive Learning', icon: Brain },
   { href: '/contests', label: 'Contests', icon: Trophy },
   { href: '/battle-arena', label: 'Battle Arena', icon: Sword },
   { href: '/paths', label: 'Learning Paths', icon: BookOpen },
@@ -146,21 +148,6 @@ const getCFTier = (rating: number): CFTier => {
     bg: 'bg-yellow-900/30 border-yellow-700/60',
   };
 };
-
-// ------------------ Menu Items ------------------
-const menuItems = [
-  { href: '/', label: 'Dashboard', icon: Home },
-  { href: '/train', label: 'Train', icon: Zap },
-  { href: '/problem-generator', label: 'Problem Generator', icon: TestTube },
-  { href: '/adaptive-sheet', label: 'Practice Problems', icon: FileText },
-  { href: '/contests', label: 'Contests', icon: Trophy },
-  { href: '/battle-arena', label: 'Battle Arena', icon: Sword },
-  { href: '/paths', label: 'Learning Paths', icon: BookOpen },
-  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/visualizers', label: 'Visualizers', icon: Cpu },
-  { href: '/groups', label: 'Groups', icon: Users },
-  { href: '/mentorship', label: 'Mentorship', icon: Sparkles },
-];
 
 const MOBILE_TABS = [
   { href: '/battle-arena', label: 'Battle', icon: Sword },

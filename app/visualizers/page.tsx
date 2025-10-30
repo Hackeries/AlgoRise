@@ -31,14 +31,14 @@ export default function VisualizersPage() {
         </p>
 
         <div className='mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3'>
-          {VISUALIZERS.map(v => (
+          {VISUALIZERS.map((v, index) => (
             <Link key={v.slug} href={`/visualizers/${v.slug}`}>
-              <Card className='h-full hover:border-primary/50 transition-colors cursor-pointer'>
+              <Card className='h-full card-3d hover-shine transition-colors cursor-pointer group animate-fade-in' style={{ animationDelay: `${index * 50}ms` }}>
                 <CardHeader className='pb-2'>
-                  <CardTitle className='text-base'>{v.title}</CardTitle>
+                  <CardTitle className='text-base group-hover:text-primary transition-colors'>{v.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className='text-sm text-muted-foreground'>{v.summary}</p>
+                  <p className='text-sm text-muted-foreground leading-relaxed'>{v.summary}</p>
                 </CardContent>
               </Card>
             </Link>

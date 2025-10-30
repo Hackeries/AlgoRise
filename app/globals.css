@@ -129,6 +129,12 @@
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
   
+  /* 3D & Elevated Shadows */
+  --shadow-3d-sm: 0 2px 4px rgb(0 0 0 / 0.05), 0 4px 8px rgb(0 0 0 / 0.08);
+  --shadow-3d-md: 0 4px 8px rgb(0 0 0 / 0.08), 0 8px 16px rgb(0 0 0 / 0.12);
+  --shadow-3d-lg: 0 8px 16px rgb(0 0 0 / 0.1), 0 16px 32px rgb(0 0 0 / 0.15);
+  --shadow-3d-xl: 0 16px 32px rgb(0 0 0 / 0.12), 0 32px 64px rgb(0 0 0 / 0.18);
+  
   /* ========== Animation ========== */
   --duration-fast: 150ms;
   --duration-normal: 250ms;
@@ -229,9 +235,20 @@
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.85);
   --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.4);
   
+  /* 3D & Elevated Shadows - Dark Mode */
+  --shadow-3d-sm: 0 2px 4px rgb(0 0 0 / 0.4), 0 4px 8px rgb(0 0 0 / 0.5);
+  --shadow-3d-md: 0 4px 8px rgb(0 0 0 / 0.5), 0 8px 16px rgb(0 0 0 / 0.6);
+  --shadow-3d-lg: 0 8px 16px rgb(0 0 0 / 0.6), 0 16px 32px rgb(0 0 0 / 0.7);
+  --shadow-3d-xl: 0 16px 32px rgb(0 0 0 / 0.7), 0 32px 64px rgb(0 0 0 / 0.8);
+
   /* Dark mode glow effects */
   --glow-primary: 0 0 20px rgb(59 130 246 / 0.3);
+  --glow-primary-intense: 0 0 30px rgb(59 130 246 / 0.5), 0 0 50px rgb(59 130 246 / 0.2);
   --glow-accent: 0 0 20px rgb(6 182 212 / 0.3);
+  --glow-accent-intense: 0 0 30px rgb(6 182 212 / 0.5), 0 0 50px rgb(6 182 212 / 0.2);
+  --glow-success: 0 0 20px rgb(34 197 94 / 0.3);
+  --glow-warning: 0 0 20px rgb(251 146 60 / 0.3);
+  --glow-danger: 0 0 20px rgb(239 68 68 / 0.3);
 }
 
 /* ============================================
@@ -535,6 +552,7 @@
     @apply bg-card border border-border rounded-lg;
     @apply transition-all duration-300 ease-out;
     box-shadow: var(--shadow-sm);
+    position: relative;
   }
   
   .card-modern:hover {
@@ -547,19 +565,70 @@
     box-shadow: var(--shadow-lg), var(--glow-primary);
   }
   
+  /* Enhanced 3D Card with depth */
   .card-3d {
     @apply transition-all duration-300 ease-out;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-3d-sm);
     transform-style: preserve-3d;
+    position: relative;
+  }
+  
+  .card-3d::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(145deg, hsl(var(--primary) / 0.03), transparent);
+    pointer-events: none;
+    transition: opacity var(--duration-normal) var(--ease-out);
+    opacity: 0;
   }
   
   .card-3d:hover {
-    @apply -translate-y-1;
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px) rotateX(2deg);
+    box-shadow: var(--shadow-3d-md);
+  }
+  
+  .card-3d:hover::before {
+    opacity: 1;
   }
   
   .dark .card-3d:hover {
-    box-shadow: var(--shadow-xl), var(--glow-primary);
+    box-shadow: var(--shadow-3d-lg), var(--glow-primary);
+  }
+  
+  /* Ultra 3D Card with intense effects */
+  .card-3d-ultra {
+    @apply transition-all duration-500 ease-out;
+    box-shadow: var(--shadow-3d-md);
+    transform-style: preserve-3d;
+    position: relative;
+    perspective: 1000px;
+  }
+  
+  .card-3d-ultra::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(145deg, hsl(var(--primary) / 0.05), hsl(var(--accent) / 0.05));
+    pointer-events: none;
+    transition: all var(--duration-slow) var(--ease-out);
+    opacity: 0;
+  }
+  
+  .card-3d-ultra:hover {
+    transform: translateY(-8px) rotateX(5deg) scale(1.02);
+    box-shadow: var(--shadow-3d-lg);
+  }
+  
+  .card-3d-ultra:hover::before {
+    opacity: 1;
+    transform: translateZ(20px);
+  }
+  
+  .dark .card-3d-ultra:hover {
+    box-shadow: var(--shadow-3d-xl), var(--glow-primary-intense);
   }
   
   .card-interactive {
@@ -698,6 +767,61 @@
     }
   }
   
+  /* ========== Advanced Hover Effects ========== */
+  .hover-lift {
+    transition: all var(--duration-normal) var(--ease-out);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-3d-lg);
+  }
+  
+  .dark .hover-lift:hover {
+    box-shadow: var(--shadow-3d-xl), var(--glow-primary);
+  }
+  
+  .hover-glow {
+    transition: all var(--duration-normal) var(--ease-out);
+    position: relative;
+  }
+  
+  .hover-glow::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    opacity: 0;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.4), hsl(var(--accent) / 0.4));
+    filter: blur(20px);
+    z-index: -1;
+    transition: opacity var(--duration-normal) var(--ease-out);
+  }
+  
+  .hover-glow:hover::after {
+    opacity: 1;
+  }
+  
+  .hover-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .hover-shine::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.1), transparent);
+    transition: left 0.5s var(--ease-out);
+  }
+  
+  .hover-shine:hover::before {
+    left: 100%;
+  }
+  
   /* ========== Focus Styles ========== */
   .focus-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
@@ -822,6 +946,15 @@
   
   .animate-bounce {
     animation: bounce 1s infinite;
+  }
+  
+  @keyframes gradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  
+  .animate-gradient {
+    animation: gradient 3s ease infinite;
   }
   
   /* Skeleton Loading */
@@ -969,27 +1102,48 @@
     @apply shadow-md border-primary/30;
   }
   
-  /* Glass Effect - Modern */
+  /* Glass Effect - Modern Glassmorphism */
   .glass {
-    @apply bg-card/50 backdrop-blur-md border border-border/50;
+    background: hsl(var(--card) / 0.5);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid hsl(var(--border) / 0.5);
     transition: all var(--duration-normal) var(--ease-out);
   }
   
   .glass:hover {
-    @apply bg-card/60 border-border/70;
+    background: hsl(var(--card) / 0.6);
+    border-color: hsl(var(--border) / 0.7);
+    box-shadow: var(--shadow-md);
   }
   
   .glass-strong {
-    @apply bg-card/80 backdrop-blur-xl border border-border;
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(20px) saturate(200%);
+    -webkit-backdrop-filter: blur(20px) saturate(200%);
+    border: 1px solid hsl(var(--border));
+  }
+  
+  .glass-intense {
+    background: linear-gradient(135deg, hsl(var(--card) / 0.6), hsl(var(--card) / 0.4));
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid hsl(var(--border) / 0.6);
+    box-shadow: var(--shadow-lg), inset 0 1px 0 hsl(var(--foreground) / 0.1);
   }
   
   .dark .glass {
-    @apply bg-card/30;
+    background: hsl(var(--card) / 0.3);
   }
   
   .dark .glass:hover {
-    @apply bg-card/40;
-    box-shadow: var(--glow-primary);
+    background: hsl(var(--card) / 0.4);
+    box-shadow: var(--shadow-lg), var(--glow-primary);
+  }
+  
+  .dark .glass-intense {
+    background: linear-gradient(135deg, hsl(var(--card) / 0.5), hsl(var(--card) / 0.3));
+    box-shadow: var(--shadow-xl), var(--glow-primary), inset 0 1px 0 hsl(var(--foreground) / 0.1);
   }
   
   /* Floating Action Button */

@@ -633,13 +633,13 @@ export default function ContestsPage() {
   return (
     <main className='mx-auto max-w-7xl px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8'>
       {/* Enhanced Hero Section */}
-      <div className='relative overflow-hidden rounded-xl bg-card border border-border p-4 sm:p-6 mb-6'>
+      <div className='relative overflow-hidden rounded-lg bg-card/50 backdrop-blur-sm border-2 border-border hover:border-foreground/20 transition-colors p-6 sm:p-8 mb-8 shadow-sm'>
         <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6'>
           <div className='flex-1'>
-            <h1 className='text-xl sm:text-2xl font-bold tracking-tight text-foreground'>
+            <h1 className='text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-2'>
               Contests
             </h1>
-            <p className='mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl'>
+            <p className='text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl'>
               Host or join Codeforces contests and private training sessions
             </p>
           </div>
@@ -1077,37 +1077,42 @@ export default function ContestsPage() {
         <div className='space-y-10'>
           {/* Upcoming Contests Section - Codeforces */}
           <section>
-            <div className='flex items-center gap-3 mb-6'>
-              <div className='flex items-center gap-3 flex-1'>
-                <div className='p-2 rounded-md border border-border bg-background'>
-                  <Trophy className='w-5 h-5 text-foreground' />
+            <div className='flex items-center gap-4 mb-8 pb-4 border-b-2'>
+              <div className='flex items-center gap-4 flex-1'>
+                <div className='p-3 rounded-lg border-2 bg-muted/50'>
+                  <Trophy className='w-6 h-6 text-foreground' />
                 </div>
                 <div>
-                  <h2 className='text-lg sm:text-xl font-semibold text-foreground'>
+                  <h2 className='text-xl sm:text-2xl font-bold text-foreground mb-1'>
                     Upcoming Contests
                   </h2>
-                  <p className='text-xs sm:text-sm text-muted-foreground'>Official Codeforces competitions</p>
+                  <p className='text-sm text-muted-foreground'>Official Codeforces competitions</p>
                 </div>
               </div>
-              <Badge variant='secondary' className='text-sm px-3 py-1'>
+              <Badge variant='secondary' className='text-sm px-4 py-2 font-semibold'>
                 {upcomingCfContests.length}
               </Badge>
             </div>
 
             {upcomingCfContests.length === 0 ? (
-              <Card className='border border-dashed'>
-                <CardContent className='p-6'>
-                  <p className='text-muted-foreground text-center'>
-                    No upcoming Codeforces contests at the moment.
-                  </p>
+              <Card className='border-2 border-dashed hover:border-primary/30 transition-colors'>
+                <CardContent className='p-12'>
+                  <div className='text-center'>
+                    <div className='inline-flex p-6 rounded-lg border-2 bg-muted/50 mb-4'>
+                      <Trophy className='w-12 h-12 text-muted-foreground/50' />
+                    </div>
+                    <p className='text-base text-muted-foreground font-medium'>
+                      No upcoming Codeforces contests at the moment.
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             ) : (
-              <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+              <div className='grid gap-5 md:grid-cols-2 lg:grid-cols-3'>
                 {upcomingCfContests.slice(0, 6).map(contest => (
               <Card
                 key={contest.id}
-                className='cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/50'
+                className='group relative cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-foreground/20 bg-card/50 backdrop-blur-sm'
                 onClick={() =>
                   handleCodeforcesContestClick(
                     contest.id,
@@ -1116,47 +1121,60 @@ export default function ContestsPage() {
                   )
                 }
               >
-                <CardHeader className='pb-3'>
-                  <div className='flex items-start justify-between gap-2'>
-                    <CardTitle className='text-sm sm:text-base font-semibold leading-tight line-clamp-2'>
-                      {contest.name}
-                    </CardTitle>
-                    <ExternalLinkIcon className='w-4 h-4 text-muted-foreground flex-shrink-0' />
-                  </div>
-                  <div className='flex items-center gap-2 flex-wrap mt-2'>
-                    <Badge variant='outline' className='text-xs'>
-                      {contest.type}
-                    </Badge>
-                    <Badge variant='secondary' className='text-xs'>
-                      {contest.phase}
-                    </Badge>
+                {/* Subtle gradient overlay on hover */}
+                <div className='absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+                
+                <CardHeader className='pb-4 relative z-10'>
+                  <div className='flex items-start justify-between gap-3'>
+                    <div className='flex-1 min-w-0'>
+                      <CardTitle className='text-base font-semibold leading-tight line-clamp-2 mb-2 group-hover:text-primary transition-colors'>
+                        {contest.name}
+                      </CardTitle>
+                      <div className='flex items-center gap-2 flex-wrap'>
+                        <Badge variant='outline' className='text-xs font-medium border-foreground/20'>
+                          {contest.type}
+                        </Badge>
+                        <Badge variant='secondary' className='text-xs font-medium'>
+                          {contest.phase}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className='p-2 rounded-md bg-muted/50 group-hover:bg-primary/10 transition-colors'>
+                      <ExternalLinkIcon className='w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors' />
+                    </div>
                   </div>
                 </CardHeader>
-                <CardContent className='pt-0'>
-                  <div className='space-y-2 text-xs sm:text-sm'>
+                <CardContent className='pt-0 space-y-4 relative z-10'>
+                  <div className='space-y-3'>
                     {contest.startTimeSeconds && (
-                      <div className='flex items-center gap-2 text-muted-foreground'>
-                        <CalendarIcon className='w-4 h-4 flex-shrink-0' />
-                        <span className='truncate'>
+                      <div className='flex items-center gap-3 text-sm'>
+                        <div className='p-2 rounded-md bg-muted/50'>
+                          <CalendarIcon className='w-4 h-4 text-foreground/70' />
+                        </div>
+                        <span className='truncate text-foreground/80 font-medium'>
                           {formatTime(contest.startTimeSeconds)}
                         </span>
                       </div>
                     )}
-                    <div className='flex items-center gap-2 text-muted-foreground'>
-                      <ClockIcon className='w-4 h-4 flex-shrink-0' />
-                      <span>{formatDuration(contest.durationSeconds)}</span>
+                    <div className='flex items-center gap-3 text-sm'>
+                      <div className='p-2 rounded-md bg-muted/50'>
+                        <ClockIcon className='w-4 h-4 text-foreground/70' />
+                      </div>
+                      <span className='text-foreground/80 font-medium'>{formatDuration(contest.durationSeconds)}</span>
                     </div>
-                    {contest.startTimeSeconds && (
-                      <div className='flex items-center justify-between pt-3 border-t mt-3'>
-                        <span className='text-muted-foreground text-xs'>
-                          Starts in:
+                  </div>
+                  {contest.startTimeSeconds && (
+                    <div className='pt-4 border-t'>
+                      <div className='flex items-center justify-between'>
+                        <span className='text-sm font-medium text-muted-foreground'>
+                          Starts in
                         </span>
-                        <Badge variant='default' className='text-xs'>
+                        <Badge variant='default' className='text-xs font-semibold px-3 py-1'>
                           {getTimeUntilStart(contest.startTimeSeconds)}
                         </Badge>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
                 ))}
@@ -1166,29 +1184,29 @@ export default function ContestsPage() {
 
           {/* Private Contest Section */}
           <section>
-            <div className='flex items-center gap-3 mb-6'>
-              <div className='flex items-center gap-3 flex-1'>
-                <div className='p-2 rounded-md border border-border bg-background'>
-                  <Zap className='w-5 h-5 text-foreground' />
+            <div className='flex items-center gap-4 mb-8 pb-4 border-b-2'>
+              <div className='flex items-center gap-4 flex-1'>
+                <div className='p-3 rounded-lg border-2 bg-muted/50'>
+                  <Zap className='w-6 h-6 text-foreground' />
                 </div>
                 <div>
-                  <h2 className='text-lg sm:text-xl font-semibold text-foreground'>
+                  <h2 className='text-xl sm:text-2xl font-bold text-foreground mb-1'>
                     Private Contests
                   </h2>
-                  <p className='text-xs sm:text-sm text-muted-foreground'>Custom training sessions</p>
+                  <p className='text-sm text-muted-foreground'>Custom training sessions</p>
                 </div>
               </div>
-              <Badge variant='secondary' className='text-sm px-3 py-1'>
+              <Badge variant='secondary' className='text-sm px-4 py-2 font-semibold'>
                 {privateContests.length}
               </Badge>
             </div>
 
 
             {privateContests.length === 0 ? (
-              <Card className='border border-dashed'>
+              <Card className='border-2 border-dashed hover:border-primary/30 transition-colors'>
                 <CardContent className='p-8 sm:p-12'>
                   <div className='text-center'>
-                    <div className='inline-flex p-4 rounded-md border border-border bg-background mb-4'>
+                    <div className='inline-flex p-6 rounded-lg border-2 bg-muted/50 mb-4'>
                       <UsersIcon className='w-12 h-12 text-muted-foreground' />
                     </div>
                     <h3 className='text-lg font-semibold mb-2'>No Private Contests Yet</h3>
@@ -1198,6 +1216,7 @@ export default function ContestsPage() {
                     <Button 
                       onClick={() => setCreateDialogOpen(true)}
                       size='lg'
+                      className='shadow-md hover:shadow-lg transition-shadow'
                     >
                       <PlusIcon className='w-4 h-4 mr-2' />
                       Create Your First Contest
@@ -1206,83 +1225,94 @@ export default function ContestsPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+              <div className='grid gap-5 md:grid-cols-2 lg:grid-cols-3'>
                 {privateContests.map(contest => {
                   const status = computeDisplayStatus(contest);
+                  const isLive = status === 'live';
+                  const isEnded = status === 'ended';
 
                   return (
                     <Card
                       key={contest.id}
-                      className='transition-all duration-200 hover:shadow-md hover:border-primary/50'
+                      className='group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-foreground/20 bg-card/50 backdrop-blur-sm'
                     >
+                      {/* Subtle gradient overlay on hover */}
+                      <div className='absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+                      
                       {/* Live indicator */}
-                      {status === 'live' && (
-                        <div className='absolute top-3 right-3'>
-                          <span className='flex h-2 w-2'>
+                      {isLive && (
+                        <div className='absolute top-4 right-4 z-20'>
+                          <span className='flex h-3 w-3'>
                             <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75'></span>
-                            <span className='relative inline-flex rounded-full h-2 w-2 bg-green-500'></span>
+                            <span className='relative inline-flex rounded-full h-3 w-3 bg-green-500'></span>
                           </span>
                         </div>
                       )}
 
-                      <CardHeader className='pb-3'>
-                        <div className='flex items-start justify-between gap-2'>
+                      <CardHeader className='pb-4 relative z-10'>
+                        <div className='flex items-start justify-between gap-3 mb-3'>
                           <div className='flex-1 min-w-0'>
-                            <CardTitle className='text-sm sm:text-base font-semibold line-clamp-2'>
+                            <CardTitle className='text-base font-semibold line-clamp-2 mb-2 group-hover:text-primary transition-colors'>
                               {contest.name}
                             </CardTitle>
-                            <CardDescription className='text-xs mt-1'>
+                            <CardDescription className='text-xs font-medium'>
                               {contest.visibility === 'public' ? 'Public' : 'Private'} • {contest.isHost ? 'Host' : 'Guest'}
                             </CardDescription>
                           </div>
                         </div>
-                        <div className='flex items-center gap-2 flex-wrap mt-3'>
+                        <div className='flex items-center gap-2 flex-wrap'>
                           <Badge
-                            variant={status === 'live' ? 'default' : status === 'ended' ? 'secondary' : 'outline'}
-                            className='text-xs'
+                            variant={isLive ? 'default' : isEnded ? 'secondary' : 'outline'}
+                            className={`text-xs font-medium ${isLive ? 'bg-green-600 hover:bg-green-700' : ''}`}
                           >
-                            {status === 'live' && '• '}
+                            {isLive && '• '}
                             {status.charAt(0).toUpperCase() + status.slice(1)}
                           </Badge>
-                          <Badge variant='outline' className='text-xs'>
+                          <Badge variant='outline' className='text-xs font-medium border-foreground/20'>
                             {contest.contest_mode === 'icpc' ? 'ICPC' : 'Practice'}
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent className='pt-0'>
-                        <div className='space-y-2 text-xs sm:text-sm'>
+                      <CardContent className='pt-0 space-y-4 relative z-10'>
+                        <div className='space-y-3'>
                           {contest.starts_at && (
-                            <div className='flex items-center gap-2 text-muted-foreground'>
-                              <CalendarIcon className='w-4 h-4 flex-shrink-0' />
-                              <span className='truncate'>
+                            <div className='flex items-center gap-3 text-sm'>
+                              <div className='p-2 rounded-md bg-muted/50'>
+                                <CalendarIcon className='w-4 h-4 text-foreground/70' />
+                              </div>
+                              <span className='truncate text-foreground/80 font-medium'>
                                 {new Date(contest.starts_at).toLocaleString()}
                               </span>
                             </div>
                           )}
-                          <div className='flex items-center gap-2 text-muted-foreground'>
-                            <ClockIcon className='w-4 h-4 flex-shrink-0' />
-                            <span>{contest.duration_minutes} minutes</span>
+                          <div className='flex items-center gap-3 text-sm'>
+                            <div className='p-2 rounded-md bg-muted/50'>
+                              <ClockIcon className='w-4 h-4 text-foreground/70' />
+                            </div>
+                            <span className='text-foreground/80 font-medium'>{contest.duration_minutes} minutes</span>
                           </div>
-                          {contest.description && (
-                            <p className='text-muted-foreground line-clamp-2 pt-1 text-xs'>
-                              {contest.description}
-                            </p>
+                        </div>
+                        
+                        {contest.description && (
+                          <p className='text-sm text-muted-foreground line-clamp-2 pt-2 border-t italic'>
+                            {contest.description}
+                          </p>
+                        )}
+                        
+                        <div className='flex flex-wrap items-center gap-2 pt-2 border-t'>
+                          <span className='text-xs font-medium text-muted-foreground'>{contest.problem_count} problems</span>
+                          <span className='text-xs text-muted-foreground'>•</span>
+                          <span className='text-xs font-medium text-muted-foreground'>{contest.rating_min}-{contest.rating_max}</span>
+                          {contest.allow_late_join && (
+                            <>
+                              <span className='text-xs text-muted-foreground'>•</span>
+                              <span className='text-xs font-medium text-muted-foreground'>Late join</span>
+                            </>
                           )}
-                          <div className='flex flex-wrap items-center gap-2 text-muted-foreground pt-2 border-t'>
-                            <span className='text-xs'>{contest.problem_count} problems</span>
-                            <span className='text-xs'>•</span>
-                            <span className='text-xs'>{contest.rating_min}-{contest.rating_max}</span>
-                            {contest.allow_late_join && (
-                              <>
-                                <span className='text-xs'>•</span>
-                                <span className='text-xs'>Late join</span>
-                              </>
-                            )}
-                          </div>
                         </div>
 
                         {/* Action Button */}
-                        <div className='mt-3 pt-3 border-t'>
+                        <div className='pt-4 border-t'>
                           {(() => {
                             const now = Date.now();
                             const startsAt = contest.starts_at ? new Date(contest.starts_at).getTime() : null;
@@ -1295,7 +1325,7 @@ export default function ContestsPage() {
                                 <Button
                                   size='sm'
                                   variant='outline'
-                                  className='w-full text-xs'
+                                  className='w-full text-xs font-semibold hover:bg-muted transition-colors'
                                   onClick={() => window.open(`/contests/${contest.id}`, '_blank')}
                                 >
                                   View Leaderboard
@@ -1310,7 +1340,9 @@ export default function ContestsPage() {
                               <Button
                                 size='sm'
                                 variant={hasStarted ? 'default' : 'default'}
-                                className='w-full text-xs'
+                                className={`w-full text-xs font-semibold shadow-md hover:shadow-lg transition-all ${
+                                  hasStarted ? 'bg-green-600 hover:bg-green-700' : ''
+                                }`}
                                 onClick={() => handleJoinPrivateContest(contest)}
                                 disabled={disabled}
                               >

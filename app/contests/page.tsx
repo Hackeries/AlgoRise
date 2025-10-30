@@ -39,6 +39,7 @@ import {
   ExternalLinkIcon,
   Zap,
   Trophy,
+  RefreshCw,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
@@ -107,6 +108,7 @@ export default function ContestsPage() {
   const [notifiedContestIds, setNotifiedContestIds] = useState<Set<string>>(
     new Set()
   );
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -143,11 +145,22 @@ export default function ContestsPage() {
     fetchCurrentUser();
     fetchUserRating();
     fetchContests();
+
+    // Auto-refresh contests every 5 minutes for real-time updates
+    const refreshInterval = setInterval(() => {
+      fetchContests();
+    }, 360 * 60 * 1000); // 360 minutes
+
+    return () => clearInterval(refreshInterval);
   }, []);
 
-  const fetchContests = async () => {
+  const fetchContests = async (isManualRefresh = false) => {
     try {
-      setLoading(true);
+      if (isManualRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
 
       // Fetch Codeforces contests
       try {
@@ -179,13 +192,24 @@ export default function ContestsPage() {
       }
     } catch (error) {
       console.error('Error fetching contests:', error);
-      toast({
-        title: '⚠️ Connection hiccup',
-        description: 'Couldn\'t load contests right now. Check your connection and try again!',
-        variant: 'destructive',
-      });
+      if (!isManualRefresh) {
+        toast({
+          title: '⚠️ Connection hiccup',
+          description: 'Couldn\'t load contests right now. Check your connection and try again!',
+          variant: 'destructive',
+        });
+      }
     } finally {
-      setLoading(false);
+      if (isManualRefresh) {
+        setRefreshing(false);
+        toast({
+          title: '✅ Refreshed',
+          description: 'Contest list updated successfully!',
+          variant: 'default',
+        });
+      } else {
+        setLoading(false);
+      }
     }
   };
 
@@ -616,23 +640,34 @@ export default function ContestsPage() {
         </div>
         <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6'>
           <div className='flex-1'>
-            <h1 className='text-4xl sm:text-5xl font-bold tracking-tight flex items-center gap-3 gradient-text'>
-              <Trophy className='h-10 w-10 text-yellow-500 animate-pulse' />
+            <h1 className='text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-3 gradient-text'>
+              <Trophy className='h-8 w-8 text-yellow-500 animate-pulse' />
               Contests Arena
             </h1>
-            <p className='mt-3 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl'>
+            <p className='mt-3 text-sm sm:text-base text-muted-foreground leading-relaxed max-w-2xl'>
               <span className='font-semibold text-foreground'>Host or join</span> Codeforces contests and private training sessions. 
               Perfect for practice, team training, and competitive preparation.
             </p>
           </div>
 
-          <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button size='lg' className='w-full sm:w-auto gap-2 bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:via-purple-800 hover:to-pink-700 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200'>
-                <PlusIcon className='w-5 h-5' />
-                <span className='font-semibold'>Create Private Contest</span>
-              </Button>
-            </DialogTrigger>
+          <div className='flex gap-2 w-full sm:w-auto'>
+            <Button 
+              size='lg' 
+              variant='outline'
+              onClick={() => fetchContests(true)}
+              disabled={refreshing}
+              className='gap-2 hover:bg-primary/10'
+            >
+              <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+              <span className='font-semibold hidden sm:inline'>Refresh</span>
+            </Button>
+            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size='lg' className='flex-1 sm:flex-none gap-2 bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:via-purple-800 hover:to-pink-700 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200'>
+                  <PlusIcon className='w-5 h-5' />
+                  <span className='font-semibold'>Create Private Contest</span>
+                </Button>
+              </DialogTrigger>
 
           <DialogContent className='max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col bg-gradient-to-br from-background via-background to-purple-500/5'>
             <DialogHeader className='border-b pb-4 border-purple-500/20'>
@@ -1034,7 +1069,8 @@ export default function ContestsPage() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+            </Dialog>
+          </div>
         </div>
       </div>
 
@@ -1053,10 +1089,10 @@ export default function ContestsPage() {
                   <Trophy className='w-6 h-6 text-yellow-500' />
                 </div>
                 <div>
-                  <h2 className='text-2xl sm:text-3xl font-bold text-foreground'>
+                  <h2 className='text-xl sm:text-2xl font-bold text-foreground'>
                     Upcoming Codeforces Contests
                   </h2>
-                  <p className='text-sm text-muted-foreground'>Compete on the global stage</p>
+                  <p className='text-xs sm:text-sm text-muted-foreground'>Compete on the global stage</p>
                 </div>
               </div>
               <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1'>
@@ -1145,10 +1181,10 @@ export default function ContestsPage() {
                   <Zap className='w-6 h-6 text-purple-500' />
                 </div>
                 <div>
-                  <h2 className='text-2xl sm:text-3xl font-bold text-foreground'>
+                  <h2 className='text-xl sm:text-2xl font-bold text-foreground'>
                     🎯 Private Training Contests
                   </h2>
-                  <p className='text-sm text-muted-foreground'>Custom practice sessions • Separate from Battle Arena</p>
+                  <p className='text-xs sm:text-sm text-muted-foreground'>Custom practice sessions • Separate from Battle Arena</p>
                 </div>
               </div>
               <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1'>
@@ -1165,7 +1201,7 @@ export default function ContestsPage() {
                   </div>
                 </div>
                 <div className='flex-1'>
-                  <h3 className='font-bold text-foreground mb-2 text-base sm:text-lg'>Private Contests vs Battle Arena</h3>
+                  <h3 className='font-semibold text-foreground mb-2 text-sm sm:text-base'>Private Contests vs Battle Arena</h3>
                   <div className='space-y-2 text-sm text-muted-foreground'>
                     <p>
                       <strong className='text-purple-500'>🎯 Private Contests:</strong> Create custom practice sessions with your own problem sets, timing, and rules. 
@@ -1187,7 +1223,7 @@ export default function ContestsPage() {
                     <div className='inline-flex p-4 rounded-full bg-purple-500/10 mb-4'>
                       <UsersIcon className='w-12 h-12 text-purple-500' />
                     </div>
-                    <h3 className='text-xl font-bold mb-2'>No Private Contests Yet</h3>
+                    <h3 className='text-lg font-bold mb-2'>No Private Contests Yet</h3>
                     <p className='text-muted-foreground mb-6 max-w-md mx-auto'>
                       Create your first private contest to practice with friends or host training sessions for your group.
                     </p>

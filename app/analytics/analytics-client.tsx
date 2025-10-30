@@ -176,23 +176,30 @@ export default function AnalyticsPageClient() {
   }
 
   return (
-    <main className='flex-1 p-6'>
+    <main className='flex-1 p-6 bg-gradient-to-br from-background via-background to-muted/20 min-h-screen'>
       <div className='max-w-7xl mx-auto'>
-        <div className='mb-8'>
-          <div className='flex items-center justify-between mb-6'>
-            <div>
-              <h1 className='text-4xl font-bold flex items-center gap-3'>
-                <TrendingUp className='h-8 w-8 text-primary' />
-                Progress & Analytics
+        {/* Enhanced Hero Section */}
+        <div className='relative overflow-hidden rounded-2xl glass-intense p-8 sm:p-10 mb-8 hover-lift'>
+          <div className='absolute inset-0 -z-10'>
+            <div className='absolute top-0 right-0 w-1/2 h-1/2 bg-primary/20 rounded-full blur-[100px] animate-pulse' />
+            <div className='absolute bottom-0 left-0 w-1/2 h-1/2 bg-accent/20 rounded-full blur-[100px] animate-pulse' style={{ animationDelay: '1s' }} />
+          </div>
+          <div className='flex items-center justify-between'>
+            <div className='flex-1'>
+              <h1 className='text-4xl sm:text-5xl font-bold tracking-tight flex items-center gap-3'>
+                <div className='p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30'>
+                  <TrendingUp className='h-8 w-8 text-blue-500' />
+                </div>
+                <span className='gradient-text'>Progress & Analytics</span>
               </h1>
-              <p className='text-muted-foreground mt-2'>
-                Detailed insights for{' '}
-                <Badge variant='secondary' className='ml-2'>
+              <p className='text-muted-foreground mt-3 text-lg flex items-center gap-2'>
+                <span className='font-semibold text-foreground'>Detailed insights for</span>
+                <Badge variant='secondary' className='text-base px-3 py-1'>
                   {verificationData?.handle}
                 </Badge>
               </p>
             </div>
-            <Button asChild variant='outline'>
+            <Button asChild variant='outline' size='lg'>
               <Link href='/profile/overview'>View Profile</Link>
             </Button>
           </div>

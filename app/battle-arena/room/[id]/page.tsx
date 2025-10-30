@@ -31,6 +31,16 @@ import { Scoreboard } from '@/components/battle-arena/scoreboard';
 import { SpectatorView } from '@/components/battle-arena/spectator-view';
 import dynamic from 'next/dynamic';
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Clock, Trophy, CheckCircle2, Flag, Code2, Send, Users } from 'lucide-react';
+import { useBattleRealtime, useTeamChat, broadcastCodeUpdate } from '@/hooks/use-battle-realtime';
+import { CodeEditor } from '@/components/battle-arena/code-editor';
+import { ProblemDetails } from '@/components/battle-arena/problem-details';
+import { SubmissionsList } from '@/components/battle-arena/submissions-list';
+import { motion } from 'framer-motion';
+import { createClient as createSupabaseClient } from '@/lib/supabase/client';
+ main
+
 // Dynamically import the code editor to avoid SSR issues
 const CodeEditor = dynamic(() => import('@/components/battle-arena/code-editor'), { 
   ssr: false,

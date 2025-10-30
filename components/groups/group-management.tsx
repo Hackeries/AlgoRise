@@ -391,7 +391,21 @@ export function GroupManagement({
       return;
     }
     try {
-      await navigator.clipboard.writeText(inviteUrl);
+      // Prefer async clipboard
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(inviteUrl);
+      } else {
+        // Fallback for insecure contexts/browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = inviteUrl;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
       setCopiedInvite(true);
       toast({
         title: 'Invite link copied!',

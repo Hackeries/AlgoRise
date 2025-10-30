@@ -555,14 +555,15 @@ export default function GroupsPage() {
 
   return (
     <main className='mx-auto max-w-7xl px-4 py-10'>
-      <div className='flex items-center justify-between mb-8'>
-        <div>
-          <h1 className='text-4xl font-bold'>Groups & Teams</h1>
-          <p className='text-muted-foreground mt-2 text-lg'>
-            Join groups to compete with friends and classmates, or form ICPC
-            teams for official competitions
-          </p>
-        </div>
+      {/* Hero */}
+      <div className='relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-transparent to-transparent dark:from-primary/15 p-8 mb-8'>
+        <div className='flex items-center justify-between gap-6'>
+          <div>
+            <h1 className='text-4xl font-bold tracking-tight'>Groups & Teams</h1>
+            <p className='text-muted-foreground mt-3 text-lg'>
+              Practice together, run mock contests, and track progress as a team.
+            </p>
+          </div>
 
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
           <DialogTrigger asChild>
@@ -712,6 +713,7 @@ export default function GroupsPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Discover Tabs */}
@@ -793,7 +795,7 @@ export default function GroupsPage() {
                   key={m.group.id}
                   role='button'
                   onClick={() => setSelectedGroup(m)}
-                  className={`hover:shadow-lg transition-all cursor-pointer border-l-4 bg-gradient-to-br ${typeBadge.color}`}
+                  className={`hover:shadow-md transition-all cursor-pointer border bg-gradient-to-br ${typeBadge.color}`}
                 >
                   <CardContent className='p-6'>
                     <div className='flex flex-col gap-4'>

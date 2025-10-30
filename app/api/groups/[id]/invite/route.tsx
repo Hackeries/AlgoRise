@@ -186,7 +186,7 @@ export async function POST(
             Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
           },
           body: JSON.stringify({
-            from: 'AlgoRise <noreply@algorise.in>',
+            from: 'AlgoRise Groups <groups@algorise.in>',
             to: email,
             subject: `Join ${
               groupData?.name || 'AlgoRise Group'

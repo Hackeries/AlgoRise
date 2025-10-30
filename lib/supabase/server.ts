@@ -35,8 +35,12 @@ export async function createClient() {
           gte: () => builder,
           lte: () => builder,
           is: () => builder,
+          ilike: () => builder,
+          like: () => builder,
+          not: () => builder,
           order: () => builder,
           range: () => builder,
+          limit: () => builder,
           single: async () => ({
             data: null,
             error: new Error('Supabase disabled'),
@@ -45,6 +49,9 @@ export async function createClient() {
             data: null,
             error: new Error('Supabase disabled'),
           }),
+          // Allow awaiting the builder without throwing
+          then: (resolve: (v: any) => void) =>
+            resolve({ data: null, error: new Error('Supabase disabled') }),
         };
         return builder;
       },

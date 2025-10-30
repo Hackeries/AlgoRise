@@ -1,10 +1,12 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { ArrowRight, Zap, Trophy, Target, Crown } from 'lucide-react';
 
 const levels = [
   {
@@ -19,7 +21,10 @@ const levels = [
       'Prefix Sum',
       'Simulation',
     ],
-    gradient: 'from-gray-500 to-gray-700',
+    gradient: 'from-slate-500 to-emerald-500',
+    bgGradient: 'from-slate-500/20 to-emerald-500/20',
+    icon: Target,
+    iconColor: 'text-emerald-500',
   },
   {
     from: 'Pupil',
@@ -32,7 +37,10 @@ const levels = [
       'Brute Force Patterns',
       'Sliding Window',
     ],
-    gradient: 'from-green-400 to-green-600',
+    gradient: 'from-emerald-500 to-cyan-500',
+    bgGradient: 'from-emerald-500/20 to-cyan-500/20',
+    icon: Zap,
+    iconColor: 'text-cyan-500',
   },
   {
     from: 'Specialist',
@@ -45,7 +53,10 @@ const levels = [
       'Prefix/Suffix Optimizations',
       'Number Theory – GCD, Primes, Mod',
     ],
-    gradient: 'from-blue-500 to-sky-500',
+    gradient: 'from-cyan-500 to-purple-500',
+    bgGradient: 'from-cyan-500/20 to-purple-500/20',
+    icon: Trophy,
+    iconColor: 'text-purple-500',
   },
   {
     from: 'Expert',
@@ -59,115 +70,186 @@ const levels = [
       'Mathematics II (Inverses, CRT)',
       'Complex Problems & CF Patterns',
     ],
-    gradient: 'from-pink-500 to-purple-500',
+    gradient: 'from-purple-500 to-orange-500',
+    bgGradient: 'from-purple-500/20 to-orange-500/20',
+    icon: Crown,
+    iconColor: 'text-orange-500',
   },
 ];
 
 export default function CFLevels() {
   return (
-    <section className='relative z-10 py-24 px-4 overflow-hidden'>
-      {/* Animated background blobs */}
-      <div className='absolute top-[-100px] left-[-150px] w-[350px] h-[350px] bg-purple-500/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-blob' />
-      <div className='absolute bottom-[-150px] right-[-100px] w-[400px] h-[400px] bg-cyan-400/20 dark:bg-cyan-400/10 rounded-full blur-3xl animate-blob animation-delay-2000' />
-
-      <div className='max-w-6xl mx-auto relative'>
-        {/* Header Section */}
+    <section className='relative py-20 sm:py-24 lg:py-32 overflow-hidden bg-gradient-to-br from-background via-background to-muted/30'>
+      {/* Animated gradient orbs */}
+      <div className='absolute inset-0 overflow-hidden pointer-events-none'>
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          className='absolute top-1/4 -left-1/4 w-96 h-96 bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 rounded-full blur-3xl'
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.2, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+        <motion.div
+          className='absolute bottom-1/4 -right-1/4 w-96 h-96 bg-gradient-to-tl from-purple-500/20 to-orange-500/20 rounded-full blur-3xl'
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.3, 0.2],
+          }}
+          transition={{
+            duration: 10,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      </div>
+
+      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10'>
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className='text-center mb-16'
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 0.6 }}
+          className='text-center mb-16 sm:mb-20'
         >
-          <h2 className='text-4xl md:text-5xl font-bold mb-4'>
-            <span className='bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent'>
+
+          <h2 className='text-3xl sm:text-4xl lg:text-5xl font-bold mb-6'>
+            <span className='bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-clip-text text-transparent'>
               Codeforces Level-Up Roadmap
             </span>
           </h2>
-          <p className='text-lg text-slate-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed'>
+
+          <p className='text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed'>
             Follow the proven roadmap from{' '}
-            <span className='font-bold font-mono bg-gradient-to-r from-gray-700 to-gray-600 dark:from-gray-400 dark:to-gray-300 bg-clip-text text-transparent'>
+            <span className='font-bold font-mono text-foreground px-2 py-0.5 rounded bg-muted'>
               Newbie
             </span>{' '}
-            <span className='font-bold font-mono text-slate-700 dark:text-white'>
-              →
-            </span>{' '}
-            <span className='font-bold font-mono bg-gradient-to-r from-blue-700 to-cyan-600 dark:from-blue-400 dark:to-cyan-300 bg-clip-text text-transparent'>
+            <ArrowRight className='inline h-4 w-4 mx-1' />{' '}
+            <span className='font-bold font-mono bg-gradient-to-r from-purple-500 to-orange-500 bg-clip-text text-transparent px-2 py-0.5'>
               Candidate Master
             </span>
-            . Master one level at a time with curated topics, key data
-            structures, and essential algorithms.
+            . Master one level at a time with curated topics and algorithms.
           </p>
         </motion.div>
 
         {/* Levels Grid */}
-        <div className='grid gap-8 md:grid-cols-2'>
+        <div className='grid gap-6 md:grid-cols-2 lg:gap-8'>
           {levels.map((lvl, index) => (
             <motion.div
               key={lvl.to}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: true, margin: '-50px' }}
               transition={{
-                duration: 0.6,
-                delay: index * 0.15,
-                type: 'spring',
-                stiffness: 120,
+                duration: 0.5,
+                delay: index * 0.1,
+                ease: [0.16, 1, 0.3, 1],
               }}
+              className='group'
             >
               <motion.div
-                whileHover={{ scale: 1.03 }}
-                className='bg-white/60 dark:bg-black/40 backdrop-blur-xl border border-gray-300 dark:border-white/10 rounded-2xl shadow-lg p-6 transition-all duration-300 hover:border-primary/50'
+                whileHover={{ y: -8, scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+                className='h-full p-6 sm:p-8 rounded-2xl bg-card/50 backdrop-blur-xl border border-border/50 hover:border-primary/50 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 relative overflow-hidden'
               >
-                <CardHeader className='p-0 mb-4'>
-                  <CardTitle className='flex items-center justify-between text-slate-800 dark:text-white'>
-                    <span className='font-semibold'>
-                      {lvl.from} →{' '}
-                      <span className='font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-800 to-primary dark:from-white dark:to-primary'>
-                        {lvl.to}
-                      </span>
-                    </span>
+                {/* Gradient background on hover */}
+                <motion.div
+                  className={`absolute inset-0 bg-gradient-to-br ${lvl.bgGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10`}
+                />
+
+                <CardHeader className='p-0 mb-6'>
+                  <div className='flex items-start justify-between mb-4'>
+                    {/* Icon */}
+                    <motion.div
+                      whileHover={{ rotate: 360, scale: 1.1 }}
+                      transition={{ duration: 0.6 }}
+                      className={`p-3 rounded-xl bg-gradient-to-br ${lvl.bgGradient} border border-primary/20`}
+                    >
+                      <lvl.icon className={`h-6 w-6 ${lvl.iconColor}`} />
+                    </motion.div>
+
+                    {/* Badge */}
                     <Badge
-                      className={`bg-gradient-to-r ${lvl.gradient} text-white shadow-md`}
+                      className={`bg-gradient-to-r ${lvl.gradient} text-white shadow-lg px-3 py-1`}
                     >
                       {lvl.from} → {lvl.to}
                     </Badge>
+                  </div>
+
+                  <CardTitle className='text-xl sm:text-2xl font-bold'>
+                    <span className='text-foreground'>{lvl.from}</span>
+                    <ArrowRight className='inline h-5 w-5 mx-2 text-muted-foreground' />
+                    <span
+                      className={`bg-gradient-to-r ${lvl.gradient} bg-clip-text text-transparent`}
+                    >
+                      {lvl.to}
+                    </span>
                   </CardTitle>
                 </CardHeader>
 
                 <CardContent className='p-0'>
                   <div className='flex flex-wrap gap-2'>
-                    {lvl.topics.map(t => (
-                      <span
-                        key={t}
-                        className='rounded-full px-3 py-1 bg-gray-200 dark:bg-white/10 text-slate-700 dark:text-white/80 text-sm backdrop-blur-sm hover:bg-gray-300 dark:hover:bg-white/20 transition-colors'
+                    {lvl.topics.map((topic, idx) => (
+                      <motion.span
+                        key={topic}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: idx * 0.03 }}
+                        whileHover={{ scale: 1.05 }}
+                        className='rounded-full px-3 py-1.5 bg-muted/80 backdrop-blur-sm text-foreground text-xs sm:text-sm hover:bg-muted transition-all cursor-default border border-border/50'
                       >
-                        {t}
-                      </span>
+                        {topic}
+                      </motion.span>
                     ))}
                   </div>
                 </CardContent>
+
+                {/* Hover indicator */}
+                <motion.div
+                  className='absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity'
+                  whileHover={{ x: 5 }}
+                >
+                  <ArrowRight className={`h-5 w-5 ${lvl.iconColor}`} />
+                </motion.div>
               </motion.div>
             </motion.div>
           ))}
         </div>
 
         {/* Action Buttons */}
-        <div className='mt-12 flex flex-col sm:flex-row gap-4 justify-center'>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className='mt-16 flex flex-col sm:flex-row gap-4 justify-center'
+        >
           <Link href='/pricing'>
-            <Button className='w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600 shadow-lg hover:shadow-xl transition-all'>
-              Get Level-Up Sheets
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button className='w-full sm:w-auto bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg hover:shadow-xl transition-all px-8 py-6 text-base'>
+                Get Level-Up Sheets
+                <ArrowRight className='ml-2 h-5 w-5' />
+              </Button>
+            </motion.div>
           </Link>
           <Link href='/adaptive-sheet'>
-            <Button
-              variant='secondary'
-              className='w-full sm:w-auto bg-slate-200 dark:bg-white/10 text-slate-800 dark:text-white hover:bg-slate-300 dark:hover:bg-white/20 transition-all'
-            >
-              Start Adaptive Practice
-            </Button>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Button
+                variant='outline'
+                className='w-full sm:w-auto border-border/50 bg-card/50 backdrop-blur-sm hover:bg-muted transition-all px-8 py-6 text-base'
+              >
+                Start Adaptive Practice
+                <Zap className='ml-2 h-5 w-5' />
+              </Button>
+            </motion.div>
           </Link>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

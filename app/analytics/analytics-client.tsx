@@ -41,11 +41,10 @@ export default function AnalyticsPageClient() {
         <div className='max-w-4xl mx-auto'>
           <div className='flex flex-col items-center justify-center min-h-[500px] space-y-8'>
             <div className='text-center'>
-              <BarChart3 className='h-20 w-20 mx-auto text-primary/60 mb-6' />
-              <h1 className='text-4xl font-bold mb-3'>Progress & Analytics</h1>
-              <p className='text-muted-foreground text-lg max-w-md'>
-                Track your competitive programming journey with detailed
-                analytics and insights
+              <BarChart3 className='h-16 w-16 mx-auto text-primary/60 mb-4' />
+              <h1 className='text-2xl sm:text-3xl font-bold mb-3'>Analytics</h1>
+              <p className='text-muted-foreground text-sm max-w-md'>
+                Track your competitive programming journey
               </p>
             </div>
 
@@ -110,19 +109,18 @@ export default function AnalyticsPageClient() {
       <main className='flex-1 p-6'>
         <div className='max-w-4xl mx-auto'>
           <div className='text-center py-12'>
-            <div className='mb-8'>
-              <BarChart3 className='h-20 w-20 mx-auto text-muted-foreground mb-6' />
-              <h1 className='text-4xl font-bold mb-3'>Progress & Analytics</h1>
-              <p className='text-muted-foreground text-lg mb-8 max-w-md mx-auto'>
-                Connect your Codeforces account to access personalized analytics
-                and insights
+            <div className='mb-6'>
+              <BarChart3 className='h-16 w-16 mx-auto text-muted-foreground mb-4' />
+              <h1 className='text-2xl sm:text-3xl font-bold mb-3'>Analytics</h1>
+              <p className='text-muted-foreground text-sm mb-6 max-w-md mx-auto'>
+                Connect Codeforces for personalized analytics
               </p>
             </div>
 
             <div className='bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-8 mb-8 border border-primary/20'>
               <User className='h-16 w-16 mx-auto text-primary mb-4' />
-              <h3 className='text-2xl font-semibold mb-3'>
-                Verify Your Codeforces Profile
+              <h3 className='text-xl font-semibold mb-3'>
+                Verify Codeforces Profile
               </h3>
               <p className='text-muted-foreground mb-8 max-w-md mx-auto'>
                 Link your Codeforces account to unlock personalized analytics,
@@ -176,23 +174,30 @@ export default function AnalyticsPageClient() {
   }
 
   return (
-    <main className='flex-1 p-6'>
+    <main className='flex-1 p-6 bg-gradient-to-br from-background via-background to-muted/20 min-h-screen'>
       <div className='max-w-7xl mx-auto'>
-        <div className='mb-8'>
-          <div className='flex items-center justify-between mb-6'>
-            <div>
-              <h1 className='text-4xl font-bold flex items-center gap-3'>
-                <TrendingUp className='h-8 w-8 text-primary' />
-                Progress & Analytics
+        {/* Enhanced Hero Section */}
+        <div className='relative overflow-hidden rounded-2xl glass-intense p-8 sm:p-10 mb-8 hover-lift'>
+          <div className='absolute inset-0 -z-10'>
+            <div className='absolute top-0 right-0 w-1/2 h-1/2 bg-primary/20 rounded-full blur-[100px] animate-pulse' />
+            <div className='absolute bottom-0 left-0 w-1/2 h-1/2 bg-accent/20 rounded-full blur-[100px] animate-pulse' style={{ animationDelay: '1s' }} />
+          </div>
+          <div className='flex items-center justify-between'>
+            <div className='flex-1'>
+              <h1 className='text-4xl sm:text-5xl font-bold tracking-tight flex items-center gap-3'>
+                <div className='p-2 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30'>
+                  <TrendingUp className='h-8 w-8 text-blue-500' />
+                </div>
+                <span className='gradient-text'>Progress & Analytics</span>
               </h1>
-              <p className='text-muted-foreground mt-2'>
-                Detailed insights for{' '}
-                <Badge variant='secondary' className='ml-2'>
+              <p className='text-muted-foreground mt-3 text-lg flex items-center gap-2'>
+                <span className='font-semibold text-foreground'>Detailed insights for</span>
+                <Badge variant='secondary' className='text-base px-3 py-1'>
                   {verificationData?.handle}
                 </Badge>
               </p>
             </div>
-            <Button asChild variant='outline'>
+            <Button asChild variant='outline' size='lg'>
               <Link href='/profile/overview'>View Profile</Link>
             </Button>
           </div>

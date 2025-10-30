@@ -129,6 +129,12 @@
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
   
+  /* 3D & Elevated Shadows */
+  --shadow-3d-sm: 0 2px 4px rgb(0 0 0 / 0.05), 0 4px 8px rgb(0 0 0 / 0.08);
+  --shadow-3d-md: 0 4px 8px rgb(0 0 0 / 0.08), 0 8px 16px rgb(0 0 0 / 0.12);
+  --shadow-3d-lg: 0 8px 16px rgb(0 0 0 / 0.1), 0 16px 32px rgb(0 0 0 / 0.15);
+  --shadow-3d-xl: 0 16px 32px rgb(0 0 0 / 0.12), 0 32px 64px rgb(0 0 0 / 0.18);
+  
   /* ========== Animation ========== */
   --duration-fast: 150ms;
   --duration-normal: 250ms;
@@ -156,82 +162,93 @@
    ============================================ */
 
 .dark {
-  /* Base Colors - Rich & Deep */
-  --background: 224 71% 4%; /* Deep blue-black */
+  /* Base Colors - Modern Dark Aesthetics */
+  --background: 222 47% 7%; /* Rich dark blue-gray */
   --foreground: 210 40% 98%; /* Soft white */
   
-  /* Surface Colors - Elevated layers */
-  --card: 224 63% 8%; /* Slightly lighter */
+  /* Surface Colors - Elevated layers with depth */
+  --card: 222 47% 11%; /* Elevated surface */
   --card-foreground: 210 40% 98%;
-  --popover: 224 71% 4%;
+  --popover: 222 47% 9%;
   --popover-foreground: 210 40% 98%;
   
-  /* Brand Colors - Glowing & Prominent */
-  --primary: 217 91% 60%; /* Bright blue */
-  --primary-foreground: 224 71% 4%;
-  --primary-hover: 217 91% 65%;
-  --primary-active: 217 91% 70%;
+  /* Brand Colors - Vibrant & Modern */
+  --primary: 217 91% 65%; /* Bright electric blue */
+  --primary-foreground: 222 47% 7%;
+  --primary-hover: 217 91% 70%;
+  --primary-active: 217 91% 75%;
   
-  --secondary: 215 20% 15%; /* Dark gray-blue */
+  --secondary: 217 19% 18%; /* Sophisticated gray-blue */
   --secondary-foreground: 210 40% 98%;
-  --secondary-hover: 215 20% 18%;
-  --secondary-active: 215 20% 22%;
+  --secondary-hover: 217 19% 22%;
+  --secondary-active: 217 19% 26%;
   
-  /* State Colors - Vivid in darkness */
-  --muted: 215 20% 15%;
-  --muted-foreground: 217 15% 65%;
+  /* State Colors - Enhanced contrast */
+  --muted: 217 19% 18%;
+  --muted-foreground: 217 15% 70%;
   
-  --accent: 199 95% 58%; /* Electric cyan */
-  --accent-foreground: 224 71% 4%;
-  --accent-hover: 199 95% 63%;
+  --accent: 199 95% 60%; /* Vivid cyan */
+  --accent-foreground: 222 47% 7%;
+  --accent-hover: 199 95% 65%;
   
-  --destructive: 0 72% 58%; /* Bright red */
+  --destructive: 0 84% 60%; /* Vibrant red */
   --destructive-foreground: 210 40% 98%;
-  --destructive-hover: 0 72% 63%;
+  --destructive-hover: 0 84% 65%;
   
-  --success: 142 71% 50%; /* Vibrant green */
-  --success-foreground: 224 71% 4%;
+  --success: 142 76% 50%; /* Bright green */
+  --success-foreground: 222 47% 7%;
   
-  --warning: 38 92% 58%; /* Warm amber */
-  --warning-foreground: 224 71% 4%;
+  --warning: 38 92% 60%; /* Warm amber */
+  --warning-foreground: 222 47% 7%;
   
-  --info: 199 89% 55%; /* Cool blue */
-  --info-foreground: 224 71% 4%;
+  --info: 199 89% 58%; /* Cool blue */
+  --info-foreground: 222 47% 7%;
   
-  /* UI Elements - Subtle contrast */
-  --border: 215 20% 20%;
-  --input: 215 20% 15%;
-  --ring: 217 91% 60%;
-  --ring-offset: 224 71% 4%;
+  /* UI Elements - Enhanced depth */
+  --border: 217 19% 24%;
+  --input: 217 19% 18%;
+  --ring: 217 91% 65%;
+  --ring-offset: 222 47% 7%;
   
-  /* Charts - Bright & Clear */
-  --chart-1: 217 91% 60%;
-  --chart-2: 199 95% 58%;
-  --chart-3: 142 71% 50%;
-  --chart-4: 0 72% 58%;
-  --chart-5: 262 83% 63%;
-  --chart-6: 38 92% 58%;
-  --chart-7: 340 82% 60%;
-  --chart-8: 173 80% 48%;
+  /* Charts - Vibrant & Clear */
+  --chart-1: 217 91% 65%;
+  --chart-2: 199 95% 60%;
+  --chart-3: 142 76% 50%;
+  --chart-4: 0 84% 60%;
+  --chart-5: 262 83% 68%;
+  --chart-6: 38 92% 60%;
+  --chart-7: 340 82% 62%;
+  --chart-8: 173 80% 50%;
   
-  /* Sidebar */
-  --sidebar-background: 224 71% 4%;
+  /* Sidebar - Modern depth */
+  --sidebar-background: 222 47% 9%;
   --sidebar-foreground: 210 40% 98%;
-  --sidebar-accent: 215 20% 15%;
+  --sidebar-accent: 217 19% 18%;
   --sidebar-accent-foreground: 210 40% 98%;
   
-  /* Shadows - Deeper in dark mode */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.4);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.5), 0 1px 2px -1px rgb(0 0 0 / 0.5);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.5);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.6);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.7), 0 8px 10px -6px rgb(0 0 0 / 0.7);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.85);
-  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.4);
+  /* Shadows - Enhanced depth */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.6), 0 1px 2px -1px rgb(0 0 0 / 0.6);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.6), 0 2px 4px -2px rgb(0 0 0 / 0.6);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.7), 0 4px 6px -4px rgb(0 0 0 / 0.7);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.75), 0 8px 10px -6px rgb(0 0 0 / 0.75);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.9);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.5);
   
-  /* Dark mode glow effects */
-  --glow-primary: 0 0 20px rgb(59 130 246 / 0.3);
-  --glow-accent: 0 0 20px rgb(6 182 212 / 0.3);
+  /* 3D & Elevated Shadows - Enhanced */
+  --shadow-3d-sm: 0 2px 4px rgb(0 0 0 / 0.5), 0 4px 8px rgb(0 0 0 / 0.6);
+  --shadow-3d-md: 0 4px 8px rgb(0 0 0 / 0.6), 0 8px 16px rgb(0 0 0 / 0.7);
+  --shadow-3d-lg: 0 8px 16px rgb(0 0 0 / 0.7), 0 16px 32px rgb(0 0 0 / 0.8);
+  --shadow-3d-xl: 0 16px 32px rgb(0 0 0 / 0.8), 0 32px 64px rgb(0 0 0 / 0.85);
+
+  /* Dark mode glow effects - Enhanced */
+  --glow-primary: 0 0 24px rgb(59 130 246 / 0.35), 0 0 48px rgb(59 130 246 / 0.15);
+  --glow-primary-intense: 0 0 32px rgb(59 130 246 / 0.55), 0 0 64px rgb(59 130 246 / 0.25);
+  --glow-accent: 0 0 24px rgb(6 182 212 / 0.35), 0 0 48px rgb(6 182 212 / 0.15);
+  --glow-accent-intense: 0 0 32px rgb(6 182 212 / 0.55), 0 0 64px rgb(6 182 212 / 0.25);
+  --glow-success: 0 0 24px rgb(34 197 94 / 0.35), 0 0 48px rgb(34 197 94 / 0.15);
+  --glow-warning: 0 0 24px rgb(251 146 60 / 0.35), 0 0 48px rgb(251 146 60 / 0.15);
+  --glow-danger: 0 0 24px rgb(239 68 68 / 0.35), 0 0 48px rgb(239 68 68 / 0.15);
 }
 
 /* ============================================
@@ -359,12 +376,12 @@
     transition: color var(--duration-normal) var(--ease-out);
   }
   
-  h1 { font-size: var(--font-size-4xl); }
-  h2 { font-size: var(--font-size-3xl); }
-  h3 { font-size: var(--font-size-2xl); }
-  h4 { font-size: var(--font-size-xl); }
-  h5 { font-size: var(--font-size-lg); }
-  h6 { font-size: var(--font-size-base); }
+  h1 { font-size: 1.875rem; } /* Reduced from 2.25rem */
+  h2 { font-size: 1.5rem; } /* Reduced from 1.875rem */
+  h3 { font-size: 1.25rem; } /* Reduced from 1.5rem */
+  h4 { font-size: 1.125rem; } /* Reduced from 1.25rem */
+  h5 { font-size: 1rem; } /* Reduced from 1.125rem */
+  h6 { font-size: 0.875rem; } /* Reduced from 1rem */
   
   p {
     margin: 0 0 1rem;
@@ -535,6 +552,7 @@
     @apply bg-card border border-border rounded-lg;
     @apply transition-all duration-300 ease-out;
     box-shadow: var(--shadow-sm);
+    position: relative;
   }
   
   .card-modern:hover {
@@ -547,19 +565,70 @@
     box-shadow: var(--shadow-lg), var(--glow-primary);
   }
   
+  /* Enhanced 3D Card with depth */
   .card-3d {
     @apply transition-all duration-300 ease-out;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-3d-sm);
     transform-style: preserve-3d;
+    position: relative;
+  }
+  
+  .card-3d::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(145deg, hsl(var(--primary) / 0.03), transparent);
+    pointer-events: none;
+    transition: opacity var(--duration-normal) var(--ease-out);
+    opacity: 0;
   }
   
   .card-3d:hover {
-    @apply -translate-y-1;
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px) rotateX(2deg);
+    box-shadow: var(--shadow-3d-md);
+  }
+  
+  .card-3d:hover::before {
+    opacity: 1;
   }
   
   .dark .card-3d:hover {
-    box-shadow: var(--shadow-xl), var(--glow-primary);
+    box-shadow: var(--shadow-3d-lg), var(--glow-primary);
+  }
+  
+  /* Ultra 3D Card with intense effects */
+  .card-3d-ultra {
+    @apply transition-all duration-500 ease-out;
+    box-shadow: var(--shadow-3d-md);
+    transform-style: preserve-3d;
+    position: relative;
+    perspective: 1000px;
+  }
+  
+  .card-3d-ultra::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(145deg, hsl(var(--primary) / 0.05), hsl(var(--accent) / 0.05));
+    pointer-events: none;
+    transition: all var(--duration-slow) var(--ease-out);
+    opacity: 0;
+  }
+  
+  .card-3d-ultra:hover {
+    transform: translateY(-8px) rotateX(5deg) scale(1.02);
+    box-shadow: var(--shadow-3d-lg);
+  }
+  
+  .card-3d-ultra:hover::before {
+    opacity: 1;
+    transform: translateZ(20px);
+  }
+  
+  .dark .card-3d-ultra:hover {
+    box-shadow: var(--shadow-3d-xl), var(--glow-primary-intense);
   }
   
   .card-interactive {
@@ -698,6 +767,61 @@
     }
   }
   
+  /* ========== Advanced Hover Effects ========== */
+  .hover-lift {
+    transition: all var(--duration-normal) var(--ease-out);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-3d-lg);
+  }
+  
+  .dark .hover-lift:hover {
+    box-shadow: var(--shadow-3d-xl), var(--glow-primary);
+  }
+  
+  .hover-glow {
+    transition: all var(--duration-normal) var(--ease-out);
+    position: relative;
+  }
+  
+  .hover-glow::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    opacity: 0;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.4), hsl(var(--accent) / 0.4));
+    filter: blur(20px);
+    z-index: -1;
+    transition: opacity var(--duration-normal) var(--ease-out);
+  }
+  
+  .hover-glow:hover::after {
+    opacity: 1;
+  }
+  
+  .hover-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .hover-shine::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.1), transparent);
+    transition: left 0.5s var(--ease-out);
+  }
+  
+  .hover-shine:hover::before {
+    left: 100%;
+  }
+  
   /* ========== Focus Styles ========== */
   .focus-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
@@ -824,6 +948,15 @@
     animation: bounce 1s infinite;
   }
   
+  @keyframes gradient {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  
+  .animate-gradient {
+    animation: gradient 3s ease infinite;
+  }
+  
   /* Skeleton Loading */
   @keyframes skeleton-pulse {
     0%, 100% { opacity: 1; }
@@ -882,9 +1015,9 @@
   @media (min-width: 1536px) { .container-custom { max-width: 1536px; } }
   
   /* ========== Spacing Utilities ========== */
-  .section-spacing { @apply space-y-6 lg:space-y-8; }
-  .card-spacing { @apply gap-4 md:gap-6; }
-  .content-padding { @apply p-4 sm:p-6 md:p-8; }
+  .section-spacing { @apply space-y-4 lg:space-y-6; }
+  .card-spacing { @apply gap-3 md:gap-4; }
+  .content-padding { @apply p-3 sm:p-4 md:p-6; }
   
   /* ========== Backdrop Effects ========== */
   .backdrop-blur-custom {
@@ -969,27 +1102,48 @@
     @apply shadow-md border-primary/30;
   }
   
-  /* Glass Effect - Modern */
+  /* Glass Effect - Modern Glassmorphism */
   .glass {
-    @apply bg-card/50 backdrop-blur-md border border-border/50;
+    background: hsl(var(--card) / 0.5);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid hsl(var(--border) / 0.5);
     transition: all var(--duration-normal) var(--ease-out);
   }
   
   .glass:hover {
-    @apply bg-card/60 border-border/70;
+    background: hsl(var(--card) / 0.6);
+    border-color: hsl(var(--border) / 0.7);
+    box-shadow: var(--shadow-md);
   }
   
   .glass-strong {
-    @apply bg-card/80 backdrop-blur-xl border border-border;
+    background: hsl(var(--card) / 0.8);
+    backdrop-filter: blur(20px) saturate(200%);
+    -webkit-backdrop-filter: blur(20px) saturate(200%);
+    border: 1px solid hsl(var(--border));
+  }
+  
+  .glass-intense {
+    background: linear-gradient(135deg, hsl(var(--card) / 0.6), hsl(var(--card) / 0.4));
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid hsl(var(--border) / 0.6);
+    box-shadow: var(--shadow-lg), inset 0 1px 0 hsl(var(--foreground) / 0.1);
   }
   
   .dark .glass {
-    @apply bg-card/30;
+    background: hsl(var(--card) / 0.3);
   }
   
   .dark .glass:hover {
-    @apply bg-card/40;
-    box-shadow: var(--glow-primary);
+    background: hsl(var(--card) / 0.4);
+    box-shadow: var(--shadow-lg), var(--glow-primary);
+  }
+  
+  .dark .glass-intense {
+    background: linear-gradient(135deg, hsl(var(--card) / 0.5), hsl(var(--card) / 0.3));
+    box-shadow: var(--shadow-xl), var(--glow-primary), inset 0 1px 0 hsl(var(--foreground) / 0.1);
   }
   
   /* Floating Action Button */

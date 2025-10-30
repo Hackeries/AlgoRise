@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { NotificationService } from '@/lib/notification-service';
 
 const generateAlgoRiseEmail = (
   groupName: string,
@@ -159,54 +160,66 @@ export async function POST(
       );
     }
 
-    // Get group name
+    // Get group name and inviter's profile
     const { data: groupData } = await supabase
       .from('groups')
       .select('name')
       .eq('id', groupId)
       .single();
 
+    const { data: inviterProfile } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('id', user.id)
+      .single();
+
+    const inviterName = inviterProfile?.name || 'A team member';
+    const groupName = groupData?.name || 'AlgoRise Group';
+
     // Ensure group has an invite_code and link
     const getRes = await GET(req, { params: Promise.resolve({ id: groupId }) });
     if (getRes.status !== 200) return getRes;
     const { code, link } = await getRes.json();
 
-    try {
-      const emailHtml = generateAlgoRiseEmail(
-        groupData?.name || 'AlgoRise Group',
-        link,
-        role
-      );
+    // Track success/failure of different channels
+    let emailSent = false;
+    let notificationCreated = false;
+    const errors: string[] = [];
 
-      if (process.env.RESEND_API_KEY) {
-        const emailRes = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-          },
-          body: JSON.stringify({
-            from: 'AlgoRise Groups <groups@algorise.in>',
-            to: email,
-            subject: `Join ${
-              groupData?.name || 'AlgoRise Group'
-            } on AlgoRise - Competitive Programming`,
-            html: emailHtml,
-          }),
-        });
-
-        if (!emailRes.ok) {
-          console.log('[v0] Email send failed:', await emailRes.text());
-        }
-      } else {
-        console.log('[v0] RESEND_API_KEY not configured - email not sent');
-      }
-    } catch (error) {
-      console.log('[v0] Email error:', error);
-    }
-
+    // 1. Try to find the user by email and create in-app notification
     const serviceRoleClient = await createServiceRoleClient();
     if (serviceRoleClient) {
+      try {
+        // Query auth.users to find user by email using admin API
+        const { data: userData, error: userError } = await serviceRoleClient.auth.admin.getUserByEmail(email);
+
+        if (userData?.user?.id && !userError) {
+          const targetUserId = userData.user.id;
+          // User exists - create in-app notification
+          const notificationService = new NotificationService(serviceRoleClient);
+          const result = await notificationService.notifyGroupInvite(
+            targetUserId,
+            groupId,
+            groupName,
+            inviterName
+          );
+          
+          if (result.success) {
+            notificationCreated = true;
+            console.log('[v0] In-app notification created for', email);
+          } else {
+            console.error('[v0] Failed to create notification:', result.error);
+            errors.push('In-app notification failed');
+          }
+        } else {
+          console.log('[v0] User with email', email, 'not found in system - will only send email');
+        }
+      } catch (error) {
+        console.error('[v0] Error checking for user or creating notification:', error);
+        errors.push('Notification system error');
+      }
+
+      // 2. Insert invitation record
       const { error: insErr } = await serviceRoleClient
         .from('group_invitations')
         .insert({
@@ -221,11 +234,62 @@ export async function POST(
       }
     }
 
+    // 3. Try to send email
+    try {
+      const emailHtml = generateAlgoRiseEmail(groupName, link, role);
+
+      if (process.env.RESEND_API_KEY) {
+        const emailRes = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          },
+          body: JSON.stringify({
+            from: 'AlgoRise Groups <groups@algorise.in>',
+            to: email,
+            subject: `Join ${groupName} on AlgoRise - Competitive Programming`,
+            html: emailHtml,
+          }),
+        });
+
+        if (emailRes.ok) {
+          emailSent = true;
+          console.log('[v0] Email sent successfully to', email);
+        } else {
+          const errorText = await emailRes.text();
+          console.error('[v0] Email send failed:', errorText);
+          errors.push('Email delivery failed');
+        }
+      } else {
+        console.log('[v0] RESEND_API_KEY not configured - email not sent');
+        errors.push('Email service not configured');
+      }
+    } catch (error) {
+      console.error('[v0] Email error:', error);
+      errors.push('Email sending error');
+    }
+
+    // Determine response based on what succeeded
+    let message = '';
+    if (notificationCreated && emailSent) {
+      message = 'Invitation sent! The user will receive both an in-app notification and an email.';
+    } else if (notificationCreated) {
+      message = 'Invitation sent! The user will receive an in-app notification. (Email delivery unavailable)';
+    } else if (emailSent) {
+      message = 'Invitation email sent successfully!';
+    } else {
+      message = 'Invitation link generated. Please share the link manually.';
+    }
+
     return NextResponse.json({
       ok: true,
       link,
       code,
-      message: 'Professional invitation email sent successfully!',
+      message,
+      emailSent,
+      notificationCreated,
+      errors: errors.length > 0 ? errors : undefined,
     });
   }
 

@@ -124,7 +124,7 @@ export default function PlatformFeatures() {
             </span>
           </motion.div>
 
-          <h2 className='text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6'>
+          <h2 className='text-2xl sm:text-3xl lg:text-4xl font-bold mb-4'>
             <span className='bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent'>
               Everything You Need to Master Algorithms
             </span>

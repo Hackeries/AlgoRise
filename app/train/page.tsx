@@ -229,7 +229,7 @@ export default function TrainingHub() {
                 <Badge variant='secondary' className='text-lg font-bold'>{stats.totalSheets}</Badge>
               </div>
               <h3 className='text-sm font-medium text-muted-foreground'>Problem Sheets</h3>
-              <p className='text-2xl font-bold mt-1'>Available</p>
+              <p className='text-lg font-bold mt-1'>Available</p>
             </CardContent>
           </Card>
 
@@ -240,7 +240,7 @@ export default function TrainingHub() {
                 <Badge variant='secondary' className='text-lg font-bold'>{stats.totalProblems}</Badge>
               </div>
               <h3 className='text-sm font-medium text-muted-foreground'>Total Problems</h3>
-              <p className='text-2xl font-bold mt-1'>To Master</p>
+              <p className='text-lg font-bold mt-1'>To Master</p>
             </CardContent>
           </Card>
 
@@ -251,7 +251,7 @@ export default function TrainingHub() {
                 <Badge variant='secondary' className='text-lg font-bold'>{stats.completedProblems}</Badge>
               </div>
               <h3 className='text-sm font-medium text-muted-foreground'>Solved Problems</h3>
-              <p className='text-2xl font-bold mt-1'>Progress</p>
+              <p className='text-lg font-bold mt-1'>Progress</p>
             </CardContent>
           </Card>
 
@@ -262,7 +262,7 @@ export default function TrainingHub() {
                 <Badge variant='secondary' className='text-lg font-bold'>{stats.completionRate}%</Badge>
               </div>
               <h3 className='text-sm font-medium text-muted-foreground'>Completion Rate</h3>
-              <p className='text-2xl font-bold mt-1'>Overall</p>
+              <p className='text-lg font-bold mt-1'>Overall</p>
             </CardContent>
           </Card>
         </section>
@@ -278,7 +278,7 @@ export default function TrainingHub() {
             <div>
               <h2
                 id='sheets-heading'
-                className='text-3xl sm:text-4xl font-bold tracking-tight text-foreground flex items-center gap-3'
+                className='text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-3'
               >
                 <Sparkles className='h-8 w-8 text-primary animate-pulse' />
                 DSA & ICPC Problem Sheets
@@ -488,9 +488,9 @@ export default function TrainingHub() {
         {/* Activity Heatmap Section */}
         <section ref={activityRef} className='space-y-6'>
           <div className='flex items-center justify-between'>
-            <h2 className='text-3xl font-bold tracking-tight text-foreground flex items-center gap-3'>
-              <Zap className='h-8 w-8 text-orange-500' />
-              Your Practice Activity
+            <h2 className='text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-3'>
+              <Zap className='h-6 w-6 text-orange-500' />
+              Practice Activity
             </h2>
           </div>
           <ActivityHeatmap />
@@ -500,9 +500,9 @@ export default function TrainingHub() {
         <section ref={companiesRef} className='space-y-6'>
           <div className='flex items-center justify-between'>
             <div>
-              <h2 className='text-3xl font-bold tracking-tight text-foreground flex items-center gap-3'>
-                <Trophy className='h-8 w-8 text-yellow-500' />
-                Company-Specific Practice
+              <h2 className='text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-3'>
+                <Trophy className='h-6 w-6 text-yellow-500' />
+                Company Practice
               </h2>
               <p className='text-muted-foreground mt-2'>
                 Target problems from top tech companies

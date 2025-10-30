@@ -196,7 +196,7 @@ export default function ContestSection() {
               LIVE CONTESTS
             </span>
           </div>
-          <h2 className='text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent'>
+          <h2 className='text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent'>
             Upcoming Contests
           </h2>
           <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>

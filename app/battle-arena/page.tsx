@@ -167,12 +167,9 @@ export default function BattleArenaPage() {
               </div>
             </div>
             <div className='flex-1'>
-              <h3 className='font-bold text-white mb-1 text-sm sm:text-base'>Battle Arena vs Private Contests</h3>
-              <p className='text-xs sm:text-sm text-gray-300'>
-                <strong className='text-orange-400'>⚔️ Battle Arena:</strong> Real-time competitive matches with instant matchmaking and live battles. Perfect for quick competitive practice!
-              </p>
-              <p className='text-xs sm:text-sm text-gray-300 mt-1'>
-                <strong className='text-purple-400'>🎯 Private Contests:</strong> Looking for custom contests? Visit the <Link href='/contests' className='underline hover:text-purple-300'>Contests page</Link> to create or join private training sessions!
+              <p className='text-xs text-gray-300'>
+                <strong className='text-orange-400'>Battle Arena:</strong> Real-time competitive matches. 
+                <strong className='text-purple-400'>Private Contests:</strong> Visit <Link href='/contests' className='underline hover:text-purple-300'>Contests</Link> for custom training.
               </p>
             </div>
           </div>
@@ -190,25 +187,14 @@ export default function BattleArenaPage() {
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
             >
-              <Flame className='w-8 h-8 text-orange-500' />
-              <h1 className='text-5xl md:text-6xl font-black bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-600 bg-clip-text text-transparent'>
+              <h1 className='text-4xl md:text-5xl font-black bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-600 bg-clip-text text-transparent'>
                 Battle Arena
               </h1>
-              <Flame className='w-8 h-8 text-orange-500' />
             </motion.div>
           </div>
-          <p className='text-lg text-blue-200 max-w-2xl mx-auto mb-2'>
-            Compete in real-time duels or team battles. Climb the leaderboards
-            and prove your algorithmic mastery.
+          <p className='text-sm text-blue-200 max-w-2xl mx-auto'>
+            Real-time duels and team battles
           </p>
-          <motion.div
-            className='flex items-center justify-center gap-2 text-sm text-blue-300/70'
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
-          >
-            <Sparkles className='w-4 h-4' />
-            <span>Choose your battle mode below</span>
-          </motion.div>
         </motion.div>
 
         <Tabs defaultValue='quick-play' className='w-full'>

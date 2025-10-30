@@ -118,7 +118,7 @@ export default function CFLevels() {
           className='text-center mb-16 sm:mb-20'
         >
 
-          <h2 className='text-3xl sm:text-4xl lg:text-5xl font-bold mb-6'>
+          <h2 className='text-2xl sm:text-3xl lg:text-4xl font-bold mb-4'>
             <span className='bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 bg-clip-text text-transparent'>
               Codeforces Level-Up Roadmap
             </span>

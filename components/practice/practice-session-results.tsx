@@ -44,8 +44,7 @@ export function PracticeSessionResults({
         transition={{ duration: 0.5 }}
         className="text-center space-y-4"
       >
-        <div className="text-6xl">🎉</div>
-        <h1 className="text-4xl font-bold">Session Complete!</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">Session Complete!</h1>
         <p className="text-muted-foreground text-lg">Great work! Here's how you performed</p>
       </motion.div>
 

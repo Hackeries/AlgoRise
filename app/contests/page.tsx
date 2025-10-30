@@ -40,6 +40,9 @@ import {
   Zap,
   Trophy,
   RefreshCw,
+  Swords,
+  Flame,
+  Shield,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
@@ -1078,40 +1081,40 @@ export default function ContestsPage() {
           <p className='mt-2 text-foreground/60'>Loading contests...</p>
         </div>
       ) : (
-        <div className='space-y-8'>
-          {/* Arena Contests Section */}
+        <div className='space-y-10'>
+          {/* Upcoming Contests Section - Codeforces */}
           <section>
             <div className='flex items-center gap-3 mb-6'>
               <div className='flex items-center gap-3 flex-1'>
-                <div className='p-2 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30'>
-                  <Trophy className='w-6 h-6 text-yellow-500' />
+                <div className='p-3 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/40 shadow-lg shadow-yellow-500/20'>
+                  <Trophy className='w-7 h-7 text-yellow-500' />
                 </div>
                 <div>
-                  <h2 className='text-base sm:text-lg font-bold text-foreground'>
-                    Arena
+                  <h2 className='text-lg sm:text-xl font-bold text-foreground'>
+                    🏆 Upcoming Contests
                   </h2>
-                  <p className='text-xs text-muted-foreground'>Upcoming Codeforces contests</p>
+                  <p className='text-xs sm:text-sm text-muted-foreground'>Official Codeforces competitions</p>
                 </div>
               </div>
-              <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1'>
+              <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1 bg-yellow-500/10 border-yellow-500/30 text-yellow-600 dark:text-yellow-400'>
                 {upcomingCfContests.length} upcoming
               </Badge>
             </div>
 
             {upcomingCfContests.length === 0 ? (
-              <Card className='card-3d'>
+              <Card className='card-3d border-2 border-dashed border-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-orange-500/5'>
                 <CardContent className='p-6'>
                   <p className='text-foreground/60 text-center'>
-                    No upcoming arena contests at the moment.
+                    No upcoming Codeforces contests at the moment.
                   </p>
                 </CardContent>
               </Card>
             ) : (
-              <div className='grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3'>
+              <div className='grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3'>
                 {upcomingCfContests.slice(0, 6).map(contest => (
               <Card
                 key={contest.id}
-                className='card-3d-ultra hover-shine cursor-pointer transition-all border-l-4 border-l-yellow-500 dark:border-l-yellow-600 group'
+                className='relative overflow-hidden cursor-pointer transition-all duration-300 border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-orange-500/10 hover:border-yellow-500/60 hover:shadow-2xl hover:shadow-yellow-500/20 hover:-translate-y-1 group'
                 onClick={() =>
                   handleCodeforcesContestClick(
                     contest.id,
@@ -1120,44 +1123,52 @@ export default function ContestsPage() {
                   )
                 }
               >
-                <CardHeader className='pb-2 sm:pb-3'>
+                {/* Accent bar */}
+                <div className='absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500' />
+                
+                {/* Trophy icon watermark */}
+                <div className='absolute -right-6 -bottom-6 opacity-5 group-hover:opacity-10 transition-opacity'>
+                  <Trophy className='w-32 h-32 text-yellow-500' />
+                </div>
+
+                <CardHeader className='pb-3'>
                   <div className='flex items-start justify-between gap-2'>
-                    <CardTitle className='text-sm sm:text-base font-semibold leading-tight text-foreground line-clamp-2 group-hover:text-primary transition-colors'>
+                    <CardTitle className='text-sm sm:text-base font-bold leading-tight text-foreground line-clamp-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors'>
                       {contest.name}
                     </CardTitle>
-                    <ExternalLinkIcon className='w-4 h-4 text-foreground/40 flex-shrink-0 group-hover:text-primary transition-colors' />
+                    <ExternalLinkIcon className='w-4 h-4 text-yellow-500/60 flex-shrink-0 group-hover:text-yellow-500 transition-colors' />
                   </div>
                   <div className='flex items-center gap-2 flex-wrap mt-2'>
-                    <Badge variant='outline' className='text-xs glass'>
+                    <Badge variant='outline' className='text-xs border-yellow-500/40 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400'>
                       {contest.type}
                     </Badge>
-                    <Badge variant='secondary' className='text-xs'>
+                    <Badge variant='secondary' className='text-xs bg-orange-500/20 text-orange-700 dark:text-orange-400'>
                       {contest.phase}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className='pt-0'>
+                <CardContent className='pt-0 relative z-10'>
                   <div className='space-y-2 text-xs sm:text-sm'>
                     {contest.startTimeSeconds && (
-                      <div className='flex items-center gap-2 text-foreground/70'>
-                        <CalendarIcon className='w-4 h-4 flex-shrink-0 text-primary' />
+                      <div className='flex items-center gap-2 text-foreground/80'>
+                        <CalendarIcon className='w-4 h-4 flex-shrink-0 text-yellow-600 dark:text-yellow-500' />
                         <span className='truncate font-medium'>
                           {formatTime(contest.startTimeSeconds)}
                         </span>
                       </div>
                     )}
-                    <div className='flex items-center gap-2 text-foreground/70'>
-                      <ClockIcon className='w-4 h-4 flex-shrink-0 text-accent' />
+                    <div className='flex items-center gap-2 text-foreground/80'>
+                      <ClockIcon className='w-4 h-4 flex-shrink-0 text-orange-600 dark:text-orange-500' />
                       <span className='font-medium'>{formatDuration(contest.durationSeconds)}</span>
                     </div>
                     {contest.startTimeSeconds && (
-                      <div className='flex items-center justify-between pt-3 border-t border-border/50 mt-3'>
-                        <span className='text-foreground/60 text-xs font-medium'>
+                      <div className='flex items-center justify-between pt-3 border-t border-yellow-500/20 mt-3'>
+                        <span className='text-foreground/70 text-xs font-semibold'>
                           Starts in:
                         </span>
                         <Badge
                           variant='default'
-                          className='text-xs bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md'
+                          className='text-xs bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 shadow-md font-bold'
                         >
                           {getTimeUntilStart(contest.startTimeSeconds)}
                         </Badge>
@@ -1175,17 +1186,17 @@ export default function ContestsPage() {
           <section>
             <div className='flex items-center gap-3 mb-6'>
               <div className='flex items-center gap-3 flex-1'>
-                <div className='p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30'>
-                  <Zap className='w-6 h-6 text-purple-500' />
+                <div className='p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/40 shadow-lg shadow-purple-500/20'>
+                  <Zap className='w-7 h-7 text-purple-500' />
                 </div>
                 <div>
-                  <h2 className='text-base sm:text-lg font-bold text-foreground'>
-                    Private Contest
+                  <h2 className='text-lg sm:text-xl font-bold text-foreground'>
+                    ⚡ Private Contests
                   </h2>
-                  <p className='text-xs text-muted-foreground'>Custom training sessions</p>
+                  <p className='text-xs sm:text-sm text-muted-foreground'>Custom training sessions</p>
                 </div>
               </div>
-              <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1'>
+              <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1 bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400'>
                 {privateContests.length} available
               </Badge>
             </div>
@@ -1214,111 +1225,107 @@ export default function ContestsPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className='grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3'>
+              <div className='grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3'>
                 {privateContests.map(contest => {
                   const status = computeDisplayStatus(contest);
-                  const borderColor =
-                    status === 'live'
-                      ? 'border-l-green-500 dark:border-l-green-600'
-                      : status === 'ended'
-                      ? 'border-l-gray-500 dark:border-l-gray-600'
-                      : 'border-l-blue-500 dark:border-l-blue-600';
+                  const statusColors = {
+                    live: { border: 'border-green-500/50', glow: 'shadow-green-500/20', bg: 'from-green-500/10 to-green-600/5' },
+                    ended: { border: 'border-gray-500/50', glow: 'shadow-gray-500/10', bg: 'from-gray-500/10 to-gray-600/5' },
+                    upcoming: { border: 'border-purple-500/50', glow: 'shadow-purple-500/20', bg: 'from-purple-500/10 to-pink-500/10' }
+                  };
+                  const colors = statusColors[status as keyof typeof statusColors];
 
                   return (
                     <Card
                       key={contest.id}
-                      className={`card-3d-ultra hover-shine transition-all border-l-4 ${borderColor} group`}
+                      className={`relative overflow-hidden transition-all duration-300 border-2 ${colors.border} bg-gradient-to-br ${colors.bg} hover:border-purple-500/60 hover:shadow-2xl ${colors.glow} hover:-translate-y-1 group`}
                     >
-                      <CardHeader className='pb-2 sm:pb-3'>
+                      {/* Accent bar */}
+                      <div className='absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500' />
+                      
+                      {/* Lightning icon watermark */}
+                      <div className='absolute -right-8 -bottom-8 opacity-5 group-hover:opacity-10 transition-opacity'>
+                        <Zap className='w-40 h-40 text-purple-500' />
+                      </div>
+
+                      {/* Live pulse effect */}
+                      {status === 'live' && (
+                        <div className='absolute top-4 right-4'>
+                          <span className='flex h-3 w-3'>
+                            <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75'></span>
+                            <span className='relative inline-flex rounded-full h-3 w-3 bg-green-500'></span>
+                          </span>
+                        </div>
+                      )}
+
+                      <CardHeader className='pb-3 relative z-10'>
                         <div className='flex items-start justify-between gap-2'>
                           <div className='flex-1 min-w-0'>
-                            <CardTitle className='text-sm sm:text-base font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors'>
+                            <CardTitle className='text-sm sm:text-base font-bold text-foreground line-clamp-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors'>
                               {contest.name}
                             </CardTitle>
-                            <CardDescription className='text-xs text-foreground/60 mt-1 font-medium'>
-                              {contest.visibility === 'public'
-                                ? 'Public'
-                                : 'Private'}{' '}
-                              •{' '}
-                              {contest.isHost
-                                ? 'Hosted by You'
-                                : 'Hosted by Others'}
+                            <CardDescription className='text-xs text-foreground/70 mt-1 font-medium'>
+                              {contest.visibility === 'public' ? '🌐 Public' : '🔒 Private'} • {contest.isHost ? '👑 Host' : '👤 Guest'}
                             </CardDescription>
                           </div>
                         </div>
-                        <div className='flex items-center gap-2 flex-wrap mt-2'>
+                        <div className='flex items-center gap-2 flex-wrap mt-3'>
                           <Badge
-                            variant={
+                            variant={status === 'live' ? 'default' : status === 'ended' ? 'secondary' : 'outline'}
+                            className={`text-xs font-semibold ${
                               status === 'live'
-                                ? 'default'
+                                ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-md animate-pulse'
                                 : status === 'ended'
-                                ? 'secondary'
-                                : 'outline'
-                            }
-                            className={`text-xs ${
-                              status === 'live'
-                                ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-md animate-pulse'
-                                : ''
+                                ? 'bg-gray-500/20 text-gray-600 dark:text-gray-400'
+                                : 'border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-400'
                             }`}
                           >
+                            {status === 'live' && '🔴 '}
                             {status.charAt(0).toUpperCase() + status.slice(1)}
                           </Badge>
-                          <Badge variant='outline' className='text-xs glass'>
-                            {contest.contest_mode === 'icpc'
-                              ? 'ICPC'
-                              : 'Practice'}
+                          <Badge variant='outline' className='text-xs border-pink-500/40 bg-pink-500/10 text-pink-700 dark:text-pink-400'>
+                            {contest.contest_mode === 'icpc' ? '🏅 ICPC' : '🎯 Practice'}
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent className='pt-0'>
+                      <CardContent className='pt-0 relative z-10'>
                         <div className='space-y-2 text-xs sm:text-sm'>
                           {contest.starts_at && (
-                            <div className='flex items-center gap-2 text-foreground/70'>
-                              <CalendarIcon className='w-4 h-4 flex-shrink-0' />
-                              <span className='truncate'>
+                            <div className='flex items-center gap-2 text-foreground/80'>
+                              <CalendarIcon className='w-4 h-4 flex-shrink-0 text-purple-600 dark:text-purple-500' />
+                              <span className='truncate font-medium'>
                                 {new Date(contest.starts_at).toLocaleString()}
                               </span>
                             </div>
                           )}
-                          <div className='flex items-center gap-2 text-foreground/70'>
-                            <ClockIcon className='w-4 h-4 flex-shrink-0' />
-                            <span>{contest.duration_minutes} minutes</span>
+                          <div className='flex items-center gap-2 text-foreground/80'>
+                            <ClockIcon className='w-4 h-4 flex-shrink-0 text-pink-600 dark:text-pink-500' />
+                            <span className='font-medium'>{contest.duration_minutes} minutes</span>
                           </div>
                           {contest.description && (
-                            <p className='text-foreground/60 line-clamp-2 pt-1'>
+                            <p className='text-foreground/70 line-clamp-2 pt-1 italic text-xs'>
                               {contest.description}
                             </p>
                           )}
-                          <div className='flex flex-wrap items-center gap-2 text-foreground/60 pt-2 border-t border-border/50'>
-                            <span className='text-xs'>
-                              {contest.problem_count} problems
-                            </span>
+                          <div className='flex flex-wrap items-center gap-2 text-foreground/70 pt-2 border-t border-purple-500/20'>
+                            <span className='text-xs font-medium'>📝 {contest.problem_count} problems</span>
                             <span className='text-xs'>•</span>
-                            <span className='text-xs'>
-                              Rating {contest.rating_min}-{contest.rating_max}
-                            </span>
+                            <span className='text-xs font-medium'>⭐ {contest.rating_min}-{contest.rating_max}</span>
                             {contest.allow_late_join && (
                               <>
                                 <span className='text-xs'>•</span>
-                                <span className='text-xs'>Late join</span>
+                                <span className='text-xs font-medium'>⏰ Late join</span>
                               </>
                             )}
                           </div>
                         </div>
 
                         {/* Action Button */}
-                        <div className='mt-3 pt-3 border-t border-border/50'>
+                        <div className='mt-3 pt-3 border-t border-purple-500/20'>
                           {(() => {
                             const now = Date.now();
-                            const startsAt = contest.starts_at
-                              ? new Date(contest.starts_at).getTime()
-                              : null;
-                            const endsAt = contest.ends_at
-                              ? new Date(contest.ends_at).getTime()
-                              : startsAt && contest.duration_minutes
-                              ? startsAt + contest.duration_minutes * 60 * 1000
-                              : null;
-
+                            const startsAt = contest.starts_at ? new Date(contest.starts_at).getTime() : null;
+                            const endsAt = contest.ends_at ? new Date(contest.ends_at).getTime() : startsAt && contest.duration_minutes ? startsAt + contest.duration_minutes * 60 * 1000 : null;
                             const hasEnded = !!(endsAt && now >= endsAt);
                             const hasStarted = !!(startsAt && now >= startsAt);
 
@@ -1327,40 +1334,26 @@ export default function ContestsPage() {
                                 <Button
                                   size='sm'
                                   variant='outline'
-                                  className='w-full text-xs bg-transparent'
-                                  onClick={() =>
-                                    window.open(
-                                      `/contests/${contest.id}`,
-                                      '_blank'
-                                    )
-                                  }
+                                  className='w-full text-xs font-semibold border-purple-500/30 hover:bg-purple-500/10'
+                                  onClick={() => window.open(`/contests/${contest.id}`, '_blank')}
                                 >
-                                  View Leaderboard
+                                  📊 View Leaderboard
                                 </Button>
                               );
                             }
 
-                            const label = contest.isRegistered
-                              ? hasStarted
-                                ? 'Join Now'
-                                : `Registered`
-                              : 'Register';
-
-                            const disabled = contest.isRegistered
-                              ? !hasStarted && !contest.allow_late_join
-                              : false;
+                            const label = contest.isRegistered ? (hasStarted ? '🚀 Join Now' : '✅ Registered') : '📝 Register';
+                            const disabled = contest.isRegistered ? !hasStarted && !contest.allow_late_join : false;
 
                             return (
                               <Button
                                 size='sm'
-                                className={`w-full text-xs font-medium ${
+                                className={`w-full text-xs font-semibold shadow-lg ${
                                   hasStarted
-                                    ? 'bg-green-600 hover:bg-green-700'
-                                    : 'bg-blue-600 hover:bg-blue-700'
+                                    ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'
+                                    : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
                                 }`}
-                                onClick={() =>
-                                  handleJoinPrivateContest(contest)
-                                }
+                                onClick={() => handleJoinPrivateContest(contest)}
                                 disabled={disabled}
                               >
                                 {label}
@@ -1374,6 +1367,138 @@ export default function ContestsPage() {
                 })}
               </div>
             )}
+          </section>
+
+          {/* Battle Arena Section */}
+          <section>
+            <div className='flex items-center gap-3 mb-6'>
+              <div className='flex items-center gap-3 flex-1'>
+                <div className='p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/40 shadow-lg shadow-blue-500/20'>
+                  <Swords className='w-7 h-7 text-blue-500' />
+                </div>
+                <div>
+                  <h2 className='text-lg sm:text-xl font-bold text-foreground'>
+                    ⚔️ Battle Arena
+                  </h2>
+                  <p className='text-xs sm:text-sm text-muted-foreground'>Real-time competitive battles</p>
+                </div>
+              </div>
+              <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1 bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400'>
+                Live Now
+              </Badge>
+            </div>
+
+            <div className='grid gap-4 sm:gap-5 md:grid-cols-2'>
+              {/* 1v1 Duels Card */}
+              <Card className='relative overflow-hidden transition-all duration-300 border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-cyan-500/10 hover:border-blue-500/60 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-1 group cursor-pointer'>
+                {/* Accent bar */}
+                <div className='absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500' />
+                
+                {/* Swords icon watermark */}
+                <div className='absolute -right-6 -bottom-6 opacity-5 group-hover:opacity-10 transition-opacity'>
+                  <Swords className='w-32 h-32 text-blue-500' />
+                </div>
+
+                <a href='/battle-arena/queue/1v1' className='block'>
+                  <CardHeader className='pb-3'>
+                    <div className='flex items-start justify-between gap-2'>
+                      <CardTitle className='text-base sm:text-lg font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
+                        ⚔️ 1v1 Duels
+                      </CardTitle>
+                      <ExternalLinkIcon className='w-5 h-5 text-blue-500/60 flex-shrink-0 group-hover:text-blue-500 transition-colors' />
+                    </div>
+                    <p className='text-xs text-muted-foreground mt-2'>
+                      Fast-paced head-to-head battles where speed and accuracy matter
+                    </p>
+                    <div className='flex items-center gap-2 flex-wrap mt-3'>
+                      <Badge variant='outline' className='text-xs border-blue-500/40 bg-blue-500/10 text-blue-700 dark:text-blue-400'>
+                        Best of 1 or 3
+                      </Badge>
+                      <Badge variant='secondary' className='text-xs bg-cyan-500/20 text-cyan-700 dark:text-cyan-400'>
+                        Fastest AC
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className='pt-0 relative z-10'>
+                    <div className='grid grid-cols-3 gap-2 mb-4'>
+                      <div className='p-3 rounded-lg bg-blue-500/10 border border-blue-500/20'>
+                        <p className='text-xs text-blue-600 dark:text-blue-400 font-semibold mb-1'>Format</p>
+                        <p className='text-xs text-foreground/80 font-bold'>Best of 1/3</p>
+                      </div>
+                      <div className='p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20'>
+                        <p className='text-xs text-cyan-600 dark:text-cyan-400 font-semibold mb-1'>Scoring</p>
+                        <p className='text-xs text-foreground/80 font-bold'>Fastest AC</p>
+                      </div>
+                      <div className='p-3 rounded-lg bg-blue-500/10 border border-blue-500/20'>
+                        <p className='text-xs text-blue-600 dark:text-blue-400 font-semibold mb-1'>Reward</p>
+                        <p className='text-xs text-foreground/80 font-bold'>ELO Points</p>
+                      </div>
+                    </div>
+                    <Button
+                      className='w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg font-semibold'
+                      onClick={(e) => { e.preventDefault(); window.location.href = '/battle-arena/queue/1v1'; }}
+                    >
+                      🎮 Start 1v1 Battle
+                    </Button>
+                  </CardContent>
+                </a>
+              </Card>
+
+              {/* 3v3 Team Battles Card */}
+              <Card className='relative overflow-hidden transition-all duration-300 border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-blue-500/10 hover:border-cyan-500/60 hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-1 group cursor-pointer'>
+                {/* Accent bar */}
+                <div className='absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500' />
+                
+                {/* Shield icon watermark */}
+                <div className='absolute -right-6 -bottom-6 opacity-5 group-hover:opacity-10 transition-opacity'>
+                  <Shield className='w-32 h-32 text-cyan-500' />
+                </div>
+
+                <a href='/battle-arena/team/create' className='block'>
+                  <CardHeader className='pb-3'>
+                    <div className='flex items-start justify-between gap-2'>
+                      <CardTitle className='text-base sm:text-lg font-bold text-foreground group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors'>
+                        🛡️ 3v3 Team Battles
+                      </CardTitle>
+                      <ExternalLinkIcon className='w-5 h-5 text-cyan-500/60 flex-shrink-0 group-hover:text-cyan-500 transition-colors' />
+                    </div>
+                    <p className='text-xs text-muted-foreground mt-2'>
+                      Collaborative team competitions with strategic problem-solving
+                    </p>
+                    <div className='flex items-center gap-2 flex-wrap mt-3'>
+                      <Badge variant='outline' className='text-xs border-cyan-500/40 bg-cyan-500/10 text-cyan-700 dark:text-cyan-400'>
+                        Team of 3
+                      </Badge>
+                      <Badge variant='secondary' className='text-xs bg-blue-500/20 text-blue-700 dark:text-blue-400'>
+                        ICPC Style
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className='pt-0 relative z-10'>
+                    <div className='grid grid-cols-3 gap-2 mb-4'>
+                      <div className='p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20'>
+                        <p className='text-xs text-cyan-600 dark:text-cyan-400 font-semibold mb-1'>Team Size</p>
+                        <p className='text-xs text-foreground/80 font-bold'>Exactly 3</p>
+                      </div>
+                      <div className='p-3 rounded-lg bg-blue-500/10 border border-blue-500/20'>
+                        <p className='text-xs text-blue-600 dark:text-blue-400 font-semibold mb-1'>Scoring</p>
+                        <p className='text-xs text-foreground/80 font-bold'>ICPC Rules</p>
+                      </div>
+                      <div className='p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20'>
+                        <p className='text-xs text-cyan-600 dark:text-cyan-400 font-semibold mb-1'>Duration</p>
+                        <p className='text-xs text-foreground/80 font-bold'>60 Minutes</p>
+                      </div>
+                    </div>
+                    <Button
+                      className='w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 shadow-lg font-semibold'
+                      onClick={(e) => { e.preventDefault(); window.location.href = '/battle-arena/team/create'; }}
+                    >
+                      👥 Create Team Battle
+                    </Button>
+                  </CardContent>
+                </a>
+              </Card>
+            </div>
           </section>
         </div>
       )}

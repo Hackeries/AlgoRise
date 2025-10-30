@@ -216,13 +216,12 @@ const ModernSearchBar = React.memo<{
                           {suggestion.type}
                         </p>
                       </div>
-                    </div>
-                    {suggestion.frequency > 1 && (
-                      <Badge variant='secondary' className='text-xs'>
-                        {suggestion.frequency}
-                      </Badge>
-                    )}
-                  </button>
+                      {suggestion.frequency > 1 && (
+                        <Badge variant='secondary' className='text-xs'>
+                          {suggestion.frequency}
+                        </Badge>
+                      )}
+                    </motion.button>
                 ))}
                 <div className='border-t border-border mt-2 pt-2'>
                   <button

@@ -6,54 +6,55 @@
    ============================================ */
 
 :root {
-  /* ========== Light Mode - Modern Professional ========== */
+  /* ========== Light Mode - Codeforces-like Clean Design ========== */
   
-  /* Base Colors - Clean & Crisp */
-  --background: 0 0% 100%; /* Pure white */
-  --foreground: 224 71% 4%; /* Almost black with blue tint */
+  /* Base Colors - Maximum Readability */
+  --background: 0 0% 100%; /* Pure white #ffffff */
+  --foreground: 0 0% 10%; /* Near black #1a1a1a */
   
-  /* Surface Colors - Layered depth */
-  --card: 0 0% 100%;
-  --card-foreground: 224 71% 4%;
+  /* Surface Colors - Minimal Depth */
+  --card: 0 0% 96%; /* Light gray #f5f5f5 */
+  --card-foreground: 0 0% 10%;
   --popover: 0 0% 100%;
-  --popover-foreground: 224 71% 4%;
+  --popover-foreground: 0 0% 10%;
   
-  /* Brand Colors - Vibrant & Accessible */
-  --primary: 221 83% 53%; /* Vivid blue */
-  --primary-foreground: 210 40% 98%;
-  --primary-hover: 221 83% 48%;
-  --primary-active: 221 83% 43%;
+  /* Primary - Codeforces Blue */
+  --primary: 217 91% 60%; /* Blue #3b82f6 */
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 217 91% 55%; /* Darker blue #2563eb */
+  --primary-active: 217 91% 50%; /* Even darker #1d4ed8 */
   
-  --secondary: 220 14% 96%; /* Soft gray */
-  --secondary-foreground: 220 9% 25%;
-  --secondary-hover: 220 14% 92%;
-  --secondary-active: 220 14% 88%;
+  --secondary: 0 0% 96%; /* Subtle gray */
+  --secondary-foreground: 0 0% 10%;
+  --secondary-hover: 0 0% 92%;
+  --secondary-active: 0 0% 88%;
   
-  /* State Colors - Clear & Distinct */
-  --muted: 220 14% 96%;
-  --muted-foreground: 220 9% 46%;
+  /* State Colors - Minimal, Clear */
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 60%; /* #999999 */
   
-  --accent: 200 98% 48%; /* Bright cyan */
+  --accent: 217 91% 60%; /* Same as primary for simplicity */
   --accent-foreground: 0 0% 100%;
-  --accent-hover: 200 98% 43%;
+  --accent-hover: 217 91% 55%;
   
-  --destructive: 0 72% 51%; /* Pure red */
-  --destructive-foreground: 0 0% 100%;
-  --destructive-hover: 0 72% 46%;
-  
-  --success: 142 71% 45%; /* Fresh green */
+  /* Semantic Colors - Competitive Programming Standard */
+  --success: 142 71% 45%; /* Green #22c55e */
   --success-foreground: 0 0% 100%;
   
-  --warning: 38 92% 50%; /* Warm amber */
+  --destructive: 0 84% 60%; /* Red #ef4444 */
+  --destructive-foreground: 0 0% 100%;
+  --destructive-hover: 0 84% 55%;
+  
+  --warning: 38 92% 50%; /* Orange #f59e0b */
   --warning-foreground: 0 0% 100%;
   
-  --info: 199 89% 48%; /* Cool blue */
+  --info: 217 91% 60%; /* Blue - same as primary */
   --info-foreground: 0 0% 100%;
   
-  /* UI Elements - Subtle & Refined */
-  --border: 220 13% 91%;
-  --input: 220 13% 91%;
-  --ring: 221 83% 53%;
+  /* UI Elements - Clean Borders */
+  --border: 0 0% 90%;
+  --input: 0 0% 96%;
+  --ring: 217 91% 60%;
   --ring-offset: 0 0% 100%;
   
   /* Charts - Vibrant & Distinguishable */
@@ -102,50 +103,34 @@
   --line-height-relaxed: 1.625;
   --line-height-loose: 2;
   
-  /* ========== Spacing ========== */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
-  --spacing-2xl: 3rem;
-  --spacing-3xl: 4rem;
+  /* ========== Spacing - Codeforces Scale ========== */
+  --spacing-xs: 0.25rem;  /* 4px  - minor gaps */
+  --spacing-sm: 0.5rem;   /* 8px  - button padding */
+  --spacing-md: 0.75rem;  /* 12px - element spacing */
+  --spacing-lg: 1rem;     /* 16px - card padding */
+  --spacing-xl: 1.5rem;   /* 24px - section spacing */
+  --spacing-2xl: 2rem;    /* 32px - page padding */
+  --spacing-3xl: 3rem;    /* 48px - large sections */
   
-  /* ========== Border Radius ========== */
-  --radius: 0.5rem;
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
-  --radius-full: 9999px;
+  /* ========== Border Radius - Minimal ========== */
+  --radius: 0.25rem;      /* 4px - default */
+  --radius-sm: 0.125rem;  /* 2px - small */
+  --radius-md: 0.375rem;  /* 6px - medium */
+  --radius-lg: 0.5rem;    /* 8px - large */
+  --radius-full: 9999px;  /* Circular */
   
-  /* ========== Shadows - Light Mode ========== */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  /* ========== Shadows - Light Mode - Minimal ========== */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-md: 0 2px 4px rgb(0 0 0 / 0.08);
+  --shadow-lg: 0 4px 8px rgb(0 0 0 / 0.1);
   
-  /* 3D & Elevated Shadows */
-  --shadow-3d-sm: 0 2px 4px rgb(0 0 0 / 0.05), 0 4px 8px rgb(0 0 0 / 0.08);
-  --shadow-3d-md: 0 4px 8px rgb(0 0 0 / 0.08), 0 8px 16px rgb(0 0 0 / 0.12);
-  --shadow-3d-lg: 0 8px 16px rgb(0 0 0 / 0.1), 0 16px 32px rgb(0 0 0 / 0.15);
-  --shadow-3d-xl: 0 16px 32px rgb(0 0 0 / 0.12), 0 32px 64px rgb(0 0 0 / 0.18);
+  /* ========== Animation - Minimal, Functional Only ========== */
+  --duration-fast: 200ms;   /* Hover effects */
+  --duration-normal: 300ms; /* Modal open/close */
+  --duration-slow: 400ms;   /* Toast notifications */
   
-  /* ========== Animation ========== */
-  --duration-fast: 150ms;
-  --duration-normal: 250ms;
-  --duration-slow: 350ms;
-  --duration-slower: 500ms;
-  
-  --ease-linear: linear;
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   
   /* ========== Z-Index Scale ========== */
   --z-dropdown: 1000;
@@ -162,53 +147,54 @@
    ============================================ */
 
 .dark {
-  /* Base Colors - Modern Dark Aesthetics */
-  --background: 222 47% 7%; /* Rich dark blue-gray */
-  --foreground: 210 40% 98%; /* Soft white */
+  /* Base Colors - Codeforces Dark Mode for Night Coding */
+  --background: 0 0% 6%; /* Near black #0f0f0f */
+  --foreground: 0 0% 96%; /* Soft white #f5f5f5 */
   
-  /* Surface Colors - Elevated layers with depth */
-  --card: 222 47% 11%; /* Elevated surface */
-  --card-foreground: 210 40% 98%;
-  --popover: 222 47% 9%;
-  --popover-foreground: 210 40% 98%;
+  /* Surface Colors - Subtle Depth */
+  --card: 0 0% 10%; /* Dark gray #1a1a1a */
+  --card-foreground: 0 0% 96%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 0 0% 96%;
   
-  /* Brand Colors - Vibrant & Modern */
-  --primary: 217 91% 65%; /* Bright electric blue */
-  --primary-foreground: 222 47% 7%;
-  --primary-hover: 217 91% 70%;
-  --primary-active: 217 91% 75%;
+  /* Primary - Same Blue Across Themes */
+  --primary: 217 91% 60%; /* Blue #3b82f6 */
+  --primary-foreground: 0 0% 100%;
+  --primary-hover: 217 91% 65%;
+  --primary-active: 217 91% 70%;
   
-  --secondary: 217 19% 18%; /* Sophisticated gray-blue */
-  --secondary-foreground: 210 40% 98%;
-  --secondary-hover: 217 19% 22%;
-  --secondary-active: 217 19% 26%;
+  --secondary: 0 0% 16%; /* Darker gray */
+  --secondary-foreground: 0 0% 96%;
+  --secondary-hover: 0 0% 20%;
+  --secondary-active: 0 0% 24%;
   
-  /* State Colors - Enhanced contrast */
-  --muted: 217 19% 18%;
-  --muted-foreground: 217 15% 70%;
+  /* State Colors - High Contrast */
+  --muted: 0 0% 16%;
+  --muted-foreground: 0 0% 60%; /* #999999 */
   
-  --accent: 199 95% 60%; /* Vivid cyan */
-  --accent-foreground: 222 47% 7%;
-  --accent-hover: 199 95% 65%;
+  --accent: 217 91% 60%; /* Same as primary */
+  --accent-foreground: 0 0% 100%;
+  --accent-hover: 217 91% 65%;
   
-  --destructive: 0 84% 60%; /* Vibrant red */
-  --destructive-foreground: 210 40% 98%;
+  /* Semantic Colors - CP Standard */
+  --success: 142 71% 45%; /* Green #22c55e */
+  --success-foreground: 0 0% 100%;
+  
+  --destructive: 0 84% 60%; /* Red #ef4444 */
+  --destructive-foreground: 0 0% 100%;
   --destructive-hover: 0 84% 65%;
   
-  --success: 142 76% 50%; /* Bright green */
-  --success-foreground: 222 47% 7%;
+  --warning: 38 92% 50%; /* Orange #f59e0b */
+  --warning-foreground: 0 0% 100%;
   
-  --warning: 38 92% 60%; /* Warm amber */
-  --warning-foreground: 222 47% 7%;
+  --info: 217 91% 60%; /* Blue */
+  --info-foreground: 0 0% 100%;
   
-  --info: 199 89% 58%; /* Cool blue */
-  --info-foreground: 222 47% 7%;
-  
-  /* UI Elements - Enhanced depth */
-  --border: 217 19% 24%;
-  --input: 217 19% 18%;
-  --ring: 217 91% 65%;
-  --ring-offset: 222 47% 7%;
+  /* UI Elements - Minimal Borders */
+  --border: 0 0% 20%;
+  --input: 0 0% 16%;
+  --ring: 217 91% 60%;
+  --ring-offset: 0 0% 6%;
   
   /* Charts - Vibrant & Clear */
   --chart-1: 217 91% 65%;
@@ -226,29 +212,10 @@
   --sidebar-accent: 217 19% 18%;
   --sidebar-accent-foreground: 210 40% 98%;
   
-  /* Shadows - Enhanced depth */
-  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.5);
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.6), 0 1px 2px -1px rgb(0 0 0 / 0.6);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.6), 0 2px 4px -2px rgb(0 0 0 / 0.6);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.7), 0 4px 6px -4px rgb(0 0 0 / 0.7);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.75), 0 8px 10px -6px rgb(0 0 0 / 0.75);
-  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.9);
-  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.5);
-  
-  /* 3D & Elevated Shadows - Enhanced */
-  --shadow-3d-sm: 0 2px 4px rgb(0 0 0 / 0.5), 0 4px 8px rgb(0 0 0 / 0.6);
-  --shadow-3d-md: 0 4px 8px rgb(0 0 0 / 0.6), 0 8px 16px rgb(0 0 0 / 0.7);
-  --shadow-3d-lg: 0 8px 16px rgb(0 0 0 / 0.7), 0 16px 32px rgb(0 0 0 / 0.8);
-  --shadow-3d-xl: 0 16px 32px rgb(0 0 0 / 0.8), 0 32px 64px rgb(0 0 0 / 0.85);
-
-  /* Dark mode glow effects - Enhanced */
-  --glow-primary: 0 0 24px rgb(59 130 246 / 0.35), 0 0 48px rgb(59 130 246 / 0.15);
-  --glow-primary-intense: 0 0 32px rgb(59 130 246 / 0.55), 0 0 64px rgb(59 130 246 / 0.25);
-  --glow-accent: 0 0 24px rgb(6 182 212 / 0.35), 0 0 48px rgb(6 182 212 / 0.15);
-  --glow-accent-intense: 0 0 32px rgb(6 182 212 / 0.55), 0 0 64px rgb(6 182 212 / 0.25);
-  --glow-success: 0 0 24px rgb(34 197 94 / 0.35), 0 0 48px rgb(34 197 94 / 0.15);
-  --glow-warning: 0 0 24px rgb(251 146 60 / 0.35), 0 0 48px rgb(251 146 60 / 0.15);
-  --glow-danger: 0 0 24px rgb(239 68 68 / 0.35), 0 0 48px rgb(239 68 68 / 0.15);
+  /* Shadows - Minimal, Functional */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 2px 4px rgb(0 0 0 / 0.15);
+  --shadow-lg: 0 4px 8px rgb(0 0 0 / 0.2);
 }
 
 /* ============================================
@@ -376,12 +343,13 @@
     transition: color var(--duration-normal) var(--ease-out);
   }
   
-  h1 { font-size: 1.875rem; } /* Reduced from 2.25rem */
-  h2 { font-size: 1.5rem; } /* Reduced from 1.875rem */
-  h3 { font-size: 1.25rem; } /* Reduced from 1.5rem */
-  h4 { font-size: 1.125rem; } /* Reduced from 1.25rem */
-  h5 { font-size: 1rem; } /* Reduced from 1.125rem */
-  h6 { font-size: 0.875rem; } /* Reduced from 1rem */
+  /* Codeforces-like Typography Hierarchy */
+  h1 { font-size: 1.5rem; font-weight: 700; } /* 24px bold - Headings */
+  h2 { font-size: 1.25rem; font-weight: 600; } /* 20px semibold - Subheadings */
+  h3 { font-size: 1.125rem; font-weight: 600; } /* 18px semibold - Large body */
+  h4 { font-size: 1rem; font-weight: 600; } /* 16px semibold */
+  h5 { font-size: 0.875rem; font-weight: 500; } /* 14px medium */
+  h6 { font-size: 0.75rem; font-weight: 500; } /* 12px medium */
   
   p {
     margin: 0 0 1rem;
@@ -407,16 +375,37 @@
   }
   
   /* Interactive Elements */
+  /* Interactive Elements - Clear States */
   button:not([disabled]),
   [role="button"]:not([disabled]) {
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-out);
+    transition: background-color var(--duration-fast) var(--ease-out),
+                color var(--duration-fast) var(--ease-out);
   }
   
   button:disabled,
   [role="button"][disabled] {
     cursor: not-allowed;
     opacity: 0.5;
+  }
+  
+  /* Button States - Codeforces Style */
+  .btn-primary {
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+  
+  .btn-primary:hover:not(:disabled) {
+    background: hsl(var(--primary-hover));
+  }
+  
+  .btn-primary:active:not(:disabled) {
+    background: hsl(var(--primary-active));
+  }
+  
+  .btn-primary:disabled {
+    background: hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
   }
   
   /* Form Elements */
@@ -547,279 +536,40 @@
     display: none;
   }
   
-  /* ========== Modern Card Effects ========== */
-  .card-modern {
+  /* ========== Card Styles - Minimal, Functional ========== */
+  .card {
+    @apply bg-card border border-border rounded-lg p-4;
+  }
+  
+  .card-hover {
     @apply bg-card border border-border rounded-lg;
-    @apply transition-all duration-300 ease-out;
-    box-shadow: var(--shadow-sm);
-    position: relative;
+    transition: background-color var(--duration-fast) var(--ease-out),
+                border-color var(--duration-fast) var(--ease-out);
   }
   
-  .card-modern:hover {
-    @apply border-primary/50;
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+  .card-hover:hover {
+    @apply bg-muted/50 border-border;
   }
   
-  .dark .card-modern:hover {
-    box-shadow: var(--shadow-lg), var(--glow-primary);
+  /* ========== Button Styles - Functional Only ========== */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md;
+    @apply px-4 py-2 font-medium;
+    transition: background-color var(--duration-fast) var(--ease-out),
+                color var(--duration-fast) var(--ease-out);
   }
   
-  /* Enhanced 3D Card with depth */
-  .card-3d {
-    @apply transition-all duration-300 ease-out;
-    box-shadow: var(--shadow-3d-sm);
-    transform-style: preserve-3d;
-    position: relative;
+  .btn:disabled {
+    @apply cursor-not-allowed opacity-50;
   }
   
-  .card-3d::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(145deg, hsl(var(--primary) / 0.03), transparent);
-    pointer-events: none;
-    transition: opacity var(--duration-normal) var(--ease-out);
-    opacity: 0;
+  /* ========== Hover States - Simple, Clear ========== */
+  .hover-highlight {
+    transition: background-color var(--duration-fast) var(--ease-out);
   }
   
-  .card-3d:hover {
-    transform: translateY(-4px) rotateX(2deg);
-    box-shadow: var(--shadow-3d-md);
-  }
-  
-  .card-3d:hover::before {
-    opacity: 1;
-  }
-  
-  .dark .card-3d:hover {
-    box-shadow: var(--shadow-3d-lg), var(--glow-primary);
-  }
-  
-  /* Ultra 3D Card with intense effects */
-  .card-3d-ultra {
-    @apply transition-all duration-500 ease-out;
-    box-shadow: var(--shadow-3d-md);
-    transform-style: preserve-3d;
-    position: relative;
-    perspective: 1000px;
-  }
-  
-  .card-3d-ultra::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(145deg, hsl(var(--primary) / 0.05), hsl(var(--accent) / 0.05));
-    pointer-events: none;
-    transition: all var(--duration-slow) var(--ease-out);
-    opacity: 0;
-  }
-  
-  .card-3d-ultra:hover {
-    transform: translateY(-8px) rotateX(5deg) scale(1.02);
-    box-shadow: var(--shadow-3d-lg);
-  }
-  
-  .card-3d-ultra:hover::before {
-    opacity: 1;
-    transform: translateZ(20px);
-  }
-  
-  .dark .card-3d-ultra:hover {
-    box-shadow: var(--shadow-3d-xl), var(--glow-primary-intense);
-  }
-  
-  .card-interactive {
-    @apply transition-all duration-200 ease-out cursor-pointer;
-    @apply border border-border bg-card rounded-lg;
-  }
-  
-  .card-interactive:hover {
-    @apply border-primary/50 bg-card shadow-md;
-    transform: scale(1.01);
-  }
-  
-  .card-interactive:active {
-    @apply scale-[0.99];
-  }
-  
-  .dark .card-interactive:hover {
-    box-shadow: var(--shadow-lg), var(--glow-primary);
-  }
-  
-  .card-gradient-border {
-    position: relative;
-    background: hsl(var(--card));
-    border-radius: var(--radius-lg);
-  }
-  
-  .card-gradient-border::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: exclude;
-    mask-composite: exclude;
-  }
-  
-  /* ========== Button Effects - Modern ========== */
-  .btn-modern {
-    @apply inline-flex items-center justify-center rounded-lg;
-    @apply px-4 py-2 font-medium transition-all duration-200 ease-out;
-  }
-  
-  .btn-modern:hover:not(:disabled) {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-  }
-  
-  .btn-modern:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: var(--shadow-sm);
-  }
-  
-  .dark .btn-modern:hover:not(:disabled) {
-    box-shadow: var(--shadow-lg), var(--glow-primary);
-  }
-  
-  .btn-hover {
-    @apply transition-all duration-200 ease-out;
-  }
-  
-  .btn-hover:hover:not(:disabled) {
-    @apply scale-105 shadow-lg;
-  }
-  
-  .btn-hover:active:not(:disabled) {
-    @apply scale-95;
-  }
-  
-  .btn-ripple {
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .btn-ripple::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: hsl(var(--primary-foreground) / 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-  }
-  
-  .btn-ripple:active::after {
-    width: 300px;
-    height: 300px;
-  }
-  
-  /* ========== Glow Effects - Dark Mode Enhanced ========== */
-  .glow-primary {
-    box-shadow: 0 0 20px hsl(var(--primary) / 0.3);
-    transition: box-shadow var(--duration-normal) var(--ease-out);
-  }
-  
-  .glow-primary:hover {
-    box-shadow: 0 0 30px hsl(var(--primary) / 0.5);
-  }
-  
-  .dark .glow-primary {
-    box-shadow: 0 0 25px hsl(var(--primary) / 0.4);
-  }
-  
-  .dark .glow-primary:hover {
-    box-shadow: 0 0 40px hsl(var(--primary) / 0.6);
-  }
-  
-  @keyframes glow-pulse {
-    0%, 100% {
-      box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
-    }
-    50% {
-      box-shadow: 0 0 40px hsl(var(--primary) / 0.4);
-    }
-  }
-  
-  .glow-pulse {
-    animation: glow-pulse 2s var(--ease-in-out) infinite;
-  }
-  
-  .dark .glow-pulse {
-    animation: glow-pulse-dark 2s var(--ease-in-out) infinite;
-  }
-  
-  @keyframes glow-pulse-dark {
-    0%, 100% {
-      box-shadow: 0 0 25px hsl(var(--primary) / 0.3);
-    }
-    50% {
-      box-shadow: 0 0 50px hsl(var(--primary) / 0.5);
-    }
-  }
-  
-  /* ========== Advanced Hover Effects ========== */
-  .hover-lift {
-    transition: all var(--duration-normal) var(--ease-out);
-  }
-  
-  .hover-lift:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-3d-lg);
-  }
-  
-  .dark .hover-lift:hover {
-    box-shadow: var(--shadow-3d-xl), var(--glow-primary);
-  }
-  
-  .hover-glow {
-    transition: all var(--duration-normal) var(--ease-out);
-    position: relative;
-  }
-  
-  .hover-glow::after {
-    content: "";
-    position: absolute;
-    inset: -2px;
-    border-radius: inherit;
-    opacity: 0;
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.4), hsl(var(--accent) / 0.4));
-    filter: blur(20px);
-    z-index: -1;
-    transition: opacity var(--duration-normal) var(--ease-out);
-  }
-  
-  .hover-glow:hover::after {
-    opacity: 1;
-  }
-  
-  .hover-shine {
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .hover-shine::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, hsl(var(--foreground) / 0.1), transparent);
-    transition: left 0.5s var(--ease-out);
-  }
-  
-  .hover-shine:hover::before {
-    left: 100%;
+  .hover-highlight:hover {
+    @apply bg-muted;
   }
   
   /* ========== Focus Styles ========== */
@@ -832,91 +582,9 @@
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring;
   }
   
-  /* ========== Animations - Smooth & Modern ========== */
-  @keyframes fade-in {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
+  /* ========== Animations - Minimal, Functional Only ========== */
   
-  .animate-fade-in {
-    animation: fade-in var(--duration-normal) var(--ease-out);
-  }
-  
-  @keyframes slide-in-up {
-    from {
-      opacity: 0;
-      transform: translateY(1rem);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .animate-slide-in-up {
-    animation: slide-in-up 0.4s var(--ease-spring);
-  }
-  
-  @keyframes slide-in-down {
-    from {
-      opacity: 0;
-      transform: translateY(-1rem);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  .animate-slide-in-down {
-    animation: slide-in-down 0.4s var(--ease-spring);
-  }
-  
-  @keyframes slide-in-left {
-    from {
-      opacity: 0;
-      transform: translateX(-1rem);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-  
-  .animate-slide-in-left {
-    animation: slide-in-left 0.4s var(--ease-spring);
-  }
-  
-  @keyframes slide-in-right {
-    from {
-      opacity: 0;
-      transform: translateX(1rem);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
-  
-  .animate-slide-in-right {
-    animation: slide-in-right 0.4s var(--ease-spring);
-  }
-  
-  @keyframes scale-in {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-  
-  .animate-scale-in {
-    animation: scale-in 0.2s var(--ease-spring);
-  }
-  
+  /* Loading Spinner - Functional */
   @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
@@ -926,78 +594,25 @@
     animation: spin 1s linear infinite;
   }
   
-  .animate-spin-slow {
-    animation: spin 3s linear infinite;
-  }
-  
+  /* Pulse - For "Searching..." indicators */
   @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.5; }
   }
   
   .animate-pulse {
-    animation: pulse 2s var(--ease-in-out) infinite;
+    animation: pulse 2s ease-in-out infinite;
   }
   
-  @keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-25%); }
+  /* Fade In - For toast notifications */
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
   
-  .animate-bounce {
-    animation: bounce 1s infinite;
+  .animate-fade-in {
+    animation: fade-in var(--duration-normal) var(--ease-out);
   }
-  
-  @keyframes gradient {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-  }
-  
-  .animate-gradient {
-    animation: gradient 3s ease infinite;
-  }
-  
-  /* Skeleton Loading */
-  @keyframes skeleton-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
-  }
-  
-  .skeleton {
-    @apply bg-muted rounded;
-    animation: skeleton-pulse 2s var(--ease-in-out) infinite;
-  }
-  
-  /* Shimmer Effect */
-  @keyframes shimmer {
-    0% { background-position: -1000px 0; }
-    100% { background-position: 1000px 0; }
-  }
-  
-  .shimmer {
-    background: linear-gradient(
-      90deg,
-      hsl(var(--muted)) 0%,
-      hsl(var(--muted-foreground) / 0.1) 50%,
-      hsl(var(--muted)) 100%
-    );
-    background-size: 1000px 100%;
-    animation: shimmer 2s linear infinite;
-  }
-  
-  /* Staggered Children */
-  .stagger-children > * {
-    animation: slide-in-up 0.4s var(--ease-spring) backwards;
-  }
-  
-  .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
-  .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
-  .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
-  .stagger-children > *:nth-child(4) { animation-delay: 0.2s; }
-  .stagger-children > *:nth-child(5) { animation-delay: 0.25s; }
-  .stagger-children > *:nth-child(6) { animation-delay: 0.3s; }
-  .stagger-children > *:nth-child(7) { animation-delay: 0.35s; }
-  .stagger-children > *:nth-child(8) { animation-delay: 0.4s; }
   
   /* ========== Layout Utilities ========== */
   .container-custom {
@@ -1019,27 +634,25 @@
   .card-spacing { @apply gap-3 md:gap-4; }
   .content-padding { @apply p-3 sm:p-4 md:p-6; }
   
-  /* ========== Backdrop Effects ========== */
-  .backdrop-blur-custom {
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+  /* ========== Status Colors - Semantic ========== */
+  .status-accepted {
+    @apply text-success;
   }
   
-  .backdrop-saturate {
-    backdrop-filter: saturate(180%);
-    -webkit-backdrop-filter: saturate(180%);
+  .status-wrong {
+    @apply text-destructive;
   }
   
-  /* ========== Gradient Utilities ========== */
-  .gradient-primary {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  .status-pending {
+    @apply text-warning;
   }
   
-  .gradient-text {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+  .status-info {
+    @apply text-info;
+  }
+  
+  .status-disabled {
+    @apply text-muted-foreground;
   }
   
   /* ========== Accessibility ========== */
@@ -1080,111 +693,28 @@
    ============================================ */
 
 @layer components {
-  /* Grid Item Hover */
-  .grid-item-hover {
-    @apply transition-all duration-200 ease-out;
+  /* ========== Problem Status Indicators ========== */
+  .problem-solved {
+    @apply text-success font-medium;
   }
   
-  .grid-item-hover:hover {
-    @apply scale-105 shadow-lg;
+  .problem-solved::before {
+    content: "✓ ";
   }
   
-  .dark .grid-item-hover:hover {
-    box-shadow: var(--shadow-xl), var(--glow-primary);
+  .problem-failed {
+    @apply text-destructive font-medium;
   }
   
-  /* Section Hover */
-  .section-hover {
-    @apply transition-all duration-200 ease-out;
+  .problem-failed::before {
+    content: "✗ ";
   }
   
-  .section-hover:hover {
-    @apply shadow-md border-primary/30;
+  .problem-pending {
+    @apply text-warning font-medium;
   }
   
-  /* Glass Effect - Modern Glassmorphism */
-  .glass {
-    background: hsl(var(--card) / 0.5);
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
-    border: 1px solid hsl(var(--border) / 0.5);
-    transition: all var(--duration-normal) var(--ease-out);
-  }
-  
-  .glass:hover {
-    background: hsl(var(--card) / 0.6);
-    border-color: hsl(var(--border) / 0.7);
-    box-shadow: var(--shadow-md);
-  }
-  
-  .glass-strong {
-    background: hsl(var(--card) / 0.8);
-    backdrop-filter: blur(20px) saturate(200%);
-    -webkit-backdrop-filter: blur(20px) saturate(200%);
-    border: 1px solid hsl(var(--border));
-  }
-  
-  .glass-intense {
-    background: linear-gradient(135deg, hsl(var(--card) / 0.6), hsl(var(--card) / 0.4));
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid hsl(var(--border) / 0.6);
-    box-shadow: var(--shadow-lg), inset 0 1px 0 hsl(var(--foreground) / 0.1);
-  }
-  
-  .dark .glass {
-    background: hsl(var(--card) / 0.3);
-  }
-  
-  .dark .glass:hover {
-    background: hsl(var(--card) / 0.4);
-    box-shadow: var(--shadow-lg), var(--glow-primary);
-  }
-  
-  .dark .glass-intense {
-    background: linear-gradient(135deg, hsl(var(--card) / 0.5), hsl(var(--card) / 0.3));
-    box-shadow: var(--shadow-xl), var(--glow-primary), inset 0 1px 0 hsl(var(--foreground) / 0.1);
-  }
-  
-  /* Floating Action Button */
-  .fab {
-    @apply fixed bottom-6 right-6 rounded-full shadow-lg;
-    @apply transition-all duration-200 ease-out;
-    z-index: var(--z-fixed);
-  }
-  
-  .fab:hover {
-    @apply scale-110 shadow-xl;
-  }
-  
-  .dark .fab:hover {
-    box-shadow: var(--shadow-2xl), var(--glow-primary);
-  }
-  
-  /* Ad Banner Styles */
-  .ad-banner-container {
-    animation: fade-in var(--duration-normal) var(--ease-out);
-    animation-delay: 0.2s;
-    animation-fill-mode: both;
-  }
-  
-  .ad-banner {
-    min-height: 90px;
-    display: block;
-  }
-  
-  /* Stat Card */
-  .stat-card {
-    @apply transition-all duration-300 ease-out;
-    @apply border border-border/50 bg-card rounded-lg;
-  }
-  
-  .stat-card:hover {
-    @apply border-primary/50 bg-primary/5 shadow-md;
-  }
-  
-  .dark .stat-card:hover {
-    @apply border-primary/40 bg-primary/10;
-    box-shadow: var(--shadow-lg), var(--glow-primary);
+  .problem-unattempted {
+    @apply text-muted-foreground;
   }
 }

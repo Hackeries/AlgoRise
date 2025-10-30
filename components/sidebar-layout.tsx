@@ -20,8 +20,6 @@ import {
   Menu,
   Sword,
   X,
-  Sparkles,
-  Brain,
   User,
 } from 'lucide-react';
 
@@ -50,14 +48,12 @@ const MENU_ITEMS: MenuItem[] = [
   { href: '/', label: 'Dashboard', icon: Home },
   { href: '/train', label: 'Train', icon: Zap },
   { href: '/adaptive-sheet', label: 'Practice', icon: FileText },
-  { href: '/adaptive-learning', label: 'Adaptive Learning', icon: Brain },
   { href: '/contests', label: 'Contests', icon: Trophy },
   { href: '/battle-arena', label: 'Battle Arena', icon: Sword },
   { href: '/paths', label: 'Learning Paths', icon: BookOpen },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/visualizers', label: 'Visualizers', icon: Cpu },
   { href: '/groups', label: 'Groups', icon: Users },
-  { href: '/mentorship', label: 'Mentorship', icon: Sparkles },
 ];
 
 const RATING_TIERS: Record<string, string> = {

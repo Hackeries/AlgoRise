@@ -40,9 +40,6 @@ import {
   Zap,
   Trophy,
   RefreshCw,
-  Swords,
-  Flame,
-  Shield,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
@@ -636,14 +633,10 @@ export default function ContestsPage() {
   return (
     <main className='mx-auto max-w-7xl px-3 sm:px-4 md:px-6 py-4 sm:py-6 md:py-8'>
       {/* Enhanced Hero Section */}
-      <div className='relative overflow-hidden rounded-xl glass-intense p-4 sm:p-6 mb-6 hover-lift'>
-        <div className='absolute inset-0 -z-10'>
-          <div className='absolute top-0 right-0 w-1/2 h-1/2 bg-primary/20 rounded-full blur-[100px]' />
-          <div className='absolute bottom-0 left-0 w-1/2 h-1/2 bg-accent/20 rounded-full blur-[100px]' />
-        </div>
+      <div className='relative overflow-hidden rounded-xl bg-card border border-border p-4 sm:p-6 mb-6'>
         <div className='flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6'>
           <div className='flex-1'>
-            <h1 className='text-xl sm:text-2xl font-bold tracking-tight gradient-text'>
+            <h1 className='text-xl sm:text-2xl font-bold tracking-tight text-foreground'>
               Contests
             </h1>
             <p className='mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-2xl'>
@@ -664,7 +657,7 @@ export default function ContestsPage() {
             </Button>
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
               <DialogTrigger asChild>
-                <Button size='lg' className='flex-1 sm:flex-none gap-2 bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:via-purple-800 hover:to-pink-700 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200'>
+                <Button size='lg' className='flex-1 sm:flex-none gap-2 bg-primary hover:bg-primary/90'>
                   <PlusIcon className='w-5 h-5' />
                   <span className='font-semibold'>Create Private Contest</span>
                 </Button>
@@ -1369,137 +1362,6 @@ export default function ContestsPage() {
             )}
           </section>
 
-          {/* Battle Arena Section */}
-          <section>
-            <div className='flex items-center gap-3 mb-6'>
-              <div className='flex items-center gap-3 flex-1'>
-                <div className='p-3 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-2 border-blue-500/40 shadow-lg shadow-blue-500/20'>
-                  <Swords className='w-7 h-7 text-blue-500' />
-                </div>
-                <div>
-                  <h2 className='text-lg sm:text-xl font-bold text-foreground'>
-                    ⚔️ Battle Arena
-                  </h2>
-                  <p className='text-xs sm:text-sm text-muted-foreground'>Real-time competitive battles</p>
-                </div>
-              </div>
-              <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1 bg-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400'>
-                Live Now
-              </Badge>
-            </div>
-
-            <div className='grid gap-4 sm:gap-5 md:grid-cols-2'>
-              {/* 1v1 Duels Card */}
-              <Card className='relative overflow-hidden transition-all duration-300 border-2 border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-cyan-500/10 hover:border-blue-500/60 hover:shadow-2xl hover:shadow-blue-500/20 hover:-translate-y-1 group cursor-pointer'>
-                {/* Accent bar */}
-                <div className='absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-500' />
-                
-                {/* Swords icon watermark */}
-                <div className='absolute -right-6 -bottom-6 opacity-5 group-hover:opacity-10 transition-opacity'>
-                  <Swords className='w-32 h-32 text-blue-500' />
-                </div>
-
-                <a href='/battle-arena/queue/1v1' className='block'>
-                  <CardHeader className='pb-3'>
-                    <div className='flex items-start justify-between gap-2'>
-                      <CardTitle className='text-base sm:text-lg font-bold text-foreground group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
-                        ⚔️ 1v1 Duels
-                      </CardTitle>
-                      <ExternalLinkIcon className='w-5 h-5 text-blue-500/60 flex-shrink-0 group-hover:text-blue-500 transition-colors' />
-                    </div>
-                    <p className='text-xs text-muted-foreground mt-2'>
-                      Fast-paced head-to-head battles where speed and accuracy matter
-                    </p>
-                    <div className='flex items-center gap-2 flex-wrap mt-3'>
-                      <Badge variant='outline' className='text-xs border-blue-500/40 bg-blue-500/10 text-blue-700 dark:text-blue-400'>
-                        Best of 1 or 3
-                      </Badge>
-                      <Badge variant='secondary' className='text-xs bg-cyan-500/20 text-cyan-700 dark:text-cyan-400'>
-                        Fastest AC
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className='pt-0 relative z-10'>
-                    <div className='grid grid-cols-3 gap-2 mb-4'>
-                      <div className='p-3 rounded-lg bg-blue-500/10 border border-blue-500/20'>
-                        <p className='text-xs text-blue-600 dark:text-blue-400 font-semibold mb-1'>Format</p>
-                        <p className='text-xs text-foreground/80 font-bold'>Best of 1/3</p>
-                      </div>
-                      <div className='p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20'>
-                        <p className='text-xs text-cyan-600 dark:text-cyan-400 font-semibold mb-1'>Scoring</p>
-                        <p className='text-xs text-foreground/80 font-bold'>Fastest AC</p>
-                      </div>
-                      <div className='p-3 rounded-lg bg-blue-500/10 border border-blue-500/20'>
-                        <p className='text-xs text-blue-600 dark:text-blue-400 font-semibold mb-1'>Reward</p>
-                        <p className='text-xs text-foreground/80 font-bold'>ELO Points</p>
-                      </div>
-                    </div>
-                    <Button
-                      className='w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg font-semibold'
-                      onClick={(e) => { e.preventDefault(); window.location.href = '/battle-arena/queue/1v1'; }}
-                    >
-                      🎮 Start 1v1 Battle
-                    </Button>
-                  </CardContent>
-                </a>
-              </Card>
-
-              {/* 3v3 Team Battles Card */}
-              <Card className='relative overflow-hidden transition-all duration-300 border-2 border-cyan-500/30 bg-gradient-to-br from-cyan-500/5 to-blue-500/10 hover:border-cyan-500/60 hover:shadow-2xl hover:shadow-cyan-500/20 hover:-translate-y-1 group cursor-pointer'>
-                {/* Accent bar */}
-                <div className='absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-500' />
-                
-                {/* Shield icon watermark */}
-                <div className='absolute -right-6 -bottom-6 opacity-5 group-hover:opacity-10 transition-opacity'>
-                  <Shield className='w-32 h-32 text-cyan-500' />
-                </div>
-
-                <a href='/battle-arena/team/create' className='block'>
-                  <CardHeader className='pb-3'>
-                    <div className='flex items-start justify-between gap-2'>
-                      <CardTitle className='text-base sm:text-lg font-bold text-foreground group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors'>
-                        🛡️ 3v3 Team Battles
-                      </CardTitle>
-                      <ExternalLinkIcon className='w-5 h-5 text-cyan-500/60 flex-shrink-0 group-hover:text-cyan-500 transition-colors' />
-                    </div>
-                    <p className='text-xs text-muted-foreground mt-2'>
-                      Collaborative team competitions with strategic problem-solving
-                    </p>
-                    <div className='flex items-center gap-2 flex-wrap mt-3'>
-                      <Badge variant='outline' className='text-xs border-cyan-500/40 bg-cyan-500/10 text-cyan-700 dark:text-cyan-400'>
-                        Team of 3
-                      </Badge>
-                      <Badge variant='secondary' className='text-xs bg-blue-500/20 text-blue-700 dark:text-blue-400'>
-                        ICPC Style
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className='pt-0 relative z-10'>
-                    <div className='grid grid-cols-3 gap-2 mb-4'>
-                      <div className='p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20'>
-                        <p className='text-xs text-cyan-600 dark:text-cyan-400 font-semibold mb-1'>Team Size</p>
-                        <p className='text-xs text-foreground/80 font-bold'>Exactly 3</p>
-                      </div>
-                      <div className='p-3 rounded-lg bg-blue-500/10 border border-blue-500/20'>
-                        <p className='text-xs text-blue-600 dark:text-blue-400 font-semibold mb-1'>Scoring</p>
-                        <p className='text-xs text-foreground/80 font-bold'>ICPC Rules</p>
-                      </div>
-                      <div className='p-3 rounded-lg bg-cyan-500/10 border border-cyan-500/20'>
-                        <p className='text-xs text-cyan-600 dark:text-cyan-400 font-semibold mb-1'>Duration</p>
-                        <p className='text-xs text-foreground/80 font-bold'>60 Minutes</p>
-                      </div>
-                    </div>
-                    <Button
-                      className='w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 shadow-lg font-semibold'
-                      onClick={(e) => { e.preventDefault(); window.location.href = '/battle-arena/team/create'; }}
-                    >
-                      👥 Create Team Battle
-                    </Button>
-                  </CardContent>
-                </a>
-              </Card>
-            </div>
-          </section>
         </div>
       )}
 

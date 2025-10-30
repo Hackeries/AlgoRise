@@ -61,6 +61,13 @@ export default function ContestDetailPage() {
   useEffect(() => {
     fetchContestData();
     checkRegistration();
+
+    // Poll for real-time updates every 10 seconds
+    const interval = setInterval(() => {
+      fetchContestData();
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, [params.id]);
 
   useEffect(() => {
@@ -265,41 +272,52 @@ export default function ContestDetailPage() {
   const hasEnded = now >= end;
 
   return (
-    <main className='mx-auto max-w-6xl px-4 py-10'>
-      {/* Header */}
-      <div className='mb-8'>
-        <div className='flex items-start justify-between mb-4'>
-          <div>
-            <h1 className='text-3xl font-bold mb-2'>{contest.name}</h1>
-            <div className='flex items-center gap-2'>
-              <Badge
-                variant={
-                  hasEnded ? 'secondary' : hasStarted ? 'default' : 'outline'
-                }
-              >
-                {hasEnded ? 'Ended' : hasStarted ? 'Live' : 'Upcoming'}
-              </Badge>
-              <Badge variant='outline'>
-                {contest.contest_mode === 'practice'
-                  ? 'Practice Arena'
-                  : 'ICPC Arena'}
-              </Badge>
+    <main className='min-h-screen bg-gradient-to-br from-background via-background to-muted/20'>
+      {/* CF/ICPC Style Header */}
+      <div className='border-b border-border/40 bg-card/50 backdrop-blur-sm'>
+        <div className='mx-auto max-w-7xl px-4 py-6'>
+          <div className='flex items-start justify-between mb-4'>
+            <div className='flex-1'>
+              <div className='flex items-center gap-3 mb-3'>
+                <Trophy className='h-8 w-8 text-yellow-500' />
+                <h1 className='text-3xl sm:text-4xl font-bold tracking-tight'>{contest.name}</h1>
+              </div>
+              <div className='flex items-center gap-2 flex-wrap'>
+                <Badge
+                  variant={hasEnded ? 'secondary' : hasStarted ? 'default' : 'outline'}
+                  className={hasStarted && !hasEnded ? 'bg-green-600 hover:bg-green-700 animate-pulse' : ''}
+                >
+                  {hasEnded ? '🏁 Ended' : hasStarted ? '🔴 Live' : '⏰ Upcoming'}
+                </Badge>
+                <Badge variant='outline' className='font-mono'>
+                  {contest.contest_mode === 'practice' ? '🎯 Practice' : '🏆 ICPC'}
+                </Badge>
+                <Badge variant='secondary' className='font-mono'>
+                  {contest.problem_count} Problems
+                </Badge>
+                <Badge variant='secondary' className='font-mono'>
+                  {Math.floor(contest.duration_minutes / 60)}h {contest.duration_minutes % 60}m
+                </Badge>
+              </div>
             </div>
+            <Button variant='outline' onClick={copyShareLink} className='gap-2'>
+              <Share2 className='w-4 h-4' />
+              Share
+            </Button>
           </div>
-          <Button variant='outline' onClick={copyShareLink}>
-            <Share2 className='w-4 h-4 mr-2' />
-            Share
-          </Button>
-        </div>
 
-        {contest.description && (
-          <p className='text-white/70 leading-relaxed'>{contest.description}</p>
-        )}
+          {contest.description && (
+            <div className='mt-4 p-4 rounded-lg bg-muted/30 border border-border/50'>
+              <p className='text-muted-foreground leading-relaxed'>{contest.description}</p>
+            </div>
+          )}
+        </div>
       </div>
 
+      <div className='mx-auto max-w-7xl px-4 py-8'>
       <div className='grid gap-6 md:grid-cols-2 mb-8'>
         {/* Contest Info */}
-        <Card>
+        <Card className='border-l-4 border-l-blue-500 shadow-lg hover-lift'>
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
               <Calendar className='w-5 h-5' />
@@ -334,7 +352,13 @@ export default function ContestDetailPage() {
         </Card>
 
         {/* Countdown / Status */}
-        <Card>
+        <Card className={`border-l-4 shadow-lg hover-lift ${
+          hasStarted && !hasEnded
+            ? 'border-l-green-500 bg-green-500/5'
+            : hasEnded
+            ? 'border-l-gray-500'
+            : 'border-l-orange-500'
+        }`}>
           <CardHeader>
             <CardTitle className='flex items-center gap-2'>
               <Clock className='w-5 h-5' />
@@ -415,8 +439,9 @@ export default function ContestDetailPage() {
         </Card>
       </div>
 
+      {/* CF-Style Problems Table */}
       {contest.problems && contest.problems.length > 0 && (
-        <Card className='mb-8'>
+        <Card className='mb-8 shadow-lg border-2 border-border/50'>
           <CardHeader className='flex flex-row items-center justify-between'>
             <CardTitle className='flex items-center gap-2'>
               Problems
@@ -548,8 +573,8 @@ export default function ContestDetailPage() {
         </Card>
       )}
 
-      {/* Leaderboard Preview */}
-      <Card>
+      {/* ICPC-Style Leaderboard */}
+      <Card className='shadow-lg border-2 border-border/50'>
         <CardHeader>
           <CardTitle className='flex items-center gap-2'>
             <Trophy className='w-5 h-5' />
@@ -562,41 +587,66 @@ export default function ContestDetailPage() {
               No submissions yet. Be the first to participate!
             </div>
           ) : (
-            <div className='space-y-2'>
+            <div className='space-y-1'>
+              <div className='grid grid-cols-12 gap-4 px-3 py-2 text-xs font-semibold text-muted-foreground border-b border-border/50'>
+                <div className='col-span-1'>Rank</div>
+                <div className='col-span-5'>Participant</div>
+                <div className='col-span-2 text-center'>Solved</div>
+                <div className='col-span-2 text-center'>Penalty</div>
+                <div className='col-span-2 text-right'>Score</div>
+              </div>
               {leaderboard.slice(0, 10).map(entry => (
                 <div
                   key={entry.user_id}
-                  className='flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors'
+                  className={`grid grid-cols-12 gap-4 px-3 py-3 rounded-lg border transition-all hover-lift ${
+                    entry.rank === 1
+                      ? 'bg-yellow-500/10 border-yellow-500/30 hover:bg-yellow-500/20'
+                      : entry.rank === 2
+                      ? 'bg-gray-400/10 border-gray-400/30 hover:bg-gray-400/20'
+                      : entry.rank === 3
+                      ? 'bg-orange-600/10 border-orange-600/30 hover:bg-orange-600/20'
+                      : 'bg-card/50 border-border/50 hover:bg-card'
+                  }`}
                 >
-                  <div className='flex items-center gap-4'>
+                  <div className='col-span-1 flex items-center'>
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                      className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
                         entry.rank === 1
                           ? 'bg-yellow-500 text-black'
                           : entry.rank === 2
                           ? 'bg-gray-400 text-black'
                           : entry.rank === 3
                           ? 'bg-orange-600 text-white'
-                          : 'bg-white/10'
+                          : 'bg-muted text-foreground'
                       }`}
                     >
                       {entry.rank}
                     </div>
+                  </div>
+                  <div className='col-span-5 flex items-center'>
                     <div>
-                      <div className='font-medium'>
+                      <div className='font-semibold text-foreground'>
                         User {entry.user_id.slice(0, 8)}
                       </div>
-                      <div className='text-sm text-white/60'>
-                        {entry.solved} solved • {Math.floor(entry.penalty / 60)}
-                        m penalty
+                      <div className='text-xs text-muted-foreground'>
+                        Contest Participant
                       </div>
                     </div>
                   </div>
-                  <div className='text-right'>
-                    <div className='text-lg font-bold text-green-400'>
+                  <div className='col-span-2 flex items-center justify-center'>
+                    <Badge variant='default' className='bg-green-600 hover:bg-green-700 font-mono'>
                       {entry.solved}
-                    </div>
-                    <div className='text-xs text-white/60'>problems</div>
+                    </Badge>
+                  </div>
+                  <div className='col-span-2 flex items-center justify-center'>
+                    <span className='font-mono text-sm text-muted-foreground'>
+                      {Math.floor(entry.penalty / 60)}m
+                    </span>
+                  </div>
+                  <div className='col-span-2 flex items-center justify-end'>
+                    <span className='text-lg font-bold text-primary'>
+                      {entry.solved * 100}
+                    </span>
                   </div>
                 </div>
               ))}

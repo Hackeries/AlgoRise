@@ -1,449 +1,540 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
+  Play, 
+  Square, 
+  RotateCcw, 
+  Settings, 
+  MessageCircle, 
+  Users, 
+  Trophy, 
+  Clock,
+  CheckCircle,
+  XCircle,
+  Zap,
+  Crown,
+  Flag,
+  Eye,
+  EyeOff,
+  CheckCircle2,
+  Code2,
+  Send
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Scoreboard } from '@/components/battle-arena/scoreboard';
+import { SpectatorView } from '@/components/battle-arena/spectator-view';
+import dynamic from 'next/dynamic';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Trophy, CheckCircle2, Flag, Code2, Send, Users } from 'lucide-react';
 import { useBattleRealtime, useTeamChat, broadcastCodeUpdate } from '@/hooks/use-battle-realtime';
-import { CodeEditor } from '@/components/battle-arena/code-editor';
 import { ProblemDetails } from '@/components/battle-arena/problem-details';
 import { SubmissionsList } from '@/components/battle-arena/submissions-list';
-import { motion } from 'framer-motion';
 import { createClient as createSupabaseClient } from '@/lib/supabase/client';
 
-interface BattleRoomData {
-  battle: any;
-  problems: any[];
-  teams: any[];
-  submissions: any[];
+// Dynamically import the code editor to avoid SSR issues
+const CodeEditor = dynamic(() => import('@/components/battle-arena/code-editor'), { 
+  ssr: false,
+  loading: () => (
+    <div className="h-full flex items-center justify-center bg-slate-900/50">
+      <div className="text-center">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-2"></div>
+        <p className="text-blue-200">Loading editor...</p>
+      </div>
+    </div>
+  )
+});
+
+interface Player {
+  id: string;
+  name: string;
+  rating: number;
+  solved: number;
+  penalty: number;
+  isOnline: boolean;
+}
+
+interface Problem {
+  id: string;
+  name: string;
+  title: string;
+  description: string;
+  input: string;
+  output: string;
+  sampleInput: string;
+  sampleOutput: string;
+  timeLimit: number;
+  memoryLimit: number;
+  solved: number;
+  attempts: number;
+}
+
+interface Submission {
+  id: string;
+  playerId: string;
+  problemId: string;
+  status: 'pending' | 'accepted' | 'wrong' | 'timeout' | 'compiling';
+  language: string;
+  time: number;
+  memory: number;
+  timestamp: number;
 }
 
 export default function BattleRoomPage({ params }: { params: { id: string } }) {
-  const [room, setRoom] = useState<BattleRoomData | null>(null);
-  const [code, setCode] = useState('');
+  const router = useRouter();
+  const [time, setTime] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [activeTab, setActiveTab] = useState('problem');
   const [language, setLanguage] = useState('cpp');
-  const [selectedProblemId, setSelectedProblemId] = useState<string | null>(
-    null
-  );
-  const [submitting, setSubmitting] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(45 * 60);
-  const [showStats, setShowStats] = useState(false);
-  const [myTeamId, setMyTeamId] = useState<string | null>(null);
+  const [code, setCode] = useState('');
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [chatMessages, setChatMessages] = useState<any[]>([]);
+  const [newMessage, setNewMessage] = useState('');
   const [isSpectator, setIsSpectator] = useState(false);
-  const [scoreboard, setScoreboard] = useState<Array<{ teamId: string; teamName: string; score: number; penaltyTime: number }>>([]);
-  const [chatInput, setChatInput] = useState('');
+  const [spectators, setSpectators] = useState<Player[]>([]);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const { battleUpdate, isConnected, latestCode } = useBattleRealtime(
-    params.id,
-    true,
-    myTeamId || undefined
-  );
-  const teamChat = useTeamChat(params.id, myTeamId || '', room?.battle?.mode === '3v3' && !!myTeamId);
+  // Initialize with empty data
+  const players: Player[] = [];
+  const problems: Problem[] = [];
+  const currentProblem = problems[0] || null;
 
+  // Timer effect
   useEffect(() => {
-    const fetchRoom = async () => {
-      try {
-        const response = await fetch(`/api/arena/room/${params.id}`);
-        const data = await response.json();
-        setRoom(data);
-        setScoreboard(data.scoreboard || []);
-        if (data.problems?.length > 0) {
-          setSelectedProblemId(data.problems[0].id);
-        }
-        // determine my team membership and spectator mode
-        try {
-          const supabase = createSupabaseClient();
-          const {
-            data: { user },
-          } = await supabase.auth.getUser();
-          if (user && data.teams) {
-            const myTeam = data.teams.find((t: any) =>
-              (t.battle_team_players || []).some((p: any) => p.user_id === user.id)
-            );
-            setMyTeamId(myTeam?.id || null);
-            setIsSpectator(!myTeam);
-          } else {
-            setIsSpectator(true);
-          }
-        } catch {}
-      } catch (error) {
-        console.error('Error fetching room:', error);
-      }
+    let interval: NodeJS.Timeout | null = null;
+    
+    if (isRunning) {
+      interval = setInterval(() => {
+        setTime(prev => prev + 1);
+      }, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
     };
+  }, [isRunning]);
 
-    fetchRoom();
-    const interval = setInterval(fetchRoom, 5000);
-    return () => clearInterval(interval);
-  }, [params.id]);
-
+  // Auto-scroll chat to bottom
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeRemaining(prev => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    if (battleUpdate?.type === 'submission' || battleUpdate?.type === 'scoreboard_update') {
-      const fetchRoom = async () => {
-        const response = await fetch(`/api/arena/room/${params.id}`);
-        const data = await response.json();
-        setRoom(data);
-        if (data.scoreboard) setScoreboard(data.scoreboard);
-      };
-      fetchRoom();
-    }
-  }, [battleUpdate, params.id]);
-
-  const handleSubmit = async () => {
-    if (!code || !selectedProblemId) return;
-
-    setSubmitting(true);
-    try {
-      const response = await fetch(`/api/arena/room/${params.id}/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          language,
-          problemId: selectedProblemId,
-          teamId: myTeamId,
-        }),
-      });
-
-      if (response.ok) {
-        setCode('');
-        // Refresh submissions
-        const roomResponse = await fetch(`/api/arena/room/${params.id}`);
-        const data = await roomResponse.json();
-        setRoom(data);
-      }
-    } catch (error) {
-      console.error('Submission error:', error);
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // Live code sync: broadcast on change (debounced at consumer level)
-  useEffect(() => {
-    const handle = setTimeout(() => {
-      if (code) {
-        broadcastCodeUpdate(params.id, code, language, myTeamId || undefined);
-      }
-    }, 400);
-    return () => clearTimeout(handle);
-  }, [code, language, params.id, myTeamId]);
-
-  // Apply incoming code updates if from teammates (basic demo; in prod add author separation)
-  useEffect(() => {
-    if (latestCode && latestCode.content !== code) {
-      setCode(latestCode.content);
-      setLanguage(latestCode.language || 'cpp');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [latestCode]);
-
-  const handleSendTeamMessage = async () => {
-    if (!teamChat || !chatInput.trim()) return;
-    try {
-      await teamChat.sendMessage(chatInput.trim());
-      setChatInput('');
-    } catch (e) {
-      console.error('chat send failed', e);
-    }
-  };
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages]);
 
   const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes
-      .toString()
-      .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const selectedProblem = room?.problems?.find(p => p.id === selectedProblemId);
-  const timeWarning = timeRemaining < 300;
+  const handleSubmit = () => {
+    const newSubmission: Submission = {
+      id: Date.now().toString(),
+      playerId: "1",
+      problemId: currentProblem?.id || "",
+      status: 'pending',
+      language,
+      time: 0,
+      memory: 0,
+      timestamp: Date.now()
+    };
+    
+    setSubmissions(prev => [newSubmission, ...prev]);
+    
+    // Simulate submission processing
+    setTimeout(() => {
+      setSubmissions(prev => prev.map(sub => 
+        sub.id === newSubmission.id 
+          ? { ...sub, status: 'accepted', time: 42, memory: 128 } 
+          : sub
+      ));
+    }, 2000);
+  };
 
-  if (!room) {
+  const handleChatSend = () => {
+    if (newMessage.trim()) {
+      const message = {
+        id: Date.now().toString(),
+        sender: "You",
+        content: newMessage,
+        timestamp: Date.now()
+      };
+      
+      setChatMessages(prev => [...prev, message]);
+      setNewMessage('');
+      
+      // Simulate opponent response
+      setTimeout(() => {
+        const responses = [
+          "Good luck with that problem!",
+          "I'm working on problem B right now",
+          "This is a tough one!",
+          "How's your solution coming along?"
+        ];
+        
+        const opponentMessage = {
+          id: (Date.now() + 1).toString(),
+          sender: "Opponent",
+          content: responses[Math.floor(Math.random() * responses.length)],
+          timestamp: Date.now()
+        };
+        
+        setChatMessages(prev => [...prev, opponentMessage]);
+      }, 3000);
+    }
+  };
+
+  const toggleSpectatorMode = () => {
+    setIsSpectator(!isSpectator);
+    setSpectators([]);
+  };
+
+  // If user is a spectator, show spectator view
+  if (isSpectator) {
     return (
-      <div className='min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center'>
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{
-            duration: 2,
-            repeat: Number.POSITIVE_INFINITY,
-            ease: 'linear',
-          }}
-          className='w-12 h-12 border-4 border-blue-500/30 border-t-blue-400 rounded-full'
-        />
-      </div>
+      <SpectatorView 
+        battleId={params.id}
+        players={players}
+        problems={problems}
+        spectators={spectators}
+        isPublic={true}
+      />
     );
   }
 
   return (
-    <main className='min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950'>
-      <motion.div
-        className='border-b border-blue-500/20 bg-gradient-to-r from-slate-900/80 to-blue-900/80 backdrop-blur-sm p-4 sticky top-0 z-20 shadow-lg shadow-blue-500/10'
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className='max-w-screen-2xl xl:max-w-[1800px] mx-auto px-2 sm:px-4 flex items-center justify-between'>
-          <div className='flex items-center gap-6'>
-            {/* Timer with warning state */}
-            <motion.div
-              className={`flex items-center gap-3 px-4 py-2 rounded-lg border ${
-                timeWarning
-                  ? 'bg-red-900/30 border-red-500/50'
-                  : 'bg-blue-900/30 border-blue-500/30'
-              } backdrop-blur-sm`}
-              animate={timeWarning ? { scale: [1, 1.02, 1] } : {}}
-              transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY }}
-            >
-              <Clock
-                className={`w-5 h-5 ${
-                  timeWarning ? 'text-red-400' : 'text-cyan-400'
-                }`}
-              />
-              <span
-                className={`font-mono text-lg font-bold ${
-                  timeWarning ? 'text-red-300' : 'text-white'
-                }`}
-              >
-                {formatTime(timeRemaining)}
-              </span>
-            </motion.div>
-
-            {/* Connection Status */}
-            <motion.div
-              className='flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50'
-              animate={{
-                borderColor: isConnected
-                  ? 'rgb(34, 197, 94)'
-                  : 'rgb(239, 68, 68)',
-              }}
-            >
-              <motion.div
-                className={`w-2 h-2 rounded-full ${
-                  isConnected ? 'bg-green-400' : 'bg-red-400'
-                }`}
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
-              />
-              <span className='text-xs text-slate-300'>
-                {isConnected ? 'Connected' : 'Connecting...'}
-              </span>
-            </motion.div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950/20 to-slate-950 p-2 md:p-4">
+      <div className="max-w-8xl mx-auto">
+        {/* Header - Mobile responsive */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 md:mb-6 gap-3 md:gap-4">
+          <div>
+            <h1 className="text-lg md:text-2xl font-bold flex items-center gap-2 text-blue-200">
+              <Zap className="h-5 w-5 md:h-6 md:w-6 text-yellow-400" />
+              Battle Room
+              <Badge variant="secondary" className="ml-2 bg-blue-500/20 text-blue-300 text-xs md:text-sm">
+                1v1 Duel
+              </Badge>
+            </h1>
+            <p className="text-xs md:text-sm text-muted-foreground">
+              Best of 3 - Round 1 of 3
+            </p>
           </div>
-
-          {/* Action Buttons */}
-          <div className='flex items-center gap-3'>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                variant='outline'
-                size='sm'
-                className='border-blue-500/50 text-blue-300 hover:bg-blue-900/20 hover:border-blue-400'
-              >
-                <Flag className='w-4 h-4 mr-2' />
-                Pause
-              </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                variant='destructive'
-                size='sm'
-                className='bg-red-600/80 hover:bg-red-700 text-white'
-                onClick={async () => {
-                  try {
-                    await fetch(`/api/arena/room/${params.id}/end`, { method: 'POST' });
-                  } catch (e) {
-                    console.error('surrender failed', e);
-                  }
-                }}
-              >
-                Surrender
-              </Button>
-            </motion.div>
+          
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex items-center gap-1 md:gap-2 bg-slate-900/50 px-2 md:px-3 py-1 rounded-lg">
+              <Clock className="h-3 w-3 md:h-4 md:w-4 text-cyan-400" />
+              <span className="font-mono text-sm md:text-base text-blue-200">{formatTime(time)}</span>
+            </div>
+            
+            <Button 
+              onClick={() => setIsRunning(!isRunning)}
+              variant={isRunning ? "destructive" : "default"}
+              className="text-xs md:text-sm flex items-center gap-1 md:gap-2 h-8 md:h-10"
+            >
+              {isRunning ? (
+                <>
+                  <Square className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="hidden xs:inline">Stop</span>
+                </>
+              ) : (
+                <>
+                  <Play className="h-3 w-3 md:h-4 md:w-4" />
+                  <span className="hidden xs:inline">Start</span>
+                </>
+              )}
+            </Button>
+            
+            <Button 
+              onClick={toggleSpectatorMode}
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 md:h-10 md:w-10"
+            >
+              <Eye className="h-3 w-3 md:h-4 md:w-4" />
+            </Button>
+            
+            <Button variant="outline" size="icon" className="h-8 w-8 md:h-10 md:w-10">
+              <Settings className="h-3 w-3 md:h-4 md:w-4" />
+            </Button>
           </div>
         </div>
-      </motion.div>
 
-      {/* Main Content Grid */}
-      <div className='grid grid-cols-1 xl:grid-cols-12 gap-5 p-3 md:p-5 h-[calc(100vh-80px)] max-w-screen-2xl xl:max-w-[1800px] mx-auto'>
-        {/* Left Sidebar: Problems & Scoreboard */}
-        <motion.div
-          className='min-w-0 xl:col-span-3 flex flex-col gap-4 overflow-hidden'
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          {/* Problems Card */}
-          <Card className='grow-[3] min-h-0 p-4 md:p-5 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-blue-900/30 border-blue-500/20 backdrop-blur-sm rounded-xl'>
-            <h3 className='font-bold text-white mb-3 flex items-center gap-2'>
-              <Code2 className='w-4 h-4 text-cyan-400' />
-              Problems
-            </h3>
-            <div className='space-y-2.5'>
-              {room.problems.map((problem, idx) => (
-                <motion.button
-                  key={problem.id}
-                  onClick={() => setSelectedProblemId(problem.id)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className={`w-full p-3.5 md:p-4 text-left rounded-lg border transition-all duration-300 ${
-                    selectedProblemId === problem.id
-                      ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white border-blue-400 shadow-lg shadow-blue-500/30'
-                      : 'border-blue-500/20 hover:bg-blue-900/30 hover:border-blue-400/50 text-blue-100'
-                  }`}
-                >
-                  <p className='font-semibold text-sm'>
-                    {String.fromCharCode(65 + idx)}. {problem.name}
-                  </p>
-                  {/* Rating hidden for contest feel */}
-                </motion.button>
-              ))}
-            </div>
-          </Card>
-
-          {/* Scoreboard Card */}
-          <Card className='grow-[2] min-h-0 p-4 md:p-5 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-purple-900/30 border-purple-500/20 backdrop-blur-sm rounded-xl'>
-            <h3 className='font-bold text-white mb-3 flex items-center gap-2'>
-              <Trophy className='w-4 h-4 text-yellow-400' />
-              Scoreboard
-            </h3>
-            <div className='space-y-2'>
-              {(scoreboard.length ? scoreboard : (room.teams || []).map((t: any) => ({ teamId: t.id, teamName: t.team_name, score: t.score ?? 0, penaltyTime: t.penalty_time ?? 0 })) ).map((team: any, idx: number) => (
-                <motion.div
-                  key={team.teamId}
-                  className='p-3 bg-gradient-to-r from-purple-900/40 to-pink-900/40 rounded-lg border border-purple-500/20 hover:border-purple-400/50 transition-all'
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <div className='flex items-center justify-between mb-1'>
-                    <p className='font-semibold text-sm text-white'>
-                      {team.teamName}
-                    </p>
-                    <motion.div
-                      className='text-xs font-bold text-yellow-400'
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{
-                        duration: 2,
-                        repeat: Number.POSITIVE_INFINITY,
-                      }}
-                    >
-                      #{idx + 1}
-                    </motion.div>
-                  </div>
-                  <div className='flex items-center justify-between text-xs text-purple-200/70'>
-                    <span>Score: {team.score}</span>
-                    <span>Penalty: {team.penaltyTime}m</span>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </Card>
-        </motion.div>
-
-        {/* Middle: Problem Details */}
-        <motion.div
-          className='min-w-0 xl:col-span-4 overflow-hidden'
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <Card className='h-full p-4 md:p-6 overflow-y-auto bg-gradient-to-br from-slate-900/50 to-cyan-900/30 border-cyan-500/20 backdrop-blur-sm rounded-xl'>
-            <ProblemDetails problem={selectedProblem} />
-          </Card>
-        </motion.div>
-
-        {/* Right: Editor & Submissions */}
-        <motion.div
-          className='min-w-0 xl:col-span-5 flex flex-col gap-4 overflow-hidden'
-          initial={{ x: 20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <Card className='flex-1 p-4 md:p-5 flex flex-col overflow-hidden bg-gradient-to-br from-slate-900/50 to-blue-900/30 border-blue-500/20 backdrop-blur-sm rounded-xl'>
-            <Tabs
-              defaultValue='editor'
-              className='flex-1 flex flex-col overflow-hidden'
-            >
-              <TabsList className={`grid w-full ${room.battle?.mode === '3v3' && myTeamId ? 'grid-cols-3' : 'grid-cols-2'} bg-slate-800/50 border border-blue-500/20 rounded-lg p-1 mb-4 sticky top-0 z-10`}>
-                <TabsTrigger
-                  value='editor'
-                  className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 rounded-md transition-all'
-                >
-                  <Code2 className='w-4 h-4 mr-2' />
-                  Editor
-                </TabsTrigger>
-                {room.battle?.mode === '3v3' && myTeamId && (
-                  <TabsTrigger
-                    value='chat'
-                    className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 rounded-md transition-all'
+        {/* Main Content - Split View - Mobile responsive */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6 h-[calc(100vh-140px)] md:h-[calc(100vh-180px)]">
+          {/* Left Column - Problem and Editor */}
+          <div className="lg:col-span-2 flex flex-col gap-3 md:gap-6">
+            {/* Problem/Editor Tabs - Mobile responsive */}
+            <Card className="flex-1 flex flex-col bg-gradient-to-br from-slate-900/80 to-slate-950/80 border-blue-500/20 backdrop-blur-sm">
+              <div className="border-b border-blue-500/20">
+                <div className="flex overflow-x-auto">
+                  <Button
+                    variant={activeTab === 'problem' ? 'default' : 'ghost'}
+                    onClick={() => setActiveTab('problem')}
+                    className="rounded-none border-0 text-xs md:text-sm py-2 md:py-3"
                   >
-                    <Users className='w-4 h-4 mr-2' /> Team Chat
-                  </TabsTrigger>
-                )}
-                <TabsTrigger
-                  value='submissions'
-                  className='data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 rounded-md transition-all'
-                >
-                  <CheckCircle2 className='w-4 h-4 mr-2' />
-                  Submissions
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value='editor' className='flex-1 overflow-hidden'>
-                <CodeEditor
-                  language={language}
-                  onLanguageChange={setLanguage}
-                  code={code}
-                  onCodeChange={setCode}
-                  onSubmit={handleSubmit}
-                  isSubmitting={submitting}
-                  readOnly={isSpectator}
-                />
-              </TabsContent>
-
-              {room.battle?.mode === '3v3' && myTeamId && (
-                <TabsContent value='chat' className='flex-1 overflow-hidden'>
-                  <div className='flex flex-col h-full'>
-                    <div className='flex-1 overflow-y-auto space-y-3 p-2'>
-                      {teamChat?.messages?.map((m, idx) => (
-                        <div key={idx} className='flex items-start gap-2'>
-                          <span className='text-xs text-cyan-300 font-mono'>{m.handle}</span>
-                          <span className='text-sm text-white'>{m.message}</span>
+                    Problem
+                  </Button>
+                  <Button
+                    variant={activeTab === 'editor' ? 'default' : 'ghost'}
+                    onClick={() => setActiveTab('editor')}
+                    className="rounded-none border-0 text-xs md:text-sm py-2 md:py-3"
+                  >
+                    Editor
+                  </Button>
+                  <Button
+                    variant={activeTab === 'submissions' ? 'default' : 'ghost'}
+                    onClick={() => setActiveTab('submissions')}
+                    className="rounded-none border-0 text-xs md:text-sm py-2 md:py-3"
+                  >
+                    Submissions
+                  </Button>
+                </div>
+              </div>
+              
+              <CardContent className="flex-1 p-0">
+                {activeTab === 'problem' && currentProblem && (
+                  <ScrollArea className="h-full p-6">
+                    <div className="max-w-3xl mx-auto">
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h2 className="text-2xl font-bold text-blue-200">
+                            {currentProblem.name}. {currentProblem.title}
+                          </h2>
+                          <div className="flex items-center gap-4 mt-2">
+                            <Badge variant="secondary" className="bg-green-500/20 text-green-300">
+                              {currentProblem.solved} solved
+                            </Badge>
+                            <Badge variant="secondary" className="bg-cyan-500/20 text-cyan-300">
+                              {currentProblem.timeLimit}ms
+                            </Badge>
+                            <Badge variant="secondary" className="bg-purple-500/20 text-purple-300">
+                              {currentProblem.memoryLimit}MB
+                            </Badge>
+                          </div>
                         </div>
-                      ))}
+                        <Badge className="bg-yellow-500/20 text-yellow-300">
+                          Round 1
+                        </Badge>
+                      </div>
+                      
+                      <Separator className="my-6 bg-blue-500/20" />
+                      
+                      <div className="space-y-6">
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2 text-blue-300">Description</h3>
+                          <p className="text-blue-100">{currentProblem.description}</p>
+                        </div>
+                        
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2 text-blue-300">Input</h3>
+                          <p className="text-blue-100">{currentProblem.input}</p>
+                        </div>
+                        
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2 text-blue-300">Output</h3>
+                          <p className="text-blue-100">{currentProblem.output}</p>
+                        </div>
+                        
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2 text-blue-300">Sample Input</h3>
+                          <pre className="bg-slate-900/50 p-4 rounded-lg border border-blue-500/20 text-blue-100">
+                            {currentProblem.sampleInput}
+                          </pre>
+                        </div>
+                        
+                        <div>
+                          <h3 className="text-lg font-semibold mb-2 text-blue-300">Sample Output</h3>
+                          <pre className="bg-slate-900/50 p-4 rounded-lg border border-blue-500/20 text-blue-100">
+                            {currentProblem.sampleOutput}
+                          </pre>
+                        </div>
+                      </div>
                     </div>
-                    <div className='flex gap-2 pt-2'>
-                      <input
-                        className='flex-1 px-3 py-2 rounded-md bg-slate-900/50 border border-slate-700 text-white'
-                        placeholder='Type a message...'
-                        value={chatInput}
-                        onChange={(e) => setChatInput(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSendTeamMessage()}
+                  </ScrollArea>
+                )}
+                
+                {activeTab === 'editor' && (
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between p-4 border-b border-blue-500/20">
+                      <div className="flex items-center gap-2">
+                        <Select value={language} onValueChange={setLanguage}>
+                          <SelectTrigger className="w-32 bg-slate-900/50 border-blue-500/20">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="cpp">C++</SelectItem>
+                            <SelectItem value="c">C</SelectItem>
+                            <SelectItem value="java">Java</SelectItem>
+                            <SelectItem value="python">Python</SelectItem>
+                            <SelectItem value="javascript">JavaScript</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="border-blue-500/20">
+                          <RotateCcw className="h-4 w-4 mr-2" />
+                          Reset
+                        </Button>
+                        <Button onClick={handleSubmit} className="flex items-center gap-2">
+                          <Play className="h-4 w-4" />
+                          Run Code
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <CodeEditor 
+                        language={language} 
+                        value={code} 
+                        onChange={setCode}
                       />
-                      <Button size='icon' onClick={handleSendTeamMessage}>
-                        <Send className='w-4 h-4' />
-                      </Button>
                     </div>
                   </div>
-                </TabsContent>
-              )}
-
-              <TabsContent
-                value='submissions'
-                className='flex-1 overflow-hidden'
-              >
-                <SubmissionsList submissions={room.submissions as any} />
-              </TabsContent>
-            </Tabs>
-          </Card>
-        </motion.div>
+                )}
+                
+                {activeTab === 'submissions' && (
+                  <ScrollArea className="h-full p-6">
+                    <h2 className="text-xl font-bold mb-4 text-blue-200">Submission History</h2>
+                    {submissions.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className="bg-slate-900/50 rounded-full p-4 inline-block mb-4">
+                          <Flag className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <p className="text-muted-foreground">No submissions yet</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Submit your solution to see results here
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {[...submissions].reverse().map((submission) => (
+                          <motion.div
+                            key={submission.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-slate-900/50 rounded-lg p-4 border border-blue-500/20"
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                {submission.status === 'accepted' ? (
+                                  <CheckCircle className="h-5 w-5 text-green-500" />
+                                ) : submission.status === 'pending' ? (
+                                  <div className="h-5 w-5 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
+                                ) : (
+                                  <XCircle className="h-5 w-5 text-red-500" />
+                                )}
+                                <div>
+                                  <div className="font-medium">
+                                    {submission.status === 'accepted' ? 'Accepted' : 
+                                     submission.status === 'pending' ? 'Pending' : 'Wrong Answer'}
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">
+                                    {new Date(submission.timestamp).toLocaleTimeString()}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-sm">
+                                  {submission.language.toUpperCase()}
+                                </div>
+                                {submission.status === 'accepted' && (
+                                  <div className="text-xs text-muted-foreground">
+                                    {submission.time}ms, {submission.memory}KB
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+          
+          {/* Right Column - Scoreboard and Chat */}
+          <div className="flex flex-col gap-6">
+            {/* Scoreboard */}
+            <div className="flex-1">
+              <Scoreboard 
+                players={players} 
+                problems={problems} 
+                currentTime={time} 
+                totalDuration={3600}
+              />
+            </div>
+            
+            {/* Chat */}
+            <Card className="bg-gradient-to-br from-slate-900/80 to-slate-950/80 border-blue-500/20 backdrop-blur-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-blue-200">
+                  <MessageCircle className="h-5 w-5 text-cyan-400" />
+                  Battle Chat
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0 flex flex-col h-64">
+                <ScrollArea className="flex-1 p-4">
+                  <AnimatePresence>
+                    {chatMessages.map((message) => (
+                      <motion.div
+                        key={message.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`mb-3 ${message.sender === 'You' ? 'text-right' : ''}`}
+                      >
+                        <div className={`inline-block max-w-xs px-3 py-2 rounded-lg ${
+                          message.sender === 'You' 
+                            ? 'bg-blue-500/20 text-blue-100 rounded-br-none' 
+                            : 'bg-slate-800/50 text-blue-100 rounded-bl-none'
+                        }`}>
+                          <div className="font-medium text-xs text-muted-foreground mb-1">
+                            {message.sender}
+                          </div>
+                          <div>{message.content}</div>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                  <div ref={chatEndRef} />
+                </ScrollArea>
+                <div className="p-4 border-t border-blue-500/20">
+                  <div className="flex gap-2">
+                    <Textarea
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleChatSend();
+                        }
+                      }}
+                      placeholder="Type a message..."
+                      className="flex-1 bg-slate-900/50 border-blue-500/20 min-h-12"
+                    />
+                    <Button 
+                      onClick={handleChatSend}
+                      size="icon"
+                      className="h-12"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

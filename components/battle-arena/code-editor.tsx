@@ -1,140 +1,143 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Loader2, Terminal, FileCode2 } from 'lucide-react';
-import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
-
-const MonacoEditor = dynamic(() => import('@monaco-editor/react'), {
-  ssr: false,
-  loading: () => null,
-});
+import { useState, useRef, useEffect } from 'react';
 
 interface CodeEditorProps {
   language: string;
-  onLanguageChange: (lang: string) => void;
-  code: string;
-  onCodeChange: (code: string) => void;
-  onSubmit: () => void;
-  isSubmitting: boolean;
-  readOnly?: boolean;
+  value: string;
+  onChange: (value: string) => void;
 }
 
-export function CodeEditor({
-  language,
-  onLanguageChange,
-  code,
-  onCodeChange,
-  onSubmit,
-  isSubmitting,
-  readOnly = false,
-}: CodeEditorProps) {
-  const monacoLanguage = useMemo(() => {
-    switch (language) {
-      case 'cpp':
-        return 'cpp';
-      case 'python':
-        return 'python';
-      case 'java':
-        return 'java';
-      case 'javascript':
-        return 'javascript';
-      default:
-        return 'plaintext';
+export default function CodeEditor({ language, value, onChange }: CodeEditorProps) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [lineCount, setLineCount] = useState(15);
+
+  // Update line count when value changes
+  useEffect(() => {
+    if (textareaRef.current) {
+      const lines = value.split('\n').length;
+      setLineCount(Math.max(15, lines + 5));
     }
-  }, [language]);
+  }, [value]);
+
+  // Handle scroll synchronization between textarea and line numbers
+  const handleScroll = (e: React.UIEvent<HTMLTextAreaElement>) => {
+    const target = e.target as HTMLTextAreaElement;
+    if (target) {
+      const lineNumberContainer = target.previousElementSibling as HTMLDivElement;
+      if (lineNumberContainer) {
+        lineNumberContainer.scrollTop = target.scrollTop;
+      }
+    }
+  };
+
+  // Get language-specific syntax highlighting (simplified)
+  const getSyntaxHighlighting = (line: string) => {
+    // This is a very basic syntax highlighting implementation
+    // In a real application, you would use a library like Prism or Monaco
+    
+    // Keywords for different languages
+    const keywords: Record<string, string[]> = {
+      cpp: ['int', 'char', 'void', 'return', 'if', 'else', 'for', 'while', 'include', 'using', 'namespace', 'std'],
+      c: ['int', 'char', 'void', 'return', 'if', 'else', 'for', 'while', 'include'],
+      java: ['public', 'private', 'class', 'static', 'void', 'int', 'String', 'return', 'if', 'else', 'for', 'while'],
+      python: ['def', 'class', 'import', 'from', 'return', 'if', 'else', 'for', 'while', 'in', 'and', 'or', 'not'],
+      javascript: ['function', 'const', 'let', 'var', 'return', 'if', 'else', 'for', 'while', 'import', 'export']
+    };
+
+    const langKeywords = keywords[language] || [];
+    
+    // Simple tokenization
+    const tokens = line.split(/(\s+|[{}()\[\];,])/);
+    
+    return tokens.map((token, index) => {
+      if (langKeywords.includes(token)) {
+        return <span key={index} className="text-purple-400 font-medium">{token}</span>;
+      }
+      if (/^\d+$/.test(token)) {
+        return <span key={index} className="text-yellow-400">{token}</span>;
+      }
+      if (/^["'].*["']$/.test(token)) {
+        return <span key={index} className="text-green-400">{token}</span>;
+      }
+      if (token === '#include' || token.startsWith('#')) {
+        return <span key={index} className="text-blue-400">{token}</span>;
+      }
+      return <span key={index}>{token}</span>;
+    });
+  };
+
+  // Generate line numbers
+  const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
 
   return (
-    <motion.div
-      className='flex flex-col h-full gap-4 bg-gradient-to-br from-[#0e0e10] via-[#1a1a1d] to-[#0f0f12] rounded-xl border border-[#222]'
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-    >
-      {/* Top Bar (File + Controls) */}
-      <div className='flex items-center justify-between px-3 md:px-4 py-2.5 md:py-3 border-b border-[#222] bg-[#141414]/80 rounded-t-xl backdrop-blur-md'>
-        <div className='flex items-center gap-2'>
-          <motion.div
-            className='w-3 h-3 bg-red-500 rounded-full'
-            animate={{ opacity: [0.8, 1, 0.8] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-          />
-          <div className='w-3 h-3 bg-yellow-400 rounded-full' />
-          <div className='w-3 h-3 bg-green-500 rounded-full' />
-          <div className='ml-3 flex items-center gap-2 text-gray-300'>
-            <FileCode2 className='w-4 h-4 text-sky-400' />
-            <span className='text-sm font-mono'>main.{language}</span>
+    <div className="h-full flex bg-slate-900/50 font-mono text-sm">
+      {/* Line Numbers */}
+      <div className="bg-slate-900/80 text-slate-500 p-4 pt-3 text-right select-none overflow-hidden">
+        {lineNumbers.map((num) => (
+          <div key={num} className="leading-6">
+            {num}
           </div>
-        </div>
-
-        <div className='flex gap-2 items-center'>
-          <Select value={language} onValueChange={onLanguageChange}>
-            <SelectTrigger className='w-28 md:w-32 border-[#333] bg-[#111] text-gray-300'>
-              <SelectValue placeholder='Language' />
-            </SelectTrigger>
-            <SelectContent className='bg-[#111] border-[#333] text-gray-200'>
-              <SelectItem value='cpp'>C++</SelectItem>
-              <SelectItem value='python'>Python</SelectItem>
-              <SelectItem value='java'>Java</SelectItem>
-              <SelectItem value='javascript'>JavaScript</SelectItem>
-            </SelectContent>
-          </Select>
-
-          <motion.div whileHover={{ scale: 1.05 }}>
-            <Button
-              onClick={onSubmit}
-              disabled={isSubmitting || !code}
-              className='bg-sky-600 hover:bg-sky-700 border border-sky-500/40 shadow-sm shadow-sky-800/40'
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className='w-4 h-4 mr-2 animate-spin' />
-                  Submitting...
-                </>
-              ) : (
-                'Run Code'
-              )}
-            </Button>
-          </motion.div>
-        </div>
+        ))}
       </div>
-
-      {/* Editor Area */}
-      <div className='flex-1 relative font-mono text-sm text-gray-200 overflow-hidden rounded-b-xl'>
-        <MonacoEditor
-          value={code}
-          onChange={(val) => onCodeChange(val || '')}
-          language={monacoLanguage}
-          theme='vs-dark'
-          options={{
-            minimap: { enabled: false },
-            fontSize: 14,
-            lineNumbers: 'on',
-            scrollBeyondLastLine: false,
-            smoothScrolling: true,
-            tabSize: 2,
-            readOnly,
-          }}
-          height='100%'
+      
+      {/* Code Editor */}
+      <div className="flex-1 relative">
+        {/* Hidden pre element for measuring text width */}
+        <pre className="absolute top-0 left-0 invisible whitespace-pre-wrap break-words p-4 pt-3">
+          {value}
+        </pre>
+        
+        {/* Textarea for editing */}
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onScroll={handleScroll}
+          className="absolute inset-0 w-full h-full bg-transparent text-blue-100 p-4 pt-3 resize-none outline-none leading-6"
+          style={{ tabSize: 4 }}
+          spellCheck={false}
         />
-      </div>
-
-      {/* Bottom Status Bar */}
-      <div className='px-3 md:px-4 py-2 border-t border-[#222] bg-[#141414]/70 text-xs text-gray-400 flex items-center justify-between rounded-b-xl'>
-        <div className='flex items-center gap-2'>
-          <Terminal className='w-3.5 h-3.5 text-sky-400' />
-          <span>Ready</span>
+        
+        {/* Syntax highlighting overlay */}
+        <div 
+          className="absolute inset-0 pointer-events-none p-4 pt-3 overflow-hidden"
+          style={{ 
+            background: 'transparent',
+            color: 'transparent',
+            lineHeight: '1.5'
+          }}
+        >
+          {value.split('\n').map((line, index) => (
+            <div key={index} className="leading-6">
+              {getSyntaxHighlighting(line)}
+            </div>
+          ))}
         </div>
-        <span>{code.length} chars</span>
       </div>
-    </motion.div>
+    </div>
+  );
+}
+
+// Example usage
+export function CodeEditorDemo() {
+  const [code, setCode] = useState(`#include <iostream>
+using namespace std;
+
+int main() {
+    int a, b;
+    cin >> a >> b;
+    cout << a + b << endl;
+    return 0;
+}`);
+
+  return (
+    <div className="h-96 w-full">
+      <CodeEditor 
+        language="cpp" 
+        value={code} 
+        onChange={setCode} 
+      />
+    </div>
   );
 }

@@ -216,8 +216,31 @@ const ModernSearchBar = React.memo<{
                           {suggestion.type}
                         </p>
                       </div>
-                    </motion.button>
-                  ))}
+                    </div>
+                    {suggestion.frequency > 1 && (
+                      <Badge variant='secondary' className='text-xs'>
+                        {suggestion.frequency}
+                      </Badge>
+                    )}
+                  </button>
+                ))}
+                <div className='border-t border-border mt-2 pt-2'>
+                  <button
+                    onClick={handleSearchSubmit}
+                    className='w-full px-4 py-2 text-center text-primary hover:bg-muted/40 text-sm transition-colors'
+                  >
+                    Search for "{searchQuery}" →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          {showSearchResults && (
+            <div className='absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto'>
+              {searchLoading ? (
+                <div className='p-4 text-center text-muted-foreground'>
+                  <div className='animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full mx-auto'></div>
+                  <span className='ml-2'>Searching...</span>
                 </div>
               ) : showResults && results.length > 0 ? (
                 <div className='max-h-80 overflow-y-auto'>

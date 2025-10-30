@@ -51,7 +51,7 @@ function AdBanner() {
   );
 }
 
-export default function VisualizersPage() {
+export default function HomePage() {
   return (
     <main className='relative w-full min-h-screen overflow-x-hidden bg-background'>
       {/* Background Animation */}

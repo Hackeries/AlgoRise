@@ -247,7 +247,7 @@ export function CFDashboard() {
       {/* Animated background blobs */}
       <div className='absolute top-[-50px] left-[-50px] w-[250px] h-[250px] bg-purple-400/20 dark:bg-purple-500/10 rounded-full blur-3xl animate-blob pointer-events-none' />
       <div className='absolute bottom-[-50px] right-[-50px] w-[300px] h-[300px] bg-cyan-400/20 dark:bg-cyan-500/10 rounded-full blur-3xl animate-blob animation-delay-2000 pointer-events-none' />
-      
+
       <div className='relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 card-spacing'>
         <Card className='glass-card glass-card-hover stat-card'>
           <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
@@ -325,7 +325,10 @@ export function CFDashboard() {
                     </div>
                     <div className='flex gap-1 mt-1'>
                       {p.tags?.slice(0, 3).map(tag => (
-                        <Badge key={tag} className='text-xs bg-gradient-to-r from-blue-500/20 to-purple-500/20 dark:from-blue-500/10 dark:to-purple-500/10 border-blue-500/30'>
+                        <Badge
+                          key={tag}
+                          className='text-xs bg-gradient-to-r from-blue-500/20 to-purple-500/20 dark:from-blue-500/10 dark:to-purple-500/10 border-blue-500/30'
+                        >
                           {tag}
                         </Badge>
                       ))}
@@ -348,7 +351,6 @@ export function CFDashboard() {
             )}
           </CardContent>
         </Card>
-
         {/* Quick Actions */}
         <Card className='glass-card glass-card-hover card-hover section-hover flex flex-col justify-between'>
           <CardHeader>
@@ -358,13 +360,22 @@ export function CFDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent className='space-y-3'>
-            <Button asChild className='w-full btn-hover bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all'>
+            <Button
+              asChild
+              className='w-full btn-hover bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white shadow-lg hover:shadow-xl transition-all'
+            >
               <a href='/adaptive-sheet'>Start Practice</a>
             </Button>
-            <Button asChild className='w-full btn-hover bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all'>
+            <Button
+              asChild
+              className='w-full btn-hover bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white shadow-lg hover:shadow-xl transition-all'
+            >
               <a href='/contests'>Virtual Contest</a>
             </Button>
-            <Button asChild className='w-full btn-hover bg-gradient-to-r from-emerald-600 to-cyan-500 hover:from-emerald-700 hover:to-cyan-600 text-white shadow-lg hover:shadow-xl transition-all'>
+            <Button
+              asChild
+              className='w-full btn-hover bg-gradient-to-r from-emerald-600 to-cyan-500 hover:from-emerald-700 hover:to-cyan-600 text-white shadow-lg hover:shadow-xl transition-all'
+            >
               <a href='/paths'>Study Plan</a>
             </Button>
           </CardContent>

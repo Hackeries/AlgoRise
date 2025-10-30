@@ -19,6 +19,7 @@ import {
   BarChart3,
   Cpu,
   Menu,
+  TestTube,
   Sword,
   X,
 } from 'lucide-react';
@@ -145,7 +146,19 @@ const getCFTier = (rating: number): CFTier => {
   };
 };
 
-// ==================== COMPONENTS ====================
+// ------------------ Menu Items ------------------
+const menuItems = [
+  { href: '/', label: 'Dashboard', icon: Home },
+  { href: '/train', label: 'Train', icon: Zap },
+  { href: '/problem-generator', label: 'Problem Generator', icon: TestTube },
+  { href: '/adaptive-sheet', label: 'Practice Problems', icon: FileText },
+  { href: '/contests', label: 'Contests', icon: Trophy },
+  { href: '/battle-arena', label: 'Battle Arena', icon: Sword },
+  { href: '/paths', label: 'Learning Paths', icon: BookOpen },
+  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/visualizers', label: 'Visualizers', icon: Cpu },
+  { href: '/groups', label: 'Groups', icon: Users },
+];
 
 // Sidebar Item Component
 const SidebarItem = React.memo<{

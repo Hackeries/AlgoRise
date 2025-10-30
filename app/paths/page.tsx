@@ -176,15 +176,19 @@ export default function LearningPathsPage() {
     <main className='mx-auto max-w-6xl px-4 py-10'>
       <div className='mb-10'>
         {/* Hero */}
-        <div className='relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-transparent to-transparent dark:from-primary/15 p-8 mb-8'>
+        <div className='relative overflow-hidden rounded-2xl glass-intense p-8 sm:p-10 mb-8 hover-lift'>
+          <div className='absolute inset-0 -z-10'>
+            <div className='absolute top-0 right-0 w-1/2 h-1/2 bg-primary/20 rounded-full blur-[100px] animate-pulse' />
+            <div className='absolute bottom-0 left-0 w-1/2 h-1/2 bg-accent/20 rounded-full blur-[100px] animate-pulse' style={{ animationDelay: '1s' }} />
+          </div>
           <div className='flex items-start justify-between gap-6'>
             <div>
-              <h1 className='text-4xl font-bold tracking-tight flex items-center gap-3'>
-                <TrendingUp className='h-10 w-10 text-primary' />
-                Learning Paths
+              <h1 className='text-4xl sm:text-5xl font-bold tracking-tight flex items-center gap-3'>
+                <TrendingUp className='h-10 w-10 text-primary animate-pulse' />
+                <span className='gradient-text'>Learning Paths</span>
               </h1>
-              <p className='text-muted-foreground mt-3 text-lg'>
-                Master competitive programming with a clean, professional experience.
+              <p className='text-muted-foreground mt-3 text-base sm:text-lg leading-relaxed'>
+                <span className='font-semibold text-foreground'>Master competitive programming</span> with structured, curated learning paths.
               </p>
             </div>
           </div>
@@ -248,13 +252,13 @@ export default function LearningPathsPage() {
           const isCompleted = progress === 100;
 
           return (
-            <Card key={section.id} className='border transition-all hover:shadow-md'>
+            <Card key={section.id} className='border transition-all card-3d-ultra hover-shine'>
               <CardHeader>
                 <div className='flex items-center justify-between'>
                   <div className='flex items-center gap-4 flex-1'>
                     <div
-                      className={`p-3 rounded-lg text-3xl ${
-                        isCompleted ? 'bg-green-500/15' : 'bg-primary/15'
+                      className={`p-3 rounded-lg text-3xl shadow-lg ${
+                        isCompleted ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20' : 'bg-gradient-to-br from-primary/20 to-accent/20'
                       }`}
                     >
                       {section.icon}

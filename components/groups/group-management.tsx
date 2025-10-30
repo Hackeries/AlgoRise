@@ -174,7 +174,7 @@ export function GroupManagement({
   const members = groupData?.members || [];
   const invites = groupData?.invites || [];
   const canInvite = userRole === 'admin' || userRole === 'moderator';
-  const canManageMembers = userRole === 'admin';
+  const canManageMembers = userRole === 'admin' || userRole === 'moderator';
 
   useEffect(() => {
     const handler = (e: any) => {
@@ -221,8 +221,8 @@ export function GroupManagement({
       setInviteLink((data as any).link || null);
     } catch (error: any) {
       toast({
-        title: 'Failed to generate invite link',
-        description: error.message || 'Please try again',
+        title: '⚠️ Link generation failed',
+        description: error.message || 'Couldn\'t create the invite link. Try refreshing!',
         variant: 'destructive',
       });
       console.log('[v0] invite code error', error?.message);
@@ -255,8 +255,8 @@ export function GroupManagement({
         throw new Error((data as any).error || 'Failed to send invitation');
 
       setAdvancedToast({
-        title: 'Invitation Sent! 🚀',
-        description: `${inviteEmail} will receive a professional AlgoRise invitation to join "${groupName}". They'll be able to join directly from the email.`,
+        title: '✉️ Invitation on its way!',
+        description: `${inviteEmail} will get an invite to join ${groupName}. They can join directly from the email!`,
         isSuccess: true,
       });
 
@@ -267,8 +267,8 @@ export function GroupManagement({
       mutate(`/api/groups/${groupId}/members`);
     } catch (error: any) {
       setAdvancedToast({
-        title: 'Failed to Send',
-        description: error.message || 'Please try again',
+        title: '⚠️ Couldn\'t send invite',
+        description: error.message || 'Something went wrong. Mind trying again?',
         isSuccess: false,
       });
       setTimeout(() => setAdvancedToast(null), 5000);
@@ -298,15 +298,15 @@ export function GroupManagement({
       }
 
       toast({
-        title: 'Role updated',
-        description: `Member role changed to ${newRole}`,
+        title: '✅ Role updated!',
+        description: `Successfully promoted to ${newRole}. Great choice!`,
       });
 
       mutate(`/api/groups/${groupId}/members`);
     } catch (error: any) {
       toast({
-        title: 'Failed to update role',
-        description: error.message,
+        title: '⚠️ Role update failed',
+        description: error.message || 'Couldn\'t change the role. Try again!',
         variant: 'destructive',
       });
     }
@@ -325,15 +325,15 @@ export function GroupManagement({
       }
 
       toast({
-        title: 'Member removed',
-        description: `${memberName} has been removed from the group`,
+        title: '👋 Member removed',
+        description: `${memberName} has left the team. They can rejoin anytime with an invite.`,
       });
 
       mutate(`/api/groups/${groupId}/members`);
     } catch (error: any) {
       toast({
-        title: 'Failed to remove member',
-        description: error.message,
+        title: '⚠️ Removal failed',
+        description: error.message || 'Couldn\'t remove the member right now.',
         variant: 'destructive',
       });
     }
@@ -353,11 +353,11 @@ export function GroupManagement({
         throw new Error((data as any).error || 'Failed to add member');
 
       toast({
-        title: 'Member added',
-        description: `${addHandle} has been added to the group${
+        title: '✅ Welcome aboard!',
+        description: `${addHandle} joined the team${
           (data as any).needsVerification
-            ? ". They'll need to verify their CF handle."
-            : '.'
+            ? '. They\'ll need to verify their Codeforces handle.'
+            : '!'
         }`,
       });
       setAddHandle('');
@@ -365,8 +365,8 @@ export function GroupManagement({
       mutate(`/api/groups/${groupId}/members`);
     } catch (error: any) {
       toast({
-        title: 'Failed to add member',
-        description: error.message || 'Please try again',
+        title: '⚠️ Couldn\'t add member',
+        description: error.message || 'Make sure the handle is correct and try again.',
         variant: 'destructive',
       });
     } finally {
@@ -408,14 +408,14 @@ export function GroupManagement({
       }
       setCopiedInvite(true);
       toast({
-        title: 'Invite link copied!',
-        description: 'Share this link to invite members to your group',
+        title: '📋 Link copied!',
+        description: 'Share it with your team so they can join the squad!',
       });
       setTimeout(() => setCopiedInvite(false), 2000);
     } catch {
       toast({
-        title: 'Failed to copy link',
-        description: 'Please try again or copy manually',
+        title: '⚠️ Copy failed',
+        description: 'Try copying manually or refresh the page.',
         variant: 'destructive',
       });
     }

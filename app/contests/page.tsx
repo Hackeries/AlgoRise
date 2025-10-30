@@ -180,8 +180,8 @@ export default function ContestsPage() {
     } catch (error) {
       console.error('Error fetching contests:', error);
       toast({
-        title: 'Error',
-        description: 'Failed to fetch contests',
+        title: '⚠️ Connection hiccup',
+        description: 'Couldn\'t load contests right now. Check your connection and try again!',
         variant: 'destructive',
       });
     } finally {
@@ -216,8 +216,8 @@ export default function ContestsPage() {
     // Validate name
     if (!formData.name.trim()) {
       toast({
-        title: 'Error',
-        description: 'Contest name is required',
+        title: '📝 Name your battle',
+        description: 'Every great contest needs an epic name! What\'s yours?',
         variant: 'destructive',
       });
       return;
@@ -226,8 +226,8 @@ export default function ContestsPage() {
     // Validate start date & time
     if (!formData.startDate || !formData.startTime) {
       toast({
-        title: 'Error',
-        description: 'Start date and time are required',
+        title: '⏰ When\'s the showdown?',
+        description: 'Pick a date and time so everyone knows when to show up ready!',
         variant: 'destructive',
       });
       return;
@@ -242,8 +242,8 @@ export default function ContestsPage() {
     const maxRating = Number.parseInt(formData.ratingMax);
     if (isNaN(minRating) || isNaN(maxRating) || minRating >= maxRating) {
       toast({
-        title: 'Error',
-        description: 'Maximum rating must be higher than minimum rating',
+        title: '🔢 Rating range issue',
+        description: 'Max rating should be higher than min rating. Let\'s fix that!',
         variant: 'destructive',
       });
       return;
@@ -360,8 +360,8 @@ export default function ContestsPage() {
         fetchContests();
 
         toast({
-          title: 'Success',
-          description: 'Contest created successfully!',
+          title: '🎊 Contest is live!',
+          description: 'Your contest is ready to rock! Share the link and watch the participants roll in.',
           variant: 'default',
         });
       } else {
@@ -414,9 +414,9 @@ export default function ContestsPage() {
     if (lowername.includes('div. 1') && !lowername.includes('div. 2')) {
       if (userRating < 1999) {
         toast({
-          title: 'Not Eligible',
+          title: '🚫 Not eligible yet',
           description:
-            'Register for Div2 because your current rating is <1900.',
+            'This is Div 1 only. Try Div 2 instead—it\'s perfect for ratings under 1900!',
           variant: 'destructive',
         });
         return;
@@ -427,8 +427,8 @@ export default function ContestsPage() {
       window.open(url, '_blank', 'noopener,noreferrer');
     } else {
       toast({
-        title: 'Registration Not Started',
-        description: `Registration isn't opened yet, please wait ~${daysLeft} days to register!`,
+        title: '⏳ Hold your horses!',
+        description: `Registration opens in ~${daysLeft} days. Mark your calendar and come back soon!`,
         variant: 'destructive',
       });
     }
@@ -455,9 +455,9 @@ export default function ContestsPage() {
 
     if (contest.status === 'ended' || (contest.ends_at && now >= end)) {
       toast({
-        title: 'Contest Ended',
-        description:
-          'This contest has already ended. You can view details or leaderboard instead.',
+            title: '🏁 Contest finished',
+            description:
+              'This one\'s over! Check out the leaderboard to see how everyone did.',
         variant: 'destructive',
       });
       return;
@@ -471,8 +471,8 @@ export default function ContestsPage() {
       // If contest already started and late join is not allowed -> block new registrations
       if (now >= start && !contest.allow_late_join) {
         toast({
-          title: 'Registration Closed',
-          description: 'Registration closed when the contest started.',
+          title: '🔒 Too late!',
+          description: 'Registration closed when the contest kicked off. Catch the next one!',
           variant: 'destructive',
         });
         return;
@@ -496,8 +496,8 @@ export default function ContestsPage() {
 
         if (response.ok) {
           toast({
-            title: 'Registered!',
-            description: 'You have been registered for the contest.',
+          title: '✅ You\'re in!',
+          description: 'Registration confirmed! Get ready to compete and show your skills.',
             variant: 'default',
           });
           fetchContests(); // Refresh to update registration status
@@ -527,9 +527,9 @@ export default function ContestsPage() {
         );
       } else {
         toast({
-          title: 'Registered',
-          description:
-            "You're registered. You can join once the contest starts.",
+            title: '✅ You\'re all set',
+            description:
+              'Already registered! Just wait for the contest to start, then jump right in.',
         });
       }
     }
@@ -1054,63 +1054,63 @@ export default function ContestsPage() {
             ) : (
               <div className='grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3'>
                 {upcomingCfContests.slice(0, 6).map(contest => (
-                  <Card
-                    key={contest.id}
-                    className='card-3d hover:shadow-lg cursor-pointer transition-all border-l-4 border-l-yellow-500 dark:border-l-yellow-600'
-                    onClick={() =>
-                      handleCodeforcesContestClick(
-                        contest.id,
-                        contest.startTimeSeconds || 0,
-                        contest.name
-                      )
-                    }
-                  >
-                    <CardHeader className='pb-2 sm:pb-3'>
-                      <div className='flex items-start justify-between gap-2'>
-                        <CardTitle className='text-sm sm:text-base font-semibold leading-tight text-foreground line-clamp-2'>
-                          {contest.name}
-                        </CardTitle>
-                        <ExternalLinkIcon className='w-4 h-4 text-foreground/40 flex-shrink-0 hover:text-foreground/60 transition-colors' />
+              <Card
+                key={contest.id}
+                className='card-3d-ultra hover-shine cursor-pointer transition-all border-l-4 border-l-yellow-500 dark:border-l-yellow-600 group'
+                onClick={() =>
+                  handleCodeforcesContestClick(
+                    contest.id,
+                    contest.startTimeSeconds || 0,
+                    contest.name
+                  )
+                }
+              >
+                <CardHeader className='pb-2 sm:pb-3'>
+                  <div className='flex items-start justify-between gap-2'>
+                    <CardTitle className='text-sm sm:text-base font-semibold leading-tight text-foreground line-clamp-2 group-hover:text-primary transition-colors'>
+                      {contest.name}
+                    </CardTitle>
+                    <ExternalLinkIcon className='w-4 h-4 text-foreground/40 flex-shrink-0 group-hover:text-primary transition-colors' />
+                  </div>
+                  <div className='flex items-center gap-2 flex-wrap mt-2'>
+                    <Badge variant='outline' className='text-xs glass'>
+                      {contest.type}
+                    </Badge>
+                    <Badge variant='secondary' className='text-xs'>
+                      {contest.phase}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className='pt-0'>
+                  <div className='space-y-2 text-xs sm:text-sm'>
+                    {contest.startTimeSeconds && (
+                      <div className='flex items-center gap-2 text-foreground/70'>
+                        <CalendarIcon className='w-4 h-4 flex-shrink-0 text-primary' />
+                        <span className='truncate font-medium'>
+                          {formatTime(contest.startTimeSeconds)}
+                        </span>
                       </div>
-                      <div className='flex items-center gap-2 flex-wrap mt-2'>
-                        <Badge variant='outline' className='text-xs'>
-                          {contest.type}
+                    )}
+                    <div className='flex items-center gap-2 text-foreground/70'>
+                      <ClockIcon className='w-4 h-4 flex-shrink-0 text-accent' />
+                      <span className='font-medium'>{formatDuration(contest.durationSeconds)}</span>
+                    </div>
+                    {contest.startTimeSeconds && (
+                      <div className='flex items-center justify-between pt-3 border-t border-border/50 mt-3'>
+                        <span className='text-foreground/60 text-xs font-medium'>
+                          Starts in:
+                        </span>
+                        <Badge
+                          variant='default'
+                          className='text-xs bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md'
+                        >
+                          {getTimeUntilStart(contest.startTimeSeconds)}
                         </Badge>
-                        <Badge variant='secondary' className='text-xs'>
-                          {contest.phase}
-                        </Badge>
                       </div>
-                    </CardHeader>
-                    <CardContent className='pt-0'>
-                      <div className='space-y-2 text-xs sm:text-sm'>
-                        {contest.startTimeSeconds && (
-                          <div className='flex items-center gap-2 text-foreground/70'>
-                            <CalendarIcon className='w-4 h-4 flex-shrink-0' />
-                            <span className='truncate'>
-                              {formatTime(contest.startTimeSeconds)}
-                            </span>
-                          </div>
-                        )}
-                        <div className='flex items-center gap-2 text-foreground/70'>
-                          <ClockIcon className='w-4 h-4 flex-shrink-0' />
-                          <span>{formatDuration(contest.durationSeconds)}</span>
-                        </div>
-                        {contest.startTimeSeconds && (
-                          <div className='flex items-center justify-between pt-2 border-t border-border/50'>
-                            <span className='text-foreground/60 text-xs'>
-                              Starts in:
-                            </span>
-                            <Badge
-                              variant='default'
-                              className='text-xs bg-blue-600 hover:bg-blue-700'
-                            >
-                              {getTimeUntilStart(contest.startTimeSeconds)}
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
                 ))}
               </div>
             )}
@@ -1157,15 +1157,15 @@ export default function ContestsPage() {
                   return (
                     <Card
                       key={contest.id}
-                      className={`card-3d hover:shadow-lg transition-all border-l-4 ${borderColor}`}
+                      className={`card-3d-ultra hover-shine transition-all border-l-4 ${borderColor} group`}
                     >
                       <CardHeader className='pb-2 sm:pb-3'>
                         <div className='flex items-start justify-between gap-2'>
                           <div className='flex-1 min-w-0'>
-                            <CardTitle className='text-sm sm:text-base font-semibold text-foreground line-clamp-2'>
+                            <CardTitle className='text-sm sm:text-base font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors'>
                               {contest.name}
                             </CardTitle>
-                            <CardDescription className='text-xs text-foreground/60 mt-1'>
+                            <CardDescription className='text-xs text-foreground/60 mt-1 font-medium'>
                               {contest.visibility === 'public'
                                 ? 'Public'
                                 : 'Private'}{' '}
@@ -1187,13 +1187,13 @@ export default function ContestsPage() {
                             }
                             className={`text-xs ${
                               status === 'live'
-                                ? 'bg-green-600 hover:bg-green-700'
+                                ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-md animate-pulse'
                                 : ''
                             }`}
                           >
                             {status.charAt(0).toUpperCase() + status.slice(1)}
                           </Badge>
-                          <Badge variant='outline' className='text-xs'>
+                          <Badge variant='outline' className='text-xs glass'>
                             {contest.contest_mode === 'icpc'
                               ? 'ICPC'
                               : 'Practice'}

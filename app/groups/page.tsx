@@ -133,8 +133,8 @@ export default function GroupsPage() {
   const createGroup = async () => {
     if (!groupName.trim()) {
       toast({
-        title: 'Error',
-        description: 'Please enter a group name',
+        title: '🤔 Group name needed',
+        description: "Give your awesome team a name! It's the first step to greatness.",
         variant: 'destructive',
       });
       return;
@@ -158,10 +158,8 @@ export default function GroupsPage() {
       if (!res.ok) throw new Error(json?.error || 'Unable to create group');
 
       toast({
-        title: 'Group created',
-        description: `Your ${
-          groupType === 'icpc' ? 'ICPC team' : 'friends group'
-        } "${groupName}" has been created.`,
+        title: '🎉 Your team is ready!',
+        description: `${groupName} is all set! Time to invite your teammates and start crushing problems together.`,
       });
 
       setGroupName('');
@@ -170,8 +168,8 @@ export default function GroupsPage() {
       mutate('/api/groups/mine');
     } catch (e: any) {
       toast({
-        title: 'Error',
-        description: e?.message || 'Unable to create group',
+        title: '⚠️ Couldn\'t create group',
+        description: e?.message || 'Something went wrong. Mind trying again?',
         variant: 'destructive',
       });
     } finally {
@@ -188,13 +186,13 @@ export default function GroupsPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Unable to leave group');
-      toast({ title: 'Left group', description: 'You have left this group.' });
+      toast({ title: '👋 You\'ve left the group', description: 'Catch you on the leaderboard! You can always rejoin later.' });
       setSelectedGroup(null);
       mutate('/api/groups/mine');
     } catch (e: any) {
       toast({
-        title: 'Error',
-        description: e?.message || 'Unable to leave group',
+        title: '⚠️ Couldn\'t leave group',
+        description: e?.message || 'Something went wrong. Try again in a moment.',
         variant: 'destructive',
       });
     }
@@ -556,12 +554,16 @@ export default function GroupsPage() {
   return (
     <main className='mx-auto max-w-7xl px-4 py-10'>
       {/* Hero */}
-      <div className='relative overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-transparent to-transparent dark:from-primary/15 p-8 mb-8'>
+      <div className='relative overflow-hidden rounded-2xl glass-intense p-8 sm:p-10 mb-8 hover-lift'>
+        <div className='absolute inset-0 -z-10'>
+          <div className='absolute top-0 right-0 w-1/2 h-1/2 bg-primary/20 rounded-full blur-[100px]' />
+          <div className='absolute bottom-0 left-0 w-1/2 h-1/2 bg-accent/20 rounded-full blur-[100px]' />
+        </div>
         <div className='flex items-center justify-between gap-6'>
           <div>
-            <h1 className='text-4xl font-bold tracking-tight'>Groups & Teams</h1>
-            <p className='text-muted-foreground mt-3 text-lg'>
-              Practice together, run mock contests, and track progress as a team.
+            <h1 className='text-4xl sm:text-5xl font-bold tracking-tight gradient-text'>Groups & Teams</h1>
+            <p className='text-muted-foreground mt-3 text-base sm:text-lg leading-relaxed'>
+              <span className='font-semibold text-foreground'>Practice together</span>, run mock contests, and track progress as a team.
             </p>
           </div>
 
@@ -795,7 +797,7 @@ export default function GroupsPage() {
                   key={m.group.id}
                   role='button'
                   onClick={() => setSelectedGroup(m)}
-                  className={`hover:shadow-md transition-all cursor-pointer border bg-gradient-to-br ${typeBadge.color}`}
+                  className={`card-3d-ultra hover-shine transition-all cursor-pointer border bg-gradient-to-br ${typeBadge.color}`}
                 >
                   <CardContent className='p-6'>
                     <div className='flex flex-col gap-4'>

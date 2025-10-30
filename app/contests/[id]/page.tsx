@@ -654,6 +654,7 @@ export default function ContestDetailPage() {
           )}
         </CardContent>
       </Card>
+      </div>
     </main>
   );
 }

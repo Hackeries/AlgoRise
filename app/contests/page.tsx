@@ -1365,47 +1365,6 @@ export default function ContestsPage() {
             )}
           </section>
         </div>
-
-          {/* Battle Arena Contests Section */}
-          <section className='mt-12'>
-            <div className='flex items-center gap-3 mb-6'>
-              <div className='flex items-center gap-3 flex-1'>
-                <div className='p-2 rounded-xl bg-gradient-to-br from-orange-500/20 to-red-500/20 border border-orange-500/30'>
-                  <Zap className='w-6 h-6 text-orange-500' />
-                </div>
-                <div>
-                  <h2 className='text-2xl sm:text-3xl font-bold text-foreground'>
-                    Battle Arena
-                  </h2>
-                  <p className='text-sm text-muted-foreground'>Real-time 1v1 competitive battles</p>
-                </div>
-              </div>
-            </div>
-
-            <Card className='card-3d border-2 border-orange-500/30 bg-gradient-to-br from-orange-500/5 to-red-500/5'>
-              <CardContent className='p-8 sm:p-12'>
-                <div className='text-center'>
-                  <div className='inline-flex p-4 rounded-full bg-orange-500/10 mb-4'>
-                    <Zap className='w-12 h-12 text-orange-500' />
-                  </div>
-                  <h3 className='text-xl font-bold mb-2'>Coming Soon: Battle Arena</h3>
-                  <p className='text-muted-foreground mb-6 max-w-md mx-auto'>
-                    Challenge other coders to real-time 1v1 battles! Queue up, get matched with opponents of similar skill, and compete head-to-head.
-                  </p>
-                  <Button 
-                    onClick={() => window.location.href = '/battle-arena'}
-                    size='lg'
-                    variant='outline'
-                    className='border-orange-500/50 hover:bg-orange-500/10'
-                  >
-                    <Trophy className='w-4 h-4 mr-2' />
-                    Visit Battle Arena
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </section>
-        </div>
       )}
 
       <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>

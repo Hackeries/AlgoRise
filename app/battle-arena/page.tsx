@@ -153,6 +153,31 @@ export default function BattleArenaPage() {
   return (
     <main className='min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 p-4 md:p-8'>
       <div className='max-w-7xl mx-auto'>
+        {/* Info Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className='mb-6 p-4 rounded-xl bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-orange-500/20 border border-orange-500/30 backdrop-blur-sm'
+        >
+          <div className='flex items-start gap-3'>
+            <div className='mt-0.5'>
+              <div className='p-2 rounded-lg bg-orange-500/20'>
+                <Trophy className='w-5 h-5 text-orange-400' />
+              </div>
+            </div>
+            <div className='flex-1'>
+              <h3 className='font-bold text-white mb-1 text-sm sm:text-base'>Battle Arena vs Private Contests</h3>
+              <p className='text-xs sm:text-sm text-gray-300'>
+                <strong className='text-orange-400'>⚔️ Battle Arena:</strong> Real-time competitive matches with instant matchmaking and live battles. Perfect for quick competitive practice!
+              </p>
+              <p className='text-xs sm:text-sm text-gray-300 mt-1'>
+                <strong className='text-purple-400'>🎯 Private Contests:</strong> Looking for custom contests? Visit the <Link href='/contests' className='underline hover:text-purple-300'>Contests page</Link> to create or join private training sessions!
+              </p>
+            </div>
+          </div>
+        </motion.div>
+        
         <motion.div
           className='mb-12 text-center'
           initial={{ opacity: 0, y: -20 }}

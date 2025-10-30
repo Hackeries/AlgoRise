@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import {
   Tooltip,
@@ -9,10 +9,20 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { useCFVerification } from '@/lib/context/cf-verification';
+import { Loader2 } from 'lucide-react';
+
+interface Submission {
+  creationTimeSeconds: number;
+  verdict: string;
+}
 
 export function ActivityHeatmap() {
   const now = new Date();
   const year = now.getFullYear();
+  const { verificationData } = useCFVerification();
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Generate all days of the year
   const start = new Date(year, 0, 1);
@@ -23,11 +33,51 @@ export function ActivityHeatmap() {
     days.push(new Date(d));
   }
 
-  // Mock data (replace with real activity)
-  const activityData = useMemo(
-    () => days.map(() => Math.floor(Math.random() * 5)),
-    [year]
-  );
+  // Fetch real CF submissions
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      if (!verificationData?.handle) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `https://codeforces.com/api/user.status?handle=${verificationData.handle}&from=1&count=10000`
+        );
+        const data = await response.json();
+        
+        if (data.status === 'OK' && data.result) {
+          // Filter for AC submissions only
+          const acSubmissions = data.result.filter(
+            (sub: any) => sub.verdict === 'OK'
+          );
+          setSubmissions(acSubmissions);
+        }
+      } catch (error) {
+        console.error('Error fetching CF submissions:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubmissions();
+  }, [verificationData?.handle]);
+
+  // Calculate activity data from real submissions
+  const activityData = useMemo(() => {
+    const activityMap: { [key: string]: number } = {};
+    
+    submissions.forEach((sub) => {
+      const date = new Date(sub.creationTimeSeconds * 1000);
+      if (date.getFullYear() === year) {
+        const dateKey = date.toDateString();
+        activityMap[dateKey] = (activityMap[dateKey] || 0) + 1;
+      }
+    });
+
+    return days.map((day) => activityMap[day.toDateString()] || 0);
+  }, [submissions, days, year]);
 
   const getColor = (intensity: number) =>
     [
@@ -66,11 +116,37 @@ export function ActivityHeatmap() {
   });
   if (week.length) weeks.push(week);
 
+  if (loading) {
+    return (
+      <Card className='p-4'>
+        <div className='flex items-center justify-center py-8'>
+          <Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
+          <span className='ml-2 text-muted-foreground'>Loading activity data from Codeforces...</span>
+        </div>
+      </Card>
+    );
+  }
+
+  if (!verificationData?.handle) {
+    return (
+      <Card className='p-4'>
+        <div className='text-center py-8 text-muted-foreground'>
+          <p>Connect your Codeforces account to see your activity heatmap</p>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className='p-4'>
-      <h3 className='font-semibold text-sm mb-4 text-muted-foreground'>
-        Training Activity ({year})
-      </h3>
+      <div className='flex items-center justify-between mb-4'>
+        <h3 className='font-semibold text-sm text-muted-foreground'>
+          Codeforces Activity ({year}) - {verificationData.handle}
+        </h3>
+        <div className='text-xs text-muted-foreground'>
+          {submissions.length} AC submissions
+        </div>
+      </div>
 
       <div className='overflow-x-auto'>
         <TooltipProvider>

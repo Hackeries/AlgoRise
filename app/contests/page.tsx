@@ -621,25 +621,29 @@ export default function ContestsPage() {
               Contests Arena
             </h1>
             <p className='mt-3 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-2xl'>
-              <span className='font-semibold text-foreground'>Host or join</span> private training contests. After the contest, view
-              rating simulation and get a recovery set.
+              <span className='font-semibold text-foreground'>Host or join</span> Codeforces contests and private training sessions. 
+              Perfect for practice, team training, and competitive preparation.
             </p>
           </div>
 
           <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
             <DialogTrigger asChild>
-              <Button size='lg' className='w-full sm:w-auto gap-2 bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:scale-105 transition-all'>
+              <Button size='lg' className='w-full sm:w-auto gap-2 bg-gradient-to-r from-purple-600 via-purple-700 to-pink-600 hover:from-purple-700 hover:via-purple-800 hover:to-pink-700 shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200'>
                 <PlusIcon className='w-5 h-5' />
-                Create Contest
+                <span className='font-semibold'>Create Private Contest</span>
               </Button>
             </DialogTrigger>
 
-          <DialogContent className='max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col'>
-            <DialogHeader className='border-b pb-4'>
-              <DialogTitle className='text-2xl'>Create New Contest</DialogTitle>
+          <DialogContent className='max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col bg-gradient-to-br from-background via-background to-purple-500/5'>
+            <DialogHeader className='border-b pb-4 border-purple-500/20'>
+              <DialogTitle className='text-2xl flex items-center gap-2'>
+                <div className='p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30'>
+                  <Trophy className='h-6 w-6 text-purple-500' />
+                </div>
+                Create Private Contest
+              </DialogTitle>
               <DialogDescription>
-                Set up a private training contest for your group or friends.
-                Configure problems, timing, and rules.
+                Set up a custom training contest for your group or friends. Configure problems, timing, and rules to match your needs.
               </DialogDescription>
             </DialogHeader>
 
@@ -1009,13 +1013,14 @@ export default function ContestsPage() {
               )}
             </div>
 
-            <DialogFooter className='border-t pt-4 flex justify-end gap-2'>
+            <DialogFooter className='border-t border-primary/20 pt-4 flex justify-end gap-3 bg-gradient-to-r from-primary/5 to-accent/5 -mx-6 -mb-6 px-6 pb-6 rounded-b-lg'>
               <Button
                 variant='outline'
                 onClick={() => {
                   setCreateDialogOpen(false);
                   resetForm();
                 }}
+                className='min-w-[100px]'
               >
                 Cancel
               </Button>
@@ -1023,8 +1028,9 @@ export default function ContestsPage() {
                 onClick={createContest}
                 disabled={creating || !formData.name.trim()}
                 size='lg'
+                className='min-w-[150px] bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 font-semibold shadow-lg hover:shadow-xl transition-all'
               >
-                {creating ? 'Creating...' : 'Create Contest'}
+                {creating ? '⏳ Creating...' : '🚀 Create Contest'}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -1140,25 +1146,56 @@ export default function ContestsPage() {
                 </div>
                 <div>
                   <h2 className='text-2xl sm:text-3xl font-bold text-foreground'>
-                    Private Contests
+                    🎯 Private Training Contests
                   </h2>
-                  <p className='text-sm text-muted-foreground'>Your custom training sessions</p>
+                  <p className='text-sm text-muted-foreground'>Custom practice sessions • Separate from Battle Arena</p>
                 </div>
               </div>
               <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1'>
-                {privateContests.length} contests
+                {privateContests.length} active
               </Badge>
             </div>
 
-            {privateContests.length === 0 ? (
-              <Card className='card-3d'>
-                <CardContent className='p-6'>
-                  <div className='text-center'>
-                    <UsersIcon className='w-12 h-12 text-foreground/20 mx-auto mb-4' />
-                    <p className='text-foreground/60 mb-4'>
-                      No private contests yet.
+            {/* Info Banner */}
+            <div className='mb-6 p-4 sm:p-5 rounded-xl bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 border border-blue-500/30'>
+              <div className='flex items-start gap-3'>
+                <div className='mt-0.5'>
+                  <div className='p-2 rounded-lg bg-blue-500/20'>
+                    <Trophy className='w-5 h-5 text-blue-500' />
+                  </div>
+                </div>
+                <div className='flex-1'>
+                  <h3 className='font-bold text-foreground mb-2 text-base sm:text-lg'>Private Contests vs Battle Arena</h3>
+                  <div className='space-y-2 text-sm text-muted-foreground'>
+                    <p>
+                      <strong className='text-purple-500'>🎯 Private Contests:</strong> Create custom practice sessions with your own problem sets, timing, and rules. 
+                      Perfect for team training, mock contests, and group preparation.
                     </p>
-                    <Button onClick={() => setCreateDialogOpen(true)}>
+                    <p>
+                      <strong className='text-orange-500'>⚔️ Battle Arena:</strong> Real-time competitive matches with instant matchmaking and live battles. 
+                      Find it in the <strong>Battle Arena</strong> section!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {privateContests.length === 0 ? (
+              <Card className='card-3d border-2 border-dashed border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-pink-500/5'>
+                <CardContent className='p-8 sm:p-12'>
+                  <div className='text-center'>
+                    <div className='inline-flex p-4 rounded-full bg-purple-500/10 mb-4'>
+                      <UsersIcon className='w-12 h-12 text-purple-500' />
+                    </div>
+                    <h3 className='text-xl font-bold mb-2'>No Private Contests Yet</h3>
+                    <p className='text-muted-foreground mb-6 max-w-md mx-auto'>
+                      Create your first private contest to practice with friends or host training sessions for your group.
+                    </p>
+                    <Button 
+                      onClick={() => setCreateDialogOpen(true)}
+                      size='lg'
+                      className='bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
+                    >
                       <PlusIcon className='w-4 h-4 mr-2' />
                       Create Your First Contest
                     </Button>

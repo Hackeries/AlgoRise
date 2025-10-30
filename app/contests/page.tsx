@@ -650,24 +650,24 @@ export default function ContestsPage() {
               variant='outline'
               onClick={() => fetchContests(true)}
               disabled={refreshing}
-              className='gap-2 hover:bg-primary/10'
+              className='gap-2'
             >
               <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
               <span className='font-semibold hidden sm:inline'>Refresh</span>
             </Button>
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
               <DialogTrigger asChild>
-                <Button size='lg' className='flex-1 sm:flex-none gap-2 bg-primary hover:bg-primary/90'>
+                <Button size='lg' className='flex-1 sm:flex-none gap-2'>
                   <PlusIcon className='w-5 h-5' />
                   <span className='font-semibold'>Create Private Contest</span>
                 </Button>
               </DialogTrigger>
 
-          <DialogContent className='max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col bg-gradient-to-br from-background via-background to-purple-500/5'>
-            <DialogHeader className='border-b pb-4 border-purple-500/20'>
+          <DialogContent className='max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col'>
+            <DialogHeader className='border-b pb-4'>
               <DialogTitle className='text-2xl flex items-center gap-2'>
-                <div className='p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30'>
-                  <Trophy className='h-6 w-6 text-purple-500' />
+                <div className='p-2 rounded-md border bg-background'>
+                  <Trophy className='h-6 w-6 text-foreground' />
                 </div>
                 Create Private Contest
               </DialogTitle>
@@ -680,7 +680,7 @@ export default function ContestsPage() {
               {/* Contest Name & Description */}
               <div className='space-y-4'>
                 <h4 className='font-semibold text-lg flex items-center gap-2'>
-                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold'>
+                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
                     1
                   </span>
                   Basic Information
@@ -729,7 +729,7 @@ export default function ContestsPage() {
               {/* Contest Mode & Visibility */}
               <div className='space-y-4'>
                 <h4 className='font-semibold text-lg flex items-center gap-2'>
-                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold'>
+                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
                     2
                   </span>
                   Contest Type
@@ -799,7 +799,7 @@ export default function ContestsPage() {
               {/* Schedule */}
               <div className='space-y-4'>
                 <h4 className='font-semibold text-lg flex items-center gap-2'>
-                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold'>
+                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
                     3
                   </span>
                   Schedule
@@ -854,7 +854,7 @@ export default function ContestsPage() {
               {/* Problems */}
               <div className='space-y-4'>
                 <h4 className='font-semibold text-lg flex items-center gap-2'>
-                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold'>
+                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
                     4
                   </span>
                   Problem Configuration
@@ -945,7 +945,7 @@ export default function ContestsPage() {
               {/* Settings */}
               <div className='space-y-4'>
                 <h4 className='font-semibold text-lg flex items-center gap-2'>
-                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold'>
+                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
                     5
                   </span>
                   Additional Settings
@@ -995,9 +995,9 @@ export default function ContestsPage() {
               {formData.startDate && formData.startTime && (
                 <>
                   <Separator />
-                  <div className='space-y-3 p-4 rounded-lg bg-primary/5 border border-primary/20'>
+                  <div className='space-y-3 p-4 rounded-md bg-muted border'>
                     <h4 className='font-semibold flex items-center gap-2'>
-                      <span className='text-primary'>✓</span>
+                      <span>✓</span>
                       Contest Preview
                     </h4>
                     <div className='text-sm space-y-2 text-muted-foreground'>
@@ -1042,7 +1042,7 @@ export default function ContestsPage() {
               )}
             </div>
 
-            <DialogFooter className='border-t border-primary/20 pt-4 flex justify-end gap-3 bg-gradient-to-r from-primary/5 to-accent/5 -mx-6 -mb-6 px-6 pb-6 rounded-b-lg'>
+            <DialogFooter className='border-t pt-4 flex justify-end gap-3'>
               <Button
                 variant='outline'
                 onClick={() => {
@@ -1057,7 +1057,7 @@ export default function ContestsPage() {
                 onClick={createContest}
                 disabled={creating || !formData.name.trim()}
                 size='lg'
-                className='min-w-[150px] bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 font-semibold shadow-lg hover:shadow-xl transition-all'
+                className='min-w-[150px]'
               >
                 {creating ? 'Creating...' : 'Create Contest'}
               </Button>
@@ -1079,35 +1079,35 @@ export default function ContestsPage() {
           <section>
             <div className='flex items-center gap-3 mb-6'>
               <div className='flex items-center gap-3 flex-1'>
-                <div className='p-3 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-2 border-yellow-500/40 shadow-lg shadow-yellow-500/20'>
-                  <Trophy className='w-7 h-7 text-yellow-500' />
+                <div className='p-2 rounded-md border border-border bg-background'>
+                  <Trophy className='w-5 h-5 text-foreground' />
                 </div>
                 <div>
-                  <h2 className='text-lg sm:text-xl font-bold text-foreground'>
-                    🏆 Upcoming Contests
+                  <h2 className='text-lg sm:text-xl font-semibold text-foreground'>
+                    Upcoming Contests
                   </h2>
                   <p className='text-xs sm:text-sm text-muted-foreground'>Official Codeforces competitions</p>
                 </div>
               </div>
-              <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1 bg-yellow-500/10 border-yellow-500/30 text-yellow-600 dark:text-yellow-400'>
-                {upcomingCfContests.length} upcoming
+              <Badge variant='secondary' className='text-sm px-3 py-1'>
+                {upcomingCfContests.length}
               </Badge>
             </div>
 
             {upcomingCfContests.length === 0 ? (
-              <Card className='card-3d border-2 border-dashed border-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-orange-500/5'>
+              <Card className='border border-dashed'>
                 <CardContent className='p-6'>
-                  <p className='text-foreground/60 text-center'>
+                  <p className='text-muted-foreground text-center'>
                     No upcoming Codeforces contests at the moment.
                   </p>
                 </CardContent>
               </Card>
             ) : (
-              <div className='grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3'>
+              <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
                 {upcomingCfContests.slice(0, 6).map(contest => (
               <Card
                 key={contest.id}
-                className='relative overflow-hidden cursor-pointer transition-all duration-300 border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-500/5 to-orange-500/10 hover:border-yellow-500/60 hover:shadow-2xl hover:shadow-yellow-500/20 hover:-translate-y-1 group'
+                className='cursor-pointer transition-all duration-200 hover:shadow-md hover:border-primary/50'
                 onClick={() =>
                   handleCodeforcesContestClick(
                     contest.id,
@@ -1116,53 +1116,42 @@ export default function ContestsPage() {
                   )
                 }
               >
-                {/* Accent bar */}
-                <div className='absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500' />
-                
-                {/* Trophy icon watermark */}
-                <div className='absolute -right-6 -bottom-6 opacity-5 group-hover:opacity-10 transition-opacity'>
-                  <Trophy className='w-32 h-32 text-yellow-500' />
-                </div>
-
                 <CardHeader className='pb-3'>
                   <div className='flex items-start justify-between gap-2'>
-                    <CardTitle className='text-sm sm:text-base font-bold leading-tight text-foreground line-clamp-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors'>
+                    <CardTitle className='text-sm sm:text-base font-semibold leading-tight line-clamp-2'>
                       {contest.name}
                     </CardTitle>
-                    <ExternalLinkIcon className='w-4 h-4 text-yellow-500/60 flex-shrink-0 group-hover:text-yellow-500 transition-colors' />
+                    <ExternalLinkIcon className='w-4 h-4 text-muted-foreground flex-shrink-0' />
                   </div>
                   <div className='flex items-center gap-2 flex-wrap mt-2'>
-                    <Badge variant='outline' className='text-xs border-yellow-500/40 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400'>
+                    <Badge variant='outline' className='text-xs'>
                       {contest.type}
                     </Badge>
-                    <Badge variant='secondary' className='text-xs bg-orange-500/20 text-orange-700 dark:text-orange-400'>
+                    <Badge variant='secondary' className='text-xs'>
                       {contest.phase}
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className='pt-0 relative z-10'>
+                <CardContent className='pt-0'>
                   <div className='space-y-2 text-xs sm:text-sm'>
                     {contest.startTimeSeconds && (
-                      <div className='flex items-center gap-2 text-foreground/80'>
-                        <CalendarIcon className='w-4 h-4 flex-shrink-0 text-yellow-600 dark:text-yellow-500' />
-                        <span className='truncate font-medium'>
+                      <div className='flex items-center gap-2 text-muted-foreground'>
+                        <CalendarIcon className='w-4 h-4 flex-shrink-0' />
+                        <span className='truncate'>
                           {formatTime(contest.startTimeSeconds)}
                         </span>
                       </div>
                     )}
-                    <div className='flex items-center gap-2 text-foreground/80'>
-                      <ClockIcon className='w-4 h-4 flex-shrink-0 text-orange-600 dark:text-orange-500' />
-                      <span className='font-medium'>{formatDuration(contest.durationSeconds)}</span>
+                    <div className='flex items-center gap-2 text-muted-foreground'>
+                      <ClockIcon className='w-4 h-4 flex-shrink-0' />
+                      <span>{formatDuration(contest.durationSeconds)}</span>
                     </div>
                     {contest.startTimeSeconds && (
-                      <div className='flex items-center justify-between pt-3 border-t border-yellow-500/20 mt-3'>
-                        <span className='text-foreground/70 text-xs font-semibold'>
+                      <div className='flex items-center justify-between pt-3 border-t mt-3'>
+                        <span className='text-muted-foreground text-xs'>
                           Starts in:
                         </span>
-                        <Badge
-                          variant='default'
-                          className='text-xs bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 shadow-md font-bold'
-                        >
+                        <Badge variant='default' className='text-xs'>
                           {getTimeUntilStart(contest.startTimeSeconds)}
                         </Badge>
                       </div>
@@ -1179,37 +1168,36 @@ export default function ContestsPage() {
           <section>
             <div className='flex items-center gap-3 mb-6'>
               <div className='flex items-center gap-3 flex-1'>
-                <div className='p-3 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border-2 border-purple-500/40 shadow-lg shadow-purple-500/20'>
-                  <Zap className='w-7 h-7 text-purple-500' />
+                <div className='p-2 rounded-md border border-border bg-background'>
+                  <Zap className='w-5 h-5 text-foreground' />
                 </div>
                 <div>
-                  <h2 className='text-lg sm:text-xl font-bold text-foreground'>
-                    ⚡ Private Contests
+                  <h2 className='text-lg sm:text-xl font-semibold text-foreground'>
+                    Private Contests
                   </h2>
                   <p className='text-xs sm:text-sm text-muted-foreground'>Custom training sessions</p>
                 </div>
               </div>
-              <Badge variant='secondary' className='text-sm sm:text-base px-3 py-1 bg-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400'>
-                {privateContests.length} available
+              <Badge variant='secondary' className='text-sm px-3 py-1'>
+                {privateContests.length}
               </Badge>
             </div>
 
 
             {privateContests.length === 0 ? (
-              <Card className='card-3d border-2 border-dashed border-purple-500/30 bg-gradient-to-br from-purple-500/5 to-pink-500/5'>
+              <Card className='border border-dashed'>
                 <CardContent className='p-8 sm:p-12'>
                   <div className='text-center'>
-                    <div className='inline-flex p-4 rounded-full bg-purple-500/10 mb-4'>
-                      <UsersIcon className='w-12 h-12 text-purple-500' />
+                    <div className='inline-flex p-4 rounded-md border border-border bg-background mb-4'>
+                      <UsersIcon className='w-12 h-12 text-muted-foreground' />
                     </div>
-                    <h3 className='text-lg font-bold mb-2'>No Private Contests Yet</h3>
+                    <h3 className='text-lg font-semibold mb-2'>No Private Contests Yet</h3>
                     <p className='text-muted-foreground mb-6 max-w-md mx-auto'>
                       Create your first private contest to practice with friends or host training sessions for your group.
                     </p>
                     <Button 
                       onClick={() => setCreateDialogOpen(true)}
                       size='lg'
-                      className='bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
                     >
                       <PlusIcon className='w-4 h-4 mr-2' />
                       Create Your First Contest
@@ -1218,103 +1206,83 @@ export default function ContestsPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className='grid gap-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-3'>
+              <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
                 {privateContests.map(contest => {
                   const status = computeDisplayStatus(contest);
-                  const statusColors = {
-                    live: { border: 'border-green-500/50', glow: 'shadow-green-500/20', bg: 'from-green-500/10 to-green-600/5' },
-                    ended: { border: 'border-gray-500/50', glow: 'shadow-gray-500/10', bg: 'from-gray-500/10 to-gray-600/5' },
-                    upcoming: { border: 'border-purple-500/50', glow: 'shadow-purple-500/20', bg: 'from-purple-500/10 to-pink-500/10' }
-                  };
-                  const colors = statusColors[status as keyof typeof statusColors];
 
                   return (
                     <Card
                       key={contest.id}
-                      className={`relative overflow-hidden transition-all duration-300 border-2 ${colors.border} bg-gradient-to-br ${colors.bg} hover:border-purple-500/60 hover:shadow-2xl ${colors.glow} hover:-translate-y-1 group`}
+                      className='transition-all duration-200 hover:shadow-md hover:border-primary/50'
                     >
-                      {/* Accent bar */}
-                      <div className='absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500' />
-                      
-                      {/* Lightning icon watermark */}
-                      <div className='absolute -right-8 -bottom-8 opacity-5 group-hover:opacity-10 transition-opacity'>
-                        <Zap className='w-40 h-40 text-purple-500' />
-                      </div>
-
-                      {/* Live pulse effect */}
+                      {/* Live indicator */}
                       {status === 'live' && (
-                        <div className='absolute top-4 right-4'>
-                          <span className='flex h-3 w-3'>
-                            <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75'></span>
-                            <span className='relative inline-flex rounded-full h-3 w-3 bg-green-500'></span>
+                        <div className='absolute top-3 right-3'>
+                          <span className='flex h-2 w-2'>
+                            <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75'></span>
+                            <span className='relative inline-flex rounded-full h-2 w-2 bg-green-500'></span>
                           </span>
                         </div>
                       )}
 
-                      <CardHeader className='pb-3 relative z-10'>
+                      <CardHeader className='pb-3'>
                         <div className='flex items-start justify-between gap-2'>
                           <div className='flex-1 min-w-0'>
-                            <CardTitle className='text-sm sm:text-base font-bold text-foreground line-clamp-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors'>
+                            <CardTitle className='text-sm sm:text-base font-semibold line-clamp-2'>
                               {contest.name}
                             </CardTitle>
-                            <CardDescription className='text-xs text-foreground/70 mt-1 font-medium'>
-                              {contest.visibility === 'public' ? '🌐 Public' : '🔒 Private'} • {contest.isHost ? '👑 Host' : '👤 Guest'}
+                            <CardDescription className='text-xs mt-1'>
+                              {contest.visibility === 'public' ? 'Public' : 'Private'} • {contest.isHost ? 'Host' : 'Guest'}
                             </CardDescription>
                           </div>
                         </div>
                         <div className='flex items-center gap-2 flex-wrap mt-3'>
                           <Badge
                             variant={status === 'live' ? 'default' : status === 'ended' ? 'secondary' : 'outline'}
-                            className={`text-xs font-semibold ${
-                              status === 'live'
-                                ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-md animate-pulse'
-                                : status === 'ended'
-                                ? 'bg-gray-500/20 text-gray-600 dark:text-gray-400'
-                                : 'border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-400'
-                            }`}
+                            className='text-xs'
                           >
-                            {status === 'live' && '🔴 '}
+                            {status === 'live' && '• '}
                             {status.charAt(0).toUpperCase() + status.slice(1)}
                           </Badge>
-                          <Badge variant='outline' className='text-xs border-pink-500/40 bg-pink-500/10 text-pink-700 dark:text-pink-400'>
-                            {contest.contest_mode === 'icpc' ? '🏅 ICPC' : '🎯 Practice'}
+                          <Badge variant='outline' className='text-xs'>
+                            {contest.contest_mode === 'icpc' ? 'ICPC' : 'Practice'}
                           </Badge>
                         </div>
                       </CardHeader>
-                      <CardContent className='pt-0 relative z-10'>
+                      <CardContent className='pt-0'>
                         <div className='space-y-2 text-xs sm:text-sm'>
                           {contest.starts_at && (
-                            <div className='flex items-center gap-2 text-foreground/80'>
-                              <CalendarIcon className='w-4 h-4 flex-shrink-0 text-purple-600 dark:text-purple-500' />
-                              <span className='truncate font-medium'>
+                            <div className='flex items-center gap-2 text-muted-foreground'>
+                              <CalendarIcon className='w-4 h-4 flex-shrink-0' />
+                              <span className='truncate'>
                                 {new Date(contest.starts_at).toLocaleString()}
                               </span>
                             </div>
                           )}
-                          <div className='flex items-center gap-2 text-foreground/80'>
-                            <ClockIcon className='w-4 h-4 flex-shrink-0 text-pink-600 dark:text-pink-500' />
-                            <span className='font-medium'>{contest.duration_minutes} minutes</span>
+                          <div className='flex items-center gap-2 text-muted-foreground'>
+                            <ClockIcon className='w-4 h-4 flex-shrink-0' />
+                            <span>{contest.duration_minutes} minutes</span>
                           </div>
                           {contest.description && (
-                            <p className='text-foreground/70 line-clamp-2 pt-1 italic text-xs'>
+                            <p className='text-muted-foreground line-clamp-2 pt-1 text-xs'>
                               {contest.description}
                             </p>
                           )}
-                          <div className='flex flex-wrap items-center gap-2 text-foreground/70 pt-2 border-t border-purple-500/20'>
-                            <span className='text-xs font-medium'>📝 {contest.problem_count} problems</span>
+                          <div className='flex flex-wrap items-center gap-2 text-muted-foreground pt-2 border-t'>
+                            <span className='text-xs'>{contest.problem_count} problems</span>
                             <span className='text-xs'>•</span>
-                            <span className='text-xs font-medium'>⭐ {contest.rating_min}-{contest.rating_max}</span>
+                            <span className='text-xs'>{contest.rating_min}-{contest.rating_max}</span>
                             {contest.allow_late_join && (
                               <>
                                 <span className='text-xs'>•</span>
-                                <span className='text-xs font-medium'>⏰ Late join</span>
+                                <span className='text-xs'>Late join</span>
                               </>
                             )}
                           </div>
                         </div>
 
                         {/* Action Button */}
-                        <div className='mt-3 pt-3 border-t border-purple-500/20'>
+                        <div className='mt-3 pt-3 border-t'>
                           {(() => {
                             const now = Date.now();
                             const startsAt = contest.starts_at ? new Date(contest.starts_at).getTime() : null;
@@ -1327,25 +1295,22 @@ export default function ContestsPage() {
                                 <Button
                                   size='sm'
                                   variant='outline'
-                                  className='w-full text-xs font-semibold border-purple-500/30 hover:bg-purple-500/10'
+                                  className='w-full text-xs'
                                   onClick={() => window.open(`/contests/${contest.id}`, '_blank')}
                                 >
-                                  📊 View Leaderboard
+                                  View Leaderboard
                                 </Button>
                               );
                             }
 
-                            const label = contest.isRegistered ? (hasStarted ? '🚀 Join Now' : '✅ Registered') : '📝 Register';
+                            const label = contest.isRegistered ? (hasStarted ? 'Join Now' : 'Registered') : 'Register';
                             const disabled = contest.isRegistered ? !hasStarted && !contest.allow_late_join : false;
 
                             return (
                               <Button
                                 size='sm'
-                                className={`w-full text-xs font-semibold shadow-lg ${
-                                  hasStarted
-                                    ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800'
-                                    : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700'
-                                }`}
+                                variant={hasStarted ? 'default' : 'default'}
+                                className='w-full text-xs'
                                 onClick={() => handleJoinPrivateContest(contest)}
                                 disabled={disabled}
                               >

@@ -21,34 +21,20 @@ interface Contest {
 }
 
 const getBadgeClass = (type: string) => {
-  switch (true) {
-    case type.includes('Div. 1'):
-      return 'bg-gradient-to-r from-red-600 to-red-500 text-white shadow-lg shadow-red-500/50';
-    case type.includes('Div. 2'):
-      return 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/50';
-    case type.includes('Div. 3'):
-      return 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/50';
-    case type.includes('Div. 4'):
-      return 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg shadow-green-500/50';
-    case type.includes('Global'):
-      return 'bg-gradient-to-r from-yellow-600 to-yellow-500 text-black shadow-lg shadow-yellow-500/50';
-    case type.includes('Educational'):
-      return 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-lg shadow-cyan-500/50';
-    default:
-      return 'bg-gradient-to-r from-gray-600 to-gray-500 text-white shadow-lg shadow-gray-500/50';
-  }
+  // Simple, clean badge styling for all types
+  return 'bg-secondary text-secondary-foreground';
 };
 
 const getDifficultyIndicator = (type: string) => {
   if (type.includes('Div. 1'))
-    return { level: 'Expert', color: 'text-red-400', icon: '⚡⚡⚡' };
+    return { level: 'Expert', color: 'text-muted-foreground' };
   if (type.includes('Div. 2'))
-    return { level: 'Advanced', color: 'text-blue-400', icon: '⚡⚡' };
+    return { level: 'Advanced', color: 'text-muted-foreground' };
   if (type.includes('Div. 3'))
-    return { level: 'Intermediate', color: 'text-purple-400', icon: '⚡' };
+    return { level: 'Intermediate', color: 'text-muted-foreground' };
   if (type.includes('Div. 4'))
-    return { level: 'Beginner', color: 'text-green-400', icon: '✓' };
-  return { level: 'Mixed', color: 'text-cyan-400', icon: '◆' };
+    return { level: 'Beginner', color: 'text-muted-foreground' };
+  return { level: 'Mixed', color: 'text-muted-foreground' };
 };
 
 // Countdown component
@@ -164,10 +150,7 @@ export default function ContestSection() {
     return (
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {Array.from({ length: 3 }).map((_, i) => (
-          <Card
-            key={i}
-            className='bg-white/80 dark:bg-black/80 backdrop-blur-sm'
-          >
+          <Card key={i}>
             <CardHeader>
               <Skeleton className='h-6 w-3/4' />
             </CardHeader>
@@ -190,16 +173,16 @@ export default function ContestSection() {
           transition={{ duration: 0.6 }}
           className='text-center mb-16'
         >
-          <div className='inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full bg-primary/10 border border-primary/30'>
-            <Trophy className='w-4 h-4 text-primary' />
-            <span className='text-sm font-semibold text-primary'>
+          <div className='inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-md border bg-background'>
+            <Trophy className='w-4 h-4 text-foreground' />
+            <span className='text-sm font-semibold text-foreground'>
               LIVE CONTESTS
             </span>
           </div>
-          <h2 className='text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent'>
+          <h2 className='text-2xl md:text-3xl font-semibold mb-4'>
             Upcoming Contests
           </h2>
-          <p className='text-lg text-muted-foreground max-w-2xl mx-auto'>
+          <p className='text-base text-muted-foreground max-w-2xl mx-auto'>
             Compete in real-time contests with live countdowns. Choose your
             division and challenge yourself against the community.
           </p>
@@ -231,32 +214,22 @@ export default function ContestSection() {
                   )}`}
                 >
                   <motion.div
-                    whileHover={{ scale: 1.02, y: -8 }}
+                    whileHover={{ scale: 1.01 }}
                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                    className={`rounded-xl h-full cursor-pointer overflow-hidden group relative ${
-                      urgent
-                        ? 'border-2 border-red-500/60 shadow-2xl shadow-red-500/30'
-                        : 'border border-border/50 shadow-lg hover:shadow-2xl'
-                    } transition-all duration-300`}
+                    className='rounded-lg h-full cursor-pointer border hover:shadow-md transition-all duration-200'
                   >
-                    <div className='absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
-
-                    {urgent && (
-                      <div className='absolute inset-0 rounded-xl bg-gradient-to-r from-red-500/20 via-transparent to-red-500/20 animate-pulse' />
-                    )}
-
-                    <Card className='bg-card/80 backdrop-blur-sm border-0 rounded-xl h-full relative z-10'>
+                    <Card className='border-0 rounded-lg h-full'>
                       <CardHeader className='pb-3'>
                         <div className='flex justify-between items-start gap-3 mb-2'>
                           <div className='flex-1'>
-                            <CardTitle className='text-lg line-clamp-2 group-hover:text-primary transition-colors'>
+                            <CardTitle className='text-base line-clamp-2'>
                               {contest.name}
                             </CardTitle>
                           </div>
                           <Badge
                             className={`${getBadgeClass(
                               contest.type
-                            )} whitespace-nowrap flex-shrink-0 text-xs font-bold`}
+                            )} whitespace-nowrap flex-shrink-0 text-xs`}
                             variant='secondary'
                           >
                             {contest.type}
@@ -264,22 +237,21 @@ export default function ContestSection() {
                         </div>
 
                         <div
-                          className={`text-xs font-semibold ${difficulty.color} flex items-center gap-1`}
+                          className={`text-xs ${difficulty.color}`}
                         >
-                          <span>{difficulty.icon}</span>
                           <span>{difficulty.level}</span>
                         </div>
                       </CardHeader>
 
                       <CardContent className='space-y-4'>
-                        <div className='bg-primary/10 rounded-lg p-3 border border-primary/20'>
+                        <div className='rounded-md p-3 border bg-muted/50'>
                           <div className='flex items-center gap-2 mb-1'>
-                            <Zap className='h-4 w-4 text-primary' />
-                            <span className='text-xs font-semibold text-muted-foreground uppercase tracking-wide'>
+                            <Zap className='h-4 w-4 text-foreground' />
+                            <span className='text-xs font-medium text-muted-foreground'>
                               Starts in
                             </span>
                           </div>
-                          <div className='text-2xl font-mono font-bold text-primary'>
+                          <div className='text-xl font-mono font-semibold'>
                             <Countdown startTime={contest.startTimeSeconds} />
                           </div>
                         </div>
@@ -307,11 +279,8 @@ export default function ContestSection() {
 
                         <Button
                           asChild
-                          className={`w-full mt-4 font-semibold transition-all duration-300 ${
-                            urgent
-                              ? 'bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 shadow-lg shadow-red-500/50'
-                              : 'bg-gradient-to-r from-primary to-accent hover:shadow-lg'
-                          }`}
+                          className='w-full mt-4'
+                          variant={urgent ? 'default' : 'outline'}
                           onClick={e => e.stopPropagation()}
                         >
                           <a
@@ -333,7 +302,7 @@ export default function ContestSection() {
           ) : (
             <div className='col-span-full text-center py-16'>
               <Trophy className='w-16 h-16 text-muted-foreground/30 mx-auto mb-4' />
-              <p className='text-lg text-muted-foreground'>
+              <p className='text-base text-muted-foreground'>
                 No upcoming contests found. Check back soon!
               </p>
             </div>

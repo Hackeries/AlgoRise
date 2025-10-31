@@ -1,139 +1,332 @@
--- Drop existing tables if they exist (in reverse dependency order)
-DROP TABLE IF EXISTS public.battle_queue CASCADE;
-DROP TABLE IF EXISTS public.battle_history CASCADE;
-DROP TABLE IF EXISTS public.battle_ratings CASCADE;
-DROP TABLE IF EXISTS public.battle_submissions CASCADE;
-DROP TABLE IF EXISTS public.battle_team_players CASCADE;
-DROP TABLE IF EXISTS public.battle_teams CASCADE;
-DROP TABLE IF EXISTS public.battles CASCADE;
+-- Battle Arena enhancements: team battles, matchmaking queue, and extended ratings
 
--- Recreate all tables with correct schema
-CREATE TABLE IF NOT EXISTS public.battles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  mode TEXT NOT NULL CHECK (mode IN ('1v1', '3v3')),
-  status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'active', 'completed', 'cancelled')),
-  problem_set_id UUID REFERENCES public.contests(id),
-  start_at TIMESTAMP WITH TIME ZONE,
-  end_at TIMESTAMP WITH TIME ZONE,
-  winner_id UUID REFERENCES auth.users(id),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- =========================
+-- Battles table extensions
+-- =========================
+
+-- Add support for battle modes (1v1 / 3v3)
+alter table public.battles
+  add column if not exists mode text;
+
+update public.battles
+  set mode = '1v1'
+  where mode is null;
+
+do $$
+begin
+  alter table public.battles
+    drop constraint if exists battles_mode_check;
+  alter table public.battles
+    add constraint battles_mode_check
+    check (mode in ('1v1', '3v3'));
+exception when duplicate_object then null;
+end $$;
+
+alter table public.battles
+  alter column mode set default '1v1';
+
+do $$
+begin
+  alter table public.battles
+    alter column mode set not null;
+exception when others then null;
+end $$;
+
+-- Broaden status enum to cover queued battles
+do $$
+begin
+  alter table public.battles
+    drop constraint if exists battles_status_check;
+  alter table public.battles
+    add constraint battles_status_check
+    check (status in ('waiting', 'in_progress', 'completed', 'cancelled', 'pending', 'active'));
+exception when duplicate_object then null;
+end $$;
+
+-- Additional metadata columns consumed by arena APIs
+alter table public.battles
+  add column if not exists problem_set_id uuid references public.contests(id) on delete set null,
+  add column if not exists start_at timestamptz,
+  add column if not exists end_at timestamptz,
+  add column if not exists winner_id uuid references auth.users(id) on delete set null,
+  add column if not exists updated_at timestamptz default now();
+
+update public.battles
+  set start_at = coalesce(start_at, started_at),
+      end_at   = coalesce(end_at, ended_at),
+      winner_id = coalesce(winner_id, winner_user_id)
+  where start_at is null or end_at is null or winner_id is null;
+
+create index if not exists idx_battles_mode_status on public.battles(mode, status);
+create index if not exists idx_battles_created_at_desc on public.battles(created_at desc);
+
+-- =========================
+-- Battle ratings extensions
+-- =========================
+
+alter table public.battle_ratings
+  add column if not exists entity_id uuid,
+  add column if not exists entity_type text,
+  add column if not exists mode text,
+  add column if not exists elo int,
+  add column if not exists draws int default 0,
+  add column if not exists updated_at timestamptz default now();
+
+update public.battle_ratings
+  set entity_id = coalesce(entity_id, user_id),
+      entity_type = coalesce(entity_type, 'user'),
+      mode = coalesce(mode, '1v1'),
+      elo = coalesce(elo, rating)
+  where entity_id is null or entity_type is null or mode is null or elo is null;
+
+do $$
+begin
+  alter table public.battle_ratings
+    drop constraint if exists battle_ratings_entity_type_check;
+  alter table public.battle_ratings
+    add constraint battle_ratings_entity_type_check
+    check (entity_type in ('user', 'team'));
+exception when duplicate_object then null;
+end $$;
+
+do $$
+begin
+  alter table public.battle_ratings
+    drop constraint if exists battle_ratings_mode_check;
+  alter table public.battle_ratings
+    add constraint battle_ratings_mode_check
+    check (mode in ('1v1', '3v3'));
+exception when duplicate_object then null;
+end $$;
+
+create unique index if not exists idx_battle_ratings_entity_mode
+  on public.battle_ratings(entity_id, entity_type, mode);
+
+create index if not exists idx_battle_ratings_entity_type
+  on public.battle_ratings(entity_type);
+
+create index if not exists idx_battle_ratings_mode
+  on public.battle_ratings(mode);
+
+-- =========================
+-- Team battles
+-- =========================
+
+create table if not exists public.battle_teams (
+  id uuid primary key default gen_random_uuid(),
+  battle_id uuid not null references public.battles(id) on delete cascade,
+  team_name text not null,
+  score int default 0,
+  penalty_time int default 0,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
 );
 
-CREATE TABLE IF NOT EXISTS public.battle_teams (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  battle_id UUID NOT NULL REFERENCES public.battles(id) ON DELETE CASCADE,
-  team_name TEXT NOT NULL,
-  score INT DEFAULT 0,
-  penalty_time INT DEFAULT 0,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+create table if not exists public.battle_team_players (
+  id uuid primary key default gen_random_uuid(),
+  team_id uuid not null references public.battle_teams(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  role text not null default 'member' check (role in ('captain', 'member')),
+  created_at timestamptz default now(),
+  unique (team_id, user_id)
 );
 
-CREATE TABLE IF NOT EXISTS public.battle_team_players (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  team_id UUID NOT NULL REFERENCES public.battle_teams(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('captain', 'member')),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(team_id, user_id)
+create index if not exists idx_battle_teams_battle_id on public.battle_teams(battle_id);
+create index if not exists idx_battle_team_players_team_id on public.battle_team_players(team_id);
+create index if not exists idx_battle_team_players_user_id on public.battle_team_players(user_id);
+
+alter table public.battle_teams enable row level security;
+alter table public.battle_team_players enable row level security;
+
+drop policy if exists "battle_teams_select_all" on public.battle_teams;
+create policy "battle_teams_select_all" on public.battle_teams
+  for select using (true);
+
+drop policy if exists "battle_teams_insert_own" on public.battle_teams;
+create policy "battle_teams_insert_own" on public.battle_teams
+  for insert with check (auth.uid() is not null);
+
+drop policy if exists "battle_team_players_select_all" on public.battle_team_players;
+create policy "battle_team_players_select_all" on public.battle_team_players
+  for select using (true);
+
+drop policy if exists "battle_team_players_insert_own" on public.battle_team_players;
+create policy "battle_team_players_insert_own" on public.battle_team_players
+  for insert with check (auth.uid() is not null);
+
+-- =========================
+-- Battle submissions extensions
+-- =========================
+
+alter table public.battle_submissions
+  add column if not exists team_id uuid references public.battle_teams(id) on delete set null,
+  add column if not exists verdict text,
+  add column if not exists penalty int default 0,
+  add column if not exists code text;
+
+do $$
+begin
+  alter table public.battle_submissions
+    drop constraint if exists battle_submissions_verdict_check;
+  alter table public.battle_submissions
+    add constraint battle_submissions_verdict_check
+    check (verdict is null or verdict in ('AC', 'WA', 'TLE', 'MLE', 'RE', 'CE', 'pending'));
+exception when duplicate_object then null;
+end $$;
+
+-- Keep legacy status column populated when verdict exists
+update public.battle_submissions
+  set status = case verdict
+    when 'AC' then 'solved'
+    when 'WA' then 'failed'
+    when 'TLE' then 'failed'
+    when 'MLE' then 'failed'
+    when 'RE' then 'failed'
+    when 'CE' then 'failed'
+    when 'pending' then 'pending'
+    else status
+  end
+  where verdict is not null;
+
+create index if not exists idx_battle_submissions_team_id on public.battle_submissions(team_id);
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_proc where proname = 'sync_battle_submission_code'
+  ) then
+    create function public.sync_battle_submission_code()
+    returns trigger as $$
+    begin
+      if new.code is not null and (new.code_text is null or new.code_text = '') then
+        new.code_text := new.code;
+      elsif new.code is null and new.code_text is not null and new.code_text <> '' then
+        new.code := new.code_text;
+      end if;
+      return new;
+    end;
+    $$ language plpgsql;
+  end if;
+exception when duplicate_function then null;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_trigger where tgname = 'battle_submissions_sync_code_ins'
+  ) then
+    create trigger battle_submissions_sync_code_ins
+      before insert on public.battle_submissions
+      for each row
+      when (new.code is not null and new.code_text is null)
+      execute function public.sync_battle_submission_code();
+  end if;
+  if not exists (
+    select 1 from pg_trigger where tgname = 'battle_submissions_sync_code_upd'
+  ) then
+    create trigger battle_submissions_sync_code_upd
+      before update on public.battle_submissions
+      for each row
+      when ((new.code is distinct from old.code) or (new.code_text is distinct from old.code_text))
+      execute function public.sync_battle_submission_code();
+  end if;
+end $$;
+
+-- =========================
+-- Battle history
+-- =========================
+
+create table if not exists public.battle_history (
+  id uuid primary key default gen_random_uuid(),
+  battle_id uuid not null references public.battles(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  team_id uuid references public.battle_teams(id) on delete cascade,
+  result text not null check (result in ('win', 'loss', 'draw')),
+  elo_change int default 0,
+  created_at timestamptz default now()
 );
 
-CREATE TABLE IF NOT EXISTS public.battle_submissions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  battle_id UUID NOT NULL REFERENCES public.battles(id) ON DELETE CASCADE,
-  team_id UUID REFERENCES public.battle_teams(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  problem_id UUID NOT NULL,
-  verdict TEXT NOT NULL CHECK (verdict IN ('AC', 'WA', 'TLE', 'MLE', 'RE', 'CE', 'pending')),
-  penalty INT DEFAULT 0,
-  submitted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  code TEXT,
-  language TEXT
+create index if not exists idx_battle_history_battle_id on public.battle_history(battle_id);
+create index if not exists idx_battle_history_user_id on public.battle_history(user_id);
+
+alter table public.battle_history enable row level security;
+
+drop policy if exists "battle_history_select_all" on public.battle_history;
+create policy "battle_history_select_all" on public.battle_history
+  for select using (true);
+
+drop policy if exists "battle_history_insert_own" on public.battle_history;
+create policy "battle_history_insert_own" on public.battle_history
+  for insert with check (auth.uid() is not null);
+
+-- =========================
+-- Matchmaking queue
+-- =========================
+
+create table if not exists public.battle_queue (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade,
+  team_id uuid references public.battle_teams(id) on delete cascade,
+  mode text not null check (mode in ('1v1', '3v3')),
+  status text not null default 'waiting' check (status in ('waiting', 'matched', 'accepted', 'declined')),
+  current_elo int default 1500,
+  joined_at timestamptz default now(),
+  matched_at timestamptz
 );
 
-CREATE TABLE IF NOT EXISTS public.battle_ratings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  entity_id UUID NOT NULL,
-  entity_type TEXT NOT NULL CHECK (entity_type IN ('user', 'team')),
-  mode TEXT NOT NULL CHECK (mode IN ('1v1', '3v3')),
-  elo INT DEFAULT 1500,
-  wins INT DEFAULT 0,
-  losses INT DEFAULT 0,
-  draws INT DEFAULT 0,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  UNIQUE(entity_id, entity_type, mode)
-);
+create unique index if not exists idx_battle_queue_user_id_mode
+  on public.battle_queue(user_id, mode)
+  where user_id is not null;
 
-CREATE TABLE IF NOT EXISTS public.battle_history (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  battle_id UUID NOT NULL REFERENCES public.battles(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  team_id UUID REFERENCES public.battle_teams(id) ON DELETE CASCADE,
-  result TEXT NOT NULL CHECK (result IN ('win', 'loss', 'draw')),
-  elo_change INT DEFAULT 0,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+create unique index if not exists idx_battle_queue_team_id_mode
+  on public.battle_queue(team_id, mode)
+  where team_id is not null;
 
-CREATE TABLE IF NOT EXISTS public.battle_queue (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  team_id UUID REFERENCES public.battle_teams(id) ON DELETE CASCADE,
-  mode TEXT NOT NULL CHECK (mode IN ('1v1', '3v3')),
-  status TEXT NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting', 'matched', 'accepted', 'declined')),
-  current_elo INT DEFAULT 1500,
-  joined_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  matched_at TIMESTAMP WITH TIME ZONE
-);
+create index if not exists idx_battle_queue_mode_status on public.battle_queue(mode, status);
+create index if not exists idx_battle_queue_user_id on public.battle_queue(user_id);
+create index if not exists idx_battle_queue_team_id on public.battle_queue(team_id);
 
--- Create partial unique indexes
-CREATE UNIQUE INDEX IF NOT EXISTS idx_battle_queue_user_id_mode ON public.battle_queue(user_id, mode) WHERE user_id IS NOT NULL;
-CREATE UNIQUE INDEX IF NOT EXISTS idx_battle_queue_team_id_mode ON public.battle_queue(team_id, mode) WHERE team_id IS NOT NULL;
+alter table public.battle_queue enable row level security;
 
--- Create performance indexes
-CREATE INDEX IF NOT EXISTS idx_battles_mode_status ON public.battles(mode, status);
-CREATE INDEX IF NOT EXISTS idx_battles_created_at ON public.battles(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_battle_teams_battle_id ON public.battle_teams(battle_id);
-CREATE INDEX IF NOT EXISTS idx_battle_team_players_team_id ON public.battle_team_players(team_id);
-CREATE INDEX IF NOT EXISTS idx_battle_team_players_user_id ON public.battle_team_players(user_id);
-CREATE INDEX IF NOT EXISTS idx_battle_submissions_battle_id ON public.battle_submissions(battle_id);
-CREATE INDEX IF NOT EXISTS idx_battle_submissions_team_id ON public.battle_submissions(team_id);
-CREATE INDEX IF NOT EXISTS idx_battle_submissions_user_id ON public.battle_submissions(user_id);
-CREATE INDEX IF NOT EXISTS idx_battle_ratings_entity_id ON public.battle_ratings(entity_id, mode);
-CREATE INDEX IF NOT EXISTS idx_battle_history_user_id ON public.battle_history(user_id);
-CREATE INDEX IF NOT EXISTS idx_battle_queue_mode_status ON public.battle_queue(mode, status);
-CREATE INDEX IF NOT EXISTS idx_battle_queue_user_id ON public.battle_queue(user_id);
-CREATE INDEX IF NOT EXISTS idx_battle_queue_team_id ON public.battle_queue(team_id);
+drop policy if exists "battle_queue_select_access" on public.battle_queue;
+create policy "battle_queue_select_access" on public.battle_queue
+  for select using (
+    auth.uid() = user_id
+    or (
+      team_id is not null
+      and exists (
+        select 1
+        from public.battle_team_players btp
+        where btp.team_id = public.battle_queue.team_id
+          and btp.user_id = auth.uid()
+      )
+    )
+  );
 
--- Enable RLS
-ALTER TABLE public.battles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.battle_teams ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.battle_team_players ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.battle_submissions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.battle_ratings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.battle_history ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.battle_queue ENABLE ROW LEVEL SECURITY;
+drop policy if exists "battle_queue_insert_own" on public.battle_queue;
+create policy "battle_queue_insert_own" on public.battle_queue
+  for insert with check (auth.uid() is not null);
 
--- RLS Policies
-CREATE POLICY "battles_select_all" ON public.battles FOR SELECT USING (true);
-CREATE POLICY "battles_insert_own" ON public.battles FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
-CREATE POLICY "battles_update_own" ON public.battles FOR UPDATE USING (auth.uid() IS NOT NULL);
+drop policy if exists "battle_queue_delete_own" on public.battle_queue;
+create policy "battle_queue_delete_own" on public.battle_queue
+  for delete using (
+    auth.uid() = user_id
+    or (
+      team_id is not null
+      and exists (
+        select 1
+        from public.battle_team_players btp
+        where btp.team_id = public.battle_queue.team_id
+          and btp.user_id = auth.uid()
+      )
+    )
+  );
 
-CREATE POLICY "battle_teams_select_all" ON public.battle_teams FOR SELECT USING (true);
-CREATE POLICY "battle_teams_insert_own" ON public.battle_teams FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+-- =========================
+-- Housekeeping
+-- =========================
 
-CREATE POLICY "battle_team_players_select_all" ON public.battle_team_players FOR SELECT USING (true);
-CREATE POLICY "battle_team_players_insert_own" ON public.battle_team_players FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
-
-CREATE POLICY "battle_submissions_select_all" ON public.battle_submissions FOR SELECT USING (true);
-CREATE POLICY "battle_submissions_insert_own" ON public.battle_submissions FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "battle_ratings_select_all" ON public.battle_ratings FOR SELECT USING (true);
-CREATE POLICY "battle_ratings_insert_own" ON public.battle_ratings FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
-
-CREATE POLICY "battle_history_select_all" ON public.battle_history FOR SELECT USING (true);
-CREATE POLICY "battle_history_insert_own" ON public.battle_history FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
-
-CREATE POLICY "battle_queue_select_own" ON public.battle_queue FOR SELECT USING (auth.uid() = user_id OR auth.uid() IN (SELECT user_id FROM public.battle_team_players WHERE team_id = battle_queue.team_id));
-CREATE POLICY "battle_queue_insert_own" ON public.battle_queue FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
-CREATE POLICY "battle_queue_delete_own" ON public.battle_queue FOR DELETE USING (auth.uid() = user_id OR auth.uid() IN (SELECT user_id FROM public.battle_team_players WHERE team_id = battle_queue.team_id));
+comment on table public.battle_teams is 'Teams participating in multiplayer battles';
+comment on table public.battle_team_players is 'Membership mapping between users and battle teams';
+comment on table public.battle_queue is 'Matchmaking queue for battle arena modes';
+comment on table public.battle_history is 'Historical outcomes for completed battles';

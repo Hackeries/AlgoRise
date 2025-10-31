@@ -6,6 +6,28 @@ create table if not exists public.companies (
   created_by uuid references auth.users(id)
 );
 
+-- ensure profiles.company_id references companies once table is present
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'profiles'
+      and column_name = 'company_id'
+  ) and not exists (
+    select 1
+    from information_schema.table_constraints
+    where constraint_name = 'profiles_company_id_fkey'
+      and table_schema = 'public'
+      and table_name = 'profiles'
+  ) then
+    alter table public.profiles
+      add constraint profiles_company_id_fkey
+      foreign key (company_id) references public.companies(id) on delete set null;
+  end if;
+end $$;
+
 alter table public.companies enable row level security;
 
 -- Public read access for listing/searching companies

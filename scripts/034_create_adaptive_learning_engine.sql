@@ -369,29 +369,32 @@ declare
   tag text;
 begin
   -- Update mastery for each tag
-  foreach tag in array new.tags
-  loop
-    insert into public.user_topic_mastery (user_id, topic, problems_attempted, problems_solved, last_practiced_at)
-    values (
-      new.user_id, 
-      tag, 
-      1, 
-      case when new.status = 'solved' then 1 else 0 end,
-      now()
-    )
-    on conflict (user_id, topic) do update set
-      problems_attempted = user_topic_mastery.problems_attempted + 1,
-      problems_solved = case when new.status = 'solved' 
-        then user_topic_mastery.problems_solved + 1 
-        else user_topic_mastery.problems_solved end,
-      success_rate = case 
-        when user_topic_mastery.problems_attempted + 1 > 0 
-        then (user_topic_mastery.problems_solved + case when new.status = 'solved' then 1 else 0 end)::real / 
-             (user_topic_mastery.problems_attempted + 1)::real
-        else 0.0 end,
-      last_practiced_at = now(),
-      updated_at = now();
-  end loop;
+  if new.tags is not null then
+    foreach tag in array new.tags
+    loop
+      continue when tag IS NULL OR btrim(tag) = '';
+      insert into public.user_topic_mastery (user_id, topic, problems_attempted, problems_solved, last_practiced_at)
+      values (
+        new.user_id, 
+        tag, 
+        1, 
+        case when new.status = 'solved' then 1 else 0 end,
+        now()
+      )
+      on conflict (user_id, topic) do update set
+        problems_attempted = user_topic_mastery.problems_attempted + 1,
+        problems_solved = case when new.status = 'solved' 
+          then user_topic_mastery.problems_solved + 1 
+          else user_topic_mastery.problems_solved end,
+        success_rate = case 
+          when user_topic_mastery.problems_attempted + 1 > 0 
+          then (user_topic_mastery.problems_solved + case when new.status = 'solved' then 1 else 0 end)::real / 
+               (user_topic_mastery.problems_attempted + 1)::real
+          else 0.0 end,
+        last_practiced_at = now(),
+        updated_at = now();
+    end loop;
+  end if;
   
   return new;
 end;

@@ -39,7 +39,8 @@ begin
 
   if not exists (select 1 from pg_policies where policyname = 'adaptive_items_update' and tablename = 'adaptive_items') then
     create policy adaptive_items_update on public.adaptive_items
-      for update using (user_id = auth.uid());
+      for update using (user_id = auth.uid())
+      with check (user_id = auth.uid());
   end if;
 end$$;
 

@@ -119,18 +119,13 @@ ALTER TABLE public.problems ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.problem_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.problem_hints ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies for problems table
 CREATE POLICY "Anyone can view active problems" ON public.problems
   FOR SELECT USING (is_active = true);
 
+DROP POLICY IF EXISTS "Admins can manage problems" ON public.problems;
 CREATE POLICY "Admins can manage problems" ON public.problems
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.profiles 
-      WHERE profiles.id = auth.uid() 
-      AND profiles.role = 'admin'
-    )
-  );
+  FOR ALL USING (auth.role() = 'service_role')
+  WITH CHECK (auth.role() = 'service_role');
 
 -- RLS Policies for problem_history table
 CREATE POLICY "Users can view own problem history" ON public.problem_history
@@ -140,7 +135,8 @@ CREATE POLICY "Users can insert own problem history" ON public.problem_history
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can update own problem history" ON public.problem_history
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 -- RLS Policies for problem_hints table
 CREATE POLICY "Anyone can view hints for active problems" ON public.problem_hints
@@ -152,39 +148,46 @@ CREATE POLICY "Anyone can view hints for active problems" ON public.problem_hint
     )
   );
 
--- Function to update problem statistics
-CREATE OR REPLACE FUNCTION update_problem_statistics()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION public.refresh_problem_statistics()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_problem_id uuid := coalesce(NEW.problem_id, OLD.problem_id);
+  v_solved integer := 0;
+  v_attempts integer := 0;
 BEGIN
-  IF NEW.solved_at IS NOT NULL AND (OLD.solved_at IS NULL OR OLD IS NULL) THEN
-    -- Increment solved count
-    UPDATE public.problems
-    SET 
-      solved_count = solved_count + 1,
-      successful_submission_rate = (
-        (solved_count + 1)::FLOAT / NULLIF(attempt_count, 0)::FLOAT * 100
-      ),
-      updated_at = NOW()
-    WHERE id = NEW.problem_id;
+  IF v_problem_id IS NULL THEN
+    RETURN coalesce(NEW, OLD);
   END IF;
-  
-  IF NEW.attempt_count > COALESCE(OLD.attempt_count, 0) THEN
-    -- Increment attempt count
-    UPDATE public.problems
-    SET 
-      attempt_count = attempt_count + (NEW.attempt_count - COALESCE(OLD.attempt_count, 0)),
-      updated_at = NOW()
-    WHERE id = NEW.problem_id;
-  END IF;
-  
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
 
+  SELECT
+    COUNT(*) FILTER (WHERE solved_at IS NOT NULL),
+    COALESCE(SUM(COALESCE(attempt_count, 0)), 0)
+  INTO v_solved, v_attempts
+  FROM public.problem_history
+  WHERE problem_id = v_problem_id;
+
+  UPDATE public.problems
+  SET
+    solved_count = v_solved,
+    attempt_count = v_attempts,
+    successful_submission_rate = CASE
+      WHEN v_attempts > 0 THEN (v_solved::numeric / v_attempts::numeric) * 100
+      ELSE 0
+    END,
+    updated_at = NOW()
+  WHERE id = v_problem_id;
+
+  RETURN coalesce(NEW, OLD);
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trigger_update_problem_stats ON public.problem_history;
 CREATE TRIGGER trigger_update_problem_stats
-AFTER INSERT OR UPDATE ON public.problem_history
+AFTER INSERT OR UPDATE OR DELETE ON public.problem_history
 FOR EACH ROW
-EXECUTE FUNCTION update_problem_statistics();
+EXECUTE FUNCTION public.refresh_problem_statistics();
 
 -- Function to get random problems for matchmaking
 -- This ensures diversity and avoids recently seen problems

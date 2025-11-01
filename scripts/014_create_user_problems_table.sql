@@ -60,7 +60,8 @@ CREATE POLICY "Users can insert own problems" ON public.user_problems
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can update own problems" ON public.user_problems
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 -- user_levels policies
 CREATE POLICY "Users can view own level" ON public.user_levels
@@ -70,7 +71,8 @@ CREATE POLICY "Users can insert own level" ON public.user_levels
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 CREATE POLICY "Users can update own level" ON public.user_levels
-  FOR UPDATE USING (auth.uid() = user_id);
+  FOR UPDATE USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
 -- user_badges policies
 CREATE POLICY "Users can view own badges" ON public.user_badges

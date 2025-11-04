@@ -195,7 +195,8 @@ export default function ContestsPage() {
       if (!isManualRefresh) {
         toast({
           title: '⚠️ Connection hiccup',
-          description: 'Couldn\'t load contests right now. Check your connection and try again!',
+          description:
+            "Couldn't load contests right now. Check your connection and try again!",
           variant: 'destructive',
         });
       }
@@ -241,7 +242,7 @@ export default function ContestsPage() {
     if (!formData.name.trim()) {
       toast({
         title: '📝 Name your battle',
-        description: 'Every great contest needs an epic name! What\'s yours?',
+        description: "Every great contest needs an epic name! What's yours?",
         variant: 'destructive',
       });
       return;
@@ -250,8 +251,9 @@ export default function ContestsPage() {
     // Validate start date & time
     if (!formData.startDate || !formData.startTime) {
       toast({
-        title: '⏰ When\'s the showdown?',
-        description: 'Pick a date and time so everyone knows when to show up ready!',
+        title: "⏰ When's the showdown?",
+        description:
+          'Pick a date and time so everyone knows when to show up ready!',
         variant: 'destructive',
       });
       return;
@@ -267,7 +269,8 @@ export default function ContestsPage() {
     if (isNaN(minRating) || isNaN(maxRating) || minRating >= maxRating) {
       toast({
         title: '🔢 Rating range issue',
-        description: 'Max rating should be higher than min rating. Let\'s fix that!',
+        description:
+          "Max rating should be higher than min rating. Let's fix that!",
         variant: 'destructive',
       });
       return;
@@ -385,7 +388,8 @@ export default function ContestsPage() {
 
         toast({
           title: '🎊 Contest is live!',
-          description: 'Your contest is ready to rock! Share the link and watch the participants roll in.',
+          description:
+            'Your contest is ready to rock! Share the link and watch the participants roll in.',
           variant: 'default',
         });
       } else {
@@ -440,7 +444,7 @@ export default function ContestsPage() {
         toast({
           title: '🚫 Not eligible yet',
           description:
-            'This is Div 1 only. Try Div 2 instead—it\'s perfect for ratings under 1900!',
+            "This is Div 1 only. Try Div 2 instead—it's perfect for ratings under 1900!",
           variant: 'destructive',
         });
         return;
@@ -479,9 +483,9 @@ export default function ContestsPage() {
 
     if (contest.status === 'ended' || (contest.ends_at && now >= end)) {
       toast({
-            title: '🏁 Contest finished',
-            description:
-              'This one\'s over! Check out the leaderboard to see how everyone did.',
+        title: '🏁 Contest finished',
+        description:
+          "This one's over! Check out the leaderboard to see how everyone did.",
         variant: 'destructive',
       });
       return;
@@ -496,7 +500,8 @@ export default function ContestsPage() {
       if (now >= start && !contest.allow_late_join) {
         toast({
           title: '🔒 Too late!',
-          description: 'Registration closed when the contest kicked off. Catch the next one!',
+          description:
+            'Registration closed when the contest kicked off. Catch the next one!',
           variant: 'destructive',
         });
         return;
@@ -520,8 +525,9 @@ export default function ContestsPage() {
 
         if (response.ok) {
           toast({
-          title: '✅ You\'re in!',
-          description: 'Registration confirmed! Get ready to compete and show your skills.',
+            title: "✅ You're in!",
+            description:
+              'Registration confirmed! Get ready to compete and show your skills.',
             variant: 'default',
           });
           fetchContests(); // Refresh to update registration status
@@ -551,9 +557,9 @@ export default function ContestsPage() {
         );
       } else {
         toast({
-            title: '✅ You\'re all set',
-            description:
-              'Already registered! Just wait for the contest to start, then jump right in.',
+          title: "✅ You're all set",
+          description:
+            'Already registered! Just wait for the contest to start, then jump right in.',
         });
       }
     }
@@ -645,14 +651,16 @@ export default function ContestsPage() {
           </div>
 
           <div className='flex gap-2 w-full sm:w-auto'>
-            <Button 
-              size='lg' 
+            <Button
+              size='lg'
               variant='outline'
               onClick={() => fetchContests(true)}
               disabled={refreshing}
               className='gap-2'
             >
-              <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`}
+              />
               <span className='font-semibold hidden sm:inline'>Refresh</span>
             </Button>
             <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
@@ -663,406 +671,458 @@ export default function ContestsPage() {
                 </Button>
               </DialogTrigger>
 
-          <DialogContent className='max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col'>
-            <DialogHeader className='border-b pb-4'>
-              <DialogTitle className='text-2xl flex items-center gap-2'>
-                <div className='p-2 rounded-md border bg-background'>
-                  <Trophy className='h-6 w-6 text-foreground' />
-                </div>
-                Create Private Contest
-              </DialogTitle>
-              <DialogDescription>
-                Set up a custom training contest for your group or friends. Configure problems, timing, and rules to match your needs.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className='overflow-y-auto flex-1 space-y-6 py-4 px-4 sm:px-6'>
-              {/* Contest Name & Description */}
-              <div className='space-y-4'>
-                <h4 className='font-semibold text-lg flex items-center gap-2'>
-                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
-                    1
-                  </span>
-                  Basic Information
-                </h4>
-                <div className='space-y-3 ml-8'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='contest-name' className='font-medium'>
-                      Contest Name *
-                    </Label>
-                    <Input
-                      id='contest-name'
-                      placeholder='e.g., Weekly Practice Round 5'
-                      value={formData.name}
-                      onChange={e =>
-                        setFormData(prev => ({ ...prev, name: e.target.value }))
-                      }
-                      className='text-base'
-                    />
-                  </div>
-                  <div className='space-y-2'>
-                    <Label
-                      htmlFor='contest-description'
-                      className='font-medium'
-                    >
-                      Description
-                    </Label>
-                    <Textarea
-                      id='contest-description'
-                      placeholder='Describe your contest goals and rules...'
-                      value={formData.description}
-                      onChange={e =>
-                        setFormData(prev => ({
-                          ...prev,
-                          description: e.target.value,
-                        }))
-                      }
-                      rows={3}
-                      className='text-base'
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Contest Mode & Visibility */}
-              <div className='space-y-4'>
-                <h4 className='font-semibold text-lg flex items-center gap-2'>
-                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
-                    2
-                  </span>
-                  Contest Type
-                </h4>
-                <div className='space-y-3 ml-8'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='contest-mode' className='font-medium'>
-                      Contest Mode *
-                    </Label>
-                    <Select
-                      value={formData.contestMode}
-                      onValueChange={value =>
-                        setFormData(prev => ({ ...prev, contestMode: value }))
-                      }
-                    >
-                      <SelectTrigger className='text-base'>
-                        <SelectValue placeholder='Select contest mode' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='practice'>
-                          <div className='flex items-center gap-2'>
-                            <span>Practice Arena</span>
-                            <Badge variant='outline' className='text-xs'>
-                              5-12 problems, 2-4 hours
-                            </Badge>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value='icpc'>
-                          <div className='flex items-center gap-2'>
-                            <span>ICPC Arena</span>
-                            <Badge variant='outline' className='text-xs'>
-                              10-13 problems, 5 hours
-                            </Badge>
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className='space-y-2'>
-                    <Label htmlFor='visibility' className='font-medium'>
-                      Visibility *
-                    </Label>
-                    <Select
-                      value={formData.visibility}
-                      onValueChange={value =>
-                        setFormData(prev => ({ ...prev, visibility: value }))
-                      }
-                    >
-                      <SelectTrigger className='text-base'>
-                        <SelectValue placeholder='Select visibility' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='private'>
-                          Private (Only invited users)
-                        </SelectItem>
-                        <SelectItem value='public'>
-                          Public (Anyone can join)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              {/* Schedule */}
-              <div className='space-y-4'>
-                <h4 className='font-semibold text-lg flex items-center gap-2'>
-                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
-                    3
-                  </span>
-                  Schedule
-                </h4>
-                <div className='space-y-3 ml-8'>
-                  <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
-                    <div className='space-y-2'>
-                      <Label htmlFor='start-date' className='font-medium'>
-                        Start Date *
-                      </Label>
-                      <Input
-                        id='start-date'
-                        type='date'
-                        value={formData.startDate}
-                        onChange={e =>
-                          setFormData(prev => ({
-                            ...prev,
-                            startDate: e.target.value,
-                          }))
-                        }
-                        min={new Date().toISOString().split('T')[0]}
-                        className='dark:bg-background dark:text-foreground dark:[color-scheme:dark]'
-                      />
+              <DialogContent className='max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col'>
+                <DialogHeader className='border-b pb-4'>
+                  <DialogTitle className='text-2xl flex items-center gap-2'>
+                    <div className='p-2 rounded-md border bg-background'>
+                      <Trophy className='h-6 w-6 text-foreground' />
                     </div>
-                    <div className='space-y-2'>
-                      <Label htmlFor='start-time' className='font-medium'>
-                        Start Time *
-                      </Label>
-                      <Input
-                        id='start-time'
-                        type='time'
-                        value={formData.startTime}
-                        onChange={e =>
-                          setFormData(prev => ({
-                            ...prev,
-                            startTime: e.target.value,
-                          }))
-                        }
-                        className='dark:bg-background dark:text-foreground dark:[color-scheme:dark]'
-                      />
+                    Create Private Contest
+                  </DialogTitle>
+                  <DialogDescription>
+                    Set up a custom training contest for your group or friends.
+                    Configure problems, timing, and rules to match your needs.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className='overflow-y-auto flex-1 space-y-6 py-4 px-4 sm:px-6'>
+                  {/* Contest Name & Description */}
+                  <div className='space-y-4'>
+                    <h4 className='font-semibold text-lg flex items-center gap-2'>
+                      <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
+                        1
+                      </span>
+                      Basic Information
+                    </h4>
+                    <div className='space-y-3 ml-8'>
+                      <div className='space-y-2'>
+                        <Label htmlFor='contest-name' className='font-medium'>
+                          Contest Name *
+                        </Label>
+                        <Input
+                          id='contest-name'
+                          placeholder='e.g., Weekly Practice Round 5'
+                          value={formData.name}
+                          onChange={e =>
+                            setFormData(prev => ({
+                              ...prev,
+                              name: e.target.value,
+                            }))
+                          }
+                          className='text-base'
+                          aria-label='Contest name'
+                        />
+                      </div>
+                      <div className='space-y-2'>
+                        <Label
+                          htmlFor='contest-description'
+                          className='font-medium'
+                        >
+                          Description
+                        </Label>
+                        <Textarea
+                          id='contest-description'
+                          placeholder='Describe your contest goals and rules...'
+                          value={formData.description}
+                          onChange={e =>
+                            setFormData(prev => ({
+                              ...prev,
+                              description: e.target.value,
+                            }))
+                          }
+                          rows={3}
+                          className='text-base'
+                          aria-label='Contest description'
+                        />
+                      </div>
                     </div>
                   </div>
-                  <p className='text-xs text-muted-foreground bg-muted/50 p-2 rounded'>
-                    Note: Contest must start at least 1 hour from now. Time will
-                    be adjusted automatically if needed.
-                  </p>
-                </div>
-              </div>
 
-              <Separator />
+                  <Separator />
 
-              {/* Problems */}
-              <div className='space-y-4'>
-                <h4 className='font-semibold text-lg flex items-center gap-2'>
-                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
-                    4
-                  </span>
-                  Problem Configuration
-                </h4>
-                <div className='space-y-3 ml-8'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='problem-count' className='font-medium'>
-                      Number of Problems *
-                    </Label>
-                    <Select
-                      value={formData.problemCount}
-                      onValueChange={value =>
-                        setFormData(prev => ({ ...prev, problemCount: value }))
-                      }
-                    >
-                      <SelectTrigger className='text-base'>
-                        <SelectValue placeholder='Select number of problems' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {formData.contestMode === 'practice'
-                          ? [5, 6, 7, 8, 9, 10, 11, 12].map(num => (
-                              <SelectItem key={num} value={`${num}`}>
-                                {num} Problems
-                              </SelectItem>
-                            ))
-                          : [10, 11, 12, 13].map(num => (
-                              <SelectItem key={num} value={`${num}`}>
-                                {num} Problems (ICPC Standard)
-                              </SelectItem>
-                            ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className='space-y-2'>
-                    <Label className='font-medium'>
-                      Problem Rating Range *
-                    </Label>
-                    <div className='grid grid-cols-2 gap-4'>
-                      <Select
-                        value={formData.ratingMin}
-                        onValueChange={value =>
-                          setFormData(prev => ({ ...prev, ratingMin: value }))
-                        }
-                      >
-                        <SelectTrigger className='text-base'>
-                          <SelectValue placeholder='Min' />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from(
-                            { length: 28 },
-                            (_, i) => 800 + i * 100
-                          ).map(val => (
-                            <SelectItem key={val} value={`${val}`}>
-                              {val}
+                  {/* Contest Mode & Visibility */}
+                  <div className='space-y-4'>
+                    <h4 className='font-semibold text-lg flex items-center gap-2'>
+                      <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
+                        2
+                      </span>
+                      Contest Type
+                    </h4>
+                    <div className='space-y-3 ml-8'>
+                      <div className='space-y-2'>
+                        <Label htmlFor='contest-mode' className='font-medium'>
+                          Contest Mode *
+                        </Label>
+                        <Select
+                          value={formData.contestMode}
+                          onValueChange={value =>
+                            setFormData(prev => ({
+                              ...prev,
+                              contestMode: value,
+                            }))
+                          }
+                        >
+                          <SelectTrigger
+                            id='contest-mode'
+                            className='text-base'
+                            aria-label='Contest mode'
+                          >
+                            <SelectValue placeholder='Select contest mode' />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value='practice'>
+                              <div className='flex items-center gap-2'>
+                                <span>Practice Arena</span>
+                                <Badge variant='outline' className='text-xs'>
+                                  5-12 problems, 2-4 hours
+                                </Badge>
+                              </div>
                             </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      <Select
-                        value={formData.ratingMax}
-                        onValueChange={value =>
-                          setFormData(prev => ({ ...prev, ratingMax: value }))
-                        }
-                      >
-                        <SelectTrigger className='text-base'>
-                          <SelectValue placeholder='Max' />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from(
-                            { length: 28 },
-                            (_, i) => 800 + i * 100
-                          ).map(val => (
-                            <SelectItem key={val} value={`${val}`}>
-                              {val}
+                            <SelectItem value='icpc'>
+                              <div className='flex items-center gap-2'>
+                                <span>ICPC Arena</span>
+                                <Badge variant='outline' className='text-xs'>
+                                  10-13 problems, 5 hours
+                                </Badge>
+                              </div>
                             </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className='space-y-2'>
+                        <Label htmlFor='visibility' className='font-medium'>
+                          Visibility *
+                        </Label>
+                        <Select
+                          value={formData.visibility}
+                          onValueChange={value =>
+                            setFormData(prev => ({
+                              ...prev,
+                              visibility: value,
+                            }))
+                          }
+                        >
+                          <SelectTrigger
+                            id='visibility'
+                            className='text-base'
+                            aria-label='Contest visibility'
+                          >
+                            <SelectValue placeholder='Select visibility' />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value='private'>
+                              Private (Only invited users)
+                            </SelectItem>
+                            <SelectItem value='public'>
+                              Public (Anyone can join)
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <Separator />
+                  <Separator />
 
-              {/* Settings */}
-              <div className='space-y-4'>
-                <h4 className='font-semibold text-lg flex items-center gap-2'>
-                  <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
-                    5
-                  </span>
-                  Additional Settings
-                </h4>
-                <div className='space-y-3 ml-8'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='max-participants' className='font-medium'>
-                      Max Participants
-                    </Label>
-                    <Input
-                      id='max-participants'
-                      type='number'
-                      placeholder='Leave empty for unlimited'
-                      value={formData.maxParticipants}
-                      onChange={e =>
-                        setFormData(prev => ({
-                          ...prev,
-                          maxParticipants: e.target.value,
-                        }))
-                      }
-                      min={1}
-                      max={1000}
-                    />
-                  </div>
-
-                  <div className='flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/30'>
-                    <div className='space-y-0.5'>
-                      <Label className='font-medium'>Allow Late Join</Label>
-                      <p className='text-sm text-muted-foreground'>
-                        Participants can join after contest starts
+                  {/* Schedule */}
+                  <div className='space-y-4'>
+                    <h4 className='font-semibold text-lg flex items-center gap-2'>
+                      <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
+                        3
+                      </span>
+                      Schedule
+                    </h4>
+                    <div className='space-y-3 ml-8'>
+                      <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+                        <div className='space-y-2'>
+                          <Label htmlFor='start-date' className='font-medium'>
+                            Start Date *
+                          </Label>
+                          <Input
+                            id='start-date'
+                            type='date'
+                            value={formData.startDate}
+                            onChange={e =>
+                              setFormData(prev => ({
+                                ...prev,
+                                startDate: e.target.value,
+                              }))
+                            }
+                            min={new Date().toISOString().split('T')[0]}
+                            className='light:scheme-light dark:scheme-dark'
+                            aria-label='Contest start date'
+                          />
+                        </div>
+                        <div className='space-y-2'>
+                          <Label htmlFor='start-time' className='font-medium'>
+                            Start Time *
+                          </Label>
+                          <Input
+                            id='start-time'
+                            type='time'
+                            value={formData.startTime}
+                            onChange={e =>
+                              setFormData(prev => ({
+                                ...prev,
+                                startTime: e.target.value,
+                              }))
+                            }
+                            className='light:scheme-light dark:scheme-dark'
+                            aria-label='Contest start time'
+                          />
+                        </div>
+                      </div>
+                      <p className='text-xs text-muted-foreground bg-muted/50 p-2 rounded'>
+                        Note: Contest must start at least 1 hour from now. Time
+                        will be adjusted automatically if needed.
                       </p>
                     </div>
-                    <Switch
-                      checked={formData.allowLateJoin}
-                      onCheckedChange={checked =>
-                        setFormData(prev => ({
-                          ...prev,
-                          allowLateJoin: checked,
-                        }))
-                      }
-                    />
                   </div>
-                </div>
-              </div>
 
-              {/* Preview */}
-              {formData.startDate && formData.startTime && (
-                <>
                   <Separator />
-                  <div className='space-y-3 p-4 rounded-md bg-muted border'>
-                    <h4 className='font-semibold flex items-center gap-2'>
-                      <span>✓</span>
-                      Contest Preview
+
+                  {/* Problems */}
+                  <div className='space-y-4'>
+                    <h4 className='font-semibold text-lg flex items-center gap-2'>
+                      <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
+                        4
+                      </span>
+                      Problem Configuration
                     </h4>
-                    <div className='text-sm space-y-2 text-muted-foreground'>
-                      <div className='flex justify-between'>
-                        <span>Mode:</span>
-                        <span className='font-medium text-foreground'>
-                          {formData.contestMode === 'practice'
-                            ? 'Practice Arena'
-                            : 'ICPC Arena'}
-                        </span>
+                    <div className='space-y-3 ml-8'>
+                      <div className='space-y-2'>
+                        <Label htmlFor='problem-count' className='font-medium'>
+                          Number of Problems *
+                        </Label>
+                        <Select
+                          value={formData.problemCount}
+                          onValueChange={value =>
+                            setFormData(prev => ({
+                              ...prev,
+                              problemCount: value,
+                            }))
+                          }
+                        >
+                          <SelectTrigger
+                            id='problem-count'
+                            className='text-base'
+                            aria-label='Number of problems'
+                          >
+                            <SelectValue placeholder='Select number of problems' />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {formData.contestMode === 'practice'
+                              ? [5, 6, 7, 8, 9, 10, 11, 12].map(num => (
+                                  <SelectItem key={num} value={`${num}`}>
+                                    {num} Problems
+                                  </SelectItem>
+                                ))
+                              : [10, 11, 12, 13].map(num => (
+                                  <SelectItem key={num} value={`${num}`}>
+                                    {num} Problems (ICPC Standard)
+                                  </SelectItem>
+                                ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                      <div className='flex justify-between'>
-                        <span>Start:</span>
-                        <span className='font-medium text-foreground'>
-                          {new Date(
-                            `${formData.startDate}T${formData.startTime}`
-                          ).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className='flex justify-between'>
-                        <span>Duration:</span>
-                        <span className='font-medium text-foreground'>
-                          {formData.contestMode === 'icpc'
-                            ? '5 hours'
-                            : `${
-                                getAutoDuration(
-                                  Number.parseInt(formData.problemCount)
-                                ).hours
-                              } hours`}
-                        </span>
-                      </div>
-                      <div className='flex justify-between'>
-                        <span>Problems:</span>
-                        <span className='font-medium text-foreground'>
-                          {formData.problemCount} (Rating {formData.ratingMin}-
-                          {formData.ratingMax})
-                        </span>
+
+                      <div className='space-y-2'>
+                        <Label className='font-medium'>
+                          Problem Rating Range *
+                        </Label>
+                        <div className='grid grid-cols-2 gap-4'>
+                          <Select
+                            value={formData.ratingMin}
+                            onValueChange={value =>
+                              setFormData(prev => ({
+                                ...prev,
+                                ratingMin: value,
+                              }))
+                            }
+                          >
+                            <SelectTrigger
+                              className='text-base'
+                              aria-label='Minimum rating'
+                            >
+                              <SelectValue placeholder='Min' />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from(
+                                { length: 28 },
+                                (_, i) => 800 + i * 100
+                              ).map(val => (
+                                <SelectItem key={val} value={`${val}`}>
+                                  {val}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+
+                          <Select
+                            value={formData.ratingMax}
+                            onValueChange={value =>
+                              setFormData(prev => ({
+                                ...prev,
+                                ratingMax: value,
+                              }))
+                            }
+                          >
+                            <SelectTrigger
+                              className='text-base'
+                              aria-label='Maximum rating'
+                            >
+                              <SelectValue placeholder='Max' />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from(
+                                { length: 28 },
+                                (_, i) => 800 + i * 100
+                              ).map(val => (
+                                <SelectItem key={val} value={`${val}`}>
+                                  {val}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </>
-              )}
-            </div>
 
-            <DialogFooter className='border-t pt-4 flex justify-end gap-3'>
-              <Button
-                variant='outline'
-                onClick={() => {
-                  setCreateDialogOpen(false);
-                  resetForm();
-                }}
-                className='min-w-[100px]'
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={createContest}
-                disabled={creating || !formData.name.trim()}
-                size='lg'
-                className='min-w-[150px]'
-              >
-                {creating ? 'Creating...' : 'Create Contest'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
+                  <Separator />
+
+                  {/* Settings */}
+                  <div className='space-y-4'>
+                    <h4 className='font-semibold text-lg flex items-center gap-2'>
+                      <span className='flex items-center justify-center w-6 h-6 rounded-full bg-muted text-foreground text-sm font-bold'>
+                        5
+                      </span>
+                      Additional Settings
+                    </h4>
+                    <div className='space-y-3 ml-8'>
+                      <div className='space-y-2'>
+                        <Label
+                          htmlFor='max-participants'
+                          className='font-medium'
+                        >
+                          Max Participants
+                        </Label>
+                        <Input
+                          id='max-participants'
+                          type='number'
+                          placeholder='Leave empty for unlimited'
+                          value={formData.maxParticipants}
+                          onChange={e =>
+                            setFormData(prev => ({
+                              ...prev,
+                              maxParticipants: e.target.value,
+                            }))
+                          }
+                          min={1}
+                          max={1000}
+                          aria-label='Maximum participants'
+                        />
+                      </div>
+
+                      <div className='flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/30'>
+                        <div className='space-y-0.5'>
+                          <Label
+                            htmlFor='late-join-toggle'
+                            className='font-medium'
+                          >
+                            Allow Late Join
+                          </Label>
+                          <p className='text-sm text-muted-foreground'>
+                            Participants can join after contest starts
+                          </p>
+                        </div>
+                        <Switch
+                          id='late-join-toggle'
+                          checked={formData.allowLateJoin}
+                          onCheckedChange={checked =>
+                            setFormData(prev => ({
+                              ...prev,
+                              allowLateJoin: checked,
+                            }))
+                          }
+                          aria-label='Allow late join'
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Preview */}
+                  {formData.startDate && formData.startTime && (
+                    <>
+                      <Separator />
+                      <div className='space-y-3 p-4 rounded-md bg-muted border'>
+                        <h4 className='font-semibold flex items-center gap-2'>
+                          <span>✓</span>
+                          Contest Preview
+                        </h4>
+                        <div className='text-sm space-y-2 text-muted-foreground'>
+                          <div className='flex justify-between'>
+                            <span>Mode:</span>
+                            <span className='font-medium text-foreground'>
+                              {formData.contestMode === 'practice'
+                                ? 'Practice Arena'
+                                : 'ICPC Arena'}
+                            </span>
+                          </div>
+                          <div className='flex justify-between'>
+                            <span>Start:</span>
+                            <span className='font-medium text-foreground'>
+                              {new Date(
+                                `${formData.startDate}T${formData.startTime}`
+                              ).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className='flex justify-between'>
+                            <span>Duration:</span>
+                            <span className='font-medium text-foreground'>
+                              {formData.contestMode === 'icpc'
+                                ? '5 hours'
+                                : `${
+                                    getAutoDuration(
+                                      Number.parseInt(formData.problemCount)
+                                    ).hours
+                                  } hours`}
+                            </span>
+                          </div>
+                          <div className='flex justify-between'>
+                            <span>Problems:</span>
+                            <span className='font-medium text-foreground'>
+                              {formData.problemCount} (Rating{' '}
+                              {formData.ratingMin}-{formData.ratingMax})
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                <DialogFooter className='border-t pt-4 flex justify-end gap-3'>
+                  <Button
+                    variant='outline'
+                    onClick={() => {
+                      setCreateDialogOpen(false);
+                      resetForm();
+                    }}
+                    className='min-w-[100px]'
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={createContest}
+                    disabled={creating || !formData.name.trim()}
+                    size='lg'
+                    className='min-w-[150px]'
+                  >
+                    {creating ? 'Creating...' : 'Create Contest'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
             </Dialog>
           </div>
         </div>
@@ -1086,10 +1146,15 @@ export default function ContestsPage() {
                   <h2 className='text-xl sm:text-2xl font-bold text-foreground mb-1'>
                     Upcoming Contests
                   </h2>
-                  <p className='text-sm text-muted-foreground'>Official Codeforces competitions</p>
+                  <p className='text-sm text-muted-foreground'>
+                    Official Codeforces competitions
+                  </p>
                 </div>
               </div>
-              <Badge variant='secondary' className='text-sm px-4 py-2 font-semibold'>
+              <Badge
+                variant='secondary'
+                className='text-sm px-4 py-2 font-semibold'
+              >
                 {upcomingCfContests.length}
               </Badge>
             </div>
@@ -1110,73 +1175,83 @@ export default function ContestsPage() {
             ) : (
               <div className='grid gap-5 md:grid-cols-2 lg:grid-cols-3'>
                 {upcomingCfContests.slice(0, 6).map(contest => (
-              <Card
-                key={contest.id}
-                className='group relative cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-foreground/20 bg-card/50 backdrop-blur-sm'
-                onClick={() =>
-                  handleCodeforcesContestClick(
-                    contest.id,
-                    contest.startTimeSeconds || 0,
-                    contest.name
-                  )
-                }
-              >
-                {/* Subtle gradient overlay on hover */}
-                <div className='absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
-                
-                <CardHeader className='pb-4 relative z-10'>
-                  <div className='flex items-start justify-between gap-3'>
-                    <div className='flex-1 min-w-0'>
-                      <CardTitle className='text-base font-semibold leading-tight line-clamp-2 mb-2 group-hover:text-primary transition-colors'>
-                        {contest.name}
-                      </CardTitle>
-                      <div className='flex items-center gap-2 flex-wrap'>
-                        <Badge variant='outline' className='text-xs font-medium border-foreground/20'>
-                          {contest.type}
-                        </Badge>
-                        <Badge variant='secondary' className='text-xs font-medium'>
-                          {contest.phase}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className='p-2 rounded-md bg-muted/50 group-hover:bg-primary/10 transition-colors'>
-                      <ExternalLinkIcon className='w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors' />
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className='pt-0 space-y-4 relative z-10'>
-                  <div className='space-y-3'>
-                    {contest.startTimeSeconds && (
-                      <div className='flex items-center gap-3 text-sm'>
-                        <div className='p-2 rounded-md bg-muted/50'>
-                          <CalendarIcon className='w-4 h-4 text-foreground/70' />
+                  <Card
+                    key={contest.id}
+                    className='group relative cursor-pointer overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-foreground/20 bg-card/50 backdrop-blur-sm'
+                    onClick={() =>
+                      handleCodeforcesContestClick(
+                        contest.id,
+                        contest.startTimeSeconds || 0,
+                        contest.name
+                      )
+                    }
+                  >
+                    <div className='absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+
+                    <CardHeader className='pb-4 relative z-10'>
+                      <div className='flex items-start justify-between gap-3'>
+                        <div className='flex-1 min-w-0'>
+                          <CardTitle className='text-base font-semibold leading-tight line-clamp-2 mb-2 group-hover:text-primary transition-colors'>
+                            {contest.name}
+                          </CardTitle>
+                          <div className='flex items-center gap-2 flex-wrap'>
+                            <Badge
+                              variant='outline'
+                              className='text-xs font-medium border-foreground/20'
+                            >
+                              {contest.type}
+                            </Badge>
+                            <Badge
+                              variant='secondary'
+                              className='text-xs font-medium'
+                            >
+                              {contest.phase}
+                            </Badge>
+                          </div>
                         </div>
-                        <span className='truncate text-foreground/80 font-medium'>
-                          {formatTime(contest.startTimeSeconds)}
-                        </span>
+                        <div className='p-2 rounded-md bg-muted/50 group-hover:bg-primary/10 transition-colors'>
+                          <ExternalLinkIcon className='w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors' />
+                        </div>
                       </div>
-                    )}
-                    <div className='flex items-center gap-3 text-sm'>
-                      <div className='p-2 rounded-md bg-muted/50'>
-                        <ClockIcon className='w-4 h-4 text-foreground/70' />
+                    </CardHeader>
+                    <CardContent className='pt-0 space-y-4 relative z-10'>
+                      <div className='space-y-3'>
+                        {contest.startTimeSeconds && (
+                          <div className='flex items-center gap-3 text-sm'>
+                            <div className='p-2 rounded-md bg-muted/50'>
+                              <CalendarIcon className='w-4 h-4 text-foreground/70' />
+                            </div>
+                            <span className='truncate text-foreground/80 font-medium'>
+                              {formatTime(contest.startTimeSeconds)}
+                            </span>
+                          </div>
+                        )}
+                        <div className='flex items-center gap-3 text-sm'>
+                          <div className='p-2 rounded-md bg-muted/50'>
+                            <ClockIcon className='w-4 h-4 text-foreground/70' />
+                          </div>
+                          <span className='text-foreground/80 font-medium'>
+                            {formatDuration(contest.durationSeconds)}
+                          </span>
+                        </div>
                       </div>
-                      <span className='text-foreground/80 font-medium'>{formatDuration(contest.durationSeconds)}</span>
-                    </div>
-                  </div>
-                  {contest.startTimeSeconds && (
-                    <div className='pt-4 border-t'>
-                      <div className='flex items-center justify-between'>
-                        <span className='text-sm font-medium text-muted-foreground'>
-                          Starts in
-                        </span>
-                        <Badge variant='default' className='text-xs font-semibold px-3 py-1'>
-                          {getTimeUntilStart(contest.startTimeSeconds)}
-                        </Badge>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                      {contest.startTimeSeconds && (
+                        <div className='pt-4 border-t'>
+                          <div className='flex items-center justify-between'>
+                            <span className='text-sm font-medium text-muted-foreground'>
+                              Starts in
+                            </span>
+                            <Badge
+                              variant='default'
+                              className='text-xs font-semibold px-3 py-1'
+                            >
+                              {getTimeUntilStart(contest.startTimeSeconds)}
+                            </Badge>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 ))}
               </div>
             )}
@@ -1193,14 +1268,18 @@ export default function ContestsPage() {
                   <h2 className='text-xl sm:text-2xl font-bold text-foreground mb-1'>
                     Private Contests
                   </h2>
-                  <p className='text-sm text-muted-foreground'>Custom training sessions</p>
+                  <p className='text-sm text-muted-foreground'>
+                    Custom training sessions
+                  </p>
                 </div>
               </div>
-              <Badge variant='secondary' className='text-sm px-4 py-2 font-semibold'>
+              <Badge
+                variant='secondary'
+                className='text-sm px-4 py-2 font-semibold'
+              >
                 {privateContests.length}
               </Badge>
             </div>
-
 
             {privateContests.length === 0 ? (
               <Card className='border-2 border-dashed hover:border-primary/30 transition-colors'>
@@ -1209,11 +1288,14 @@ export default function ContestsPage() {
                     <div className='inline-flex p-6 rounded-lg border-2 bg-muted/50 mb-4'>
                       <UsersIcon className='w-12 h-12 text-muted-foreground' />
                     </div>
-                    <h3 className='text-lg font-semibold mb-2'>No Private Contests Yet</h3>
+                    <h3 className='text-lg font-semibold mb-2'>
+                      No Private Contests Yet
+                    </h3>
                     <p className='text-muted-foreground mb-6 max-w-md mx-auto'>
-                      Create your first private contest to practice with friends or host training sessions for your group.
+                      Create your first private contest to practice with friends
+                      or host training sessions for your group.
                     </p>
-                    <Button 
+                    <Button
                       onClick={() => setCreateDialogOpen(true)}
                       size='lg'
                       className='shadow-md hover:shadow-lg transition-shadow'
@@ -1231,14 +1313,18 @@ export default function ContestsPage() {
                   const isLive = status === 'live';
                   const isEnded = status === 'ended';
 
+                  const handleOpenContest = () => {
+                    window.open(`/contests/${contest.id}`, '_blank');
+                  };
+
                   return (
                     <Card
                       key={contest.id}
-                      className='group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-foreground/20 bg-card/50 backdrop-blur-sm'
+                      className='group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 border-2 hover:border-foreground/20 bg-card/50 backdrop-blur-sm cursor-pointer'
+                      onClick={handleOpenContest}
                     >
-                      {/* Subtle gradient overlay on hover */}
-                      <div className='absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
-                      
+                      <div className='absolute inset-0 bg-linear-to-br from-primary/5 via-transparent to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+
                       {/* Live indicator */}
                       {isLive && (
                         <div className='absolute top-4 right-4 z-20'>
@@ -1256,20 +1342,36 @@ export default function ContestsPage() {
                               {contest.name}
                             </CardTitle>
                             <CardDescription className='text-xs font-medium'>
-                              {contest.visibility === 'public' ? 'Public' : 'Private'} • {contest.isHost ? 'Host' : 'Guest'}
+                              {contest.visibility === 'public'
+                                ? 'Public'
+                                : 'Private'}{' '}
+                              • {contest.isHost ? 'Host' : 'Guest'}
                             </CardDescription>
                           </div>
                         </div>
                         <div className='flex items-center gap-2 flex-wrap'>
                           <Badge
-                            variant={isLive ? 'default' : isEnded ? 'secondary' : 'outline'}
-                            className={`text-xs font-medium ${isLive ? 'bg-green-600 hover:bg-green-700' : ''}`}
+                            variant={
+                              isLive
+                                ? 'default'
+                                : isEnded
+                                ? 'secondary'
+                                : 'outline'
+                            }
+                            className={`text-xs font-medium ${
+                              isLive ? 'bg-green-600 hover:bg-green-700' : ''
+                            }`}
                           >
                             {isLive && '• '}
                             {status.charAt(0).toUpperCase() + status.slice(1)}
                           </Badge>
-                          <Badge variant='outline' className='text-xs font-medium border-foreground/20'>
-                            {contest.contest_mode === 'icpc' ? 'ICPC' : 'Practice'}
+                          <Badge
+                            variant='outline'
+                            className='text-xs font-medium border-foreground/20'
+                          >
+                            {contest.contest_mode === 'icpc'
+                              ? 'ICPC'
+                              : 'Practice'}
                           </Badge>
                         </div>
                       </CardHeader>
@@ -1289,65 +1391,140 @@ export default function ContestsPage() {
                             <div className='p-2 rounded-md bg-muted/50'>
                               <ClockIcon className='w-4 h-4 text-foreground/70' />
                             </div>
-                            <span className='text-foreground/80 font-medium'>{contest.duration_minutes} minutes</span>
+                            <span className='text-foreground/80 font-medium'>
+                              {contest.duration_minutes} minutes
+                            </span>
                           </div>
                         </div>
-                        
+
                         {contest.description && (
                           <p className='text-sm text-muted-foreground line-clamp-2 pt-2 border-t italic'>
                             {contest.description}
                           </p>
                         )}
-                        
+
                         <div className='flex flex-wrap items-center gap-2 pt-2 border-t'>
-                          <span className='text-xs font-medium text-muted-foreground'>{contest.problem_count} problems</span>
-                          <span className='text-xs text-muted-foreground'>•</span>
-                          <span className='text-xs font-medium text-muted-foreground'>{contest.rating_min}-{contest.rating_max}</span>
+                          <span className='text-xs font-medium text-muted-foreground'>
+                            {contest.problem_count} problems
+                          </span>
+                          <span className='text-xs text-muted-foreground'>
+                            •
+                          </span>
+                          <span className='text-xs font-medium text-muted-foreground'>
+                            {contest.rating_min}-{contest.rating_max}
+                          </span>
                           {contest.allow_late_join && (
                             <>
-                              <span className='text-xs text-muted-foreground'>•</span>
-                              <span className='text-xs font-medium text-muted-foreground'>Late join</span>
+                              <span className='text-xs text-muted-foreground'>
+                                •
+                              </span>
+                              <span className='text-xs font-medium text-muted-foreground'>
+                                Late join
+                              </span>
                             </>
                           )}
                         </div>
 
-                        {/* Action Button */}
                         <div className='pt-4 border-t'>
                           {(() => {
                             const now = Date.now();
-                            const startsAt = contest.starts_at ? new Date(contest.starts_at).getTime() : null;
-                            const endsAt = contest.ends_at ? new Date(contest.ends_at).getTime() : startsAt && contest.duration_minutes ? startsAt + contest.duration_minutes * 60 * 1000 : null;
+                            const startsAt = contest.starts_at
+                              ? new Date(contest.starts_at).getTime()
+                              : null;
+                            const endsAt = contest.ends_at
+                              ? new Date(contest.ends_at).getTime()
+                              : startsAt && contest.duration_minutes
+                              ? startsAt + contest.duration_minutes * 60 * 1000
+                              : null;
                             const hasEnded = !!(endsAt && now >= endsAt);
                             const hasStarted = !!(startsAt && now >= startsAt);
 
                             if (hasEnded || contest.status === 'ended') {
                               return (
-                                <Button
-                                  size='sm'
-                                  variant='outline'
-                                  className='w-full text-xs font-semibold hover:bg-muted transition-colors'
-                                  onClick={() => window.open(`/contests/${contest.id}`, '_blank')}
-                                >
-                                  View Leaderboard
-                                </Button>
+                                <div className='space-y-2'>
+                                  <Button
+                                    size='sm'
+                                    variant='outline'
+                                    className='w-full text-xs font-semibold hover:bg-muted transition-colors bg-transparent'
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      window.open(
+                                        `/contests/${contest.id}`,
+                                        '_blank'
+                                      );
+                                    }}
+                                  >
+                                    View Leaderboard
+                                  </Button>
+                                  {contest.isHost && (
+                                    <Button
+                                      size='sm'
+                                      variant='outline'
+                                      className='w-full text-xs font-semibold bg-transparent'
+                                      onClick={e => {
+                                        e.stopPropagation();
+                                        navigator.clipboard.writeText(
+                                          `${
+                                            process.env.NEXT_PUBLIC_SITE_URL ||
+                                            window.location.origin
+                                          }/contests/${contest.id}`
+                                        );
+                                        toast({
+                                          title: 'Link Copied!',
+                                          description:
+                                            'Contest link copied to clipboard.',
+                                        });
+                                      }}
+                                    >
+                                      Copy Link
+                                    </Button>
+                                  )}
+                                </div>
                               );
                             }
 
-                            const label = contest.isRegistered ? (hasStarted ? 'Join Now' : 'Registered') : 'Register';
-                            const disabled = contest.isRegistered ? !hasStarted && !contest.allow_late_join : false;
+                            const label = contest.isRegistered
+                              ? hasStarted
+                                ? 'Join Contest'
+                                : 'Registered'
+                              : 'Register';
+                            const disabled = contest.isRegistered
+                              ? !hasStarted && !contest.allow_late_join
+                              : false;
 
                             return (
-                              <Button
-                                size='sm'
-                                variant={hasStarted ? 'default' : 'default'}
-                                className={`w-full text-xs font-semibold shadow-md hover:shadow-lg transition-all ${
-                                  hasStarted ? 'bg-green-600 hover:bg-green-700' : ''
-                                }`}
-                                onClick={() => handleJoinPrivateContest(contest)}
-                                disabled={disabled}
-                              >
-                                {label}
-                              </Button>
+                              <div className='space-y-2'>
+                                <Button
+                                  size='sm'
+                                  variant={hasStarted ? 'default' : 'default'}
+                                  className={`w-full text-xs font-semibold shadow-md hover:shadow-lg transition-all ${
+                                    hasStarted
+                                      ? 'bg-green-600 hover:bg-green-700'
+                                      : ''
+                                  }`}
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    handleJoinPrivateContest(contest);
+                                  }}
+                                  disabled={disabled}
+                                >
+                                  {label}
+                                </Button>
+                                <Button
+                                  size='sm'
+                                  variant='outline'
+                                  className='w-full text-xs font-semibold bg-transparent'
+                                  onClick={e => {
+                                    e.stopPropagation();
+                                    window.open(
+                                      `/contests/${contest.id}`,
+                                      '_blank'
+                                    );
+                                  }}
+                                >
+                                  View Details
+                                </Button>
+                              </div>
                             );
                           })()}
                         </div>
@@ -1358,7 +1535,6 @@ export default function ContestsPage() {
               </div>
             )}
           </section>
-
         </div>
       )}
 
@@ -1372,10 +1548,15 @@ export default function ContestsPage() {
             </DialogDescription>
           </DialogHeader>
           <div className='flex items-center gap-2 mt-4'>
+            <label htmlFor='created-link' className='sr-only'>
+              Created contest link
+            </label>
             <Input
+              id='created-link'
               value={createdContestLink || ''}
               readOnly
               className='flex-1'
+              aria-label='Created contest link'
             />
             <Button
               onClick={() => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { Button } from '@/components/ui/button';
@@ -74,6 +74,9 @@ export default function ContestParticipationPage() {
   const router = useRouter();
   const { verificationData } = useCFVerification();
   const handle = verificationData?.handle;
+
+  const [localTimeRemaining, setLocalTimeRemaining] = useState<number>(0);
+
   const {
     data: cfData,
     mutate: refreshCF,
@@ -87,13 +90,29 @@ export default function ContestParticipationPage() {
     fetcher,
     { revalidateOnFocus: false }
   );
-  const { data, error, mutate } = useSWR<{ contest: Contest }>(
+
+  const { data, error, mutate, isLoading } = useSWR<{ contest: Contest }>(
     params.id ? `/api/contests/${params.id}` : null,
     fetcher,
-    { refreshInterval: 30000 }
+    { refreshInterval: 1000 } // Update every second for real-time timer
   );
 
   const contest = data?.contest;
+
+  useEffect(() => {
+    if (contest?.timeRemaining) {
+      setLocalTimeRemaining(contest.timeRemaining);
+    }
+  }, [contest?.timeRemaining]);
+
+  useEffect(() => {
+    if (contest?.status === 'ended' || localTimeRemaining <= 0) {
+      // Wait a moment to ensure fullscreen is exited gracefully
+      setTimeout(() => {
+        router.push(`/contests/${params.id}`);
+      }, 500);
+    }
+  }, [contest?.status, localTimeRemaining, params.id, router]);
 
   const problemVerdicts = useMemo(() => {
     const map = new Map<string, { verdict: VerdictSimple; ts: number }>();
@@ -188,27 +207,14 @@ export default function ContestParticipationPage() {
     };
   }, [router]);
 
-  useEffect(() => {
-    if (!contest || contest.status !== 'live') return;
-
-    const interval = setInterval(() => {
-      mutate(); // Refresh contest data to get updated time
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [contest, mutate]);
-
-  useEffect(() => {
-    if (contest && contest.status === 'live' && contest.timeRemaining <= 0) {
-      router.push(`/contests/${contest.id}`);
-    }
-  }, [contest, router]);
-
   if (error) {
     return (
       <div className='min-h-screen bg-red-50 flex items-center justify-center'>
         <div className='text-center'>
           <h1 className='text-2xl font-bold text-red-800'>Contest Not Found</h1>
+          <p className='text-red-600 mb-4'>
+            {error?.message || 'Failed to load contest'}
+          </p>
           <Button onClick={() => router.push('/contests')} className='mt-4'>
             Back to Contests
           </Button>
@@ -217,10 +223,13 @@ export default function ContestParticipationPage() {
     );
   }
 
-  if (!contest) {
+  if (isLoading || !contest) {
     return (
       <div className='min-h-screen bg-gray-900 flex items-center justify-center'>
-        <div className='text-white'>Loading contest...</div>
+        <div className='text-center text-white'>
+          <div className='inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white/60 mb-4'></div>
+          <p>Loading contest...</p>
+        </div>
       </div>
     );
   }
@@ -311,7 +320,7 @@ export default function ContestParticipationPage() {
               <div className='flex items-center gap-2 text-green-400'>
                 <Clock className='h-4 w-4' />
                 <span className='font-mono text-lg'>
-                  {formatTime(contest.timeRemaining)}
+                  {formatTime(localTimeRemaining)}
                 </span>
               </div>
             )}

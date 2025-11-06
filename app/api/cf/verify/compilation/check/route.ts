@@ -1,16 +1,28 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { logger, getRequestContext } from '@/lib/logging/auth-logger';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/security/rate-limit';
+import { validateData, cfVerificationCheckSchema } from '@/lib/validation/schemas';
 
 export async function POST(req: Request) {
   try {
-    const { verificationId } = await req.json();
-
-    if (!verificationId) {
+    const body = await req.json();
+    
+    // Validate input
+    const validation = validateData(cfVerificationCheckSchema, { 
+      handle: body.handle || '', 
+      verificationId: body.verificationId || '' 
+    });
+    if (!validation.success) {
+      const context = getRequestContext(req);
+      logger.logValidationError(context, 'cf_verification', validation.error);
       return NextResponse.json(
-        { error: 'verificationId required' },
+        { error: validation.error },
         { status: 400 }
       );
     }
+
+    const { verificationId } = validation.data;
 
     const supabase = await createClient();
     const {
@@ -18,8 +30,24 @@ export async function POST(req: Request) {
       error: userErr,
     } = await supabase.auth.getUser();
 
-    if (userErr || !user)
+    if (userErr || !user) {
+      const context = getRequestContext(req);
+      logger.logUnauthorizedAccess(context, 'cf.verification.check');
       return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+    }
+
+    // Apply rate limiting
+    const rateLimitResponse = await checkRateLimit(
+      req,
+      'cf_verify_check',
+      RATE_LIMITS.CF_VERIFY_CHECK,
+      user.id
+    );
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
+    const context = getRequestContext(req);
 
     // Fetch verification data
     const { data: row, error: selErr } = await supabase
@@ -30,29 +58,37 @@ export async function POST(req: Request) {
       .eq('user_id', user.id)
       .single();
 
-    if (selErr || !row)
+    if (selErr || !row) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, '', false, new Error('No verification attempt found'));
       return NextResponse.json(
         { error: 'no verification attempt found' },
         { status: 400 }
       );
+    }
 
-    if (row.verified)
+    if (row.verified) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, true);
       return NextResponse.json({ verified: true, handle: row.handle });
+    }
 
     // Check expiration
     const now = new Date();
     const expiry = new Date(row.expires_at);
-    if (now > expiry)
+    if (now > expiry) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, new Error('Verification expired'));
       return NextResponse.json(
         { verified: false, message: 'Verification expired' },
         { status: 200 }
       );
+    }
 
-    if (row.verification_token !== verificationId)
+    if (row.verification_token !== verificationId) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, new Error('Invalid verification ID'));
       return NextResponse.json(
         { verified: false, message: 'Invalid verification ID' },
         { status: 400 }
       );
+    }
 
     // Fetch recent CF submissions
     const cfResponse = await fetch(
@@ -60,11 +96,13 @@ export async function POST(req: Request) {
     );
     const cfData = await cfResponse.json();
 
-    if (cfData.status !== 'OK')
+    if (cfData.status !== 'OK') {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, new Error('Failed to fetch submissions'));
       return NextResponse.json(
         { verified: false, message: 'Failed to fetch submissions' },
         { status: 500 }
       );
+    }
 
     const recentSubmission = cfData.result?.find(
       (sub: any) =>
@@ -73,7 +111,8 @@ export async function POST(req: Request) {
         sub.verdict === 'COMPILATION_ERROR'
     );
 
-    if (!recentSubmission)
+    if (!recentSubmission) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, new Error('No compilation error submission found'));
       return NextResponse.json(
         {
           verified: false,
@@ -81,6 +120,7 @@ export async function POST(req: Request) {
         },
         { status: 200 }
       );
+    }
 
     // Validate submission time
     const submissionTime = new Date(
@@ -88,7 +128,8 @@ export async function POST(req: Request) {
     );
     const verificationStart = new Date(row.verification_started_at);
 
-    if (submissionTime < verificationStart)
+    if (submissionTime < verificationStart) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, new Error('Submission was made before verification started'));
       return NextResponse.json(
         {
           verified: false,
@@ -96,8 +137,10 @@ export async function POST(req: Request) {
         },
         { status: 200 }
       );
+    }
 
-    if (submissionTime > expiry)
+    if (submissionTime > expiry) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, new Error('Submission made after verification expired'));
       return NextResponse.json(
         {
           verified: false,
@@ -105,17 +148,20 @@ export async function POST(req: Request) {
         },
         { status: 200 }
       );
+    }
 
     // Fetch user info
     const userInfoResponse = await fetch(
       `https://codeforces.com/api/user.info?handles=${row.handle}`
     );
     const userInfoData = await userInfoResponse.json();
-    if (userInfoData.status !== 'OK' || !userInfoData.result?.[0])
+    if (userInfoData.status !== 'OK' || !userInfoData.result?.[0]) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, new Error('Failed to fetch user info'));
       return NextResponse.json(
         { verified: false, message: 'Failed to fetch user info' },
         { status: 500 }
       );
+    }
 
     const cfUser = userInfoData.result[0];
 
@@ -129,8 +175,10 @@ export async function POST(req: Request) {
       })
       .eq('user_id', user.id);
 
-    if (upErr)
+    if (upErr) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, upErr);
       return NextResponse.json({ error: upErr.message }, { status: 500 });
+    }
 
     // Insert snapshot
     await supabase.from('cf_snapshots').insert({
@@ -143,6 +191,8 @@ export async function POST(req: Request) {
       snapshot_at: new Date().toISOString(),
     });
 
+    logger.logCFVerificationComplete({ ...context, userId: user.id }, cfUser.handle);
+
     return NextResponse.json({
       verified: true,
       handle: cfUser.handle,
@@ -151,7 +201,8 @@ export async function POST(req: Request) {
       rank: cfUser.rank ?? 'unrated',
     });
   } catch (e: any) {
-    console.error('Verification check error:', e);
+    const context = getRequestContext(req);
+    logger.logError('cf.verification.check.error', context, e);
     return NextResponse.json(
       { error: e?.message || 'unknown error' },
       { status: 500 }

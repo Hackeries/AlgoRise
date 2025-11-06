@@ -1,15 +1,25 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { logger, getRequestContext } from '@/lib/logging/auth-logger';
+import { checkRateLimit, RATE_LIMITS } from '@/lib/security/rate-limit';
+import { validateData, cfVerificationStartSchema } from '@/lib/validation/schemas';
 
 export async function POST(req: Request) {
   try {
-    const { handle } = await req.json();
-    if (!handle || typeof handle !== 'string') {
+    const body = await req.json();
+    
+    // Validate input
+    const validation = validateData(cfVerificationStartSchema, body);
+    if (!validation.success) {
+      const context = getRequestContext(req);
+      logger.logValidationError(context, 'cf_handle', validation.error);
       return NextResponse.json(
-        { error: 'Codeforces handle is required' },
+        { error: validation.error },
         { status: 400 }
       );
     }
+
+    const { handle } = validation.data;
 
     const supabase = await createClient();
 
@@ -17,11 +27,29 @@ export async function POST(req: Request) {
       data: { user },
       error: userErr,
     } = await supabase.auth.getUser();
-    if (userErr || !user)
+    
+    if (userErr || !user) {
+      const context = getRequestContext(req);
+      logger.logUnauthorizedAccess(context, 'cf.verification.start');
       return NextResponse.json(
         { error: 'Unauthorized. Please log in first.' },
         { status: 401 }
       );
+    }
+
+    // Apply rate limiting
+    const rateLimitResponse = await checkRateLimit(
+      req,
+      'cf_verify_start',
+      RATE_LIMITS.CF_VERIFY_START,
+      user.id
+    );
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
+    const context = getRequestContext(req);
+    logger.logCFVerificationStart({ ...context, userId: user.id }, handle);
 
     // ✅ Verify handle exists on Codeforces
     const cfResponse = await fetch(
@@ -30,6 +58,7 @@ export async function POST(req: Request) {
     const cfData = await cfResponse.json();
 
     if (cfData.status !== 'OK' || !cfData.result?.[0]) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, handle, false, new Error('Handle not found'));
       return NextResponse.json(
         { error: 'Codeforces handle not found' },
         { status: 404 }
@@ -78,6 +107,7 @@ export async function POST(req: Request) {
     );
 
     if (upErr) {
+      logger.logError('cf.verification.start.db_error', { ...context, userId: user.id }, upErr);
       return NextResponse.json({ error: upErr.message }, { status: 500 });
     }
 
@@ -90,6 +120,8 @@ export async function POST(req: Request) {
       expiresAt,
     });
   } catch (e: any) {
+    const context = getRequestContext(req);
+    logger.logError('cf.verification.start.error', context, e);
     return NextResponse.json(
       { error: e?.message || 'Unknown server error' },
       { status: 500 }

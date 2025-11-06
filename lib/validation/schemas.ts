@@ -127,7 +127,7 @@ export const emailSchema = z.string().email('Invalid email address');
 export const passwordSchema = z
   .string()
   .min(8, 'Password must be at least 8 characters')
-  .max(72, 'Password must be at most 72 characters'); // bcrypt limit
+  .max(72, 'Password must be at most 72 characters'); // Common password length limit for security
 
 export const signUpSchema = z.object({
   email: emailSchema,

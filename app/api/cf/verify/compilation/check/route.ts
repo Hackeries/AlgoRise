@@ -181,7 +181,7 @@ export async function POST(req: Request) {
     }
 
     // Insert snapshot - using existing cf_snapshots schema
-    await supabase.from('cf_snapshots').insert({
+    const { error: snapshotErr } = await supabase.from('cf_snapshots').insert({
       user_id: user.id,
       handle: cfUser.handle,
       last_rating: cfUser.rating ?? null,
@@ -189,6 +189,11 @@ export async function POST(req: Request) {
       rating_delta: 0,
       fetched_at: new Date().toISOString(),
     });
+
+    if (snapshotErr) {
+      logger.logError('cf.verification.snapshot.error', { ...context, userId: user.id, handle: cfUser.handle }, snapshotErr);
+      // Don't fail the verification if snapshot insertion fails - verification is still successful
+    }
 
     logger.logCFVerificationComplete({ ...context, userId: user.id }, cfUser.handle);
 

@@ -120,7 +120,8 @@ export async function checkRateLimit(
     return null;
   } catch (error) {
     // If Redis fails, allow the request but log the error
-    console.error('Rate limit check failed:', error);
+    const context = getRequestContext(request);
+    logger.logError('rate_limit.check.error', { ...context, userId, endpoint }, error);
     return null;
   }
 }
@@ -155,7 +156,8 @@ export async function getRateLimitStatus(
       reset,
     };
   } catch (error) {
-    console.error('Failed to get rate limit status:', error);
+    const context = getRequestContext(request);
+    logger.logError('rate_limit.status.error', { ...context, userId, endpoint }, error);
     return {
       limit: config.maxRequests,
       remaining: config.maxRequests,
@@ -176,7 +178,7 @@ export async function resetRateLimit(
     const key = getRateLimitKey(identifier, endpoint);
     await redis.del(key);
   } catch (error) {
-    console.error('Failed to reset rate limit:', error);
+    logger.logError('rate_limit.reset.error', { identifier, endpoint }, error);
   }
 }
 

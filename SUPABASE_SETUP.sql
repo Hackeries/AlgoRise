@@ -118,6 +118,10 @@ create table if not exists public.cf_handles (
   user_id uuid not null references auth.users(id) on delete cascade,
   handle text not null,
   verified boolean not null default false,
+  verification_token text,
+  verification_started_at timestamptz,
+  expires_at timestamptz,
+  last_sync_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (user_id),
@@ -143,6 +147,7 @@ exception when duplicate_object then null; end $$;
 
 create index if not exists idx_cf_handles_user_id on public.cf_handles(user_id);
 create index if not exists idx_cf_handles_handle on public.cf_handles(handle);
+create index if not exists idx_cf_handles_verification_token on public.cf_handles(verification_token) where verification_token is not null;
 
 -- ==================== CF SNAPSHOTS ====================
 

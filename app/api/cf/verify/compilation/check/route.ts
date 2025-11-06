@@ -180,15 +180,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: upErr.message }, { status: 500 });
     }
 
-    // Insert snapshot
+    // Insert snapshot - using existing cf_snapshots schema
     await supabase.from('cf_snapshots').insert({
       user_id: user.id,
       handle: cfUser.handle,
-      rating: cfUser.rating ?? null,
-      max_rating: cfUser.maxRating ?? null,
-      rank: cfUser.rank ?? 'unrated',
-      problems_solved: 0,
-      snapshot_at: new Date().toISOString(),
+      last_rating: cfUser.rating ?? null,
+      last_contest: null,
+      rating_delta: 0,
+      fetched_at: new Date().toISOString(),
     });
 
     logger.logCFVerificationComplete({ ...context, userId: user.id }, cfUser.handle);

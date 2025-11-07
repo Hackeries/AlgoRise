@@ -1,105 +1,101 @@
 'use client';
 
 import * as React from 'react';
-import { useEffect, useState } from 'react';
 import {
   ThemeProvider as NextThemesProvider,
   type ThemeProviderProps,
+  useTheme,
 } from 'next-themes';
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
-  const [mounted, setMounted] = useState(false);
+/**
+ * Public ThemeProvider wrapper
+ * - Sets attribute="class" for Tailwind dark mode
+ * - Persists preference under a custom storageKey
+ * - Exposes optional transition-on-change UX
+ */
+export function ThemeProvider({
+  children,
+  disableTransitionOnChange = false,
+  ...props
+}: ThemeProviderProps & { disableTransitionOnChange?: boolean }) {
+  // We defer rendering until mounted to avoid SSR mismatch
+  const [mounted, setMounted] = React.useState(false);
 
-  // Prevent hydration mismatch
-  useEffect(() => {
+  React.useEffect(() => {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    // Return children without theme on server
-    return <>{children}</>;
-  }
-
+  // Render children early to avoid layout shift; theme will apply once mounted
   return (
     <NextThemesProvider
       attribute='class'
       defaultTheme='system'
       enableSystem
-      storageKey='algorise-theme'
-      disableTransitionOnChange={false} // Enable smooth transitions
       enableColorScheme
+      storageKey='algorise-theme'
+      disableTransitionOnChange={disableTransitionOnChange}
       themes={['light', 'dark', 'system']}
       {...props}
     >
-      <ThemeWatcher />
+      {mounted && (
+        <ThemeMetaSync enableTransition={!disableTransitionOnChange} />
+      )}
       {children}
     </NextThemesProvider>
   );
 }
 
-// Component to watch theme changes and update meta tags
-function ThemeWatcher() {
-  const [theme, setTheme] = useState<string | undefined>();
+/**
+ * Synchronizes theme-dependent meta tags (theme-color, Apple status bar)
+ * and applies a short-lived transition class for smooth theme changes.
+ */
+function ThemeMetaSync({ enableTransition }: { enableTransition: boolean }) {
+  const { resolvedTheme, theme, setTheme } = useTheme();
+  const [lastApplied, setLastApplied] = React.useState<string | null>(null);
 
-  useEffect(() => {
-    // Detect theme changes
-    const observer = new MutationObserver(mutations => {
-      mutations.forEach(mutation => {
-        if (
-          mutation.type === 'attributes' &&
-          mutation.attributeName === 'class'
-        ) {
-          const isDark = document.documentElement.classList.contains('dark');
-          setTheme(isDark ? 'dark' : 'light');
-        }
-      });
-    });
+  // Optional: auto-correct invalid theme values (defensive)
+  React.useEffect(() => {
+    if (theme && !['light', 'dark', 'system'].includes(theme)) {
+      setTheme('system');
+    }
+  }, [theme, setTheme]);
 
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
+  React.useEffect(() => {
+    const current = resolvedTheme;
+    if (!current || current === lastApplied) return;
 
-    // Set initial theme
-    const isDark = document.documentElement.classList.contains('dark');
-    setTheme(isDark ? 'dark' : 'light');
-
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (!theme) return;
-
-    // Update theme-color meta tag
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    // Update <meta name="theme-color">
+    const metaThemeColor = document.querySelector<HTMLMetaElement>(
+      'meta[name="theme-color"]'
+    );
     if (metaThemeColor) {
-      metaThemeColor.setAttribute(
-        'content',
-        theme === 'dark' ? '#0a0a0a' : '#0084FF'
-      );
+      metaThemeColor.content = current === 'dark' ? '#0a0a0a' : '#0084FF';
     }
 
-    // Update Apple status bar
-    const metaAppleStatusBar = document.querySelector(
+    // Update Apple status bar style (iOS PWA)
+    const appleStatusMeta = document.querySelector<HTMLMetaElement>(
       'meta[name="apple-mobile-web-app-status-bar-style"]'
     );
-    if (metaAppleStatusBar) {
-      metaAppleStatusBar.setAttribute(
-        'content',
-        theme === 'dark' ? 'black-translucent' : 'default'
-      );
+    if (appleStatusMeta) {
+      appleStatusMeta.content =
+        current === 'dark' ? 'black-translucent' : 'default';
     }
 
-    // Add smooth transition class
-    document.documentElement.classList.add('theme-transition');
+    // Respect reduced motion
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Remove transition class after animation completes
-    const timer = setTimeout(() => {
-      document.documentElement.classList.remove('theme-transition');
-    }, 300);
+    if (enableTransition && !prefersReduced) {
+      document.documentElement.classList.add('theme-transition');
+      const timeout = window.setTimeout(() => {
+        document.documentElement.classList.remove('theme-transition');
+      }, 320);
+      return () => window.clearTimeout(timeout);
+    }
 
-    return () => clearTimeout(timer);
-  }, [theme]);
+    setLastApplied(current);
+  }, [resolvedTheme, enableTransition, lastApplied]);
 
   return null;
 }

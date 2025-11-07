@@ -6,24 +6,46 @@ import RealTimeNotificationManager from '@/lib/realtime-notifications';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
+// Lightweight, relatable logger for this route
+const SCOPE = 'Notifications';
+const log = {
+  info: (msg: string, meta?: unknown) =>
+    meta !== undefined
+      ? console.log(`${SCOPE} - ${msg}`, meta)
+      : console.log(`${SCOPE} - ${msg}`),
+  warn: (msg: string, meta?: unknown) =>
+    meta !== undefined
+      ? console.warn(`${SCOPE} - ${msg}`, meta)
+      : console.warn(`${SCOPE} - ${msg}`),
+  error: (msg: string, meta?: unknown) =>
+    meta !== undefined
+      ? console.error(`${SCOPE} - ${msg}`, meta)
+      : console.error(`${SCOPE} - ${msg}`),
+};
+
+export async function GET(_req: NextRequest) {
   try {
     const supabase = await createClient();
-
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
 
+    // Quiet for logged-out users to avoid noisy 401 spam:
     if (!user || authError) {
-      console.log('[v0] Notifications GET - Unauthorized', {
-        error: authError?.message || 'Auth session missing!',
-        hasEnvVars: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-      });
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      log.warn('GET - unauthenticated; returning empty notifications');
+      return NextResponse.json(
+        {
+          status: 'ok',
+          notifications: [],
+          unreadCount: 0,
+          timestamp: new Date().toISOString(),
+        },
+        { status: 200 }
+      );
     }
 
-    // Get recent notifications for the user
+    // Recent notifications
     const { data: recentNotifications, error: notifError } = await supabase
       .from('notifications')
       .select('*')
@@ -32,15 +54,15 @@ export async function GET(req: NextRequest) {
       .limit(10);
 
     if (notifError) {
-      console.error('Error fetching notifications:', notifError);
+      log.error('GET - failed to fetch notifications', notifError);
       return NextResponse.json(
         { error: 'Failed to fetch notifications' },
         { status: 500 }
       );
     }
 
-    // Get unread count
-    const { data: unreadCount, error: countError } = await supabase.rpc(
+    // Unread count (non-fatal)
+    const { data: unreadData, error: countError } = await supabase.rpc(
       'get_unread_notification_count',
       {
         target_user_id: user.id,
@@ -48,17 +70,22 @@ export async function GET(req: NextRequest) {
     );
 
     if (countError) {
-      console.error('Error getting unread count:', countError);
+      log.warn(
+        'GET - failed to fetch unread count, defaulting to 0',
+        countError
+      );
     }
+
+    const unreadCount = typeof unreadData === 'number' ? unreadData : 0;
 
     return NextResponse.json({
       status: 'ok',
       notifications: recentNotifications || [],
-      unreadCount: unreadCount || 0,
+      unreadCount,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error in GET /api/notifications:', error);
+    log.error('GET - unexpected error', error);
     return NextResponse.json(
       {
         error: 'Failed to get notifications',
@@ -73,26 +100,32 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const supabase = await createClient();
-
-    // Authentication check
     const {
       data: { user },
+      error: authError,
     } = await supabase.auth.getUser();
-    if (!user) {
+
+    if (!user || authError) {
+      log.warn('POST test - unauthenticated');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json();
-    const { testType = 'basic', ...params } = body;
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
+    const { testType = 'basic', ...params } = body ?? {};
 
     const notificationService = await createNotificationService();
     const rtManager = RealTimeNotificationManager.getInstance();
 
-    let result;
+    let result: any;
 
     switch (testType) {
-      case 'basic':
-        // Test basic notification creation
+      case 'basic': {
         result = await notificationService.createNotification(user.id, {
           type: 'system_announcement',
           title: 'Test Notification',
@@ -100,28 +133,29 @@ export async function POST(req: NextRequest) {
             'This is a test notification to verify the system is working correctly.',
           priority: 2,
         });
-
-        if (result.success && result.notification) {
-          // Send real-time notification
+        if (result?.success && result?.notification) {
           await rtManager.sendToUser(user.id, result.notification);
         }
         break;
+      }
 
-      case 'achievement':
-        // Test achievement notification
+      case 'achievement': {
         result = await notificationService.notifyAchievement(
           user.id,
           'streak_milestone',
-          { days: params.days || 7 }
+          {
+            days: params.days || 7,
+          }
         );
         break;
+      }
 
-      case 'contest':
-        // Test contest notification
+      case 'contest': {
         const contestName = params.contestName || 'Test Contest';
         const startTime =
-          params.startTime || new Date(Date.now() + 3600000).toISOString(); // 1 hour from now
-
+          typeof params.startTime === 'string'
+            ? params.startTime
+            : new Date(Date.now() + 3600000).toISOString();
         result = await notificationService.createNotification(user.id, {
           type: 'contest_starting',
           title: 'Contest Starting Soon!',
@@ -132,9 +166,9 @@ export async function POST(req: NextRequest) {
           data: { contestName, startTime },
         });
         break;
+      }
 
-      case 'realtime':
-        // Test real-time functionality
+      case 'realtime': {
         await rtManager.sendToUser(user.id, {
           id: 'test-realtime',
           type: 'test',
@@ -143,12 +177,11 @@ export async function POST(req: NextRequest) {
           priority: 1,
           created_at: new Date().toISOString(),
         });
-
         result = { success: true, message: 'Real-time notification sent' };
         break;
+      }
 
-      case 'bulk':
-        // Test bulk notifications (send to current user multiple times)
+      case 'bulk': {
         const notifications = [
           {
             type: 'system_announcement' as const,
@@ -169,30 +202,30 @@ export async function POST(req: NextRequest) {
             priority: 4,
           },
         ];
-
         const bulkResults = await Promise.all(
           notifications.map(notif =>
             notificationService.createNotification(user.id, notif)
           )
         );
-
         result = {
-          success: bulkResults.every(r => r.success),
-          count: bulkResults.filter(r => r.success).length,
+          success: bulkResults.every(r => r?.success),
+          count: bulkResults.filter(r => r?.success).length,
           details: bulkResults,
         };
         break;
+      }
 
-      case 'cleanup':
-        // Test cleanup functionality
+      case 'cleanup': {
         result = await notificationService.cleanupExpiredNotifications();
         break;
+      }
 
-      default:
+      default: {
         return NextResponse.json(
           { error: 'Invalid test type' },
           { status: 400 }
         );
+      }
     }
 
     return NextResponse.json({
@@ -206,7 +239,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error in notification test:', error);
+    log.error('POST test - unexpected error', error);
     return NextResponse.json(
       {
         error: 'Test failed',

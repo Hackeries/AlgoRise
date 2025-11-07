@@ -50,7 +50,7 @@ import { AuthModal } from '@/components/auth/auth-modal';
 
 // ==================== TYPES ====================
 interface Notification {
-  id: number;
+  id: number | string;
   text: string;
   read: boolean;
   href?: string;
@@ -77,12 +77,22 @@ const useHeaderScroll = () => {
 
 const useNotifications = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [backendUnread, setBackendUnread] = useState<number | null>(null);
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const res = await fetch('/api/notifications');
+      const res = await fetch('/api/notifications', { cache: 'no-store' });
       const data = await res.json();
-      setNotifications(Array.isArray(data) ? data : []);
+      // Support both shapes: [] OR { notifications: [], unreadCount: number }
+      const list: Notification[] = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.notifications)
+        ? data.notifications
+        : [];
+      setNotifications(list);
+      if (typeof data?.unreadCount === 'number') {
+        setBackendUnread(data.unreadCount);
+      }
     } catch (err) {
       console.error('Failed to fetch notifications:', err);
     }
@@ -92,6 +102,7 @@ const useNotifications = () => {
     try {
       await fetch('/api/notifications/mark-all-read', { method: 'POST' });
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setBackendUnread(0);
     } catch (err) {
       console.error('Failed to mark notifications as read:', err);
     }
@@ -103,10 +114,12 @@ const useNotifications = () => {
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
-  const unreadCount = useMemo(
+  const computedUnread = useMemo(
     () => notifications.filter(n => !n.read).length,
     [notifications]
   );
+
+  const unreadCount = backendUnread ?? computedUnread;
 
   return { notifications, unreadCount, markAllRead };
 };
@@ -149,7 +162,7 @@ const ModernSearchBar = React.memo<{
           whileHover={{ scale: 1.01 }}
           transition={{ duration: 0.2 }}
         >
-          <div className='absolute -inset-0.5 bg-gradient-to-r from-primary/20 via-purple-500/20 to-primary/20 rounded-xl opacity-0 group-hover:opacity-100 blur transition-opacity duration-300' />
+          <div className='absolute -inset-0.5 bg-linear-to-r from-primary/20 via-purple-500/20 to-primary/20 rounded-xl opacity-0 group-hover:opacity-100 blur transition-opacity duration-300' />
           <div className='relative flex items-center'>
             <Search className='absolute left-4 h-4 w-4 text-muted-foreground z-10' />
             <Input
@@ -166,6 +179,7 @@ const ModernSearchBar = React.memo<{
             <AnimatePresence>
               {searchQuery && (
                 <motion.button
+                  type='button'
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0, opacity: 0 }}
@@ -198,12 +212,13 @@ const ModernSearchBar = React.memo<{
                 <div className='max-h-80 overflow-y-auto'>
                   {suggestions.map((suggestion, idx) => (
                     <motion.button
+                      type='button'
                       key={idx}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: idx * 0.05 }}
                       onClick={() => onSuggestionClick(suggestion.suggestion)}
-                      className='w-full px-4 py-3 hover:bg-muted/60 transition-colors flex items-center gap-3 group'
+                      className='w-full px-4 py-3 hover:bg-muted/60 transition-colors flex items-center gap-3 group text-left'
                     >
                       <div className='p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors'>
                         <Search className='h-4 w-4' />
@@ -225,7 +240,8 @@ const ModernSearchBar = React.memo<{
                   ))}
                   <div className='border-t border-border mt-2 pt-2'>
                     <button
-                      onClick={handleSearchSubmit}
+                      type='button'
+                      onClick={onSubmit}
                       className='w-full px-4 py-2 text-center text-primary hover:bg-muted/40 text-sm transition-colors'
                     >
                       Search for "{searchQuery}" →
@@ -236,6 +252,7 @@ const ModernSearchBar = React.memo<{
                 <div className='max-h-80 overflow-y-auto'>
                   {results.map((result, idx) => (
                     <motion.button
+                      type='button'
                       key={idx}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -286,6 +303,7 @@ const NotificationsDropdown = React.memo<{
           'hover:bg-muted/80 backdrop-blur-sm',
           unreadCount > 0 && 'bg-primary/10 hover:bg-primary/20'
         )}
+        aria-label='Notifications'
       >
         <Bell className={cn('h-5 w-5', unreadCount > 0 && 'text-primary')} />
         <AnimatePresence>
@@ -297,7 +315,7 @@ const NotificationsDropdown = React.memo<{
               className='absolute -top-1 -right-1'
             >
               <div className='relative'>
-                <div className='h-5 w-5 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg'>
+                <div className='h-5 w-5 bg-linear-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-lg'>
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </div>
                 <div className='absolute inset-0 bg-red-500 rounded-full animate-ping opacity-30' />
@@ -314,7 +332,7 @@ const NotificationsDropdown = React.memo<{
       sideOffset={12}
     >
       {/* Header with gradient */}
-      <div className='p-4 bg-gradient-to-r from-primary/10 via-purple-500/10 to-primary/10 border-b border-border/30'>
+      <div className='p-4 bg-linear-to-r from-primary/10 via-purple-500/10 to-primary/10 border-b border-border/30'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2'>
             <div className='p-2 bg-primary/20 rounded-lg'>
@@ -416,9 +434,10 @@ const UserDropdown = React.memo<{
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         className='relative'
+        aria-label='User menu'
       >
         <Avatar className='h-9 w-9 ring-2 ring-primary/20 ring-offset-2 ring-offset-background'>
-          <AvatarFallback className='bg-gradient-to-br from-primary to-primary/60 text-primary-foreground font-semibold'>
+          <AvatarFallback className='bg-linear-to-br from-primary to-primary/60 text-primary-foreground font-semibold'>
             {userInitials}
           </AvatarFallback>
         </Avatar>
@@ -432,7 +451,7 @@ const UserDropdown = React.memo<{
       <div className='p-4 border-b border-border/30'>
         <div className='flex items-center gap-3'>
           <Avatar className='h-12 w-12'>
-            <AvatarFallback className='bg-gradient-to-br from-primary to-primary/60 text-primary-foreground text-base font-semibold'>
+            <AvatarFallback className='bg-linear-to-br from-primary to-primary/60 text-primary-foreground text-base font-semibold'>
               {userInitials}
             </AvatarFallback>
           </Avatar>
@@ -486,6 +505,7 @@ const ThemeToggle = React.memo<{
     whileTap={{ scale: 0.95 }}
     onClick={onToggle}
     className='p-2.5 rounded-xl hover:bg-muted/80 transition-colors backdrop-blur-sm'
+    aria-label='Toggle theme'
   >
     <AnimatePresence mode='wait'>
       {theme === 'dark' ? (
@@ -543,7 +563,7 @@ export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
   const isLandingPage = pathname === '/';
   const effectiveTheme = theme === 'system' ? resolvedTheme || 'light' : theme;
   const userInitials = useMemo(
-    () => user?.email?.charAt(0).toUpperCase() || 'U',
+    () => user?.email?.[0]?.toUpperCase() ?? 'U',
     [user]
   );
 
@@ -606,7 +626,7 @@ export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
   const handleResultClick = useCallback(
     (result: any) => {
       handleClearSearch();
-      if (result.url) window.location.href = result.url;
+      if (result?.url) window.location.href = result.url;
     },
     [handleClearSearch]
   );
@@ -619,8 +639,8 @@ export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
           backgroundColor:
             isScrolled && !isLandingPage
               ? effectiveTheme === 'dark'
-                ? 'rgba(18, 18, 18, 0.9)' // dark mode
-                : 'rgba(255, 255, 255, 0.9)' // light mode
+                ? 'rgba(18, 18, 18, 0.9)'
+                : 'rgba(255, 255, 255, 0.9)'
               : 'transparent',
           backdropFilter: isScrolled && !isLandingPage ? 'blur(12px)' : 'none',
         }}
@@ -646,6 +666,7 @@ export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
                 whileTap={{ scale: 0.95 }}
                 onClick={onMobileMenuToggle}
                 className='md:hidden p-2 rounded-xl hover:bg-muted/80 transition-colors'
+                aria-label='Open menu'
               >
                 <Menu className='h-5 w-5' />
               </motion.button>
@@ -731,7 +752,7 @@ export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
                           setAuthMode('signup');
                           setAuthModalOpen(true);
                         }}
-                        className='rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70'
+                        className='rounded-xl bg-linear-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70'
                       >
                         <Sparkles className='h-4 w-4 mr-2' />
                         Sign Up

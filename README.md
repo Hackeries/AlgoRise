@@ -53,13 +53,13 @@ cp .env.example .env.local
 
 Edit `.env.local` with your configuration:
 - Supabase URL and keys
-- OAuth client IDs (see [Authentication Setup](docs/AUTH_SETUP.md))
+- OAuth client IDs and secrets (configure in Supabase Dashboard)
 - Redis URL
 - Other configuration
 
 4. Set up the database:
    - Run `SUPABASE_SETUP.sql` in your Supabase SQL Editor
-   - Run migrations from `schema/migrations/` in order
+   - Run migration scripts from `scripts/` directory in numerical order
 
 5. Start the development server:
 ```bash
@@ -70,20 +70,29 @@ Visit `http://localhost:3000` to see your application.
 
 ## Authentication Setup
 
-For detailed instructions on configuring OAuth providers (GitHub and Google) and setting up authentication, please see our [Authentication Setup Guide](docs/AUTH_SETUP.md).
+### OAuth Providers (GitHub and Google)
 
-This guide covers:
-- Creating OAuth apps for GitHub and Google
-- Configuring Supabase authentication providers
-- Setting up email verification
-- Testing OAuth locally
-- Production deployment configuration
+1. **GitHub OAuth**:
+   - Go to GitHub Settings > Developer Settings > OAuth Apps
+   - Create a new OAuth App
+   - Set callback URL to `<YOUR_SUPABASE_URL>/auth/v1/callback`
+   - Copy Client ID and Secret to Supabase Dashboard > Authentication > Providers
+
+2. **Google OAuth**:
+   - Go to Google Cloud Console
+   - Create OAuth 2.0 credentials
+   - Set authorized redirect URI to `<YOUR_SUPABASE_URL>/auth/v1/callback`
+   - Copy Client ID and Secret to Supabase Dashboard > Authentication > Providers
+
+3. **Email Verification**:
+   - Configure email templates in Supabase Dashboard > Authentication > Email Templates
+   - Customize the "Confirm signup" template as needed
 
 ## Database Schema
 
 The database schema is defined in:
 - `SUPABASE_SETUP.sql` - Main schema setup
-- `schema/migrations/` - Migration files for schema updates
+- `scripts/` - Migration scripts for schema updates (run in numerical order)
 
 Key tables:
 - `profiles` - User profile information
@@ -110,12 +119,11 @@ Key tables:
 │   └── ...
 ├── lib/                   # Utility libraries
 │   ├── supabase/         # Supabase clients
-│   ├── validation/       # Zod validation schemas
-│   ├── logging/          # Structured logging
-│   ├── security/         # Security utilities (rate limiting)
+│   ├── security/         # Security utilities (validation, rate limiting)
+│   ├── error/            # Error handling and logging
+│   ├── profile/          # Profile utilities
 │   └── ...
-├── docs/                  # Documentation
-├── schema/               # Database schema and migrations
+├── scripts/               # Database migration scripts
 └── public/               # Static assets
 ```
 
@@ -161,7 +169,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For issues and questions:
 - Create an issue on [GitHub Issues](https://github.com/Hackeries/AlgoRise/issues)
-- Check our [documentation](docs/)
 
 ## Acknowledgments
 

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { logger, getRequestContext } from '@/lib/logging/auth-logger';
+import { logger, getRequestContext } from '@/lib/error/logger';
 import { checkRateLimit, RATE_LIMITS } from '@/lib/security/rate-limit';
-import { validateData, cfVerificationCheckSchema } from '@/lib/validation/schemas';
+import { validateData, cfVerificationCheckSchema } from '@/lib/security/validation';
 
 export async function POST(req: Request) {
   try {

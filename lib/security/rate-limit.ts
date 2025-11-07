@@ -1,6 +1,6 @@
 import redis from '@/lib/redis';
 import { NextResponse } from 'next/server';
-import { logger, getRequestContext } from '@/lib/logging/auth-logger';
+import { logger, getRequestContext } from '@/lib/error/logger';
 
 /**
  * Rate limiting configuration for different endpoints

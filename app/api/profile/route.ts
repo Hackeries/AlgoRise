@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { logger, getRequestContext } from "@/lib/logging/auth-logger"
+import { logger, getRequestContext } from "@/lib/error/logger"
 import { checkRateLimit, RATE_LIMITS, addRateLimitHeaders } from "@/lib/security/rate-limit"
 import { calculateProfileCompletion } from "@/lib/profile/completion"
 

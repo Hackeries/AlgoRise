@@ -1,36 +1,76 @@
--- Add smart notification settings columns to notification_settings table
--- This migration adds columns for the new smart notification types
+-- =========================================
+-- notification_settings: add smart notification columns (idempotent)
+-- - Adds email_/push_ columns for:
+--     - daily_problem_reminder
+--     - rating_change
+--     - friend_joined_contest
+-- - Backfills NULLs to true
+-- - Sets NOT NULL + DEFAULT true going forward
+-- - Adds explanatory comments
+-- =========================================
 
--- Add columns for daily problem reminder notifications
-ALTER TABLE notification_settings 
-ADD COLUMN IF NOT EXISTS email_daily_problem_reminder BOOLEAN DEFAULT true,
-ADD COLUMN IF NOT EXISTS push_daily_problem_reminder BOOLEAN DEFAULT true;
+-- 0) Safety: ensure table exists
+do $$
+begin
+  if to_regclass('public.notification_settings') is null then
+    raise exception 'Table public.notification_settings does not exist';
+  end if;
+end$$;
 
--- Add columns for rating change notifications
-ALTER TABLE notification_settings 
-ADD COLUMN IF NOT EXISTS email_rating_change BOOLEAN DEFAULT true,
-ADD COLUMN IF NOT EXISTS push_rating_change BOOLEAN DEFAULT true;
+-- 1) Add columns if missing (default true)
+alter table public.notification_settings
+  add column if not exists email_daily_problem_reminder       boolean default true,
+  add column if not exists push_daily_problem_reminder        boolean default true,
+  add column if not exists email_rating_change                boolean default true,
+  add column if not exists push_rating_change                 boolean default true,
+  add column if not exists email_friend_joined_contest        boolean default true,
+  add column if not exists push_friend_joined_contest         boolean default true;
 
--- Add columns for friend joined contest notifications
-ALTER TABLE notification_settings 
-ADD COLUMN IF NOT EXISTS email_friend_joined_contest BOOLEAN DEFAULT true,
-ADD COLUMN IF NOT EXISTS push_friend_joined_contest BOOLEAN DEFAULT true;
+-- 2) Backfill any NULLs to true (covers legacy rows/older migrations)
+update public.notification_settings
+   set email_daily_problem_reminder = coalesce(email_daily_problem_reminder, true),
+       push_daily_problem_reminder  = coalesce(push_daily_problem_reminder, true),
+       email_rating_change          = coalesce(email_rating_change, true),
+       push_rating_change           = coalesce(push_rating_change, true),
+       email_friend_joined_contest  = coalesce(email_friend_joined_contest, true),
+       push_friend_joined_contest   = coalesce(push_friend_joined_contest, true)
+ where (email_daily_problem_reminder is null)
+    or (push_daily_problem_reminder  is null)
+    or (email_rating_change          is null)
+    or (push_rating_change           is null)
+    or (email_friend_joined_contest  is null)
+    or (push_friend_joined_contest   is null);
 
--- Update existing records to set default values for new columns
-UPDATE notification_settings 
-SET 
-  email_daily_problem_reminder = true,
-  push_daily_problem_reminder = true,
-  email_rating_change = true,
-  push_rating_change = true,
-  email_friend_joined_contest = true,
-  push_friend_joined_contest = true
-WHERE email_daily_problem_reminder IS NULL;
+-- 3) Enforce NOT NULL + DEFAULT true for future writes
+alter table public.notification_settings
+  alter column email_daily_problem_reminder set not null,
+  alter column email_daily_problem_reminder set default true,
+  alter column push_daily_problem_reminder  set not null,
+  alter column push_daily_problem_reminder  set default true,
+  alter column email_rating_change          set not null,
+  alter column email_rating_change          set default true,
+  alter column push_rating_change           set not null,
+  alter column push_rating_change           set default true,
+  alter column email_friend_joined_contest  set not null,
+  alter column email_friend_joined_contest  set default true,
+  alter column push_friend_joined_contest   set not null,
+  alter column push_friend_joined_contest   set default true;
 
--- Add comments for documentation
-COMMENT ON COLUMN notification_settings.email_daily_problem_reminder IS 'Whether to send email notifications for daily problem reminders';
-COMMENT ON COLUMN notification_settings.push_daily_problem_reminder IS 'Whether to send push notifications for daily problem reminders';
-COMMENT ON COLUMN notification_settings.email_rating_change IS 'Whether to send email notifications for Codeforces rating changes';
-COMMENT ON COLUMN notification_settings.push_rating_change IS 'Whether to send push notifications for Codeforces rating changes';
-COMMENT ON COLUMN notification_settings.email_friend_joined_contest IS 'Whether to send email notifications when friends join contests';
-COMMENT ON COLUMN notification_settings.push_friend_joined_contest IS 'Whether to send push notifications when friends join contests';
+-- 4) Documentation comments
+comment on column public.notification_settings.email_daily_problem_reminder is
+  'Whether to send email notifications for daily problem reminders (default: true)';
+
+comment on column public.notification_settings.push_daily_problem_reminder is
+  'Whether to send push notifications for daily problem reminders (default: true)';
+
+comment on column public.notification_settings.email_rating_change is
+  'Whether to send email notifications for Codeforces rating changes (default: true)';
+
+comment on column public.notification_settings.push_rating_change is
+  'Whether to send push notifications for Codeforces rating changes (default: true)';
+
+comment on column public.notification_settings.email_friend_joined_contest is
+  'Whether to send email notifications when friends join contests (default: true)';
+
+comment on column public.notification_settings.push_friend_joined_contest is
+  'Whether to send push notifications when friends join contests (default: true)';

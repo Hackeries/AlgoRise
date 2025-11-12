@@ -23,7 +23,6 @@ import {
   BarChart3,
   Cpu,
   Menu,
-  Sword,
   X,
   User,
 } from 'lucide-react';
@@ -54,7 +53,6 @@ const MENU_ITEMS: MenuItem[] = [
   { href: '/train', label: 'Train', icon: Zap },
   { href: '/adaptive-sheet', label: 'Practice', icon: FileText },
   { href: '/contests', label: 'Contests', icon: Trophy },
-  { href: '/battle-arena', label: 'Battle Arena', icon: Sword },
   { href: '/paths', label: 'Learning Paths', icon: BookOpen },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/visualizers', label: 'Visualizers', icon: Cpu },
@@ -141,7 +139,6 @@ const getCFTier = (rating: number): CFTier => {
 };
 
 const MOBILE_TABS = [
-  { href: '/battle-arena', label: 'Battle', icon: Sword },
   { href: '/train', label: 'Problems', icon: FileText },
   { href: '/profile/overview', label: 'Profile', icon: User },
 ];
@@ -485,7 +482,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         </main>
         <Footer />
         {/* Mobile bottom nav */}
-        {isMobile && !pathname?.startsWith('/battle-arena') && (
+        {isMobile && (
           <nav
             className='fixed bottom-0 inset-x-0 border-t border-border/60 bg-background/95 backdrop-blur shadow-lg'
             aria-label='Mobile bottom navigation'

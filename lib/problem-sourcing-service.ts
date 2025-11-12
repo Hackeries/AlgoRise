@@ -176,59 +176,6 @@ class ProblemSourcingService {
   }
 
   /**
-   * Get problem set for a battle (multiple problems with balanced difficulty)
-   */
-  async getBattleProblemSet(
-    count: number,
-    avgRating: number,
-    mode: '1v1' | '3v3'
-  ): Promise<Problem[]> {
-    const problems: Problem[] = [];
-    
-    // For 1v1: short, speed-focused problems
-    // For 3v3: ICPC-style, more varied difficulty
-    
-    if (mode === '1v1') {
-      // Get problems close to the average rating
-      const ratingRange = 200;
-      
-      for (let i = 0; i < count; i++) {
-        const problem = await this.getRandomProblem({
-          minRating: avgRating - ratingRange,
-          maxRating: avgRating + ratingRange
-        });
-        
-        if (problem) {
-          problems.push(problem);
-        }
-      }
-    } else {
-      // 3v3: ICPC-style with progressive difficulty
-      // Easy (2 problems), Medium (2-3 problems), Hard (1-2 problems)
-      const distribution = [
-        { count: 2, rating: avgRating - 400 },  // Easy
-        { count: 2, rating: avgRating },         // Medium
-        { count: count - 4, rating: avgRating + 400 }  // Hard
-      ];
-      
-      for (const { count: problemCount, rating } of distribution) {
-        for (let i = 0; i < problemCount; i++) {
-          const problem = await this.getRandomProblem({
-            minRating: rating - 100,
-            maxRating: rating + 100
-          });
-          
-          if (problem) {
-            problems.push(problem);
-          }
-        }
-      }
-    }
-    
-    return problems;
-  }
-
-  /**
    * Get trending/popular problems
    */
   async getTrendingProblems(limit: number = 10): Promise<Problem[]> {

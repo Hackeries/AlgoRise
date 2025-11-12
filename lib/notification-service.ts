@@ -13,12 +13,7 @@ export interface NotificationData {
     | 'mention'
     | 'daily_problem_reminder'
     | 'rating_change'
-    | 'friend_joined_contest'
-    | 'battle_invite'
-    | 'battle_starting'
-    | 'battle_ended'
-    | 'battle_round_started'
-    | 'battle_round_ended';
+    | 'friend_joined_contest';
   title: string;
   message: string;
   data?: Record<string, any>;
@@ -26,7 +21,6 @@ export interface NotificationData {
   expiresAt?: string;
   groupId?: string;
   contestId?: string;
-  battleId?: string;
   relatedUserId?: string;
 }
 
@@ -340,92 +334,6 @@ export class NotificationService {
       console.error('Error cleaning up expired notifications:', error);
       return { success: false, error };
     }
-  }
-
-  // Battle-related notifications
-  async notifyBattleInvite(
-    invitedUserId: string,
-    battleId: string,
-    hostName: string
-  ) {
-    const notification: NotificationData = {
-      type: 'battle_invite',
-      title: 'Battle Invitation',
-      message: `${hostName} has challenged you to a code battle!`,
-      data: { battleId, hostName },
-      priority: 3,
-      battleId,
-    };
-
-    return await this.createNotification(invitedUserId, notification);
-  }
-
-  async notifyBattleStarting(
-    battleId: string,
-    participantIds: string[]
-  ) {
-    const notification: NotificationData = {
-      type: 'battle_starting',
-      title: 'Battle Starting Soon!',
-      message: 'Your code battle is about to begin. Get ready!',
-      data: { battleId },
-      priority: 3,
-      battleId,
-    };
-
-    return await this.createBulkNotifications(participantIds, notification);
-  }
-
-  async notifyBattleEnded(
-    battleId: string,
-    winnerUserId: string,
-    participantIds: string[]
-  ) {
-    const notification: NotificationData = {
-      type: 'battle_ended',
-      title: 'Battle Completed!',
-      message: `The battle has ended. ${winnerUserId === participantIds[0] ? 'You won!' : 'You lost.'}`,
-      data: { battleId, winnerUserId },
-      priority: 2,
-      battleId,
-    };
-
-    return await this.createBulkNotifications(participantIds, notification);
-  }
-
-  async notifyBattleRoundStarted(
-    battleId: string,
-    roundNumber: number,
-    participantIds: string[]
-  ) {
-    const notification: NotificationData = {
-      type: 'battle_round_started',
-      title: `Round ${roundNumber} Starting`,
-      message: `Round ${roundNumber} of your battle is beginning now!`,
-      data: { battleId, roundNumber },
-      priority: 2,
-      battleId,
-    };
-
-    return await this.createBulkNotifications(participantIds, notification);
-  }
-
-  async notifyBattleRoundEnded(
-    battleId: string,
-    roundNumber: number,
-    winnerUserId: string,
-    participantIds: string[]
-  ) {
-    const notification: NotificationData = {
-      type: 'battle_round_ended',
-      title: `Round ${roundNumber} Completed`,
-      message: `${winnerUserId === participantIds[0] ? 'You' : 'Your opponent'} won round ${roundNumber}!`,
-      data: { battleId, roundNumber, winnerUserId },
-      priority: 2,
-      battleId,
-    };
-
-    return await this.createBulkNotifications(participantIds, notification);
   }
 }
 

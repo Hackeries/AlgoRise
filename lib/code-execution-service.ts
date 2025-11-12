@@ -1,4 +1,4 @@
-// Code execution service for Code Battle Arena with Judge0 integration
+// Code execution service with Judge0 integration
 
 export interface CodeExecutionRequest {
   sourceCode: string;

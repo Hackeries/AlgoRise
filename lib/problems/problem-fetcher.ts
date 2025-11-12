@@ -149,9 +149,7 @@ export async function fetchProblemById(problemId: string): Promise<Problem | nul
  */
 export async function recordProblemView(
   userId: string,
-  problemId: string,
-  battleId?: string,
-  battleRoundId?: string
+  problemId: string
 ): Promise<void> {
   const supabase = await createClient();
 
@@ -159,8 +157,8 @@ export async function recordProblemView(
     await supabase.rpc('record_problem_view', {
       p_user_id: userId,
       p_problem_id: problemId,
-      p_battle_id: battleId || null,
-      p_battle_round_id: battleRoundId || null,
+      p_battle_id: null,
+      p_battle_round_id: null,
     });
   } catch (error) {
     console.error('Error recording problem view:', error);
@@ -174,9 +172,7 @@ export async function updateProblemInteraction(
   userId: string,
   problemId: string,
   action: 'attempt' | 'solve',
-  timeSpentSeconds?: number,
-  battleId?: string,
-  battleRoundId?: string
+  timeSpentSeconds?: number
 ): Promise<void> {
   const supabase = await createClient();
 
@@ -189,8 +185,6 @@ export async function updateProblemInteraction(
       body: JSON.stringify({
         action,
         timeSpentSeconds,
-        battleId,
-        battleRoundId,
       }),
     });
 

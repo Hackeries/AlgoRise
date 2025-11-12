@@ -1,6 +1,6 @@
 # Sound Effects
 
-This directory contains sound effects for the Battle Arena.
+This directory contains sound effects for the application.
 
 ## Required Files
 
@@ -21,7 +21,7 @@ This directory contains sound effects for the Battle Arena.
 
 ## Usage
 
-The success sound is played in `/hooks/use-submission.ts` when a submission receives an "Accepted" verdict.
+Sound effects can be played in the application when needed.
 
 ```typescript
 const audio = new Audio('/sounds/success.mp3');

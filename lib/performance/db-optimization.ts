@@ -2,7 +2,6 @@
 export const DB_INDEXES = {
   // Leaderboard queries
   leaderboard_rating: "CREATE INDEX idx_users_rating ON users(rating DESC)",
-  leaderboard_elo: "CREATE INDEX idx_battles_elo ON battle_results(elo DESC)",
 
   // User stats queries
   user_stats: "CREATE INDEX idx_user_stats_user_id ON user_stats(user_id)",
@@ -11,10 +10,6 @@ export const DB_INDEXES = {
   // Contest queries
   contest_active: "CREATE INDEX idx_contests_status ON contests(status, start_time DESC)",
   contest_user: "CREATE INDEX idx_contest_participants_contest_id ON contest_participants(contest_id)",
-
-  // Battle arena queries
-  battle_active: "CREATE INDEX idx_battles_status ON battles(status, created_at DESC)",
-  battle_user: "CREATE INDEX idx_battles_user_id ON battles(user_id_1, user_id_2)",
 
   // Group queries
   group_members: "CREATE INDEX idx_group_members_group_id ON group_members(group_id)",
@@ -42,6 +37,5 @@ export const QUERY_PATTERNS = {
     leaderboard: 300, // 5 minutes
     userStats: 600, // 10 minutes
     contests: 60, // 1 minute
-    battleResults: 30, // 30 seconds
   },
 } as const

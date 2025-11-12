@@ -99,7 +99,7 @@ export async function PATCH(
   try {
     const problemId = params.id;
     const body = await req.json();
-    const { action, timeSpentSeconds, battleId, battleRoundId } = body;
+    const { action, timeSpentSeconds } = body;
 
     if (!action) {
       return NextResponse.json(
@@ -123,8 +123,8 @@ export async function PATCH(
         .insert({
           user_id: user.id,
           problem_id: problemId,
-          battle_id: battleId || null,
-          battle_round_id: battleRoundId || null,
+          battle_id: null,
+          battle_round_id: null,
         })
         .select()
         .single();

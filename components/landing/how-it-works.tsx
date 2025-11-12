@@ -9,7 +9,6 @@ import {
   Target,
   TrendingUp,
   Award,
-  Sword,
   ArrowRight,
   type LucideIcon,
 } from 'lucide-react';
@@ -50,14 +49,6 @@ const steps: Step[] = [
       'Monitor your improvement with detailed analytics, streaks, and performance insights.',
     gradientStops: 'from-orange-500 to-red-500',
     bgStops: 'from-orange-500/20 to-red-500/20',
-  },
-  {
-    icon: Sword,
-    title: 'Battle Arena',
-    description:
-      'Challenge other programmers in real-time 1v1 duels or team-based 3v3 battles with ELO ratings.',
-    gradientStops: 'from-emerald-500 to-teal-500',
-    bgStops: 'from-emerald-500/20 to-teal-500/20',
   },
   {
     icon: Award,

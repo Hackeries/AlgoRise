@@ -1,0 +1,17 @@
+# Dockerfile for Matchmaking Worker
+
+FROM node:18-alpine
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json ./
+RUN npm ci --only=production
+
+# Copy source code
+COPY . .
+
+# Build TypeScript
+RUN npm install -g ts-node typescript
+
+# Run worker
+CMD ["ts-node", "workers/matchmaking-worker.ts"]

@@ -20,6 +20,14 @@ AlgoRise is a competitive programming platform designed to help students and wor
   - ICPC and practice modes
   - Real-time leaderboards
 
+- **Battle Arena** ⚔️ **NEW**
+  - Real-time 1v1 and 3v3 competitive coding matches
+  - ELO-based ranking system
+  - Quick matches and ranked modes
+  - Anti-cheat and plagiarism detection
+  - Live scoreboards and match analytics
+  - See [BATTLE_ARENA_DOCS.md](BATTLE_ARENA_DOCS.md) for details
+
 ## Getting Started
 
 ### Prerequisites

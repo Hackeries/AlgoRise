@@ -1,4 +1,4 @@
-// API route for fetching problems for battle matchmaking
+// API route for fetching problems for matchmaking
 // This route ensures problems are NEVER hardcoded and always fetched dynamically from the database
 
 import { NextResponse } from "next/server";
@@ -117,7 +117,7 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { problemId, battleId, battleRoundId } = body;
+    const { problemId } = body;
 
     if (!problemId) {
       return NextResponse.json(
@@ -130,8 +130,8 @@ export async function POST(req: Request) {
     const { error } = await supabase.rpc("record_problem_view", {
       p_user_id: user.id,
       p_problem_id: problemId,
-      p_battle_id: battleId || null,
-      p_battle_round_id: battleRoundId || null,
+      p_battle_id: null,
+      p_battle_round_id: null,
     });
 
     if (error) {

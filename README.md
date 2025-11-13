@@ -19,11 +19,6 @@ AlgoRise is a competitive programming platform designed to help students and wor
   - Create and participate in contests
   - ICPC and practice modes
   - Real-time leaderboards
-  
-- **Battle Arena**
-  - 1v1 competitive matches
-  - ELO-based matchmaking
-  - Live problem-solving battles
 
 ## Getting Started
 
@@ -98,7 +93,6 @@ Key tables:
 - `profiles` - User profile information
 - `cf_handles` - Codeforces handle verification
 - `contests` - Contest data
-- `battles` - Battle arena matches
 - `groups` - Study groups
 - And more...
 

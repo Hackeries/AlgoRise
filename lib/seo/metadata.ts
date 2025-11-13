@@ -17,7 +17,6 @@ export const DEFAULT_METADATA: Metadata = {
     "algorithm learning",
     "coding interview prep",
     "DSA practice",
-    "battle arena",
     "coding challenges",
   ],
   authors: [{ name: "AlgoRise Team" }],

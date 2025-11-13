@@ -9,7 +9,6 @@ import {
   Users,
   Shield,
   Sparkles,
-  Sword,
   type LucideIcon,
 } from 'lucide-react';
 import { motion, useReducedMotion, type Transition } from 'framer-motion';
@@ -54,15 +53,6 @@ const FEATURES: Feature[] = [
     gradientStops: 'from-purple-500 to-pink-500',
     softStops: 'from-purple-500/20 to-pink-500/20',
     accent: 'purple',
-  },
-  {
-    icon: Sword,
-    title: 'Real-time Battle Arena',
-    description:
-      'Instant matchmaking for 1v1 or 3v3 battles, ELO-rated clashes, and emergent team dynamics for peak competition.',
-    gradientStops: 'from-red-500 to-orange-500',
-    softStops: 'from-red-500/20 to-orange-500/20',
-    accent: 'red',
   },
   {
     icon: Users,

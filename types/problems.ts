@@ -98,10 +98,6 @@ export interface ProblemHistory {
   view_count: number;
   attempt_count: number;
   time_spent_seconds: number;
-  
-  // Battle context
-  battle_id?: string;
-  battle_round_id?: string;
 }
 
 export interface ProblemFetchOptions {
@@ -128,8 +124,6 @@ export interface ProblemDetailResponse {
 export interface ProblemInteractionUpdate {
   action: 'attempt' | 'solve';
   timeSpentSeconds?: number;
-  battleId?: string;
-  battleRoundId?: string;
 }
 
 export interface ProblemInteractionResponse {

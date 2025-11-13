@@ -273,14 +273,14 @@ export function Footer() {
                 for competitive programmers
               </p>
               <p className='text-xs text-muted-foreground'>
-                by{' '}
+                {/* by{' '} */}
                 <a
                   href='https://www.linkedin.com/in/aviral-joshi15/'
                   target='_blank'
                   rel='noopener noreferrer'
                   className='font-medium text-foreground hover:text-primary transition-colors'
                 >
-                  Aviral Joshi
+                  {/* Aviral Joshi */}
                 </a>
               </p>
             </motion.div>

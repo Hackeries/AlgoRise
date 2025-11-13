@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: algorise-battle-arena
+  labels:
+    app: algorise
+    component: battle-arena

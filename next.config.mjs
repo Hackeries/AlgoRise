@@ -3,7 +3,8 @@ import path from 'node:path';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Enable standalone output for Docker deployments
-  output: process.env.DOCKER_BUILD === 'true' ? 'standalone' : undefined,
+  // Set NEXT_OUTPUT_MODE=standalone when building for Docker
+  output: process.env.NEXT_OUTPUT_MODE === 'standalone' ? 'standalone' : undefined,
   
   eslint: {
     ignoreDuringBuilds: true,

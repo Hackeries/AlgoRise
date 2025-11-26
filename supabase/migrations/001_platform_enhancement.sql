@@ -253,19 +253,25 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================================================
 -- Function to check and award achievements
+-- Note: This function depends on the 'streaks' table which should already exist
 -- ============================================================================
 CREATE OR REPLACE FUNCTION check_achievements(p_user_id UUID)
 RETURNS TABLE(achievement_id VARCHAR, achievement_name VARCHAR) AS $$
 DECLARE
-    user_streak INTEGER;
-    user_problems INTEGER;
+    user_streak INTEGER := 0;
+    user_problems INTEGER := 0;
     achievement RECORD;
 BEGIN
-    -- Get user stats
-    SELECT COALESCE(current_streak, 0), COALESCE(longest_streak, 0)
-    INTO user_streak
-    FROM streaks WHERE user_id = p_user_id;
+    -- Get user streak stats (if streaks table exists)
+    BEGIN
+        SELECT COALESCE(current_streak, 0)
+        INTO user_streak
+        FROM streaks WHERE user_id = p_user_id;
+    EXCEPTION WHEN undefined_table THEN
+        user_streak := 0;
+    END;
 
+    -- Get user problems solved from leaderboard
     SELECT COALESCE(problems_solved, 0)
     INTO user_problems
     FROM leaderboard WHERE user_id = p_user_id;

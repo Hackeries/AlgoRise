@@ -29,6 +29,7 @@ COPY . .
 # Set environment for build
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV NEXT_OUTPUT_MODE=standalone
 
 # Build the application
 RUN npm run build

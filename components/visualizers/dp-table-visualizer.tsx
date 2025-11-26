@@ -313,7 +313,7 @@ export function DPTableVisualizer() {
               <table className="border-collapse">
                 <thead>
                   <tr>
-                    <th className="p-2 text-xs text-muted-foreground">{exampleInfo.rowLabel}\{exampleInfo.colLabel}</th>
+                    <th className="p-2 text-xs text-muted-foreground">{exampleInfo.rowLabel}/{exampleInfo.colLabel}</th>
                     {currentStepData.table[0].map((_, j) => (
                       <th key={j} className="p-2 text-xs font-mono text-muted-foreground">{j}</th>
                     ))}

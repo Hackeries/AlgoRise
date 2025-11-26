@@ -7,13 +7,37 @@ import { UpcomingContests } from '@/components/train/contests';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowRight, Zap, TestTube } from 'lucide-react';
+import { ArrowRight, Zap, TestTube, Play, Target } from 'lucide-react';
 
 export default function TrainingHub() {
   return (
     <main className='min-h-screen bg-background text-foreground'>
       <section className='max-w-6xl mx-auto px-4 py-6 md:py-8 space-y-6'>
         <TrainHeader />
+
+        {/* Training Session Section */}
+        <Card className="border-2 border-green-500/20 bg-gradient-to-br from-green-500/5 to-background">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-green-500" />
+              Adaptive Training Session
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              Start an adaptive training session with real-time feedback, hints, and personalized recommendations.
+              Practice CP/DSA problems with session metrics and topic mastery tracking.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/train/session">
+                <Button className="bg-green-600 hover:bg-green-700">
+                  <Play className="mr-2 h-4 w-4" />
+                  Start Training Session
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Problem Generator Section */}
         <Card className="border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-background">

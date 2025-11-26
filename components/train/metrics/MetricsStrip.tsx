@@ -111,7 +111,7 @@ export function MetricsStrip({ metrics, currentProblemIndex }: MetricsStripProps
 
         {/* Total Session Time */}
         <div className="mt-3 text-center text-xs text-muted-foreground">
-          Session Time: {formatTime(metrics.totalTimeMs || Date.now() - (Date.now() - metrics.totalTimeMs))}
+          Session Time: {formatTime(metrics.totalTimeMs)}
         </div>
       </CardContent>
     </Card>

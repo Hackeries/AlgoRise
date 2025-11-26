@@ -101,7 +101,7 @@ export default function TrainSessionPage() {
   // Add log entry
   const addLog = useCallback((event: string, message: string, data?: Record<string, unknown>) => {
     const entry: LogEntry = {
-      id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      id: `log_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`,
       event,
       message,
       timestamp: Date.now(),

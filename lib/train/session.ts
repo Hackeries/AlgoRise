@@ -197,7 +197,7 @@ function generateTestCases(difficulty: ProblemDifficulty): { input: string; expe
  * Create a new training session.
  */
 export function createSession(userId: string, config: SessionConfig): TrainSession {
-  const id = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  const id = `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
   const problems = generateProblems(config);
   const now = Date.now();
   

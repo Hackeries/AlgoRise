@@ -30,11 +30,7 @@ export async function GET(req: NextRequest) {
         ${matchesColumn},
         ${winsColumn},
         current_win_streak,
-        titles,
-        profiles:user_id (
-          username,
-          avatar_url
-        )
+        titles
       `)
       .order(eloColumn, { ascending: false })
       .range(offset, offset + limit - 1);
@@ -47,9 +43,27 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Get user profiles separately for better compatibility
+    const userIds = leaderboard.map((entry: any) => entry.user_id);
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, username, name, avatar_url, profile_image_url')
+      .in('id', userIds);
+
+    // Create a map of profiles
+    const profileMap = new Map(
+      profiles?.map((p: any) => [
+        p.id, 
+        {
+          username: p.username || p.name || 'Anonymous',
+          avatar: p.avatar_url || p.profile_image_url
+        }
+      ])
+    );
+
     // Format leaderboard data
     const formattedLeaderboard = leaderboard.map((entry: any, index: number) => {
-      const profile = Array.isArray(entry.profiles) ? entry.profiles[0] : entry.profiles;
+      const profile = profileMap.get(entry.user_id);
       const matchesPlayed = entry[matchesColumn];
       const wins = entry[winsColumn];
       const winRate = matchesPlayed > 0 ? (wins / matchesPlayed) * 100 : 0;
@@ -58,7 +72,7 @@ export async function GET(req: NextRequest) {
         rank: offset + index + 1,
         userId: entry.user_id,
         username: profile?.username || 'Anonymous',
-        avatar: profile?.avatar_url,
+        avatar: profile?.avatar,
         elo: entry[eloColumn],
         tier: entry[tierColumn],
         matchesPlayed,

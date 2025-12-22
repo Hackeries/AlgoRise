@@ -635,6 +635,7 @@
   .hover-lift {
     transition: transform var(--duration-fast) var(--ease-out),
                 box-shadow var(--duration-fast) var(--ease-out);
+    will-change: transform, box-shadow;
   }
   
   .hover-lift:hover {
@@ -644,6 +645,7 @@
   
   .hover-scale {
     transition: transform var(--duration-fast) var(--ease-out);
+    will-change: transform;
   }
   
   .hover-scale:hover {

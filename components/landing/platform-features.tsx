@@ -268,7 +268,7 @@ export default function PlatformFeatures() {
             transition={{ duration: 0.5, delay: 0.7 }}
           >
             <Link href='/auth/sign-up' aria-label='Create an AlgoRise account'>
-              <Button className='px-8 py-4 rounded-xl bg-linear-to-r from-primary to-primary/80 text-primary-foreground font-semibold shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all'>
+              <Button className='px-8 py-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-semibold shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all hover:scale-105'>
                 Get Started
               </Button>
             </Link>

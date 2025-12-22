@@ -163,20 +163,23 @@ const StatCard: React.FC<{
 }> = ({ label, value, Icon, gradient }) => (
   <motion.div
     whileHover={{ y: -6, scale: 1.02 }}
-    transition={{ duration: 0.25 }}
-    className='p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border/40 shadow-lg hover:shadow-xl hover:border-primary/50 transition-all'
+    transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+    className='group relative p-6 rounded-2xl bg-card/50 backdrop-blur-xl border border-border/40 shadow-lg hover:shadow-2xl hover:border-primary/50 transition-all overflow-hidden'
   >
-    <div className='flex items-center justify-between mb-4'>
-      <div className={`p-3 rounded-xl bg-linear-to-b ${gradient} shadow-md`}>
+    {/* Gradient overlay on hover */}
+    <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-300 bg-gradient-to-br ${gradient}`} />
+    
+    <div className='relative z-10 flex items-center justify-between mb-4'>
+      <div className={`p-3 rounded-xl bg-gradient-to-br ${gradient} shadow-md transform group-hover:scale-110 transition-transform duration-300`}>
         <Icon className='h-6 w-6 text-white' aria-hidden='true' />
       </div>
       <div
-        className={`text-4xl font-bold bg-linear-to-r ${gradient} bg-clip-text text-transparent`}
+        className={`text-4xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}
       >
         <AnimatedCounter value={value} />
       </div>
     </div>
-    <p className='text-sm text-muted-foreground font-semibold uppercase tracking-wide'>
+    <p className='relative z-10 text-sm text-muted-foreground font-semibold uppercase tracking-wide'>
       {label}
     </p>
   </motion.div>
@@ -301,11 +304,11 @@ export default function LandingHero() {
   const hasStats = !!stats && !loading && !errorMsg;
 
   return (
-    <div className='relative overflow-hidden bg-linear-to-b from-background via-background to-muted/30'>
+    <div className='relative overflow-hidden bg-gradient-to-b from-background via-background to-muted/30'>
       {/* Background orbs (reduced-motion friendly) */}
       <div className='absolute inset-0 overflow-hidden pointer-events-none'>
         <motion.div
-          className='absolute top-1/4 -left-1/4 w-[500px] h-[500px] rounded-full blur-3xl bg-linear-to-b from-emerald-500/20 to-cyan-500/20'
+          className='absolute top-1/4 -left-1/4 w-[500px] h-[500px] rounded-full blur-3xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20'
           animate={
             reduced
               ? { opacity: 0.25, scale: 1 }
@@ -315,7 +318,7 @@ export default function LandingHero() {
           aria-hidden='true'
         />
         <motion.div
-          className='absolute bottom-1/4 -right-1/4 w-[550px] h-[550px] rounded-full blur-3xl bg-linear-to-b from-purple-500/20 to-orange-500/20'
+          className='absolute bottom-1/4 -right-1/4 w-[550px] h-[550px] rounded-full blur-3xl bg-gradient-to-br from-purple-500/20 to-orange-500/20'
           animate={
             reduced
               ? { opacity: 0.25 }
@@ -325,7 +328,7 @@ export default function LandingHero() {
           aria-hidden='true'
         />
         <motion.div
-          className='absolute top-1/2 left-1/2 w-[400px] h-[400px] rounded-full blur-2xl bg-linear-to-b from-cyan-500/15 to-purple-500/15 -translate-x-1/2 -translate-y-1/2'
+          className='absolute top-1/2 left-1/2 w-[400px] h-[400px] rounded-full blur-2xl bg-gradient-to-br from-cyan-500/15 to-purple-500/15 -translate-x-1/2 -translate-y-1/2'
           animate={
             reduced
               ? { scale: 1 }
@@ -393,7 +396,7 @@ export default function LandingHero() {
                 onClick={() => fetchUserStats()}
                 disabled={loading || !handleInput.trim()}
                 size='lg'
-                className='h-14 px-8 rounded-xl font-semibold bg-linear-to-r from-emerald-500 to-cyan-500 hover:opacity-90 text-white shadow-lg shadow-emerald-500/20 transition-all'
+                className='h-14 px-8 rounded-xl font-semibold bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all transform hover:scale-105'
                 aria-label='Fetch Codeforces stats'
               >
                 {loading ? 'Fetching...' : 'Get Stats'}

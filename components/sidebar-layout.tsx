@@ -158,17 +158,20 @@ const SidebarItem = React.memo<{
     href={href}
     onClick={onClick}
     className={cn(
-      'group relative flex items-center rounded-md transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
-      isOpen ? 'px-3 py-2 gap-3' : 'p-3 justify-center',
+      'group relative flex items-center rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
+      isOpen ? 'px-3 py-2.5 gap-3' : 'p-3 justify-center',
       isActive
-        ? 'bg-primary/10 text-primary font-medium'
-        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+        ? 'bg-gradient-to-r from-primary/20 to-primary/5 text-primary font-semibold border border-primary/30 shadow-sm'
+        : 'text-muted-foreground hover:text-foreground hover:bg-muted/80 hover:border-border/50 border border-transparent'
     )}
     aria-current={isActive ? 'page' : undefined}
     title={!isOpen ? label : undefined}
   >
-    <Icon className='h-5 w-5 shrink-0' aria-hidden='true' />
+    <Icon className={cn('h-5 w-5 shrink-0 transition-transform duration-200', isActive && 'scale-110')} aria-hidden='true' />
     {isOpen && <span className='text-sm font-medium truncate'>{label}</span>}
+    {isActive && (
+      <div className='absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-transparent opacity-50 pointer-events-none' />
+    )}
   </Link>
 ));
 SidebarItem.displayName = 'SidebarItem';
@@ -185,18 +188,18 @@ const CFBadge = React.memo<{ cfData: CFData; isOpen: boolean }>(
       return (
         <div
           className={cn(
-            'p-3 rounded-md border transition-colors duration-200',
+            'p-3 rounded-xl border-2 transition-all duration-200 backdrop-blur-sm hover:scale-105',
             tier.bg,
             tier.color
           )}
         >
           <div className='flex items-center justify-between mb-2'>
             <p className='text-sm font-semibold truncate'>{cfData.handle}</p>
-            <div className='px-2 py-0.5 rounded bg-background/20'>
-              <span className='text-xs font-mono'>{cfData.rating}</span>
+            <div className='px-2 py-0.5 rounded-md bg-background/30 backdrop-blur-sm'>
+              <span className='text-xs font-mono font-bold'>{cfData.rating}</span>
             </div>
           </div>
-          <p className='text-xs opacity-75 truncate'>{tier.label}</p>
+          <p className='text-xs opacity-90 truncate font-medium'>{tier.label}</p>
         </div>
       );
     }
@@ -204,10 +207,10 @@ const CFBadge = React.memo<{ cfData: CFData; isOpen: boolean }>(
     return (
       <div
         className={cn(
-          'w-12 h-12 flex items-center justify-center rounded-md border transition-colors duration-200',
+          'w-12 h-12 flex items-center justify-center rounded-xl border-2 transition-all duration-200 backdrop-blur-sm hover:scale-110',
           tier.bg,
           tier.color,
-          'text-xs font-semibold'
+          'text-xs font-bold shadow-lg'
         )}
         title={`${cfData.handle} (${cfData.rating}) - ${tier.label}`}
       >
@@ -391,8 +394,8 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         data-sidebar
         className={cn(
           'fixed top-0 left-0 h-screen z-50',
-          'bg-card border-r border-border',
-          'flex flex-col shadow-md',
+          'bg-card/95 backdrop-blur-xl border-r border-border/50',
+          'flex flex-col shadow-2xl',
           'transition-transform duration-200 will-change-transform',
           sidebarWidthClass,
           isMobile && !isOpen && '-translate-x-full'
@@ -486,7 +489,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         {/* Mobile bottom nav */}
         {isMobile && (
           <nav
-            className='fixed bottom-0 inset-x-0 border-t border-border/60 bg-background/95 backdrop-blur shadow-lg'
+            className='fixed bottom-0 inset-x-0 border-t border-border/60 bg-card/95 backdrop-blur-xl shadow-lg z-50'
             aria-label='Mobile bottom navigation'
           >
             <div className='mx-auto flex max-w-md items-center justify-between px-6 py-2'>
@@ -498,15 +501,15 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                     key={tab.href}
                     href={tab.href}
                     className={cn(
-                      'flex flex-col items-center gap-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-md px-2 py-1',
+                      'flex flex-col items-center gap-1 text-xs font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-xl px-4 py-3 tap-target',
                       active
-                        ? 'text-primary'
-                        : 'text-muted-foreground hover:text-foreground'
+                        ? 'text-primary bg-primary/10 scale-105'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                     )}
                     aria-current={active ? 'page' : undefined}
                   >
-                    <Icon className='h-5 w-5 shrink-0' aria-hidden='true' />
-                    <span>{tab.label}</span>
+                    <Icon className={cn('h-5 w-5 shrink-0 transition-transform', active && 'scale-110')} aria-hidden='true' />
+                    <span className={cn('font-semibold', active && 'text-primary')}>{tab.label}</span>
                   </Link>
                 );
               })}

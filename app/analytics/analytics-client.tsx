@@ -62,9 +62,11 @@ export default function AnalyticsPageClient() {
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-8'>
-              <Card className='border-l-4 border-l-yellow-500'>
+              <Card className='glass-card border-l-4 border-l-yellow-500 hover-lift'>
                 <CardContent className='p-6'>
-                  <Trophy className='h-10 w-10 text-yellow-500 mb-4' />
+                  <div className='p-3 rounded-xl bg-gradient-to-br from-yellow-500 to-amber-500 inline-flex mb-4 shadow-lg'>
+                    <Trophy className='h-7 w-7 text-white' />
+                  </div>
                   <h4 className='font-semibold mb-2 text-lg'>
                     Contest Performance
                   </h4>
@@ -74,9 +76,11 @@ export default function AnalyticsPageClient() {
                   </p>
                 </CardContent>
               </Card>
-              <Card className='border-l-4 border-l-green-500'>
+              <Card className='glass-card border-l-4 border-l-green-500 hover-lift'>
                 <CardContent className='p-6'>
-                  <Target className='h-10 w-10 text-green-500 mb-4' />
+                  <div className='p-3 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 inline-flex mb-4 shadow-lg'>
+                    <Target className='h-7 w-7 text-white' />
+                  </div>
                   <h4 className='font-semibold mb-2 text-lg'>
                     Problem Solving Stats
                   </h4>
@@ -86,9 +90,11 @@ export default function AnalyticsPageClient() {
                   </p>
                 </CardContent>
               </Card>
-              <Card className='border-l-4 border-l-red-500'>
+              <Card className='glass-card border-l-4 border-l-red-500 hover-lift'>
                 <CardContent className='p-6'>
-                  <Flame className='h-10 w-10 text-red-500 mb-4' />
+                  <div className='p-3 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 inline-flex mb-4 shadow-lg'>
+                    <Flame className='h-7 w-7 text-white' />
+                  </div>
                   <h4 className='font-semibold mb-2 text-lg'>
                     Activity Tracking
                   </h4>
@@ -117,8 +123,10 @@ export default function AnalyticsPageClient() {
               </p>
             </div>
 
-            <div className='bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-8 mb-8 border border-primary/20'>
-              <User className='h-16 w-16 mx-auto text-primary mb-4' />
+            <div className='glass-panel rounded-2xl p-8 mb-8 border border-primary/20 hover-lift'>
+              <div className='p-4 rounded-xl bg-gradient-to-br from-primary to-accent inline-flex mb-4 shadow-lg'>
+                <User className='h-12 w-12 text-white' />
+              </div>
               <h3 className='text-xl font-semibold mb-3'>
                 Verify Codeforces Profile
               </h3>
@@ -131,9 +139,11 @@ export default function AnalyticsPageClient() {
             </div>
 
             <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-              <Card className='border-l-4 border-l-yellow-500 hover:shadow-lg transition-shadow'>
+              <Card className='glass-card border-l-4 border-l-yellow-500 hover-lift'>
                 <CardContent className='p-6'>
-                  <Trophy className='h-10 w-10 text-yellow-500 mb-4' />
+                  <div className='p-3 rounded-xl bg-gradient-to-br from-yellow-500 to-amber-500 inline-flex mb-4 shadow-lg'>
+                    <Trophy className='h-7 w-7 text-white' />
+                  </div>
                   <h4 className='font-semibold mb-2 text-lg'>
                     Contest Performance
                   </h4>
@@ -143,9 +153,11 @@ export default function AnalyticsPageClient() {
                   </p>
                 </CardContent>
               </Card>
-              <Card className='border-l-4 border-l-green-500 hover:shadow-lg transition-shadow'>
+              <Card className='glass-card border-l-4 border-l-green-500 hover-lift'>
                 <CardContent className='p-6'>
-                  <Target className='h-10 w-10 text-green-500 mb-4' />
+                  <div className='p-3 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 inline-flex mb-4 shadow-lg'>
+                    <Target className='h-7 w-7 text-white' />
+                  </div>
                   <h4 className='font-semibold mb-2 text-lg'>
                     Problem Solving Stats
                   </h4>
@@ -155,9 +167,11 @@ export default function AnalyticsPageClient() {
                   </p>
                 </CardContent>
               </Card>
-              <Card className='border-l-4 border-l-red-500 hover:shadow-lg transition-shadow'>
+              <Card className='glass-card border-l-4 border-l-red-500 hover-lift'>
                 <CardContent className='p-6'>
-                  <Flame className='h-10 w-10 text-red-500 mb-4' />
+                  <div className='p-3 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 inline-flex mb-4 shadow-lg'>
+                    <Flame className='h-7 w-7 text-white' />
+                  </div>
                   <h4 className='font-semibold mb-2 text-lg'>
                     Activity Tracking
                   </h4>

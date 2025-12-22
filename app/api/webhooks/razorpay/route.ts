@@ -170,6 +170,47 @@ export async function POST(req: Request) {
         }
         break;
 
+      case 'subscription.activated':
+        try {
+          await handleSubscriptionActivated(supabase, event);
+          processed = true;
+        } catch (error: any) {
+          errorMessage = error.message;
+          console.error('[Webhook] Subscription activation handler failed:', error);
+        }
+        break;
+
+      case 'subscription.charged':
+        try {
+          await handleSubscriptionCharged(supabase, event);
+          processed = true;
+        } catch (error: any) {
+          errorMessage = error.message;
+          console.error('[Webhook] Subscription charged handler failed:', error);
+        }
+        break;
+
+      case 'subscription.cancelled':
+      case 'subscription.paused':
+        try {
+          await handleSubscriptionCancelled(supabase, event);
+          processed = true;
+        } catch (error: any) {
+          errorMessage = error.message;
+          console.error('[Webhook] Subscription cancellation handler failed:', error);
+        }
+        break;
+
+      case 'subscription.completed':
+        try {
+          await handleSubscriptionCompleted(supabase, event);
+          processed = true;
+        } catch (error: any) {
+          errorMessage = error.message;
+          console.error('[Webhook] Subscription completion handler failed:', error);
+        }
+        break;
+
       default:
         console.log(`[Webhook] Unhandled event type: ${event.event}`);
         processed = true; // Mark as processed to avoid reprocessing
@@ -300,6 +341,209 @@ async function handlePaymentFailure(supabase: any, event: any) {
   }
 
   console.log(`[Webhook] Payment failure recorded for subscription: ${subscription.id}`);
+}
+
+/**
+ * Handle subscription activation (for recurring subscriptions)
+ */
+async function handleSubscriptionActivated(supabase: any, event: any) {
+  const subscription = event.payload?.subscription?.entity;
+  
+  if (!subscription?.id) {
+    throw new Error('Missing subscription ID in activation event');
+  }
+
+  const subscriptionId = subscription.id;
+  const userId = subscription.notes?.userId;
+
+  if (!userId) {
+    throw new Error('Missing user ID in subscription notes');
+  }
+
+  console.log(`[Webhook] Processing subscription activation: ${subscriptionId}`);
+
+  // Get subscription record by Razorpay subscription ID
+  const { data: dbSubscription } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('order_id', subscriptionId)
+    .eq('user_id', userId)
+    .single();
+
+  if (!dbSubscription) {
+    console.warn('[Webhook] Subscription not found for activation:', subscriptionId);
+    return;
+  }
+
+  // Check if already activated
+  if (dbSubscription.status === 'active') {
+    console.log('[Webhook] Subscription already activated:', dbSubscription.id);
+    return;
+  }
+
+  // Activate subscription
+  const { success, error } = await activateSubscription(supabase, {
+    subscriptionId: dbSubscription.id,
+    userId: userId,
+    paymentId: subscription.id,
+    signature: '',
+  });
+
+  if (!success) {
+    throw error || new Error('Failed to activate subscription');
+  }
+
+  console.log(`[Webhook] Subscription activated successfully: ${dbSubscription.id}`);
+}
+
+/**
+ * Handle subscription charged (recurring payment)
+ */
+async function handleSubscriptionCharged(supabase: any, event: any) {
+  const payment = event.payload?.payment?.entity;
+  const subscription = event.payload?.subscription?.entity;
+
+  if (!payment?.id || !subscription?.id) {
+    throw new Error('Missing payment or subscription ID in charged event');
+  }
+
+  const subscriptionId = subscription.id;
+  console.log(`[Webhook] Processing subscription charge: ${subscriptionId}`);
+
+  // Get subscription record
+  const { data: dbSubscription } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('order_id', subscriptionId)
+    .single();
+
+  if (!dbSubscription) {
+    console.warn('[Webhook] Subscription not found for charge:', subscriptionId);
+    return;
+  }
+
+  // Update subscription record with latest payment
+  await supabase
+    .from('subscriptions')
+    .update({
+      payment_id: payment.id,
+      status: 'active',
+      payment_status: 'completed',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', dbSubscription.id);
+
+  // Extend subscription end date if applicable
+  if (dbSubscription.end_date) {
+    const currentEnd = new Date(dbSubscription.end_date);
+    const now = new Date();
+    const newEnd = currentEnd > now ? currentEnd : now;
+    
+    // Add 30 days (monthly billing)
+    newEnd.setDate(newEnd.getDate() + 30);
+
+    await supabase
+      .from('subscriptions')
+      .update({
+        end_date: newEnd.toISOString(),
+      })
+      .eq('id', dbSubscription.id);
+
+    // Update profile
+    await supabase
+      .from('profiles')
+      .update({
+        subscription_status: 'active',
+        subscription_end: newEnd.toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', dbSubscription.user_id);
+  }
+
+  console.log(`[Webhook] Subscription charged successfully: ${dbSubscription.id}`);
+}
+
+/**
+ * Handle subscription cancellation or pause
+ */
+async function handleSubscriptionCancelled(supabase: any, event: any) {
+  const subscription = event.payload?.subscription?.entity;
+
+  if (!subscription?.id) {
+    throw new Error('Missing subscription ID in cancellation event');
+  }
+
+  const subscriptionId = subscription.id;
+  console.log(`[Webhook] Processing subscription cancellation: ${subscriptionId}`);
+
+  // Get subscription record
+  const { data: dbSubscription } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('order_id', subscriptionId)
+    .single();
+
+  if (!dbSubscription) {
+    console.warn('[Webhook] Subscription not found for cancellation:', subscriptionId);
+    return;
+  }
+
+  // Update subscription status
+  await supabase
+    .from('subscriptions')
+    .update({
+      status: event.event === 'subscription.paused' ? 'paused' : 'cancelled',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', dbSubscription.id);
+
+  // Update profile
+  await supabase
+    .from('profiles')
+    .update({
+      subscription_status: 'cancelled',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', dbSubscription.user_id);
+
+  console.log(`[Webhook] Subscription cancelled: ${dbSubscription.id}`);
+}
+
+/**
+ * Handle subscription completion (all payments done)
+ */
+async function handleSubscriptionCompleted(supabase: any, event: any) {
+  const subscription = event.payload?.subscription?.entity;
+
+  if (!subscription?.id) {
+    throw new Error('Missing subscription ID in completion event');
+  }
+
+  const subscriptionId = subscription.id;
+  console.log(`[Webhook] Processing subscription completion: ${subscriptionId}`);
+
+  // Get subscription record
+  const { data: dbSubscription } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('order_id', subscriptionId)
+    .single();
+
+  if (!dbSubscription) {
+    console.warn('[Webhook] Subscription not found for completion:', subscriptionId);
+    return;
+  }
+
+  // Update subscription status
+  await supabase
+    .from('subscriptions')
+    .update({
+      status: 'completed',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', dbSubscription.id);
+
+  console.log(`[Webhook] Subscription completed: ${dbSubscription.id}`);
 }
 
 // Disable body parsing for raw body access

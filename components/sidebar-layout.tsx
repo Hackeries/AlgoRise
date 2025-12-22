@@ -25,6 +25,7 @@ import {
   Menu,
   X,
   User,
+  Swords,
 } from 'lucide-react';
 
 // ==================== TYPES ====================
@@ -52,6 +53,7 @@ const MENU_ITEMS: MenuItem[] = [
   { href: '/', label: 'Dashboard', icon: Home },
   { href: '/train', label: 'Train', icon: Zap },
   { href: '/adaptive-sheet', label: 'Practice', icon: FileText },
+  { href: '/arena', label: 'Battle Arena', icon: Swords },
   { href: '/contests', label: 'Contests', icon: Trophy },
   { href: '/paths', label: 'Learning Paths', icon: BookOpen },
   { href: '/analytics', label: 'Analytics', icon: BarChart3 },

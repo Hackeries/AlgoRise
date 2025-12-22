@@ -1,62 +1,37 @@
-# Node.js dependencies
-/node_modules
+# Dependencies
+node_modules/
 
-# Next.js build output
-/.next/
-/out/
-/build
+# Next.js
+.next/
+out/
+dist/
+build/
 
-# Production
-/build
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+.env.*.local
 
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
 
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+# Coverage
+coverage/
 
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# Husky
-.husky/_
-
-# IDE / Editor settings
+# OS / Editor
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
-*.sublime-project
-*.sublime-workspace
-
-# MacOS
-.DS_Store
-
-# Debug / temporary files
-*.log
-*.tmp
-*.temp
-*.bak
 *.swp
 
-# Coverage reports
-/coverage
+# Docker
+docker-data/
 
-# pnpm lock file (if you want reproducible installs, keep it tracked)
-# pnpm-lock.yaml
-
-# Storybook / front-end generated folders
-.out-tsc/
-.storybook/build/
-
-# Public folder assets that are generated (if any)
-public/generated/
+# Supabase secrets
+supabase/.env

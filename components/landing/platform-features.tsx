@@ -103,7 +103,7 @@ export default function PlatformFeatures() {
   return (
     <section
       aria-labelledby='platform-features-heading'
-      className='relative py-20 sm:py-24 lg:py-32 overflow-hidden bg-linear-to-br from-background via-muted/30 to-background'
+      className='relative py-20 sm:py-24 lg:py-32 overflow-hidden bg-gradient-to-br from-background via-muted/30 to-background'
     >
       {/* Animated background ornaments */}
       <div
@@ -111,7 +111,7 @@ export default function PlatformFeatures() {
         aria-hidden='true'
       >
         <motion.div
-          className='absolute top-1/3 -left-1/4 w-96 h-96 bg-linear-to-br from-primary/30 to-purple-500/30 rounded-full blur-3xl'
+          className='absolute top-1/3 -left-1/4 w-96 h-96 bg-gradient-to-br from-primary/30 to-purple-500/30 rounded-full blur-3xl'
           animate={
             reduced
               ? { opacity: 0.28, scale: 1 }
@@ -120,7 +120,7 @@ export default function PlatformFeatures() {
           transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
-          className='absolute bottom-1/3 -right-1/4 w-96 h-96 bg-linear-to-tl from-blue-500/30 to-cyan-500/30 rounded-full blur-3xl'
+          className='absolute bottom-1/3 -right-1/4 w-96 h-96 bg-gradient-to-tl from-blue-500/30 to-cyan-500/30 rounded-full blur-3xl'
           animate={
             reduced
               ? { opacity: 0.28, scale: 1 }
@@ -144,7 +144,7 @@ export default function PlatformFeatures() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, ease: EASE }}
-            className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6'
+            className='inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6 backdrop-blur-sm'
           >
             <Sparkles className='w-4 h-4 text-primary' aria-hidden='true' />
             <span className='text-sm font-medium text-primary'>
@@ -156,7 +156,7 @@ export default function PlatformFeatures() {
             id='platform-features-heading'
             className='text-2xl sm:text-3xl lg:text-4xl font-bold mb-4'
           >
-            <span className='bg-linear-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent'>
+            <span className='bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent'>
               Everything You Need to Master Algorithms
             </span>
           </h2>
@@ -199,7 +199,7 @@ export default function PlatformFeatures() {
                         }
                   }
                   transition={{ duration: 0.3, ease: EASE }}
-                  className='h-full p-6 sm:p-8 rounded-2xl bg-card/50 backdrop-blur-xl border border-border/50 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 relative overflow-hidden'
+                  className='h-full p-6 sm:p-8 rounded-2xl glass-card hover:border-primary/50 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 relative overflow-hidden'
                   style={{
                     ['--shadow-color' as any]: 'rgba(0,0,0,0.35)',
                   }}
@@ -207,13 +207,13 @@ export default function PlatformFeatures() {
                   {/* Hover gradient veil */}
                   <motion.div
                     aria-hidden='true'
-                    className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 bg-linear-to-br ${feature.softStops} -z-10 transition-opacity duration-400`}
+                    className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 bg-gradient-to-br ${feature.softStops} -z-10 transition-opacity duration-400`}
                   />
 
                   {/* Animated perimeter */}
                   <motion.div
                     aria-hidden='true'
-                    className={`pointer-events-none absolute inset-0 rounded-2xl bg-linear-to-r ${feature.gradientStops} opacity-0 group-hover:opacity-20`}
+                    className={`pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-r ${feature.gradientStops} opacity-0 group-hover:opacity-20`}
                     animate={reduced ? undefined : { rotate: [0, 360] }}
                     transition={{
                       duration: 5,
@@ -228,7 +228,7 @@ export default function PlatformFeatures() {
                       reduced ? undefined : { rotate: 360, scale: 1.12 }
                     }
                     transition={{ duration: 0.65, ease: EASE }}
-                    className={`inline-flex p-4 rounded-xl mb-5 bg-linear-to-br ${feature.gradientStops} shadow-lg shadow-black/10`}
+                    className={`inline-flex p-4 rounded-xl mb-5 bg-gradient-to-br ${feature.gradientStops} shadow-lg shadow-black/10`}
                     aria-hidden='true'
                   >
                     <Icon className='h-7 w-7 text-white' />

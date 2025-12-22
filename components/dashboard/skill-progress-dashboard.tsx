@@ -110,13 +110,18 @@ export function SkillProgressDashboard() {
 
   if (loading) {
     return (
-      <Card>
+      <Card className="glass-card">
         <CardContent className="p-8">
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-muted rounded w-1/3" />
-            <div className="grid grid-cols-4 gap-4">
+            <div className="h-8 bg-gradient-to-r from-muted to-muted/50 rounded-lg w-1/3" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[1, 2, 3, 4].map(i => (
-                <div key={i} className="h-24 bg-muted rounded" />
+                <div key={i} className="h-24 bg-gradient-to-br from-muted to-muted/50 rounded-xl" />
+              ))}
+            </div>
+            <div className="space-y-3 pt-4">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-16 bg-gradient-to-r from-muted to-muted/50 rounded-lg" />
               ))}
             </div>
           </div>
@@ -129,57 +134,57 @@ export function SkillProgressDashboard() {
     <div className="space-y-6">
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-blue-500/20">
+        <Card className="glass-card bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-blue-500/20 hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/20 rounded-lg">
-                <Code className="w-5 h-5 text-blue-500" />
+              <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl shadow-lg">
+                <Code className="w-5 h-5 text-white" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.totalProblemsSolved}</p>
-                <p className="text-xs text-muted-foreground">Problems Solved</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Problems Solved</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20">
+        <Card className="glass-card bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20 hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-500/20 rounded-lg">
-                <Flame className="w-5 h-5 text-orange-500" />
+              <div className="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-lg animate-pulse">
+                <Flame className="w-5 h-5 text-white" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.currentStreak}</p>
-                <p className="text-xs text-muted-foreground">Day Streak</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Day Streak</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20">
+        <Card className="glass-card bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-500/20 hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/20 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-green-500" />
+              <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl shadow-lg">
+                <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.rating}</p>
-                <p className="text-xs text-muted-foreground">Rating</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Rating</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-yellow-500/10 to-amber-500/10 border-yellow-500/20">
+        <Card className="glass-card bg-gradient-to-br from-yellow-500/10 to-amber-500/10 border-yellow-500/20 hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-500/20 rounded-lg">
-                <Trophy className="w-5 h-5 text-yellow-500" />
+              <div className="p-2 bg-gradient-to-br from-yellow-500 to-amber-500 rounded-xl shadow-lg">
+                <Trophy className="w-5 h-5 text-white" />
               </div>
               <div>
                 <p className="text-2xl font-bold">#{stats?.rank}</p>
-                <p className="text-xs text-muted-foreground">Global Rank</p>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide">Global Rank</p>
               </div>
             </div>
           </CardContent>
@@ -188,16 +193,18 @@ export function SkillProgressDashboard() {
 
       {/* Main Content */}
       <Tabs defaultValue="topics" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="topics">Topic Mastery</TabsTrigger>
-          <TabsTrigger value="achievements">Achievements</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 glass-panel">
+          <TabsTrigger value="topics" className="data-[state=active]:bg-primary/10">Topic Mastery</TabsTrigger>
+          <TabsTrigger value="achievements" className="data-[state=active]:bg-primary/10">Achievements</TabsTrigger>
         </TabsList>
 
         <TabsContent value="topics" className="mt-4">
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="w-5 h-5" />
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-primary to-accent">
+                  <Target className="w-5 h-5 text-white" />
+                </div>
                 Topic Mastery Progress
               </CardTitle>
               <CardDescription>
@@ -206,22 +213,27 @@ export function SkillProgressDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               {topicMastery.map((topic) => (
-                <div key={topic.topicSlug} className="space-y-2">
+                <div key={topic.topicSlug} className="space-y-2 p-3 rounded-xl hover:bg-muted/30 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      {TOPIC_ICONS[topic.topicSlug] || TOPIC_ICONS['default']}
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        {TOPIC_ICONS[topic.topicSlug] || TOPIC_ICONS['default']}
+                      </div>
                       <span className="font-medium">{topic.topicName}</span>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{topic.problemsSolved}/{topic.problemsAttempted} solved</span>
-                      <Badge variant={topic.masteryPercentage >= 80 ? 'default' : 'secondary'}>
+                      <span className="font-mono">{topic.problemsSolved}/{topic.problemsAttempted} solved</span>
+                      <Badge 
+                        variant={topic.masteryPercentage >= 80 ? 'default' : 'secondary'}
+                        className="font-semibold"
+                      >
                         {topic.masteryPercentage}%
                       </Badge>
                     </div>
                   </div>
                   <Progress 
                     value={topic.masteryPercentage} 
-                    className="h-2"
+                    className="h-2.5"
                   />
                 </div>
               ))}
@@ -230,10 +242,12 @@ export function SkillProgressDashboard() {
         </TabsContent>
 
         <TabsContent value="achievements" className="mt-4">
-          <Card>
+          <Card className="glass-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="w-5 h-5" />
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-yellow-500 to-amber-500">
+                  <Award className="w-5 h-5 text-white" />
+                </div>
                 Achievements Earned
               </CardTitle>
               <CardDescription>
@@ -245,9 +259,9 @@ export function SkillProgressDashboard() {
                 {achievements.map((achievement) => (
                   <div 
                     key={achievement.id}
-                    className="flex items-center gap-3 p-4 rounded-lg border bg-muted/20"
+                    className="flex items-center gap-3 p-4 rounded-xl border bg-card/50 backdrop-blur-sm hover-lift"
                   >
-                    <div className={`p-3 rounded-full ${TIER_COLORS[achievement.tier]}`}>
+                    <div className={`p-3 rounded-full ${TIER_COLORS[achievement.tier]} shadow-lg`}>
                       {achievement.icon === 'flame' ? <Flame className="w-5 h-5" /> : 
                        achievement.icon === 'code' ? <Code className="w-5 h-5" /> :
                        <Star className="w-5 h-5" />}

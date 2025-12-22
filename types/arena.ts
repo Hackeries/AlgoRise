@@ -296,3 +296,4 @@ export function formatEloChange(change: number): string {
   }
   return change.toString();
 }
+

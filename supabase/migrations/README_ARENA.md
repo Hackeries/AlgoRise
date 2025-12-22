@@ -136,3 +136,4 @@ DROP FUNCTION IF EXISTS check_daily_match_limit(UUID);
 - Users can only modify their own player records
 - System operations require elevated privileges
 - Suspicious events are logged but not publicly visible
+

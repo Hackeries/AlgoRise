@@ -203,10 +203,13 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// Fallback problem IDs if no problems are found in database
+const FALLBACK_PROBLEM_IDS = ['demo_problem_1', 'demo_problem_2', 'demo_problem_3'];
+
 /**
  * Select problems for the match based on player ELO
  */
-async function selectMatchProblems(supabase: any, playerElo: number): Promise<string[]> {
+async function selectMatchProblems(supabase: ReturnType<typeof createClient>, playerElo: number): Promise<string[]> {
   // Target difficulty based on ELO
   const targetRating = Math.max(800, Math.min(3500, playerElo + 200));
   const ratingRange = 300;
@@ -221,8 +224,8 @@ async function selectMatchProblems(supabase: any, playerElo: number): Promise<st
     .limit(10);
 
   if (!problems || problems.length === 0) {
-    // Fallback: return some default problem IDs
-    return ['default_1', 'default_2', 'default_3'];
+    // Fallback: return demo problem IDs
+    return FALLBACK_PROBLEM_IDS;
   }
 
   // Randomly select 3 problems
@@ -233,7 +236,7 @@ async function selectMatchProblems(supabase: any, playerElo: number): Promise<st
 /**
  * Update daily match limit for user
  */
-async function updateDailyLimit(supabase: any, userId: string): Promise<void> {
+async function updateDailyLimit(supabase: ReturnType<typeof createClient>, userId: string): Promise<void> {
   const today = new Date().toISOString().split('T')[0];
 
   const { data: existing } = await supabase
@@ -258,3 +261,4 @@ async function updateDailyLimit(supabase: any, userId: string): Promise<void> {
       });
   }
 }
+

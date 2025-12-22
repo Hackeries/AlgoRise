@@ -486,3 +486,4 @@ WHERE NOT EXISTS (
     SELECT 1 FROM arena_ratings WHERE user_id = auth.users.id
 )
 ON CONFLICT (user_id) DO NOTHING;
+

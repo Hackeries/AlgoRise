@@ -227,3 +227,4 @@ export function getPointsToNextTier(elo: number): number {
 export function isValidElo(elo: number): boolean {
   return elo >= 0 && elo <= 5000 && Number.isInteger(elo);
 }
+

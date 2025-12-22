@@ -331,3 +331,4 @@ Players can earn titles through achievements:
 - **Dependencies**: Uses existing auth and subscription systems
 - **Testing**: Test with multiple users to verify matchmaking
 - **Performance**: Indexes optimized for common queries
+

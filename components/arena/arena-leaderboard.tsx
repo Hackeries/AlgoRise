@@ -75,7 +75,7 @@ export function ArenaLeaderboard() {
                 No players yet. Be the first to compete!
               </div>
             ) : (
-              <div className="space-y-2 max-h-[600px] overflow-y-auto scrollbar-thin">
+              <div className="space-y-2 max-h-[600px] lg:max-h-[700px] xl:max-h-[800px] overflow-y-auto scrollbar-thin">
                 {leaderboard.map((entry, index) => (
                   <div
                     key={entry.userId}

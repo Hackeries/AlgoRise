@@ -151,8 +151,8 @@ export function SkillProgressDashboard() {
         <Card className="glass-card bg-gradient-to-br from-orange-500/10 to-red-500/10 border-orange-500/20 hover-lift">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-lg animate-pulse">
-                <Flame className="w-5 h-5 text-white" />
+              <div className="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-lg">
+                <Flame className="w-5 h-5 text-white animate-pulse" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats?.currentStreak}</p>

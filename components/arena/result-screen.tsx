@@ -164,4 +164,3 @@ export function ResultScreen({ result, onContinue }: ResultScreenProps) {
     </div>
   );
 }
-

@@ -261,4 +261,3 @@ async function updateDailyLimit(supabase: ReturnType<typeof createClient>, userI
       });
   }
 }
-

@@ -285,4 +285,3 @@ export function ArenaLobby({ userId, userRating, dailyLimit, isPro }: ArenaLobby
     </div>
   );
 }
-

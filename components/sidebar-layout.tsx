@@ -489,7 +489,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         {/* Mobile bottom nav */}
         {isMobile && (
           <nav
-            className='fixed bottom-0 inset-x-0 border-t border-border/60 bg-background/95 backdrop-blur shadow-lg'
+            className='fixed bottom-0 inset-x-0 border-t border-border/60 bg-card/95 backdrop-blur-xl shadow-lg z-50'
             aria-label='Mobile bottom navigation'
           >
             <div className='mx-auto flex max-w-md items-center justify-between px-6 py-2'>
@@ -501,15 +501,15 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                     key={tab.href}
                     href={tab.href}
                     className={cn(
-                      'flex flex-col items-center gap-1 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-md px-2 py-1',
+                      'flex flex-col items-center gap-1 text-xs font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-xl px-4 py-2',
                       active
-                        ? 'text-primary'
-                        : 'text-muted-foreground hover:text-foreground'
+                        ? 'text-primary bg-primary/10 scale-105'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
                     )}
                     aria-current={active ? 'page' : undefined}
                   >
-                    <Icon className='h-5 w-5 shrink-0' aria-hidden='true' />
-                    <span>{tab.label}</span>
+                    <Icon className={cn('h-5 w-5 shrink-0 transition-transform', active && 'scale-110')} aria-hidden='true' />
+                    <span className={cn('font-semibold', active && 'text-primary')}>{tab.label}</span>
                   </Link>
                 );
               })}

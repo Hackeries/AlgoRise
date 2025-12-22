@@ -668,6 +668,46 @@
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring;
   }
   
+  /* ========== Responsive Utilities ========== */
+  /* Mobile-first responsive containers */
+  .responsive-grid {
+    @apply grid grid-cols-1 gap-4;
+  }
+  
+  @media (min-width: 768px) {
+    .responsive-grid {
+      @apply grid-cols-2 gap-6;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .responsive-grid {
+      @apply grid-cols-3 gap-8;
+    }
+  }
+  
+  /* Responsive padding */
+  .responsive-padding {
+    @apply px-4 py-6;
+  }
+  
+  @media (min-width: 768px) {
+    .responsive-padding {
+      @apply px-6 py-8;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .responsive-padding {
+      @apply px-8 py-12;
+    }
+  }
+  
+  /* Touch-friendly tap targets for mobile */
+  .tap-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
   /* ========== Animations - Minimal, Functional Only ========== */
   
   /* Loading Spinner - Functional */

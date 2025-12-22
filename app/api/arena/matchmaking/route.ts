@@ -209,7 +209,10 @@ const FALLBACK_PROBLEM_IDS = ['demo_problem_1', 'demo_problem_2', 'demo_problem_
 /**
  * Select problems for the match based on player ELO
  */
-async function selectMatchProblems(supabase: ReturnType<typeof createClient>, playerElo: number): Promise<string[]> {
+async function selectMatchProblems(
+  supabase: Awaited<ReturnType<typeof createClient>>, 
+  playerElo: number
+): Promise<string[]> {
   // Target difficulty based on ELO
   const targetRating = Math.max(800, Math.min(3500, playerElo + 200));
   const ratingRange = 300;
@@ -236,7 +239,10 @@ async function selectMatchProblems(supabase: ReturnType<typeof createClient>, pl
 /**
  * Update daily match limit for user
  */
-async function updateDailyLimit(supabase: ReturnType<typeof createClient>, userId: string): Promise<void> {
+async function updateDailyLimit(
+  supabase: Awaited<ReturnType<typeof createClient>>, 
+  userId: string
+): Promise<void> {
   const today = new Date().toISOString().split('T')[0];
 
   const { data: existing } = await supabase

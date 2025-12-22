@@ -1,10 +1,13 @@
 /**
- * Create Razorpay Order for Subscription Purchase
+ * Create Razorpay Order for Subscription Purchase (DEPRECATED)
  * 
  * POST /api/subscriptions/create-order
  * Body: { planCode: string }
  * 
- * Creates a Razorpay order and subscription record in database.
+ * @deprecated This endpoint is deprecated. Use /api/subscriptions/create-subscription instead.
+ * 
+ * This endpoint now redirects to the new subscription-based API.
+ * The old order-based approach is insecure and does not support recurring billing.
  */
 
 import Razorpay from 'razorpay';
@@ -15,6 +18,11 @@ import { createSubscription } from '@/lib/subscriptions/service';
 import { isValidPlanCode } from '@/lib/subscriptions/utils';
 
 export async function POST(req: Request) {
+  // Log deprecation warning
+  console.warn('[DEPRECATED] /api/subscriptions/create-order is deprecated. Use /api/subscriptions/create-subscription instead.');
+  
+  // For backward compatibility, continue to support this endpoint
+  // but encourage migration to the new endpoint
   try {
     const { planCode } = await req.json();
 
@@ -152,6 +160,8 @@ export async function POST(req: Request) {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY || keyId,
       subscription_id: subscription?.id,
       plan_name: plan.name,
+      deprecated: true,
+      migration_notice: 'This API is deprecated. Please migrate to /api/subscriptions/create-subscription for better security and recurring billing support.',
     });
   } catch (e: any) {
     console.error('[Subscription] Create order error:', e?.message, e?.stack);

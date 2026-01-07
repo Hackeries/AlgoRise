@@ -1,28 +1,17 @@
-'use client';
+'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/lib/auth/context';
-import { TrainSessionBuilder } from '@/components/train/TrainSessionBuilder';
-import { TrainSessionPanel } from '@/components/train/TrainSessionPanel';
-import { TrainSessionSummary } from '@/components/train/TrainSessionSummary';
-import { type LogEntry } from '@/components/train/logs/LogsConsole';
-import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth/context'
+import { TrainSessionBuilder } from '@/components/train/TrainSessionBuilder'
+import { TrainSessionPanel } from '@/components/train/TrainSessionPanel'
+import { TrainSessionSummary } from '@/components/train/TrainSessionSummary'
+import { type LogEntry } from '@/components/train/logs/LogsConsole'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Loader2 } from 'lucide-react'
 
-/**
- * Training Session Page
- * 
- * Manages the lifecycle of a training session:
- * 1. Session Builder - Configure and start session
- * 2. Session Panel - Active training with real-time updates
- * 3. Session Summary - Review results after completion
- * 
- * TODO: Replace anonymous user handling with proper Supabase auth
- * TODO: Persist session state for page refresh resilience
- */
-
-type SessionPhase = 'building' | 'training' | 'summary';
+type SessionPhase = 'building' | 'training' | 'summary'
 
 interface Problem {
   id: string;
@@ -82,21 +71,26 @@ interface SessionSummaryData {
   completed_at: number;
 }
 
+// max reconnect attempts for SSE before giving up
+const MAX_RECONNECT_ATTEMPTS = 5
+
 export default function TrainSessionPage() {
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
-  
-  const [phase, setPhase] = useState<SessionPhase>('building');
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const [sessionData, setSessionData] = useState<SessionData | null>(null);
-  const [summary, setSummary] = useState<SessionSummaryData | null>(null);
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [currentHint, setCurrentHint] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  
-  const eventSourceRef = useRef<EventSource | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const router = useRouter()
+  const { user, loading: authLoading } = useAuth()
+
+  const [phase, setPhase] = useState<SessionPhase>('building')
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [sessionData, setSessionData] = useState<SessionData | null>(null)
+  const [summary, setSummary] = useState<SessionSummaryData | null>(null)
+  const [logs, setLogs] = useState<LogEntry[]>([])
+  const [currentHint, setCurrentHint] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [connectionLost, setConnectionLost] = useState(false)
+
+  const eventSourceRef = useRef<EventSource | null>(null)
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const reconnectAttemptsRef = useRef(0)
 
   // Add log entry
   const addLog = useCallback((event: string, message: string, data?: Record<string, unknown>) => {
@@ -110,32 +104,45 @@ export default function TrainSessionPage() {
     setLogs((prev) => [...prev, entry]);
   }, []);
 
-  // Connect to SSE stream
+  // connect to SSE stream with reconnection logic
   const connectSSE = useCallback((sid: string) => {
     if (eventSourceRef.current) {
-      eventSourceRef.current.close();
+      eventSourceRef.current.close()
     }
 
-    const eventSource = new EventSource(`/api/train/session/${sid}/stream`);
-    eventSourceRef.current = eventSource;
+    const eventSource = new EventSource(`/api/train/session/${sid}/stream`)
+    eventSourceRef.current = eventSource
 
     eventSource.onopen = () => {
-      addLog('connected', 'Connected to real-time stream');
-    };
+      reconnectAttemptsRef.current = 0
+      setConnectionLost(false)
+      addLog('connected', 'Connected to real-time stream')
+    }
 
     eventSource.onerror = () => {
-      addLog('error', 'Connection lost, reconnecting...');
-      
-      // Auto-reconnect after 3 seconds
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
+      reconnectAttemptsRef.current += 1
+
+      if (reconnectAttemptsRef.current >= MAX_RECONNECT_ATTEMPTS) {
+        setConnectionLost(true)
+        addLog('error', 'Connection lost - click Reconnect to continue')
+        eventSource.close()
+        return
       }
+
+      addLog('error', `Connection lost - reconnecting (attempt ${reconnectAttemptsRef.current})...`)
+
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current)
+      }
+
+      // exponential backoff for reconnection
+      const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000)
       reconnectTimeoutRef.current = setTimeout(() => {
         if (phase === 'training') {
-          connectSSE(sid);
+          connectSSE(sid)
         }
-      }, 3000);
-    };
+      }, delay)
+    }
 
     // Listen to all events
     const eventTypes = [
@@ -366,21 +373,30 @@ export default function TrainSessionPage() {
     };
   }, []);
 
-  // Handle new session
-  const handleNewSession = () => {
-    // Cleanup
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close();
+  // manual reconnect handler
+  const handleReconnect = useCallback(() => {
+    if (sessionId) {
+      reconnectAttemptsRef.current = 0
+      setConnectionLost(false)
+      connectSSE(sessionId)
     }
-    
-    setSessionId(null);
-    setSessionData(null);
-    setSummary(null);
-    setLogs([]);
-    setCurrentHint(null);
-    setError(null);
-    setPhase('building');
-  };
+  }, [sessionId, connectSSE])
+
+  // handle new session
+  const handleNewSession = () => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close()
+    }
+
+    setSessionId(null)
+    setSessionData(null)
+    setSummary(null)
+    setLogs([])
+    setCurrentHint(null)
+    setError(null)
+    setConnectionLost(false)
+    setPhase('building')
+  }
 
   // Loading state
   if (authLoading) {
@@ -401,6 +417,15 @@ export default function TrainSessionPage() {
         {error && (
           <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500">
             {error}
+          </div>
+        )}
+
+        {connectionLost && phase === 'training' && (
+          <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center justify-between">
+            <span className="text-yellow-600">Connection lost to training server</span>
+            <Button variant="outline" size="sm" onClick={handleReconnect}>
+              Reconnect
+            </Button>
           </div>
         )}
 

@@ -114,8 +114,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json();
-    console.log('Creating contest for user:', user.id);
+    const body = await req.json()
 
     // Simple validation
     const name = body.name?.toString()?.trim() || '';
@@ -144,8 +143,6 @@ export async function POST(req: Request) {
       rating_max: body.rating_max || 1600,
     };
 
-    console.log('Contest insert data:', contestInsert);
-
     const { data: contest, error: contestError } = await supabase
       .from('contests')
       .insert(contestInsert)
@@ -153,7 +150,6 @@ export async function POST(req: Request) {
       .single();
 
     if (contestError) {
-      console.error('Database error:', contestError);
       return NextResponse.json(
         {
           error: `Database error: ${contestError.message}`,
@@ -163,9 +159,7 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log('Contest created successfully:', contest.id);
-
-    // Auto-generate contest problems from Codeforces by rating range
+    // auto generate contest problems from codeforces by rating range
     try {
       const minR = Number(contestInsert.rating_min) || 800;
       const maxR = Number(contestInsert.rating_max) || 1600;
@@ -210,28 +204,11 @@ export async function POST(req: Request) {
             rating: p.rating ?? null,
           }));
 
-          const { error: insertErr } = await supabase
-            .from('contest_problems')
-            .insert(rows);
-          if (insertErr) {
-            console.error('Failed to insert contest problems:', insertErr);
-          } else {
-            console.log(
-              `Inserted ${rows.length} problems for contest`,
-              contest.id
-            );
-          }
-        } else {
-          console.warn('No CF problems matched the selected rating range', {
-            minR,
-            maxR,
-          });
+          await supabase.from('contest_problems').insert(rows)
         }
-      } else {
-        console.warn('CF problems fetch failed:', problemsResp.comment);
       }
-    } catch (e) {
-      console.error('Auto-generate problems failed:', e);
+    } catch {
+      // problem generation failed silently - contest still created
     }
 
     return NextResponse.json({
@@ -242,14 +219,7 @@ export async function POST(req: Request) {
         status: contest.status,
       },
     });
-  } catch (error) {
-    console.error('Contest creation failed:', error);
-    return NextResponse.json(
-      {
-        error: 'Internal server error',
-        details: error instanceof Error ? error.message : String(error),
-      },
-      { status: 500 }
-    );
+  } catch {
+    return NextResponse.json({ error: 'Failed to create contest' }, { status: 500 })
   }
 }

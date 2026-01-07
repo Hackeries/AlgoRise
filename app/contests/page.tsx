@@ -1,15 +1,15 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { useEffect, useState, useMemo } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+} from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
@@ -18,19 +18,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
+} from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { Separator } from '@/components/ui/separator'
 import {
   CalendarIcon,
   ClockIcon,
@@ -40,11 +40,9 @@ import {
   Zap,
   Trophy,
   RefreshCw,
-} from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { createClient } from '@/lib/supabase/client';
-
-const supabase = createClient();
+} from 'lucide-react'
+import { toast } from '@/hooks/use-toast'
+import { createClient } from '@/lib/supabase/client'
 
 type CodeforcesContest = {
   id: number;
@@ -57,34 +55,38 @@ type CodeforcesContest = {
 };
 
 type PrivateContest = {
-  id: string;
-  name: string;
-  description?: string;
-  visibility: string;
-  status: string;
-  host_user_id: string;
-  starts_at?: string;
-  ends_at?: string;
-  duration_minutes?: number;
-  max_participants?: number;
-  allow_late_join?: boolean;
-  contest_mode: string;
-  problem_count: number;
-  rating_min: number;
-  rating_max: number;
-  created_at: string;
-  isRegistered?: boolean;
-  isHost?: boolean;
-};
+  id: string
+  name: string
+  description?: string
+  visibility: string
+  status: string
+  host_user_id: string
+  starts_at?: string
+  ends_at?: string
+  duration_minutes?: number
+  max_participants?: number
+  allow_late_join?: boolean
+  contest_mode: string
+  problem_count: number
+  rating_min: number
+  rating_max: number
+  created_at: string
+  isRegistered?: boolean
+  isHost?: boolean
+}
+
+// auto refresh every 5 minutes
+const AUTO_REFRESH_MS = 5 * 60 * 1000
 
 export default function ContestsPage() {
-  const [upcomingCfContests, setUpcomingCfContests] = useState<
-    CodeforcesContest[]
-  >([]);
-  const [privateContests, setPrivateContests] = useState<PrivateContest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [creating, setCreating] = useState(false);
+  // create supabase client inside component to avoid SSR issues
+  const supabase = useMemo(() => createClient(), [])
+
+  const [upcomingCfContests, setUpcomingCfContests] = useState<CodeforcesContest[]>([])
+  const [privateContests, setPrivateContests] = useState<PrivateContest[]>([])
+  const [loading, setLoading] = useState(true)
+  const [createDialogOpen, setCreateDialogOpen] = useState(false)
+  const [creating, setCreating] = useState(false)
   const [formData, setFormData] = useState({
     name: 'Custom Contest',
     description: '',
@@ -97,62 +99,47 @@ export default function ContestsPage() {
     allowLateJoin: true,
     contestMode: 'practice',
     visibility: 'private',
-  });
-  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null);
-  const [userRating, setUserRating] = useState<number>(0);
-
-  const [createdContestLink, setCreatedContestLink] = useState<string | null>(
-    null
-  );
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const [notifiedContestIds, setNotifiedContestIds] = useState<Set<string>>(
-    new Set()
-  );
-  const [refreshing, setRefreshing] = useState(false);
+  })
+  const [currentUser, setCurrentUser] = useState<{ id: string } | null>(null)
+  const [userRating, setUserRating] = useState<number>(0)
+  const [createdContestLink, setCreatedContestLink] = useState<string | null>(null)
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setCurrentUser(user);
-    };
+      const { data: { user } } = await supabase.auth.getUser()
+      setCurrentUser(user)
+    }
 
     const fetchUserRating = async () => {
-      const { data: userData } = await supabase.auth.getUser();
-      const userId = userData?.user?.id;
+      const { data: userData } = await supabase.auth.getUser()
+      const userId = userData?.user?.id
+      if (!userId) return
 
-      if (!userId) return;
-
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('cf_snapshots')
         .select('rating')
         .eq('user_id', userId)
         .order('captured_at', { ascending: false })
         .limit(1)
-        .single();
-
-      if (error) {
-        console.error('Error fetching rating:', error);
-        return;
-      }
+        .single()
 
       if (data?.rating) {
-        setUserRating(data.rating);
+        setUserRating(data.rating)
       }
-    };
+    }
 
-    fetchCurrentUser();
-    fetchUserRating();
-    fetchContests();
+    fetchCurrentUser()
+    fetchUserRating()
+    fetchContests()
 
-    // Auto-refresh contests every 5 minutes for real-time updates
     const refreshInterval = setInterval(() => {
-      fetchContests();
-    }, 360 * 60 * 1000); // 360 minutes
+      fetchContests()
+    }, AUTO_REFRESH_MS)
 
-    return () => clearInterval(refreshInterval);
-  }, []);
+    return () => clearInterval(refreshInterval)
+  }, [supabase])
 
   const fetchContests = async (isManualRefresh = false) => {
     try {

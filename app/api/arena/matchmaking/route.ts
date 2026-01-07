@@ -1,25 +1,25 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { getMatchmakingRange } from '@/lib/arena/elo';
-import type { MatchType, MatchMode } from '@/types/arena';
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { getMatchmakingRange } from '@/lib/arena/elo'
+import { checkRateLimit, RATE_LIMITS } from '@/lib/security/rate-limit'
+import type { MatchType, MatchMode } from '@/types/arena'
 
-/**
- * Matchmaking API endpoint
- * Matches players based on ELO, match type, and mode
- */
+// matchmaking has strict rate limits to prevent abuse
+const MATCHMAKING_RATE_LIMIT = { windowMs: 60 * 1000, maxRequests: 5 }
+
 export async function POST(req: NextRequest) {
   try {
-    const supabase = await createClient();
-    
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const supabase = await createClient()
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    // apply rate limiting
+    const rateLimited = await checkRateLimit(req, 'arena_matchmaking', MATCHMAKING_RATE_LIMIT, user.id)
+    if (rateLimited) return rateLimited
 
     // Parse request body
     const body = await req.json();
@@ -194,12 +194,8 @@ export async function POST(req: NextRequest) {
       { status: 501 }
     );
 
-  } catch (error) {
-    console.error('Matchmaking error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+  } catch {
+    return NextResponse.json({ error: 'Matchmaking failed' }, { status: 500 })
   }
 }
 

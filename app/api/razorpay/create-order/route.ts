@@ -79,11 +79,8 @@ export async function POST(req: Request) {
           status: 'created',
         });
       }
-    } catch (e) {
-      console.log(
-        '[v0] Skipping purchase log (no auth or DB):',
-        (e as any)?.message
-      );
+    } catch {
+      // Skipping purchase log (no auth or DB)
     }
 
     return NextResponse.json({

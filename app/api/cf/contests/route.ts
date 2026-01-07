@@ -7,8 +7,6 @@ export const revalidate = 0;
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('Fetching contests from Codeforces API...');
-
     // Get all contests from Codeforces API
     const contestsResponse = await cfGetContestList();
 
@@ -31,7 +29,6 @@ export async function GET(request: NextRequest) {
     }
 
     const allContests: CodeforcesContest[] = contestsResponse.result;
-    console.log(`Fetched ${allContests.length} contests from Codeforces`);
 
     // Filter upcoming contests (more comprehensive)
     const now = Math.floor(Date.now() / 1000);
@@ -58,12 +55,6 @@ export async function GET(request: NextRequest) {
       )
       .sort((a, b) => (b.startTimeSeconds || 0) - (a.startTimeSeconds || 0))
       .slice(0, 15);
-
-    console.log(`Codeforces API response status: ${contestsResponse.status}`);
-    console.log(`Fetched ${allContests.length} contests from Codeforces`);
-    console.log(
-      `Found ${upcomingContests.length} upcoming contests, ${recentContests.length} recent contests`
-    );
 
     return NextResponse.json({
       upcoming: upcomingContests

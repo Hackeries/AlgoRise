@@ -6,13 +6,12 @@ import RealTimeNotificationManager from '@/lib/realtime-notifications';
 
 export const dynamic = 'force-dynamic';
 
-// Lightweight, relatable logger for this route
+// Lightweight logger for this route - only log errors in production
 const SCOPE = 'Notifications';
 const log = {
-  info: (msg: string, meta?: unknown) =>
-    meta !== undefined
-      ? console.log(`${SCOPE} - ${msg}`, meta)
-      : console.log(`${SCOPE} - ${msg}`),
+  info: (_msg: string, _meta?: unknown) => {
+    // Disabled in production
+  },
   warn: (msg: string, meta?: unknown) =>
     meta !== undefined
       ? console.warn(`${SCOPE} - ${msg}`, meta)

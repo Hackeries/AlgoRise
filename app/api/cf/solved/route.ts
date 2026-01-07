@@ -13,8 +13,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    console.log(`Fetching solved problems for handle: ${handle}`);
-
     // Fetch all user submissions (no limit to get complete data)
     const submissionsResponse = await cfGetUserStatus(handle);
 
@@ -58,8 +56,6 @@ export async function GET(request: NextRequest) {
         }
       }
     });
-
-    console.log(`Found ${solvedProblems.size} solved problems for ${handle}`);
 
     return NextResponse.json({
       handle,

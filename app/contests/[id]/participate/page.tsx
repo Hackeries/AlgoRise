@@ -179,8 +179,8 @@ export default function ContestParticipationPage() {
   const exitFullscreen = async () => {
     try {
       await document.exitFullscreen();
-    } catch (err) {
-      console.log('Exit fullscreen failed');
+    } catch {
+      // Exit fullscreen failed - ignore
     }
   };
 
@@ -188,8 +188,8 @@ export default function ContestParticipationPage() {
     const enterFullscreen = async () => {
       try {
         await document.documentElement.requestFullscreen();
-      } catch (err) {
-        console.log('Fullscreen not supported or denied');
+      } catch {
+        // Fullscreen not supported or denied - ignore
       }
     };
 

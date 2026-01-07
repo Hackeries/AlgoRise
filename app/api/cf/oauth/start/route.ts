@@ -27,12 +27,6 @@ export async function GET(request: NextRequest) {
 
     const cfUser = cfData.result[0];
 
-    // No database storage needed - verification works without authentication
-    console.log(`Successfully verified CF handle: ${cfUser.handle}`);
-    console.log(
-      `User stats - Rating: ${cfUser.rating}, Max Rating: ${cfUser.maxRating}, Rank: ${cfUser.rank}`
-    );
-
     // Redirect to success page with user data
     const successUrl = new URL('/cf-verification-success', request.url);
     successUrl.searchParams.set('handle', cfUser.handle);

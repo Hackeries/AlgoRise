@@ -206,13 +206,10 @@ export async function POST(
           
           if (result.success) {
             notificationCreated = true;
-            console.log('[v0] In-app notification created for', email);
           } else {
             console.error('[v0] Failed to create notification:', result.error);
             errors.push('In-app notification failed');
           }
-        } else {
-          console.log('[v0] User with email', email, 'not found in system - will only send email');
         }
       } catch (error) {
         console.error('[v0] Error checking for user or creating notification:', error);
@@ -230,7 +227,7 @@ export async function POST(
           created_by: user.id,
         });
       if (insErr) {
-        console.log('[v0] group_invitations insert error:', insErr.message);
+        console.error('[v0] group_invitations insert error:', insErr.message);
       }
     }
 
@@ -255,14 +252,12 @@ export async function POST(
 
         if (emailRes.ok) {
           emailSent = true;
-          console.log('[v0] Email sent successfully to', email);
         } else {
           const errorText = await emailRes.text();
           console.error('[v0] Email send failed:', errorText);
           errors.push('Email delivery failed');
         }
       } else {
-        console.log('[v0] RESEND_API_KEY not configured - email not sent');
         errors.push('Email service not configured');
       }
     } catch (error) {

@@ -1,6 +1,22 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { cfGetProblems } from '@/lib/codeforces-api';
+import { z } from 'zod';
+
+const createContestSchema = z.object({
+  name: z.string().min(1, 'Contest name is required').max(200),
+  description: z.string().max(2000).optional().default(''),
+  visibility: z.enum(['public', 'private']).optional().default('private'),
+  starts_at: z.string().datetime().nullable().optional(),
+  ends_at: z.string().datetime().nullable().optional(),
+  max_participants: z.number().int().positive().nullable().optional(),
+  allow_late_join: z.boolean().optional().default(true),
+  contest_mode: z.enum(['icpc', 'practice']).optional().default('practice'),
+  duration_minutes: z.number().int().min(5).max(720).optional().default(120),
+  problem_count: z.number().int().min(1).max(20).optional().default(5),
+  rating_min: z.number().int().min(800).max(3500).optional().default(800),
+  rating_max: z.number().int().min(800).max(3500).optional().default(1600),
+});
 
 interface Contest {
   id: string;
@@ -114,33 +130,41 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json()
+    const body = await req.json();
+    const parseResult = createContestSchema.safeParse(body);
 
-    // Simple validation
-    const name = body.name?.toString()?.trim() || '';
-    if (!name) {
+    if (!parseResult.success) {
+      const errors = parseResult.error.flatten();
       return NextResponse.json(
-        { error: 'Contest name is required' },
+        { error: 'Validation failed', details: errors.fieldErrors },
         { status: 400 }
       );
     }
 
-    // Create basic contest - let RLS handle the rest
+    const validated = parseResult.data;
+
+    if (validated.rating_min > validated.rating_max) {
+      return NextResponse.json(
+        { error: 'rating_min must be less than or equal to rating_max' },
+        { status: 400 }
+      );
+    }
+
     const contestInsert = {
-      name,
-      description: body.description?.toString()?.trim() || '',
-      visibility: body.visibility === 'public' ? 'public' : 'private',
+      name: validated.name.trim(),
+      description: validated.description?.trim() || '',
+      visibility: validated.visibility,
       status: 'draft',
       host_user_id: user.id,
-      starts_at: body.starts_at,
-      ends_at: body.ends_at,
-      max_participants: body.max_participants || null,
-      allow_late_join: body.allow_late_join !== false,
-      contest_mode: body.contest_mode === 'icpc' ? 'icpc' : 'practice',
-      duration_minutes: body.duration_minutes || 120,
-      problem_count: body.problem_count || 5,
-      rating_min: body.rating_min || 800,
-      rating_max: body.rating_max || 1600,
+      starts_at: validated.starts_at || null,
+      ends_at: validated.ends_at || null,
+      max_participants: validated.max_participants || null,
+      allow_late_join: validated.allow_late_join,
+      contest_mode: validated.contest_mode,
+      duration_minutes: validated.duration_minutes,
+      problem_count: validated.problem_count,
+      rating_min: validated.rating_min,
+      rating_max: validated.rating_max,
     };
 
     const { data: contest, error: contestError } = await supabase

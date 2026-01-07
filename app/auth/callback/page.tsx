@@ -57,7 +57,6 @@ export default function AuthCallback() {
                 throw new Error(`Failed to exchange code for session: ${exchangeError.message}`)
               }
               // For PKCE errors, try to get session directly
-              console.log("PKCE exchange failed, attempting direct session check")
             }
           } catch (e) {
             console.error("Exchange error:", e)

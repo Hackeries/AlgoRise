@@ -21,10 +21,6 @@ export async function GET(request: NextRequest) {
           .filter(Boolean)
       : [];
 
-    console.log(
-      `Fetching problems for rating ${rating}, tags: [${tags.join(', ')}], count: ${count}`
-    );
-
     // Get all problems from Codeforces
     const problemsResponse = await cfGetProblems(
       tags.length > 0 ? tags : undefined
@@ -50,7 +46,6 @@ export async function GET(request: NextRequest) {
     }
 
     let allProblems = problemsResponse.result.problems;
-    console.log(`Fetched ${allProblems.length} total problems from Codeforces`);
 
     // Get user's solved problems if handle is provided
     let solvedProblems = new Set<string>();
@@ -62,9 +57,6 @@ export async function GET(request: NextRequest) {
         submissionsResponse.result
       ) {
         solvedProblems = getSolvedProblems(submissionsResponse.result);
-        console.log(
-          `User ${handle} has solved ${solvedProblems.size} problems`
-        );
       }
     }
 
@@ -91,8 +83,6 @@ export async function GET(request: NextRequest) {
       })
       .sort(() => Math.random() - 0.5) // Randomize order
       .slice(0, count);
-
-    console.log(`Filtered to ${filteredProblems.length} recommended problems`);
 
     // Group problems by difficulty
     const grouped = {

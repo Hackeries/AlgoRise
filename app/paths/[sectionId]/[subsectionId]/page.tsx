@@ -66,7 +66,6 @@ export default function SubsectionPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        console.log('No authenticated user');
         setLoading(false);
         return;
       }

@@ -18,8 +18,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Handle is required" }, { status: 400 })
     }
 
-    console.log(`Fetching user info for handle: ${handle}`)
-
     // Fetch user info
     const userResponse = await cfGetUserInfo(handle)
     if (userResponse.status !== "OK" || !("result" in userResponse) || !userResponse.result) {
@@ -44,7 +42,6 @@ export async function GET(request: NextRequest) {
     let submissions: CodeforcesSubmission[] = []
     if (submissionsResponse.status === "OK" && "result" in submissionsResponse && submissionsResponse.result) {
       submissions = submissionsResponse.result
-      console.log(`Fetched ${submissions.length} submissions for user ${handle}`)
     }
 
     // Fetch rating history

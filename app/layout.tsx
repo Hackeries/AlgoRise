@@ -103,18 +103,20 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} ${bricolage.variable}`}
     >
       <head>
-        <link rel='canonical' href='https://www.myalgorise.in' />
+        <link rel="canonical" href="https://www.myalgorise.in" />
 
-        {/* Google AdSense */}
-        <Script
-          id='adsense'
-          async
-          strategy='afterInteractive'
-          src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3173433370339000'
-          crossOrigin='anonymous'
-        />
+        {/* google adsense loads only if configured */}
+        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT && (
+          <Script
+            id="adsense"
+            async
+            strategy="afterInteractive"
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}`}
+            crossOrigin="anonymous"
+          />
+        )}
 
-        {/* AdSense Transparency Fix */}
+        {/* adsense transparency fix */}
         <style>
           {`
             ins.adsbygoogle,
@@ -128,9 +130,9 @@ export default function RootLayout({
           `}
         </style>
 
-        {/* Structured Data */}
+        {/* structured data for seo */}
         <script
-          type='application/ld+json'
+          type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
@@ -138,11 +140,6 @@ export default function RootLayout({
               name: 'AlgoRise',
               url: 'https://www.myalgorise.in',
               applicationCategory: 'EducationalApplication',
-              aggregateRating: {
-                '@type': 'AggregateRating',
-                ratingValue: '4.8',
-                ratingCount: '1250',
-              },
             }),
           }}
         />

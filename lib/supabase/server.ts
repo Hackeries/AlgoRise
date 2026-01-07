@@ -1,105 +1,59 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { createDisabledClient } from './disabled-client'
 
-/**
- * Especially important if using Fluid compute: Don't put this client in a
- * global variable. Always create a new client within each function when using
- * it.
- */
+// server client for use in server components and api routes
+// important: dont put this in a global variable - create new client per request
+
 export async function createClient() {
-  const cookieStore = (await cookies()) as any;
+  const cookieStore = (await cookies()) as any
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    // Graceful, no-throw fallback: return a disabled client that reports no user
-    console.warn(
-      'Supabase env missing; returning disabled server client (features requiring Supabase will be unavailable).'
-    );
-    const disabledClient: any = {
-      auth: {
-        getUser: async () => ({ data: { user: null }, error: null }),
-        getSession: async () => ({ data: { session: null }, error: null }),
-        signOut: async () => ({ error: new Error('Supabase disabled') }),
-      },
-      // Common query helpers return chainable stubs; terminal calls return disabled error
-      from: () => {
-        const builder: any = {
-          select: () => builder,
-          insert: () => builder,
-          update: () => builder,
-          delete: () => builder,
-          eq: () => builder,
-          neq: () => builder,
-          gte: () => builder,
-          lte: () => builder,
-          is: () => builder,
-          ilike: () => builder,
-          like: () => builder,
-          not: () => builder,
-          order: () => builder,
-          range: () => builder,
-          limit: () => builder,
-          single: async () => ({
-            data: null,
-            error: new Error('Supabase disabled'),
-          }),
-          maybeSingle: async () => ({
-            data: null,
-            error: new Error('Supabase disabled'),
-          }),
-          // Allow awaiting the builder without throwing
-          then: (resolve: (v: any) => void) =>
-            resolve({ data: null, error: new Error('Supabase disabled') }),
-        };
-        return builder;
-      },
-      rpc: async () => ({ data: null, error: new Error('Supabase disabled') }),
-    };
-    return disabledClient;
+    console.warn('Supabase env missing - returning disabled client')
+    return createDisabledClient()
   }
 
   const cookieGet = (name: string) => {
-    return cookieStore.get(name)?.value as string | undefined;
-  };
+    return cookieStore.get(name)?.value as string | undefined
+  }
 
   const cookieSet = (name: string, value: string, options: CookieOptions) => {
-    cookieStore.set({ name, value, ...options });
-  };
+    cookieStore.set({ name, value, ...options })
+  }
 
   const cookieRemove = (name: string, options: CookieOptions) => {
     if (typeof cookieStore.delete === 'function') {
-      cookieStore.delete({ name, ...options });
+      cookieStore.delete({ name, ...options })
     } else {
-      cookieStore.set({ name, value: '', ...options });
+      cookieStore.set({ name, value: '', ...options })
     }
-  };
+  }
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: { get: cookieGet, set: cookieSet, remove: cookieRemove } as any,
-  });
+  })
 }
 
 export async function createServiceRoleClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
   if (!supabaseUrl || !serviceRoleKey) {
-    console.warn(
-      'Supabase service role key missing; cannot create service role client'
-    );
-    return null;
+    console.warn('Supabase service role key missing')
+    return null
   }
 
-  // Service role client doesn't use cookies - it's for server-to-server operations
+  // service role client doesnt use cookies - for server to server operations
   return createServerClient(supabaseUrl, serviceRoleKey, {
     cookies: {
       get: () => undefined,
       set: () => {},
       remove: () => {},
     } as any,
-  });
+  })
 }
 
-export const getSupabaseServer = createClient;
+export const getSupabaseServer = createClient

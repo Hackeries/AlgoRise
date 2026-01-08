@@ -91,7 +91,7 @@ export default function ContestSection() {
         .from('cf_snapshots')
         .select('rating')
         .eq('user_id', userId)
-        .order('captured_at', { ascending: false })
+        .order('fetched_at', { ascending: false })
         .limit(1)
         .single();
 

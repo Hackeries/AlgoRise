@@ -5,6 +5,8 @@ import PlatformFeatures from '@/components/landing/platform-features'
 import HowItWorks from '@/components/landing/how-it-works'
 import ModernLanding from '@/components/landing-hero'
 import CFLevels from '@/components/landing/cf-levels'
+import ProductShowcase from '@/components/landing/product-showcase'
+import StatsSection from '@/components/landing/stats-section'
 
 function SectionSkeleton() {
   return (
@@ -22,7 +24,17 @@ export default function HomePage() {
         <ModernLanding />
       </Suspense>
 
-      {/* Trusted By / Stats Section */}
+      {/* Stats / Social Proof */}
+      <Suspense fallback={<SectionSkeleton />}>
+        <StatsSection />
+      </Suspense>
+
+      {/* Product Showcase Carousel */}
+      <Suspense fallback={<SectionSkeleton />}>
+        <ProductShowcase />
+      </Suspense>
+
+      {/* Codeforces Level Roadmap */}
       <Suspense fallback={<SectionSkeleton />}>
         <CFLevels />
       </Suspense>

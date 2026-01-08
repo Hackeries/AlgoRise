@@ -2,8 +2,11 @@
 -- ALGORISE PERFORMANCE INDEXES - Production Ready (50k+ Users)
 -- ============================================================================
 -- Description: Additional indexes optimized for 50k+ user scale
--- Run AFTER: 000_master_schema.sql
+-- Run AFTER: 000_master_schema.sql, 005_sync_legacy_schema.sql
 -- 
+-- NOTE: Do NOT wrap in BEGIN/COMMIT - CREATE INDEX CONCURRENTLY cannot run
+--       inside a transaction block. Run each statement individually.
+--
 -- OPTIMIZATION TARGETS:
 -- - Dashboard queries (user stats, streaks, progress)
 -- - Leaderboards and rankings
@@ -12,7 +15,7 @@
 -- - Subscription and payment queries
 -- ============================================================================
 
-BEGIN;
+-- BEGIN; -- Removed: CONCURRENTLY indexes cannot run in transactions
 
 -- ======================== PROFILES - HIGH TRAFFIC ========================
 
@@ -244,7 +247,7 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_user_learning_path_progress_active
   ON public.user_learning_path_progress(user_id, completion_percentage)
   WHERE status = 'in_progress';
 
-COMMIT;
+-- COMMIT; -- Removed: CONCURRENTLY indexes cannot run in transactions
 
 -- ============================================================================
 -- ANALYZE TABLES (Run after index creation for query planner)

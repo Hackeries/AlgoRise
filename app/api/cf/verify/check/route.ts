@@ -76,7 +76,7 @@ export async function POST() {
       handle: cf.handle,
       rating: cf.rating ?? null,
       max_rating: cf.maxRating ?? null,
-      captured_at: new Date().toISOString(),
+      fetched_at: new Date().toISOString(),
     });
 
     if (snapErr) {

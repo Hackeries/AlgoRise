@@ -9,35 +9,35 @@
 :root {
   /* ========== Light Mode - Clean & Professional ========== */
   
-  /* Base Colors */
-  --background: 0 0% 100%;
-  --foreground: 224 71% 4%;
+  /* Base Colors - Warm neutral base */
+  --background: 0 0% 99%;
+  --foreground: 220 20% 14%;
   
   /* Surface Colors */
   --card: 0 0% 100%;
-  --card-foreground: 224 71% 4%;
+  --card-foreground: 220 20% 14%;
   --popover: 0 0% 100%;
-  --popover-foreground: 224 71% 4%;
+  --popover-foreground: 220 20% 14%;
   
-  /* Primary - Professional Indigo */
-  --primary: 239 84% 67%;
+  /* Primary - Deep teal/cyan for trust and focus */
+  --primary: 192 85% 38%;
   --primary-foreground: 0 0% 100%;
-  --primary-hover: 239 84% 60%;
-  --primary-active: 239 84% 55%;
+  --primary-hover: 192 85% 32%;
+  --primary-active: 192 85% 28%;
   
   /* Secondary */
-  --secondary: 220 14% 96%;
-  --secondary-foreground: 224 71% 4%;
-  --secondary-hover: 220 14% 93%;
-  --secondary-active: 220 14% 90%;
+  --secondary: 220 13% 95%;
+  --secondary-foreground: 220 20% 14%;
+  --secondary-hover: 220 13% 91%;
+  --secondary-active: 220 13% 87%;
   
   /* State Colors */
-  --muted: 220 14% 96%;
-  --muted-foreground: 220 9% 46%;
+  --muted: 220 13% 95%;
+  --muted-foreground: 220 10% 50%;
   
-  --accent: 220 14% 96%;
-  --accent-foreground: 224 71% 4%;
-  --accent-hover: 220 14% 93%;
+  --accent: 220 13% 95%;
+  --accent-foreground: 220 20% 14%;
+  --accent-hover: 220 13% 91%;
   
   /* Semantic Colors */
   --success: 142 76% 36%;
@@ -59,15 +59,15 @@
   --ring: 239 84% 67%;
   --ring-offset: 0 0% 100%;
   
-  /* Charts */
-  --chart-1: 239 84% 67%;
-  --chart-2: 142 76% 36%;
-  --chart-3: 262 83% 58%;
-  --chart-4: 0 84% 60%;
-  --chart-5: 38 92% 50%;
-  --chart-6: 199 89% 48%;
-  --chart-7: 340 82% 52%;
-  --chart-8: 173 80% 40%;
+  /* Charts - Professional color palette */
+  --chart-1: 192 85% 38%;
+  --chart-2: 152 60% 42%;
+  --chart-3: 262 50% 55%;
+  --chart-4: 0 60% 55%;
+  --chart-5: 38 75% 50%;
+  --chart-6: 210 65% 50%;
+  --chart-7: 340 55% 52%;
+  --chart-8: 173 55% 42%;
   
   /* Sidebar */
   --sidebar-background: 0 0% 100%;
@@ -169,35 +169,35 @@
    ============================================ */
 
 .dark {
-  /* Base Colors */
-  --background: 224 71% 4%;
-  --foreground: 213 31% 91%;
+  /* Base Colors - Deep neutral */
+  --background: 220 18% 7%;
+  --foreground: 210 20% 92%;
   
   /* Surface Colors */
-  --card: 224 71% 6%;
-  --card-foreground: 213 31% 91%;
-  --popover: 224 71% 6%;
-  --popover-foreground: 213 31% 91%;
+  --card: 220 18% 9%;
+  --card-foreground: 210 20% 92%;
+  --popover: 220 18% 9%;
+  --popover-foreground: 210 20% 92%;
   
-  /* Primary - Indigo for dark */
-  --primary: 239 84% 67%;
+  /* Primary - Teal for dark */
+  --primary: 192 75% 50%;
   --primary-foreground: 0 0% 100%;
-  --primary-hover: 239 84% 72%;
-  --primary-active: 239 84% 75%;
+  --primary-hover: 192 75% 55%;
+  --primary-active: 192 75% 58%;
   
   /* Secondary */
-  --secondary: 215 28% 17%;
-  --secondary-foreground: 213 31% 91%;
-  --secondary-hover: 215 28% 20%;
-  --secondary-active: 215 28% 23%;
+  --secondary: 220 18% 14%;
+  --secondary-foreground: 210 20% 92%;
+  --secondary-hover: 220 18% 17%;
+  --secondary-active: 220 18% 20%;
   
   /* State Colors */
-  --muted: 215 28% 17%;
-  --muted-foreground: 215 20% 65%;
+  --muted: 220 18% 14%;
+  --muted-foreground: 215 15% 60%;
   
-  --accent: 215 28% 17%;
-  --accent-foreground: 213 31% 91%;
-  --accent-hover: 215 28% 20%;
+  --accent: 220 18% 14%;
+  --accent-foreground: 210 20% 92%;
+  --accent-hover: 220 18% 17%;
   
   /* Semantic Colors */
   --success: 142 71% 45%;

@@ -106,6 +106,7 @@ export default function ContestsPage() {
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [baseUrl, setBaseUrl] = useState('')
+  const [notifiedContestIds, setNotifiedContestIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     setBaseUrl(process.env.NEXT_PUBLIC_SITE_URL || window.location.origin)

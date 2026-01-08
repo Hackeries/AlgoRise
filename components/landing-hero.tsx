@@ -232,10 +232,10 @@ const FloatingCodeAnimation: React.FC = () => {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6, delay: 0.4 }}
-      className="absolute -right-8 -top-12 w-72 hidden 2xl:block pointer-events-none"
+      className="absolute right-0 -top-8 w-64 hidden 2xl:block pointer-events-none opacity-70"
     >
       <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-xl blur-xl" />
+        <div className="absolute inset-0 bg-primary/10 rounded-xl blur-xl" />
         <div className="relative bg-zinc-900/90 backdrop-blur-sm border border-zinc-700/50 rounded-xl p-4 font-mono text-xs overflow-hidden shadow-2xl">
           <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zinc-700/50">
             <div className="flex gap-1.5">
@@ -281,14 +281,14 @@ const FloatingCodeAnimation: React.FC = () => {
 const GridPattern: React.FC = () => (
   <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
     <div
-      className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04]"
+      className="absolute inset-0 opacity-[0.015] dark:opacity-[0.025]"
       style={{
         backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
-        backgroundSize: '32px 32px',
+        backgroundSize: '40px 40px',
       }}
     />
-    <div className="absolute top-0 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl" />
-    <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl" />
+    <div className="absolute top-0 left-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
+    <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl" />
   </div>
 );
 
@@ -408,20 +408,20 @@ export default function LandingHero() {
                 initial={reduced ? {} : { opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.4 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-8"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8"
               >
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
                 </span>
-                <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+                <span className="text-sm font-medium text-primary">
                   For Codeforces competitors
                 </span>
               </motion.div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-[1.1]">
                 <TypewriterText text="Stop Random Grinding." className="block" />
-                <span className="block mt-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                <span className="block mt-2 text-primary">
                   Start Strategic Practice.
                 </span>
               </h1>
@@ -440,14 +440,14 @@ export default function LandingHero() {
                     transition={{ delay: reduced ? 0 : 0.3 + idx * 0.1, duration: 0.4 }}
                     className="flex items-start gap-3 text-muted-foreground"
                   >
-                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0" />
+                    <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary flex-shrink-0" />
                     <span>{feature}</span>
                   </motion.li>
                 ))}
               </ul>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                <Button asChild size="lg" className="h-12 px-8 text-base font-medium bg-indigo-600 hover:bg-indigo-700">
+                <Button asChild size="lg" className="h-12 px-8 text-base font-medium">
                   <Link href="/train">
                     Start Training Free
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -468,7 +468,7 @@ export default function LandingHero() {
                     className="flex items-center gap-3"
                   >
                     <div className="p-2 rounded-lg bg-muted/80">
-                      <Icon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                      <Icon className="h-4 w-4 text-primary" />
                     </div>
                     <div>
                       <p className="text-xl font-bold tabular-nums">
@@ -494,15 +494,15 @@ export default function LandingHero() {
               <FloatingCodeAnimation />
 
               <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-indigo-500/20 rounded-2xl blur-xl opacity-60" />
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-2xl blur-xl opacity-60" />
                 
                 <div className="relative p-6 sm:p-8 rounded-2xl bg-background/80 backdrop-blur-xl border border-white/10 dark:border-white/5 shadow-2xl">
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                   
                   <div className="relative">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="p-3 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg">
-                        <Code2 className="h-5 w-5 text-white" />
+                      <div className="p-3 rounded-xl bg-primary shadow-lg">
+                        <Code2 className="h-5 w-5 text-primary-foreground" />
                       </div>
                       <div>
                         <h2 className="font-semibold text-lg">Connect Your Profile</h2>
@@ -539,14 +539,14 @@ export default function LandingHero() {
                             if (e.key === 'Enter') fetchUserStats();
                           }}
                           aria-label="Codeforces handle"
-                          className="h-11 pl-10 text-sm bg-muted/50 border-muted-foreground/20 focus:border-indigo-500 transition-colors"
+                          className="h-11 pl-10 text-sm bg-muted/50 border-muted-foreground/20 focus:border-primary transition-colors"
                           autoComplete="off"
                         />
                       </div>
                       <Button
                         onClick={() => fetchUserStats()}
                         disabled={loading || !handleInput.trim()}
-                        className="h-11 px-6 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+                        className="h-11 px-6 disabled:opacity-50"
                       >
                         {loading ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -582,10 +582,10 @@ export default function LandingHero() {
                             {statItems.map(({ key, label, value, Icon }) => (
                               <div
                                 key={key}
-                                className="relative group p-4 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 border border-border/50 text-center overflow-hidden transition-all hover:border-indigo-500/30"
+                                className="relative group p-4 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 border border-border/50 text-center overflow-hidden transition-all hover:border-primary/30"
                               >
-                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 to-purple-500/0 group-hover:from-indigo-500/5 group-hover:to-purple-500/5 transition-all" />
-                                <Icon className="h-5 w-5 text-indigo-600 dark:text-indigo-400 mx-auto mb-2 relative" />
+                                <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-primary/5 transition-all" />
+                                <Icon className="h-5 w-5 text-primary mx-auto mb-2 relative" />
                                 <p className="text-xl font-bold tabular-nums relative">
                                   <AnimatedCounter value={value} />
                                 </p>

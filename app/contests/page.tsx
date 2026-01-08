@@ -105,6 +105,11 @@ export default function ContestsPage() {
   const [createdContestLink, setCreatedContestLink] = useState<string | null>(null)
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [baseUrl, setBaseUrl] = useState('')
+
+  useEffect(() => {
+    setBaseUrl(process.env.NEXT_PUBLIC_SITE_URL || window.location.origin)
+  }, [])
 
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -361,9 +366,6 @@ export default function ContestsPage() {
           return;
         }
 
-        const baseUrl =
-          process.env.NEXT_PUBLIC_SITE_URL ||
-          (typeof window !== 'undefined' ? window.location.origin : '');
         setCreatedContestLink(
           `${baseUrl}/contests/${data.contest.id}/participate`
         );
@@ -1451,10 +1453,7 @@ export default function ContestsPage() {
                                       onClick={e => {
                                         e.stopPropagation();
                                         navigator.clipboard.writeText(
-                                          `${
-                                            process.env.NEXT_PUBLIC_SITE_URL ||
-                                            window.location.origin
-                                          }/contests/${contest.id}`
+                                          `${baseUrl}/contests/${contest.id}`
                                         );
                                         toast({
                                           title: 'Link Copied!',

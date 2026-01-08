@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
+
+const CF_REFRESH_INTERVAL = 30000;
 
 interface Problem {
   id: string;
@@ -76,6 +78,8 @@ export default function ContestParticipationPage() {
   const handle = verificationData?.handle;
 
   const [localTimeRemaining, setLocalTimeRemaining] = useState<number>(0);
+  const [isSaving, setIsSaving] = useState(false);
+  const savedSubmissionsRef = useRef<Set<string>>(new Set());
 
   const {
     data: cfData,
@@ -88,13 +92,16 @@ export default function ContestParticipationPage() {
         )}&from=1&count=100`
       : null,
     fetcher,
-    { revalidateOnFocus: false }
+    { 
+      revalidateOnFocus: false,
+      refreshInterval: CF_REFRESH_INTERVAL,
+    }
   );
 
-  const { data, error, mutate, isLoading } = useSWR<{ contest: Contest }>(
+  const { data, error, isLoading } = useSWR<{ contest: Contest }>(
     params.id ? `/api/contests/${params.id}` : null,
     fetcher,
-    { refreshInterval: 1000 } // Update every second for real-time timer
+    { revalidateOnFocus: false }
   );
 
   const contest = data?.contest;
@@ -134,38 +141,54 @@ export default function ContestParticipationPage() {
     return map;
   }, [cfData]);
 
-  useEffect(() => {
+  const saveSubmissionsBatch = useCallback(async () => {
     if (!contest || !contest.problems || contest.status !== 'live') return;
     if (problemVerdicts.size === 0) return;
+    if (isSaving) return;
 
-    const saveSubmissions = async () => {
-      for (const problem of contest.problems) {
-        const key = `${problem.contestId}${problem.index}`;
-        const verdict = problemVerdicts.get(key);
+    const newSubmissions: Array<{ problemId: string; status: 'solved' | 'failed'; penalty: number }> = [];
 
-        if (verdict && verdict.verdict !== 'UNATTEMPTED') {
+    for (const problem of contest.problems) {
+      const key = `${problem.contestId}${problem.index}`;
+      const verdict = problemVerdicts.get(key);
+
+      if (verdict && verdict.verdict !== 'UNATTEMPTED') {
+        const submissionKey = `${problem.id}:${verdict.verdict}:${verdict.ts}`;
+        
+        if (!savedSubmissionsRef.current.has(submissionKey)) {
           const status = verdict.verdict === 'AC' ? 'solved' : 'failed';
-
-          // Save to database
-          try {
-            await fetch(`/api/contests/${params.id}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                problemId: problem.id,
-                status,
-                penalty: 0, // Can be calculated based on time if needed
-              }),
-            });
-          } catch (err) {
-            console.error('Failed to save submission:', err);
-          }
+          newSubmissions.push({
+            problemId: problem.id,
+            status,
+            penalty: 0,
+          });
+          savedSubmissionsRef.current.add(submissionKey);
         }
       }
-    };
+    }
 
-    saveSubmissions();
-  }, [problemVerdicts, contest, params.id]);
+    if (newSubmissions.length === 0) return;
+
+    setIsSaving(true);
+    try {
+      await fetch(`/api/contests/${params.id}/submissions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ submissions: newSubmissions }),
+      });
+    } catch (err) {
+      console.error('Failed to save submissions:', err);
+      for (const sub of newSubmissions) {
+        savedSubmissionsRef.current.delete(`${sub.problemId}:${sub.status === 'solved' ? 'AC' : 'OTHER'}:0`);
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  }, [contest, problemVerdicts, params.id, isSaving]);
+
+  useEffect(() => {
+    saveSubmissionsBatch();
+  }, [saveSubmissionsBatch]);
 
   const formatTime = (ms: number) => {
     const hours = Math.floor(ms / (1000 * 60 * 60));

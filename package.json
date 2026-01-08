@@ -79,6 +79,7 @@
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "baseline-browser-mapping": "^2.9.12",
     "eslint": "^9.39.1",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",

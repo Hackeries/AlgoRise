@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +8,18 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Clock, Calendar, Trophy, Share2, Copy, Info } from 'lucide-react';
+import { useContestRealtime } from '@/hooks/use-contest-realtime';
+import {
+  Clock,
+  Calendar,
+  Trophy,
+  Share2,
+  Copy,
+  Info,
+  RefreshCw,
+  Users,
+  Radio,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import {
   Dialog,
@@ -17,8 +28,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-
-const supabase = createClient();
 
 interface Contest {
   id: string;
@@ -49,73 +58,53 @@ interface Contest {
 interface LeaderboardEntry {
   rank: number;
   user_id: string;
+  username?: string;
   solved: number;
   penalty: number;
 }
+
+const LEADERBOARD_REFRESH_INTERVAL = 15000;
+const CONTEST_REFRESH_INTERVAL = 30000;
 
 export default function ContestDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { toast } = useToast();
+
+  const supabase = useMemo(() => createClient(), []);
+
   const [contest, setContest] = useState<Contest | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [participantCount, setParticipantCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
   const [timeUntilStart, setTimeUntilStart] = useState<string>('');
+  const [timeRemaining, setTimeRemaining] = useState<string>('');
   const [isRegistered, setIsRegistered] = useState(false);
   const [registering, setRegistering] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [showAttemptedOnly, setShowAttemptedOnly] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
 
-  useEffect(() => {
-    const fetchAllData = async () => {
-      await Promise.all([fetchContestData(), checkRegistration()]);
-    };
-
-    fetchAllData();
-
-    const interval = setInterval(() => {
-      fetchContestData();
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [params.id]);
-
-  useEffect(() => {
-    if (!contest) return;
-
-    const updateTimer = () => {
-      const now = new Date();
-      const start = new Date(contest.starts_at);
-      const diff = start.getTime() - now.getTime();
-
-      if (diff <= 0) {
-        setTimeUntilStart('Contest started!');
-      } else {
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor(
-          (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-        );
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-        if (days > 0) {
-          setTimeUntilStart(`${days}d ${hours}h ${minutes}m`);
-        } else if (hours > 0) {
-          setTimeUntilStart(`${hours}h ${minutes}m ${seconds}s`);
-        } else {
-          setTimeUntilStart(`${minutes}m ${seconds}s`);
-        }
-      }
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-    return () => clearInterval(interval);
+  const isContestLive = useMemo(() => {
+    if (!contest) return false;
+    const now = Date.now();
+    const startsAt = new Date(contest.starts_at).getTime();
+    const endsAt = new Date(contest.ends_at).getTime();
+    return now >= startsAt && now < endsAt;
   }, [contest]);
 
-  const fetchContestData = async () => {
+  const { isConnected: realtimeConnected } = useContestRealtime({
+    contestId: params.id,
+    enabled: isContestLive,
+    onLeaderboardUpdate: useCallback((newLeaderboard: LeaderboardEntry[]) => {
+      setLeaderboard(newLeaderboard);
+    }, []),
+  });
+
+  const fetchContestData = useCallback(async () => {
     try {
       const response = await fetch(`/api/contests/${params.id}`);
       if (!response.ok) {
@@ -134,39 +123,147 @@ export default function ContestDetailPage() {
     } catch (error) {
       console.error('Error fetching contest:', error);
     }
+    setLoading(false);
+  }, [params.id]);
 
+  const fetchLeaderboard = useCallback(async () => {
+    setLeaderboardLoading(true);
     try {
       const leaderboardResponse = await fetch(
-        `/api/contests/${params.id}/leaderboard`
+        `/api/contests/${params.id}/leaderboard?limit=50`
       );
       if (leaderboardResponse.ok) {
         const data = await leaderboardResponse.json();
         setLeaderboard(data.leaderboard || []);
+        setParticipantCount(
+          data.totalParticipants || data.leaderboard?.length || 0
+        );
       }
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
     }
+    setLeaderboardLoading(false);
+  }, [params.id]);
 
-    setLoading(false);
-  };
+  const checkRegistration = useCallback(async () => {
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
 
-  const checkRegistration = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return;
+      setCurrentUserId(user.id);
 
-    setCurrentUserId(user.id);
+      const { data } = await supabase
+        .from('contest_participants')
+        .select('id')
+        .eq('contest_id', params.id)
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-    const { data } = await supabase
-      .from('contest_participants')
-      .select('id')
-      .eq('contest_id', params.id)
-      .eq('user_id', user.id)
-      .maybeSingle();
+      setIsRegistered(!!data);
+    } catch (error) {
+      console.error('Error checking registration:', error);
+    }
+  }, [params.id, supabase]);
 
-    setIsRegistered(!!data);
-  };
+  useEffect(() => {
+    if (contest?.id) {
+      const base =
+        process.env.NEXT_PUBLIC_SITE_URL ??
+        (typeof window !== 'undefined' ? window.location.origin : '');
+      setShareUrl(`${base}/contests/${contest.id}`);
+    }
+  }, [contest?.id]);
+
+  useEffect(() => {
+    const fetchAllData = async () => {
+      await Promise.all([fetchContestData(), checkRegistration()]);
+      await fetchLeaderboard();
+    };
+
+    fetchAllData();
+  }, [fetchContestData, checkRegistration, fetchLeaderboard]);
+
+  useEffect(() => {
+    if (!contest) return;
+
+    const now = Date.now();
+    const startsAt = new Date(contest.starts_at).getTime();
+    const endsAt = new Date(contest.ends_at).getTime();
+    const isLive = now >= startsAt && now < endsAt;
+    const hasEnded = now >= endsAt;
+
+    if (hasEnded) return;
+
+    const leaderboardInterval = setInterval(() => {
+      if (isLive) {
+        fetchLeaderboard();
+      }
+    }, LEADERBOARD_REFRESH_INTERVAL);
+
+    const contestInterval = setInterval(() => {
+      if (!hasEnded) {
+        fetchContestData();
+      }
+    }, CONTEST_REFRESH_INTERVAL);
+
+    return () => {
+      clearInterval(leaderboardInterval);
+      clearInterval(contestInterval);
+    };
+  }, [contest, fetchContestData, fetchLeaderboard]);
+
+  useEffect(() => {
+    if (!contest) return;
+
+    const updateTimer = () => {
+      const now = new Date();
+      const start = new Date(contest.starts_at);
+      const end = new Date(contest.ends_at);
+      const diffToStart = start.getTime() - now.getTime();
+      const diffToEnd = end.getTime() - now.getTime();
+
+      if (diffToStart > 0) {
+        const days = Math.floor(diffToStart / (1000 * 60 * 60 * 24));
+        const hours = Math.floor(
+          (diffToStart % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
+        const minutes = Math.floor(
+          (diffToStart % (1000 * 60 * 60)) / (1000 * 60)
+        );
+        const seconds = Math.floor((diffToStart % (1000 * 60)) / 1000);
+
+        if (days > 0) {
+          setTimeUntilStart(`${days}d ${hours}h ${minutes}m`);
+        } else if (hours > 0) {
+          setTimeUntilStart(`${hours}h ${minutes}m ${seconds}s`);
+        } else {
+          setTimeUntilStart(`${minutes}m ${seconds}s`);
+        }
+        setTimeRemaining('');
+      } else if (diffToEnd > 0) {
+        setTimeUntilStart('Contest started!');
+        const hours = Math.floor(diffToEnd / (1000 * 60 * 60));
+        const minutes = Math.floor(
+          (diffToEnd % (1000 * 60 * 60)) / (1000 * 60)
+        );
+        const seconds = Math.floor((diffToEnd % (1000 * 60)) / 1000);
+        setTimeRemaining(
+          `${hours.toString().padStart(2, '0')}:${minutes
+            .toString()
+            .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+        );
+      } else {
+        setTimeUntilStart('Contest ended');
+        setTimeRemaining('');
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [contest]);
 
   const handleRegister = async () => {
     if (!contest) return;
@@ -254,16 +351,23 @@ export default function ContestDetailPage() {
     router.push(`/contests/${params.id}/participate`);
   };
 
-  const copyShareLink = () => {
-    const base = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-    const link = `${base}/contests/${params.id}`;
-    navigator.clipboard.writeText(link);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast({
-      title: 'Link Copied!',
-      description: 'Contest link copied to clipboard.',
-    });
+  const copyShareLink = async () => {
+    if (!shareUrl) return;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast({
+        title: 'Link Copied!',
+        description: 'Contest link copied to clipboard.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Copy Failed',
+        description: 'Could not copy link to clipboard.',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (loading) {
@@ -741,9 +845,7 @@ export default function ContestDetailPage() {
               id='share-link'
               type='text'
               readOnly
-              value={`${
-                process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-              }/contests/${contest.id}`}
+              value={shareUrl}
               aria-label='Contest share link'
               className='flex-1 bg-transparent text-sm truncate outline-none'
             />

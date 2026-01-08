@@ -232,7 +232,7 @@ const FloatingCodeAnimation: React.FC = () => {
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6, delay: 0.4 }}
-      className="absolute -right-4 top-1/2 -translate-y-1/2 w-80 hidden xl:block"
+      className="absolute -right-8 -top-12 w-72 hidden 2xl:block pointer-events-none"
     >
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-xl blur-xl" />

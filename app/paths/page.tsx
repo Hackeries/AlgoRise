@@ -755,17 +755,7 @@ export default function LearningPathsPage() {
   }, [sectionProgress, totalProblems]);
 
   const completedProblems = Math.round((overallProgress * totalProblems) / 100);
-  const currentStreak = 7;
   const estimatedWeeks = Math.ceil((totalProblems - completedProblems) / 10);
-
-  const achievements = [
-    { icon: '🌱', title: 'First Steps', unlocked: completedProblems >= 1 },
-    { icon: '🔥', title: '7 Day Streak', unlocked: currentStreak >= 7 },
-    { icon: '💯', title: 'Perfect Section', unlocked: Object.values(sectionProgress).some(p => p === 100) },
-    { icon: '🏃', title: 'Speed Learner', unlocked: completedProblems >= 50 },
-    { icon: '🎯', title: 'Half Way', unlocked: overallProgress >= 50 },
-    { icon: '👑', title: 'Master', unlocked: overallProgress === 100 },
-  ];
 
   if (loading) {
     return (
@@ -802,46 +792,24 @@ export default function LearningPathsPage() {
 
           <div className="relative grid gap-8 lg:grid-cols-[1fr_auto]">
             <div className="space-y-6">
-              {/* Greeting & Level Badge */}
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-purple-600 shadow-lg shadow-primary/25">
-                    <TrendingUp className="h-7 w-7 text-white" />
-                  </div>
-                  <div>
-                    <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-                      Learning Paths
-                    </h1>
-                    <p className="text-sm text-muted-foreground">
-                      Master competitive programming step by step
-                    </p>
-                  </div>
+              {/* Greeting */}
+              <div className="flex items-center gap-3">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-purple-600 shadow-lg shadow-primary/25">
+                  <TrendingUp className="h-7 w-7 text-white" />
                 </div>
-                <Badge
-                  variant="outline"
-                  className="gap-1.5 rounded-full border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5 text-yellow-600 dark:text-yellow-400"
-                >
-                  <Flame className="h-4 w-4" />
-                  {currentStreak} day streak
-                </Badge>
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                    Learning Paths
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    Structured problem sets by topic and difficulty
+                  </p>
+                </div>
               </div>
 
               {/* Level Progress */}
               <div className="rounded-2xl border border-border/50 bg-background/50 p-5 backdrop-blur-sm">
                 <LevelProgressBar progress={overallProgress} />
-              </div>
-
-              {/* Achievements */}
-              <div className="space-y-3">
-                <h3 className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                  <Award className="h-4 w-4" />
-                  Achievements
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {achievements.map(achievement => (
-                    <AchievementBadge key={achievement.title} {...achievement} />
-                  ))}
-                </div>
               </div>
             </div>
 

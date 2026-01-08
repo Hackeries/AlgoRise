@@ -293,9 +293,8 @@ const GridPattern: React.FC = () => (
 );
 
 const PLATFORM_STATS = [
-  { label: 'Active Users', value: 15847, icon: Users },
-  { label: 'Problems Solved Today', value: 23450, icon: Zap },
-  { label: 'User Satisfaction', value: 98.7, icon: BarChart3, suffix: '%', isDecimal: true },
+  { label: 'Curated Problems', value: 700, icon: Target, suffix: '+' },
+  { label: 'Topics Covered', value: 15, icon: Code2 },
 ];
 
 const FEATURES_LIST = [
@@ -404,20 +403,7 @@ export default function LandingHero() {
               transition={{ duration: 0.5 }}
               className="relative"
             >
-              <motion.div
-                initial={reduced ? {} : { opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-8"
-              >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-                </span>
-                <span className="text-sm font-medium text-primary">
-                  For Codeforces competitors
-                </span>
-              </motion.div>
+
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-[1.1]">
                 <TypewriterText text="Stop Random Grinding." className="block" />
@@ -459,30 +445,26 @@ export default function LandingHero() {
               </div>
 
               <div className="flex flex-wrap items-center gap-8 pt-8 border-t border-border/50">
-                {PLATFORM_STATS.map(({ label, value, icon: Icon, suffix, isDecimal }) => (
-                  <motion.div
-                    key={label}
-                    initial={reduced ? {} : { opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: reduced ? 0 : 0.6, duration: 0.4 }}
-                    className="flex items-center gap-3"
-                  >
-                    <div className="p-2 rounded-lg bg-muted/80">
-                      <Icon className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xl font-bold tabular-nums">
-                        {isDecimal ? (
-                          <>{value}{suffix}</>
-                        ) : (
-                          <AnimatedCounter value={value} suffix={suffix} />
-                        )}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{label}</p>
-                    </div>
-                  </motion.div>
+                {PLATFORM_STATS.map(({ label, value, icon: Icon, suffix }) => (
+                <motion.div
+                key={label}
+                initial={reduced ? {} : { opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: reduced ? 0 : 0.6, duration: 0.4 }}
+                className="flex items-center gap-3"
+                >
+                <div className="p-2 rounded-lg bg-muted/80">
+                  <Icon className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <p className="text-xl font-bold tabular-nums">
+                    {value}{suffix}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{label}</p>
+                </div>
+                </motion.div>
                 ))}
-              </div>
+                </div>
             </motion.div>
 
             <motion.div

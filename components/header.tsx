@@ -178,6 +178,8 @@ const SearchBar = React.memo<{
               type="button"
               onClick={onClear}
               className="absolute right-2 p-1 hover:bg-muted rounded transition-colors"
+              aria-label="Clear search"
+              title="Clear search"
             >
               <X className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
@@ -313,8 +315,9 @@ NotificationsDropdown.displayName = 'NotificationsDropdown'
 const UserDropdown = React.memo<{
   user: { email?: string | null } | null
   userInitials: string
+  displayName: string
   onSignOut: () => void
-}>(({ user, userInitials, onSignOut }) => (
+}>(({ user, userInitials, displayName, onSignOut }) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
       <button className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-muted transition-colors">
@@ -328,7 +331,10 @@ const UserDropdown = React.memo<{
     </DropdownMenuTrigger>
     <DropdownMenuContent align="end" className="w-56">
       <div className="px-3 py-2 border-b border-border">
-        <p className="text-sm font-medium truncate">{user?.email}</p>
+        <p className="text-sm font-medium truncate">{displayName}</p>
+        {displayName !== user?.email && user?.email && (
+          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+        )}
       </div>
       <DropdownMenuItem asChild>
         <Link href="/profile/overview" className="flex items-center gap-2 cursor-pointer">
@@ -394,7 +400,28 @@ export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
 
   const isLandingPage = pathname === '/'
   const effectiveTheme = theme === 'system' ? resolvedTheme || 'light' : theme
-  const userInitials = useMemo(() => user?.email?.[0]?.toUpperCase() ?? 'U', [user])
+
+  const { data: profile } = useSWR(
+    user ? '/api/profile' : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  )
+
+  const displayName = useMemo(
+    () => profile?.name || user?.email || '',
+    [profile?.name, user?.email]
+  )
+
+  const userInitials = useMemo(() => {
+    if (profile?.name) {
+      const names = profile.name.trim().split(/\s+/)
+      if (names.length >= 2) {
+        return (names[0][0] + names[names.length - 1][0]).toUpperCase()
+      }
+      return profile.name[0]?.toUpperCase() ?? 'U'
+    }
+    return user?.email?.[0]?.toUpperCase() ?? 'U'
+  }, [profile?.name, user?.email])
 
   useEffect(() => {
     setIsMounted(true)
@@ -538,7 +565,7 @@ export function Header({ onMobileMenuToggle, isMobile }: HeaderProps = {}) {
                 </Button>
               </div>
             ) : (
-              <UserDropdown user={user} userInitials={userInitials} onSignOut={signOut} />
+              <UserDropdown user={user} userInitials={userInitials} displayName={displayName} onSignOut={signOut} />
             )}
           </div>
         </div>

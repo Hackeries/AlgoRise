@@ -143,24 +143,40 @@ export function useSearch(): SearchHookReturn {
           }
         );
 
-        if (!response.ok) throw new Error('Suggestions request failed');
+        let safeSuggestions: SearchSuggestion[] = [];
 
-        const data = await response.json();
-        const safeSuggestions: SearchSuggestion[] = Array.isArray(
-          data.suggestions
-        )
-          ? data.suggestions
-          : [];
+        if (response.ok) {
+          const data = await response.json();
+          safeSuggestions = Array.isArray(data.suggestions)
+            ? data.suggestions
+            : [];
+        }
+
+        // Provide client-side fallback if API returns empty or fails
+        if (safeSuggestions.length === 0) {
+          const queryLower = searchQuery.toLowerCase();
+          const clientFallbacks: SearchSuggestion[] = [
+            { suggestion: 'Contests', type: 'page', frequency: 10 },
+            { suggestion: 'Practice Problems', type: 'page', frequency: 10 },
+            { suggestion: 'Dashboard', type: 'page', frequency: 10 },
+            { suggestion: 'Leaderboard', type: 'page', frequency: 10 },
+            { suggestion: 'Groups', type: 'page', frequency: 10 },
+          ].filter(s => s.suggestion.toLowerCase().includes(queryLower));
+
+          safeSuggestions = clientFallbacks.slice(0, 3);
+        }
 
         setSuggestions(safeSuggestions);
-        suggestionsCache.current.set(searchQuery, safeSuggestions);
-        setTimeout(
-          () => suggestionsCache.current.delete(searchQuery),
-          10 * 60 * 1000
-        ); // 10 min cache
+        if (safeSuggestions.length > 0) {
+          suggestionsCache.current.set(searchQuery, safeSuggestions);
+          setTimeout(
+            () => suggestionsCache.current.delete(searchQuery),
+            10 * 60 * 1000
+          );
+        }
       } catch (err) {
-        console.error('Failed to get suggestions:', err);
-        setSuggestions([]);
+        console.warn('Failed to get suggestions:', err);
+        // Don't clear suggestions on error - keep any existing ones
       }
     }, 300);
 

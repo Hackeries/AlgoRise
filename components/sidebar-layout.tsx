@@ -26,9 +26,9 @@ import {
   X,
   User,
   Swords,
+  ChevronLeft,
 } from 'lucide-react';
 
-// ==================== TYPES ====================
 interface MenuItem {
   href: string;
   label: string;
@@ -48,7 +48,6 @@ interface CFData {
   rank?: string;
 }
 
-// ==================== CONSTANTS ====================
 const MENU_ITEMS: MenuItem[] = [
   { href: '/', label: 'Dashboard', icon: Home },
   { href: '/train', label: 'Train', icon: Zap },
@@ -70,82 +69,28 @@ const RATING_TIERS: Record<string, string> = {
 };
 
 const MOBILE_BREAKPOINT = 768;
-const SIDEBAR_WIDTH_OPEN = 'w-64'; // 256px
-const SIDEBAR_WIDTH_CLOSED = 'w-16'; // 64px
-const SIDEBAR_WIDTH_MOBILE = 'w-[280px]'; // 280px
 
-// ==================== UTILITIES ====================
 const getRatingAbbreviation = (label: string): string =>
   RATING_TIERS[label] || label.split(' ')[0];
 
 const getCFTier = (rating: number): CFTier => {
-  if (rating < 1200)
-    return {
-      label: 'Newbie',
-      color: 'text-gray-400',
-      bg: 'bg-gray-900/20 border-gray-700/50',
-    };
-  if (rating < 1400)
-    return {
-      label: 'Pupil',
-      color: 'text-green-400',
-      bg: 'bg-green-900/20 border-green-700/50',
-    };
-  if (rating < 1600)
-    return {
-      label: 'Specialist',
-      color: 'text-cyan-400',
-      bg: 'bg-cyan-900/20 border-cyan-700/50',
-    };
-  if (rating < 1900)
-    return {
-      label: 'Expert',
-      color: 'text-blue-400',
-      bg: 'bg-blue-900/20 border-blue-700/50',
-    };
-  if (rating < 2100)
-    return {
-      label: 'Candidate Master',
-      color: 'text-purple-400',
-      bg: 'bg-purple-900/20 border-purple-700/50',
-    };
-  if (rating < 2300)
-    return {
-      label: 'Master',
-      color: 'text-orange-400',
-      bg: 'bg-orange-900/20 border-orange-700/50',
-    };
-  if (rating < 2400)
-    return {
-      label: 'International Master',
-      color: 'text-red-400',
-      bg: 'bg-red-900/20 border-red-700/50',
-    };
-  if (rating < 2600)
-    return {
-      label: 'Grandmaster',
-      color: 'text-red-500',
-      bg: 'bg-red-900/30 border-red-700/60',
-    };
-  if (rating < 3000)
-    return {
-      label: 'International GM',
-      color: 'text-red-600',
-      bg: 'bg-red-950/30 border-red-800/60',
-    };
-  return {
-    label: 'Legendary GM',
-    color: 'text-yellow-400',
-    bg: 'bg-yellow-900/30 border-yellow-700/60',
-  };
+  if (rating < 1200) return { label: 'Newbie', color: 'text-gray-500', bg: 'bg-gray-100 dark:bg-gray-800' };
+  if (rating < 1400) return { label: 'Pupil', color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/30' };
+  if (rating < 1600) return { label: 'Specialist', color: 'text-cyan-600', bg: 'bg-cyan-50 dark:bg-cyan-900/30' };
+  if (rating < 1900) return { label: 'Expert', color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/30' };
+  if (rating < 2100) return { label: 'Candidate Master', color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-900/30' };
+  if (rating < 2300) return { label: 'Master', color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/30' };
+  if (rating < 2400) return { label: 'International Master', color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/30' };
+  if (rating < 2600) return { label: 'Grandmaster', color: 'text-red-600', bg: 'bg-red-100 dark:bg-red-900/40' };
+  if (rating < 3000) return { label: 'International GM', color: 'text-red-700', bg: 'bg-red-100 dark:bg-red-900/50' };
+  return { label: 'Legendary GM', color: 'text-yellow-500', bg: 'bg-yellow-50 dark:bg-yellow-900/30' };
 };
 
 const MOBILE_TABS = [
-  { href: '/train', label: 'Problems', icon: FileText },
+  { href: '/train', label: 'Practice', icon: FileText },
   { href: '/profile/overview', label: 'Profile', icon: User },
 ];
 
-// ==================== SUB-COMPONENTS ====================
 const SidebarItem = React.memo<{
   href: string;
   label: string;
@@ -158,20 +103,17 @@ const SidebarItem = React.memo<{
     href={href}
     onClick={onClick}
     className={cn(
-      'group relative flex items-center rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
+      'group flex items-center rounded-lg transition-colors',
       isOpen ? 'px-3 py-2.5 gap-3' : 'p-3 justify-center',
       isActive
-        ? 'bg-gradient-to-r from-primary/20 to-primary/5 text-primary font-semibold border border-primary/30 shadow-sm'
-        : 'text-muted-foreground hover:text-foreground hover:bg-muted/80 hover:border-border/50 border border-transparent'
+        ? 'bg-primary text-primary-foreground'
+        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
     )}
     aria-current={isActive ? 'page' : undefined}
     title={!isOpen ? label : undefined}
   >
-    <Icon className={cn('h-5 w-5 shrink-0 transition-transform duration-200', isActive && 'scale-110')} aria-hidden='true' />
-    {isOpen && <span className='text-sm font-medium truncate'>{label}</span>}
-    {isActive && (
-      <div className='absolute inset-0 rounded-xl bg-gradient-to-r from-primary/10 to-transparent opacity-50 pointer-events-none' />
-    )}
+    <Icon className="h-5 w-5 shrink-0" />
+    {isOpen && <span className="text-sm font-medium">{label}</span>}
   </Link>
 ));
 SidebarItem.displayName = 'SidebarItem';
@@ -186,20 +128,16 @@ const CFBadge = React.memo<{ cfData: CFData; isOpen: boolean }>(
 
     if (isOpen) {
       return (
-        <div
-          className={cn(
-            'p-3 rounded-xl border-2 transition-all duration-200 backdrop-blur-sm hover:scale-105',
-            tier.bg,
-            tier.color
-          )}
-        >
-          <div className='flex items-center justify-between mb-2'>
-            <p className='text-sm font-semibold truncate'>{cfData.handle}</p>
-            <div className='px-2 py-0.5 rounded-md bg-background/30 backdrop-blur-sm'>
-              <span className='text-xs font-mono font-bold'>{cfData.rating}</span>
-            </div>
+        <div className={cn('p-3 rounded-lg', tier.bg)}>
+          <div className="flex items-center justify-between mb-1">
+            <p className={cn('text-sm font-semibold truncate', tier.color)}>
+              {cfData.handle}
+            </p>
+            <span className={cn('text-xs font-mono font-bold', tier.color)}>
+              {cfData.rating}
+            </span>
           </div>
-          <p className='text-xs opacity-90 truncate font-medium'>{tier.label}</p>
+          <p className="text-xs text-muted-foreground">{tier.label}</p>
         </div>
       );
     }
@@ -207,21 +145,19 @@ const CFBadge = React.memo<{ cfData: CFData; isOpen: boolean }>(
     return (
       <div
         className={cn(
-          'w-12 h-12 flex items-center justify-center rounded-xl border-2 transition-all duration-200 backdrop-blur-sm hover:scale-110',
+          'w-10 h-10 flex items-center justify-center rounded-lg text-xs font-bold',
           tier.bg,
-          tier.color,
-          'text-xs font-bold shadow-lg'
+          tier.color
         )}
         title={`${cfData.handle} (${cfData.rating}) - ${tier.label}`}
       >
-        {displayLabel}
+        {displayLabel.slice(0, 2)}
       </div>
     );
   }
 );
 CFBadge.displayName = 'CFBadge';
 
-// ==================== MAIN COMPONENT ====================
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { isVerified, verificationData } = useCFVerification();
@@ -234,41 +170,27 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const sidebarId = 'primary-sidebar';
 
-  // Detect mobile via matchMedia (less resize thrash)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
 
     const apply = (mql: MediaQueryList | MediaQueryListEvent) => {
-      const mobile =
-        'matches' in mql ? mql.matches : (mql as MediaQueryList).matches;
+      const mobile = 'matches' in mql ? mql.matches : (mql as MediaQueryList).matches;
       setIsMobile(mobile);
       setIsOpen(!mobile);
     };
 
     apply(mq);
     const handler = (e: MediaQueryListEvent) => apply(e);
-    mq.addEventListener?.('change', handler);
-    return () => mq.removeEventListener?.('change', handler);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
   }, []);
 
-  // Lock body scroll when mobile sidebar is open
-  useEffect(() => {
-    if (!isMobile || !isOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [isMobile, isOpen]);
-
-  // Close sidebar on outside click (mobile) and Escape
   useEffect(() => {
     if (!isMobile || !isOpen) return;
 
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (sidebarRef.current && !sidebarRef.current.contains(target)) {
+      if (sidebarRef.current && !sidebarRef.current.contains(e.target as Node)) {
         setIsOpen(false);
       }
     };
@@ -277,9 +199,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       if (e.key === 'Escape') setIsOpen(false);
     };
 
-    document.addEventListener('mousedown', handleClickOutside, {
-      passive: true,
-    });
+    document.addEventListener('mousedown', handleClickOutside, { passive: true });
     document.addEventListener('keydown', handleEscape);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -290,7 +210,6 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const toggleSidebar = useCallback(() => setIsOpen(prev => !prev), []);
   const closeSidebar = useCallback(() => setIsOpen(false), []);
 
-  // Fetch latest CF data (with abort + light caching)
   useEffect(() => {
     if (!verificationData?.handle) return;
     let active = true;
@@ -301,13 +220,12 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     if (cached) {
       try {
         const parsed = JSON.parse(cached) as { data: CFData; ts: number };
-        // 5 minutes TTL
         if (Date.now() - parsed.ts < 5 * 60_000) {
           setCfData(parsed.data);
           return;
         }
       } catch {
-        // ignore parse errors
+        // ignore
       }
     }
 
@@ -315,9 +233,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       try {
         setLoadingCF(true);
         const res = await fetch(
-          `https://codeforces.com/api/user.info?handles=${encodeURIComponent(
-            verificationData.handle
-          )}`,
+          `https://codeforces.com/api/user.info?handles=${encodeURIComponent(verificationData.handle)}`,
           { cache: 'no-store', signal: controller.signal }
         );
         const data = await res.json();
@@ -332,10 +248,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
             rank: user.rank,
           };
           setCfData(next);
-          sessionStorage.setItem(
-            cacheKey,
-            JSON.stringify({ data: next, ts: Date.now() })
-          );
+          sessionStorage.setItem(cacheKey, JSON.stringify({ data: next, ts: Date.now() }));
         }
       } catch (error) {
         if ((error as any)?.name !== 'AbortError') {
@@ -353,19 +266,8 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     };
   }, [verificationData]);
 
-  const sidebarWidthClass = useMemo(
-    () =>
-      isMobile
-        ? SIDEBAR_WIDTH_MOBILE
-        : isOpen
-        ? SIDEBAR_WIDTH_OPEN
-        : SIDEBAR_WIDTH_CLOSED,
-    [isMobile, isOpen]
-  );
-  const mainMarginClass = useMemo(
-    () => (isMobile ? 'ml-0' : isOpen ? 'ml-64' : 'ml-16'),
-    [isMobile, isOpen]
-  );
+  const sidebarWidthClass = isMobile ? 'w-64' : isOpen ? 'w-56' : 'w-16';
+  const mainMarginClass = isMobile ? 'ml-0' : isOpen ? 'ml-56' : 'ml-16';
 
   const isActiveHref = useCallback(
     (href: string) => {
@@ -377,13 +279,13 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className='flex min-h-screen bg-background'>
+    <div className="flex min-h-screen bg-background">
       {/* Mobile overlay */}
       {isMobile && isOpen && (
         <div
           onClick={closeSidebar}
-          className='fixed inset-0 bg-black/50 z-40 md:hidden animate-in fade-in-0'
-          aria-hidden='true'
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          aria-hidden="true"
         />
       )}
 
@@ -391,48 +293,41 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       <aside
         id={sidebarId}
         ref={sidebarRef}
-        data-sidebar
         className={cn(
           'fixed top-0 left-0 h-screen z-50',
-          'bg-card/95 backdrop-blur-xl border-r border-border/50',
-          'flex flex-col shadow-2xl',
-          'transition-transform duration-200 will-change-transform',
+          'bg-card border-r border-border',
+          'flex flex-col',
+          'transition-all duration-200',
           sidebarWidthClass,
           isMobile && !isOpen && '-translate-x-full'
         )}
-        aria-label='Primary'
-        // Use hidden instead of aria-hidden to satisfy validators
+        aria-label="Primary"
         hidden={isMobile && !isOpen}
       >
-        {/* Header - menu button */}
-        <div
-          className={cn(
-            'flex items-center border-b border-border p-3',
-            isOpen ? 'justify-end' : 'justify-center'
+        {/* Header */}
+        <div className={cn('flex items-center h-14 border-b border-border px-3', isOpen ? 'justify-between' : 'justify-center')}>
+          {isOpen && (
+            <span className="text-lg font-bold text-primary">AlgoRise</span>
           )}
-        >
           <button
             onClick={toggleSidebar}
-            className='p-2 rounded-md hover:bg-muted transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60'
-            aria-label='Toggle sidebar'
+            className="p-2 rounded-lg hover:bg-muted transition-colors"
+            aria-label="Toggle sidebar"
             aria-controls={sidebarId}
-            aria-expanded={isOpen ? 'true' : 'false'}
-            aria-haspopup='true'
+            aria-expanded={isOpen}
           >
             {isMobile && isOpen ? (
-              <X className='h-5 w-5 shrink-0' aria-hidden='true' />
+              <X className="h-5 w-5" />
+            ) : isOpen ? (
+              <ChevronLeft className="h-5 w-5" />
             ) : (
-              <Menu className='h-5 w-5 shrink-0' aria-hidden='true' />
+              <Menu className="h-5 w-5" />
             )}
           </button>
         </div>
 
         {/* Navigation */}
-        <nav
-          className='flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1 scrollbar-thin'
-          role='navigation'
-          aria-label='Primary'
-        >
+        <nav className="flex-1 overflow-y-auto p-3 space-y-1" role="navigation">
           {MENU_ITEMS.map(item => (
             <SidebarItem
               key={item.href}
@@ -446,27 +341,9 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
 
         {/* CF Badge Footer */}
         {isVerified && cfData && (
-          <div
-            className={cn(
-              'border-t border-border/50 p-4',
-              !isOpen && 'flex justify-center'
-            )}
-          >
+          <div className={cn('border-t border-border p-3', !isOpen && 'flex justify-center')}>
             {loadingCF ? (
-              <div
-                className={cn(
-                  'p-3 rounded-md border',
-                  'animate-pulse text-muted-foreground w-full',
-                  !isOpen && 'w-12 h-12 p-0 flex items-center justify-center'
-                )}
-                aria-label='Loading Codeforces rating'
-              >
-                {isOpen ? (
-                  <div className='h-4 w-24 bg-muted rounded' />
-                ) : (
-                  <div className='h-3 w-8 bg-muted rounded' />
-                )}
-              </div>
+              <div className={cn('rounded-lg bg-muted animate-pulse', isOpen ? 'h-16 w-full' : 'w-10 h-10')} />
             ) : (
               <CFBadge cfData={cfData} isOpen={isOpen} />
             )}
@@ -475,24 +352,20 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main content */}
-      <div
-        className={cn(
-          'flex-1 flex flex-col transition-all duration-200',
-          mainMarginClass
-        )}
-      >
+      <div className={cn('flex-1 flex flex-col transition-all duration-200', mainMarginClass)}>
         <Header onMobileMenuToggle={toggleSidebar} isMobile={isMobile} />
         <main className={cn('flex-1 overflow-auto', isMobile && 'pb-20')}>
           {children}
         </main>
         <Footer />
+
         {/* Mobile bottom nav */}
         {isMobile && (
           <nav
-            className='fixed bottom-0 inset-x-0 border-t border-border/60 bg-card/95 backdrop-blur-xl shadow-lg z-50'
-            aria-label='Mobile bottom navigation'
+            className="fixed bottom-0 inset-x-0 border-t border-border bg-card z-50"
+            aria-label="Mobile navigation"
           >
-            <div className='mx-auto flex max-w-md items-center justify-between px-6 py-2'>
+            <div className="mx-auto flex max-w-md items-center justify-around py-2">
               {MOBILE_TABS.map(tab => {
                 const Icon = tab.icon;
                 const active = pathname?.startsWith(tab.href);
@@ -501,15 +374,15 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                     key={tab.href}
                     href={tab.href}
                     className={cn(
-                      'flex flex-col items-center gap-1 text-xs font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 rounded-xl px-4 py-3 tap-target',
+                      'flex flex-col items-center gap-1 px-6 py-2 rounded-lg transition-colors',
                       active
-                        ? 'text-primary bg-primary/10 scale-105'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                        ? 'text-primary bg-primary/10'
+                        : 'text-muted-foreground hover:text-foreground'
                     )}
                     aria-current={active ? 'page' : undefined}
                   >
-                    <Icon className={cn('h-5 w-5 shrink-0 transition-transform', active && 'scale-110')} aria-hidden='true' />
-                    <span className={cn('font-semibold', active && 'text-primary')}>{tab.label}</span>
+                    <Icon className="h-5 w-5" />
+                    <span className="text-xs font-medium">{tab.label}</span>
                   </Link>
                 );
               })}

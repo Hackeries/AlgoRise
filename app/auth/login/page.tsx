@@ -1,392 +1,284 @@
-'use client';
+'use client'
 
-import type React from 'react';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
-import { useAuth } from '@/lib/auth/context';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { AuthConfigurationAlert } from '@/components/auth/auth-configuration-alert';
-import { Mail, Lock, Eye, EyeOff, Github } from 'lucide-react';
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '@/lib/auth/context'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { AuthConfigurationAlert } from '@/components/auth/auth-configuration-alert'
+import { Mail, Lock, Eye, EyeOff, Github, Loader2, ArrowRight, Code2 } from 'lucide-react'
 
-// Google SVG
 const GoogleIcon = () => (
-  <svg className='h-5 w-5' viewBox='0 0 533.5 544.3'>
+  <svg className="h-5 w-5" viewBox="0 0 24 24">
     <path
-      d='M533.5 278.4c0-17.3-1.4-34-4.1-50.3H272v95.2h146.9c-6.3 34-25 62.8-53.4 82.1v68.1h86.3c50.6-46.6 79.7-115.4 79.7-195.1z'
-      fill='#4285F4'
+      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+      fill="#4285F4"
     />
     <path
-      d='M272 544.3c72.6 0 133.5-24.1 178-65.5l-86.3-68.1c-24 16.1-54.6 25.5-91.7 25.5-70.5 0-130.3-47.6-151.7-111.4H32.2v69.8C76.6 487 168.6 544.3 272 544.3z'
-      fill='#34A853'
+      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      fill="#34A853"
     />
     <path
-      d='M120.3 330.7c-5.7-16.8-9-34.8-9-53.2s3.3-36.4 9-53.2v-69.8H32.2c-18.3 36.6-28.8 77.7-28.8 122s10.5 85.4 28.8 122l88.1-69.8z'
-      fill='#FBBC05'
+      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+      fill="#FBBC05"
     />
     <path
-      d='M272 107.7c38.9 0 73.9 13.4 101.5 39.5l76.2-76.2C404.6 24.4 343.6 0 272 0 168.6 0 76.6 57.3 32.2 142.1l88.1 69.8c21.4-63.8 81.2-111.4 151.7-111.4z'
-      fill='#EA4335'
+      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+      fill="#EA4335"
     />
   </svg>
-);
+)
 
-// Spinner
-const Spinner = () => (
-  <div className='animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full' />
-);
+export default function LoginPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { refreshUser } = useAuth()
+  
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [oauthLoading, setOAuthLoading] = useState<'google' | 'github' | null>(null)
+  const [isConfigured, setIsConfigured] = useState(true)
 
-// Input with icon & eye toggle
-const InputWithIcon = ({
-  id,
-  label,
-  type = 'text',
-  placeholder,
-  icon: Icon,
-  value,
-  onChange,
-  showPassword,
-  setShowPassword,
-}: {
-  id: string;
-  label: string;
-  type?: string;
-  placeholder?: string;
-  icon: React.ElementType;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  showPassword?: boolean;
-  setShowPassword?: (val: boolean) => void;
-}) => (
-  <div className='w-full'>
-    <Label htmlFor={id} className='mb-1 block text-sm font-medium'>
-      {label}
-    </Label>
-    <div className='relative'>
-      <span className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none'>
-        <Icon className='h-5 w-5 text-gray-400' />
-      </span>
-      <Input
-        id={id}
-        type={
-          showPassword !== undefined
-            ? showPassword
-              ? 'text'
-              : 'password'
-            : type
-        }
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        className='pl-10 pr-10 py-2 w-full focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-500 transition'
-      />
-      {setShowPassword && (
-        <button
-          type='button'
-          onClick={() => setShowPassword(!showPassword)}
-          className='absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400'
-        >
-          {showPassword ? (
-            <EyeOff className='h-5 w-5' />
-          ) : (
-            <Eye className='h-5 w-5' />
-          )}
-        </button>
-      )}
-    </div>
-  </div>
-);
-
-const OAuthModal = ({
-  isOpen,
-  onClose,
-  provider,
-  isLoading,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  provider: 'google' | 'github' | null;
-  isLoading: boolean;
-}) => {
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'oauth_complete') {
-        onClose();
-        window.location.href =
-          '/auth/callback?next=' + encodeURIComponent('/profile');
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div className='fixed inset-0 bg-black/50 flex items-center justify-center z-50'>
-      <Card className='w-full max-w-md mx-4'>
-        <CardHeader>
-          <CardTitle>
-            {provider === 'google' ? 'Google Login' : 'GitHub Login'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className='flex flex-col items-center gap-4'>
-          <div className='animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full' />
-          <p className='text-sm text-gray-600'>
-            {isLoading ? 'Completing login...' : 'Opening login window...'}
-          </p>
-          <Button onClick={onClose} variant='outline'>
-            Cancel
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-export default function Page() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isOAuthLoading, setIsOAuthLoading] = useState<
-    'google' | 'github' | null
-  >(null);
-  const [isConfigured, setIsConfigured] = useState(true);
-  const [oauthModalOpen, setOAuthModalOpen] = useState(false);
-  const router = useRouter();
-  const { refreshUser } = useAuth();
+  const redirectTo = searchParams.get('redirect') || '/profile'
 
   useEffect(() => {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    
     if (
       !supabaseUrl ||
       !supabaseAnonKey ||
-      supabaseUrl === 'https://your-project-ref.supabase.co' ||
-      supabaseAnonKey === 'your-anon-key-here' ||
-      supabaseAnonKey === '[YOUR-ANON-KEY-HERE]'
+      supabaseUrl.includes('your-project-ref') ||
+      supabaseAnonKey.includes('your-anon-key')
     ) {
-      setIsConfigured(false);
+      setIsConfigured(false)
     }
-  }, []);
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+    e.preventDefault()
+    if (!email || !password) return
+    
+    setIsLoading(true)
+    setError(null)
+    
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      await refreshUser();
-
-      // Decide redirect based on existing profile status
-      try {
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
-
-        let redirectTarget = '/profile';
-        if (currentUser?.id) {
-          const { data: cf } = await supabase
-            .from('cf_handles')
-            .select('verified')
-            .eq('user_id', currentUser.id)
-            .single();
-          const { data: prof } = await supabase
-            .from('profiles')
-            .select('status')
-            .eq('user_id', currentUser.id)
-            .single();
-
-          if (cf?.verified && prof?.status) {
-            redirectTarget = '/profile/overview';
-          }
-        }
-        router.push(redirectTarget);
-      } catch {
-        router.push('/profile');
-      }
-    } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : 'An unexpected error occurred'
-      );
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      
+      if (error) throw error
+      
+      await refreshUser()
+      router.push(redirectTo)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
-  const handleOAuthLogin = async (provider: 'google' | 'github') => {
-    setError(null);
-    setIsOAuthLoading(provider);
-    setOAuthModalOpen(true);
-
+  const handleOAuth = async (provider: 'google' | 'github') => {
+    setOAuthLoading(provider)
+    setError(null)
+    
     try {
-      const supabase = createClient();
-
-      const getBaseUrl = () => {
-        if (typeof window !== 'undefined' && window.location?.origin) {
-          return window.location.origin;
-        }
-        return (
-          process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'http://localhost:3000'
-        );
-      };
-
-      const origin = getBaseUrl();
-      const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(
-        '/profile'
-      )}`;
+      const supabase = createClient()
+      const origin = window.location.origin
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo,
+          redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
           queryParams: { prompt: 'select_account' },
-          skipBrowserRedirect: false,
         },
-      });
-      if (error) throw error;
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'OAuth login failed');
-      setOAuthModalOpen(false);
-    } finally {
-      setIsOAuthLoading(null);
+      })
+      
+      if (error) throw error
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'OAuth login failed')
+      setOAuthLoading(null)
     }
-  };
+  }
 
   if (!isConfigured) {
     return (
-      <div className='flex min-h-screen w-full items-center justify-center p-4'>
+      <div className="min-h-screen flex items-center justify-center p-4 bg-background">
         <AuthConfigurationAlert
-          title='Login Unavailable'
-          description='Authentication is not configured. Please set up Supabase to enable user login.'
+          title="Login Unavailable"
+          description="Authentication is not configured. Please set up Supabase."
         />
       </div>
-    );
+    )
   }
 
   return (
-    <div className='flex min-h-screen w-full items-center justify-center bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 overflow-hidden p-4 sm:p-6 md:p-8'>
-      <OAuthModal
-        isOpen={oauthModalOpen}
-        onClose={() => setOAuthModalOpen(false)}
-        provider={isOAuthLoading}
-        isLoading={!!isOAuthLoading}
-      />
-      <div className='w-full max-w-md'>
-        <Card className='shadow-xl border border-gray-200 dark:border-gray-700 hover:shadow-2xl transform transition duration-300 max-h-[90vh] overflow-y-auto'>
-          <CardHeader className='text-center px-4 sm:px-6 py-4 sm:py-6'>
-            <Mail className='mx-auto mb-4 h-8 w-8 sm:h-10 sm:w-10 text-blue-500' />
-            <CardTitle className='text-xl sm:text-2xl md:text-3xl font-bold'>
-              Login
-            </CardTitle>
-            <CardDescription className='text-sm sm:text-base text-gray-600 dark:text-gray-300'>
-              Login with email or social accounts
-            </CardDescription>
-          </CardHeader>
-          <CardContent className='px-4 sm:px-6 py-4 sm:py-6'>
-            {/* Social login */}
-            <div className='flex flex-col gap-2 sm:gap-3 mb-4 sm:mb-6'>
-              <Button
-                onClick={() => handleOAuthLogin('google')}
-                disabled={!!isOAuthLoading}
-                className={`flex items-center justify-center gap-2 w-full text-white text-sm sm:text-base transition-all duration-300 transform hover:scale-105 py-2 sm:py-3 ${
-                  isOAuthLoading === 'google'
-                    ? 'bg-red-400 cursor-not-allowed'
-                    : 'bg-red-500 hover:bg-red-600'
-                }`}
-              >
-                {isOAuthLoading === 'google' ? <Spinner /> : <GoogleIcon />}
-                {isOAuthLoading === 'google'
-                  ? 'Signing in...'
-                  : 'Sign in with Google'}
-              </Button>
+    <div className="min-h-screen flex bg-background">
+      {/* Left Panel - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 bg-primary/5 items-center justify-center p-12">
+        <div className="max-w-md">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="p-3 rounded-xl bg-primary">
+              <Code2 className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <span className="text-3xl font-bold">AlgoRise</span>
+          </div>
+          <h1 className="text-4xl font-bold tracking-tight mb-4">
+            Level up your competitive programming
+          </h1>
+          <p className="text-lg text-muted-foreground mb-8">
+            Practice smarter with personalized problem recommendations, track your progress, and compete with friends.
+          </p>
+          <div className="space-y-4">
+            {[
+              'AI-powered problem recommendations',
+              'Real-time progress analytics',
+              'Compete in private contests',
+              'Sync with Codeforces profile',
+            ].map((feature, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-primary" />
+                <span className="text-muted-foreground">{feature}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
-              <Button
-                onClick={() => handleOAuthLogin('github')}
-                disabled={!!isOAuthLoading}
-                className={`flex items-center justify-center gap-2 w-full text-white text-sm sm:text-base transition-all duration-300 transform hover:scale-105 py-2 sm:py-3 ${
-                  isOAuthLoading === 'github'
-                    ? 'bg-gray-600 cursor-not-allowed'
-                    : 'bg-gray-800 hover:bg-gray-900'
-                }`}
-              >
-                {isOAuthLoading === 'github' ? (
-                  <Spinner />
-                ) : (
-                  <Github className='h-4 w-4 sm:h-5 sm:w-5' />
-                )}
-                {isOAuthLoading === 'github'
-                  ? 'Signing in...'
-                  : 'Sign in with GitHub'}
-              </Button>
+      {/* Right Panel - Login Form */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
+        <div className="w-full max-w-sm">
+          {/* Mobile Logo */}
+          <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
+            <div className="p-2 rounded-lg bg-primary">
+              <Code2 className="h-6 w-6 text-primary-foreground" />
+            </div>
+            <span className="text-2xl font-bold">AlgoRise</span>
+          </div>
+
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold">Welcome back</h2>
+            <p className="text-muted-foreground mt-1">Sign in to your account</p>
+          </div>
+
+          {/* OAuth Buttons */}
+          <div className="space-y-3 mb-6">
+            <Button
+              variant="outline"
+              className="w-full h-11 gap-3 font-medium"
+              onClick={() => handleOAuth('google')}
+              disabled={!!oauthLoading}
+            >
+              {oauthLoading === 'google' ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <GoogleIcon />
+              )}
+              Continue with Google
+            </Button>
+            
+            <Button
+              variant="outline"
+              className="w-full h-11 gap-3 font-medium"
+              onClick={() => handleOAuth('github')}
+              disabled={!!oauthLoading}
+            >
+              {oauthLoading === 'github' ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Github className="h-5 w-5" />
+              )}
+              Continue with GitHub
+            </Button>
+          </div>
+
+          <div className="relative mb-6">
+            <Separator />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-3 text-xs text-muted-foreground">
+              or continue with email
+            </span>
+          </div>
+
+          {/* Email Form */}
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 h-11"
+                  autoComplete="email"
+                />
+              </div>
             </div>
 
-            <form onSubmit={handleLogin} className='space-y-4 sm:space-y-6'>
-              <div className='flex flex-col gap-3 sm:gap-4'>
-                <InputWithIcon
-                  id='email'
-                  label='Email'
-                  type='email'
-                  placeholder='you@example.com'
-                  icon={Mail}
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                />
-                <InputWithIcon
-                  id='password'
-                  label='Password'
-                  icon={Lock}
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  showPassword={showPassword}
-                  setShowPassword={setShowPassword}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 pr-10 h-11"
+                  autoComplete="current-password"
                 />
-                {error && (
-                  <p className='text-xs sm:text-sm text-red-500 text-center'>
-                    {error}
-                  </p>
-                )}
-                <Button
-                  type='submit'
-                  className='w-full bg-blue-500 hover:bg-blue-600 text-white transition duration-300 py-2 sm:py-3 text-sm sm:text-base'
-                  disabled={isLoading || !email || !password}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {isLoading ? 'Logging in...' : 'Login'}
-                </Button>
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
-              <div className='mt-4 text-center text-xs sm:text-sm text-gray-600 dark:text-gray-400'>
-                Don&apos;t have an account?{' '}
-                <Link
-                  href='/auth/sign-up'
-                  className='text-blue-500 hover:underline font-medium'
-                >
-                  Sign up
-                </Link>
+            </div>
+
+            {error && (
+              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                <p className="text-sm text-destructive">{error}</p>
               </div>
-            </form>
-          </CardContent>
-        </Card>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full h-11 gap-2"
+              disabled={isLoading || !email || !password}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  Sign in
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </form>
+
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            Don't have an account?{' '}
+            <Link href="/auth/sign-up" className="text-primary hover:underline font-medium">
+              Sign up
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
-  );
+  )
 }

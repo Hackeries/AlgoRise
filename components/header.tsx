@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '@/lib/auth/context'
 import { useSearch } from '@/hooks/use-search'
 import { cn } from '@/lib/utils'
+import useSWR from 'swr'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -36,6 +37,8 @@ import {
 
 import { AlgoRiseLogo } from '@/components/algorise-logo'
 import { AuthModal } from '@/components/auth/auth-modal'
+
+const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 interface Notification {
   id: number | string

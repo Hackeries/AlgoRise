@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   CheckCircle2,
   AlertCircle,
@@ -15,20 +16,26 @@ import {
 } from 'lucide-react';
 import LinksEditor from '@/components/profile/links-editor';
 
-interface ProfileProps {
-  name?: string;
-  status?: 'student' | 'working';
-  degree?: string;
-  college?: string;
-  company?: string;
-  year?: string;
-  cf?: string;
-  lc?: string;
-  cc?: string;
-  ac?: string;
-  gfg?: string;
-  cfVerified?: boolean;
-  completion: number;
+interface ProfileData {
+  name: string;
+  status: 'student' | 'working' | null;
+  degree_type: string;
+  college_name: string;
+  company_name: string;
+  custom_company: string;
+  year: string;
+  cf_handle: string;
+  cf_verified: boolean;
+  leetcode_handle: string;
+  codechef_handle: string;
+  atcoder_handle: string;
+  gfg_handle: string;
+  completion: {
+    percentage: number;
+    completed: string[];
+    missing: string[];
+    isComplete: boolean;
+  };
 }
 
 function ProgressBar({ value }: { value: number }) {
@@ -50,21 +57,85 @@ function ProgressBar({ value }: { value: number }) {
   );
 }
 
-export default function ProfileOverviewPage({
-  name = 'Your Profile',
-  status = 'student',
-  degree = 'B.Tech',
-  college = 'IIT Delhi',
-  company = '',
-  year = '3',
-  cf = 'algorise_user',
-  lc = 'algoriseLC',
-  cc = 'algoriseCC',
-  ac = '',
-  gfg = '',
-  cfVerified = true,
-  completion = 84,
-}: ProfileProps) {
+function ProfileSkeleton() {
+  return (
+    <main className='min-h-screen bg-gradient-to-br from-background via-muted/20 to-background py-10 px-6 lg:px-10'>
+      <div className='max-w-7xl mx-auto space-y-12'>
+        <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3'>
+          <div>
+            <Skeleton className='h-10 w-64 mb-2' />
+            <Skeleton className='h-5 w-96' />
+          </div>
+          <Skeleton className='h-10 w-28' />
+        </div>
+        <div className='grid md:grid-cols-3 gap-6'>
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className='border-none shadow-lg'>
+              <CardHeader>
+                <Skeleton className='h-6 w-40' />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className='h-12 w-24 mb-4' />
+                <Skeleton className='h-3 w-full' />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+export default function ProfileOverviewPage() {
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        const res = await fetch('/api/profile');
+        if (res.ok) {
+          const data = await res.json();
+          setProfile(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch profile:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProfile();
+  }, []);
+
+  if (loading) {
+    return <ProfileSkeleton />;
+  }
+
+  if (!profile) {
+    return (
+      <main className='min-h-screen flex items-center justify-center'>
+        <div className='text-center'>
+          <p className='text-muted-foreground mb-4'>Failed to load profile</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </main>
+    );
+  }
+
+  const displayName = profile.name || 'Your Profile';
+  const status = profile.status || 'student';
+  const degree = profile.degree_type || '';
+  const college = profile.college_name || '';
+  const company = profile.company_name || profile.custom_company || '';
+  const year = profile.year || '';
+  const cf = profile.cf_handle || '';
+  const lc = profile.leetcode_handle || '';
+  const cc = profile.codechef_handle || '';
+  const ac = profile.atcoder_handle || '';
+  const gfg = profile.gfg_handle || '';
+  const cfVerified = profile.cf_verified || false;
+  const completion = profile.completion?.percentage || 0;
+
   return (
     <main className='min-h-screen bg-gradient-to-br from-background via-muted/20 to-background py-10 px-6 lg:px-10'>
       <div className='max-w-7xl mx-auto space-y-12'>
@@ -87,7 +158,7 @@ export default function ProfileOverviewPage({
 
         {/* Stats Cards */}
         <div className='grid md:grid-cols-3 gap-6'>
-          {/* Strength */}
+          {/* Profile Completion */}
           <Card className='border-none shadow-lg bg-gradient-to-tr from-primary/10 to-green-500/10 backdrop-blur'>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
@@ -149,8 +220,8 @@ export default function ProfileOverviewPage({
             </CardHeader>
             <CardContent className='text-sm'>
               <p>
-                Your upcoming seasonal goal: reach Specialist → Expert on
-                Codeforces in 8 weeks through targeted practice sets.
+                Your upcoming seasonal goal: reach Specialist → Expert on
+                Codeforces in 8 weeks through targeted practice sets.
               </p>
             </CardContent>
           </Card>
@@ -160,35 +231,41 @@ export default function ProfileOverviewPage({
         <div className='grid lg:grid-cols-3 gap-6'>
           <Card className='lg:col-span-2 border-l-4 border-primary/80 shadow-md bg-card/80 backdrop-blur'>
             <CardHeader>
-              <CardTitle className='text-2xl font-bold'>{name}</CardTitle>
+              <CardTitle className='text-2xl font-bold'>{displayName}</CardTitle>
               <p className='text-muted-foreground'>
                 {status === 'student'
-                  ? `Student at ${college || 'Unknown Institution'}`
-                  : `Working at ${company || '—'}`}
+                  ? `Student${college ? ` at ${college}` : ''}`
+                  : `Working${company ? ` at ${company}` : ''}`}
               </p>
             </CardHeader>
             <CardContent className='grid sm:grid-cols-2 gap-4'>
               <div className='rounded-lg p-3 bg-muted/40'>
                 <p className='text-xs text-muted-foreground'>Status</p>
-                <p className='font-semibold capitalize'>{status}</p>
+                <p className='font-semibold capitalize'>{status || 'Not set'}</p>
               </div>
               {status === 'student' && (
                 <>
-                  <div className='rounded-lg p-3 bg-muted/40'>
-                    <p className='text-xs text-muted-foreground'>Degree</p>
-                    <p className='font-semibold'>{degree}</p>
-                  </div>
-                  <div className='rounded-lg p-3 bg-muted/40'>
-                    <p className='text-xs text-muted-foreground'>Year</p>
-                    <p className='font-semibold'>{year}</p>
-                  </div>
-                  <div className='rounded-lg p-3 bg-muted/40'>
-                    <p className='text-xs text-muted-foreground'>College</p>
-                    <p className='font-semibold'>{college}</p>
-                  </div>
+                  {degree && (
+                    <div className='rounded-lg p-3 bg-muted/40'>
+                      <p className='text-xs text-muted-foreground'>Degree</p>
+                      <p className='font-semibold'>{degree}</p>
+                    </div>
+                  )}
+                  {year && (
+                    <div className='rounded-lg p-3 bg-muted/40'>
+                      <p className='text-xs text-muted-foreground'>Year</p>
+                      <p className='font-semibold'>{year}</p>
+                    </div>
+                  )}
+                  {college && (
+                    <div className='rounded-lg p-3 bg-muted/40'>
+                      <p className='text-xs text-muted-foreground'>College</p>
+                      <p className='font-semibold'>{college}</p>
+                    </div>
+                  )}
                 </>
               )}
-              {status === 'working' && (
+              {status === 'working' && company && (
                 <div className='rounded-lg p-3 bg-muted/40'>
                   <p className='text-xs text-muted-foreground'>Organization</p>
                   <p className='font-semibold'>{company}</p>
@@ -255,29 +332,21 @@ export default function ProfileOverviewPage({
           </CardHeader>
           <CardContent className='flex flex-wrap gap-3'>
             {[
-              { name: 'Codeforces', link: cf, color: 'blue' },
-              { name: 'LeetCode', link: lc, color: 'yellow' },
-              { name: 'CodeChef', link: cc, color: 'orange' },
-              { name: 'AtCoder', link: ac, color: 'purple' },
-              { name: 'GeeksforGeeks', link: gfg, color: 'green' },
-            ].map(({ name, link, color }) =>
+              { name: 'Codeforces', link: cf, baseUrl: 'https://codeforces.com/profile/' },
+              { name: 'LeetCode', link: lc, baseUrl: 'https://leetcode.com/' },
+              { name: 'CodeChef', link: cc, baseUrl: 'https://www.codechef.com/users/' },
+              { name: 'AtCoder', link: ac, baseUrl: 'https://atcoder.jp/users/' },
+              { name: 'GeeksforGeeks', link: gfg, baseUrl: 'https://www.geeksforgeeks.org/user/' },
+            ].map(({ name, link, baseUrl }) =>
               link ? (
                 <a
                   key={name}
-                  href={`https://${name
-                    .toLowerCase()
-                    .replace(/\s/g, '')}.com/profile/${encodeURIComponent(
-                    link
-                  )}`}
+                  href={`${baseUrl}${encodeURIComponent(link)}`}
                   target='_blank'
                   rel='noopener noreferrer'
-                  className={`flex items-center gap-2 px-4 py-2 border border-${color}-500/40 bg-${color}-500/10 rounded-md hover:bg-${color}-500/20 transition`}
+                  className='flex items-center gap-2 px-4 py-2 border border-border bg-muted/50 rounded-md hover:bg-muted transition'
                 >
-                  <span
-                    className={`font-semibold text-${color}-600 dark:text-${color}-400`}
-                  >
-                    {name}
-                  </span>
+                  <span className='font-semibold'>{name}</span>
                   <ExternalLink className='h-4 w-4' />
                 </a>
               ) : (

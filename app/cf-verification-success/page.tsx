@@ -71,32 +71,52 @@ export default function VerificationSuccessPage() {
     basicStats: Partial<UserStats>
   ) => {
     try {
-      // Fetch user submissions to count problems solved
-      const submissionsResponse = await fetch(
-        `https://codeforces.com/api/user.status?handle=${handle}&from=1&count=10000`
-      );
-      const submissionsData = await submissionsResponse.json();
-
       let problemsSolved = 0;
+      let contestsParticipated = 0;
       const solvedProblems = new Set();
 
-      if (submissionsData.status === 'OK') {
-        submissionsData.result.forEach((submission: any) => {
-          if (submission.verdict === 'OK') {
-            const problemKey = `${submission.problem.contestId}-${submission.problem.index}`;
-            solvedProblems.add(problemKey);
+      // Fetch user submissions to count problems solved
+      try {
+        const submissionsResponse = await fetch(
+          `https://codeforces.com/api/user.status?handle=${handle}&from=1&count=10000`
+        );
+        
+        if (submissionsResponse.ok) {
+          const text = await submissionsResponse.text();
+          if (text && text.trim()) {
+            const submissionsData = JSON.parse(text);
+            if (submissionsData.status === 'OK' && submissionsData.result) {
+              submissionsData.result.forEach((submission: any) => {
+                if (submission.verdict === 'OK' && submission.problem) {
+                  const problemKey = `${submission.problem.contestId}-${submission.problem.index}`;
+                  solvedProblems.add(problemKey);
+                }
+              });
+              problemsSolved = solvedProblems.size;
+            }
           }
-        });
-        problemsSolved = solvedProblems.size;
+        }
+      } catch (subError) {
+        console.error('Error fetching submissions:', subError);
       }
 
       // Fetch contest participation count
-      const ratingResponse = await fetch(
-        `https://codeforces.com/api/user.rating?handle=${handle}`
-      );
-      const ratingData = await ratingResponse.json();
-      const contestsParticipated =
-        ratingData.status === 'OK' ? ratingData.result.length : 0;
+      try {
+        const ratingResponse = await fetch(
+          `https://codeforces.com/api/user.rating?handle=${handle}`
+        );
+        
+        if (ratingResponse.ok) {
+          const text = await ratingResponse.text();
+          if (text && text.trim()) {
+            const ratingData = JSON.parse(text);
+            contestsParticipated =
+              ratingData.status === 'OK' && ratingData.result ? ratingData.result.length : 0;
+          }
+        }
+      } catch (ratingError) {
+        console.error('Error fetching rating:', ratingError);
+      }
 
       setUserStats({
         ...(basicStats as UserStats),

@@ -94,7 +94,26 @@ export async function POST(req: Request) {
     const cfResponse = await fetch(
       `https://codeforces.com/api/user.status?handle=${row.handle}&from=1&count=10`
     );
-    const cfData = await cfResponse.json();
+    
+    if (!cfResponse.ok) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, new Error(`CF API returned ${cfResponse.status}`));
+      return NextResponse.json(
+        { verified: false, message: 'Failed to fetch submissions from Codeforces' },
+        { status: 500 }
+      );
+    }
+    
+    let cfData;
+    try {
+      const text = await cfResponse.text();
+      cfData = JSON.parse(text);
+    } catch (parseError) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, new Error('Failed to parse CF response'));
+      return NextResponse.json(
+        { verified: false, message: 'Invalid response from Codeforces API' },
+        { status: 500 }
+      );
+    }
 
     if (cfData.status !== 'OK') {
       logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, new Error('Failed to fetch submissions'));
@@ -154,7 +173,27 @@ export async function POST(req: Request) {
     const userInfoResponse = await fetch(
       `https://codeforces.com/api/user.info?handles=${row.handle}`
     );
-    const userInfoData = await userInfoResponse.json();
+    
+    if (!userInfoResponse.ok) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, new Error(`CF user.info API returned ${userInfoResponse.status}`));
+      return NextResponse.json(
+        { verified: false, message: 'Failed to fetch user info from Codeforces' },
+        { status: 500 }
+      );
+    }
+    
+    let userInfoData;
+    try {
+      const text = await userInfoResponse.text();
+      userInfoData = JSON.parse(text);
+    } catch (parseError) {
+      logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, new Error('Failed to parse user info response'));
+      return NextResponse.json(
+        { verified: false, message: 'Invalid response from Codeforces API' },
+        { status: 500 }
+      );
+    }
+    
     if (userInfoData.status !== 'OK' || !userInfoData.result?.[0]) {
       logger.logCFVerificationCheck({ ...context, userId: user.id }, row.handle, false, new Error('Failed to fetch user info'));
       return NextResponse.json(

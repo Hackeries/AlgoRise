@@ -44,7 +44,7 @@ export async function GET(req: Request) {
       .select(
         "name, status, degree_type, college_id, year, company_id, custom_company, colleges(name), companies(name), leetcode_handle, codechef_handle, atcoder_handle, gfg_handle",
       )
-      .eq("user_id", user.id)
+      .eq("id", user.id)
       .single()
 
     // Normalize related names
@@ -133,6 +133,7 @@ export async function PUT(req: Request) {
 
     const body = await req.json()
     const {
+      name,
       status,
       degree_type,
       college_id,
@@ -157,7 +158,7 @@ export async function PUT(req: Request) {
 
     if (isPartialUpdate) {
       const updateData: any = {
-        user_id: user.id,
+        id: user.id,
         updated_at: new Date().toISOString(),
       }
 
@@ -178,7 +179,7 @@ export async function PUT(req: Request) {
         updatedFields.push('gfg_handle')
       }
 
-      const { error: upsertErr } = await supabase.from("profiles").upsert(updateData, { onConflict: "user_id" })
+      const { error: upsertErr } = await supabase.from("profiles").upsert(updateData, { onConflict: "id" })
 
       if (upsertErr) {
         logger.logProfileUpdate({ ...context, userId: user.id }, updatedFields, false, upsertErr)
@@ -216,7 +217,8 @@ export async function PUT(req: Request) {
     // Upsert profile
     const { error: upsertErr } = await supabase.from("profiles").upsert(
       {
-        user_id: user.id,
+        id: user.id,
+        name: name ?? null,
         status,
         degree_type: status === "student" ? degree_type : null,
         college_id: status === "student" ? college_id : null,
@@ -229,7 +231,7 @@ export async function PUT(req: Request) {
         gfg_handle: gfg_handle ?? null,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "user_id" },
+      { onConflict: "id" },
     )
 
     if (upsertErr) {

@@ -65,10 +65,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   // ✅ Explicit typing for 'p'
   const problems = (problemRows || []).map((p: any) => ({
-    id: p.problem_id,
+    id: p.problem_id ?? "",
     contestId: p.contest_id_cf ?? 0,
     index: p.index_cf ?? "",
-    name: p.title ?? p.problem_id,
+    name: p.title || p.problem_id || "Unnamed Problem",
     rating: p.rating ?? 0,
   }))
 

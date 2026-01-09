@@ -90,7 +90,7 @@ export async function updateSession(request: NextRequest) {
         const { data: profile } = await supabase
           .from('profiles')
           .select('status')
-          .eq('user_id', user.id)
+          .eq('id', user.id)
           .single();
 
         if (cfHandle?.verified && profile?.status) {
@@ -119,7 +119,7 @@ export async function updateSession(request: NextRequest) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('status')
-      .eq('user_id', user.id)
+      .eq('id', user.id)
       .single();
 
     if (!profile?.status) {

@@ -28,8 +28,35 @@ const CFVerificationContext = createContext<CFVerificationContextType | undefine
 async function fetchCFData(handle: string): Promise<CFVerificationData | null> {
   try {
     const res = await fetch(`https://codeforces.com/api/user.info?handles=${handle}`)
-    const json = await res.json()
-    if (json.status !== 'OK') return null
+    
+    // Check response status before parsing
+    if (!res.ok) {
+      console.error('CF API returned non-OK status:', res.status)
+      return null
+    }
+    
+    // Check content type to ensure it's JSON
+    const contentType = res.headers.get('content-type')
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('CF API returned non-JSON response')
+      return null
+    }
+    
+    const text = await res.text()
+    if (!text || text.trim() === '') {
+      console.error('CF API returned empty response')
+      return null
+    }
+    
+    let json
+    try {
+      json = JSON.parse(text)
+    } catch (parseError) {
+      console.error('Failed to parse CF API response as JSON:', parseError)
+      return null
+    }
+    
+    if (json.status !== 'OK' || !json.result?.[0]) return null
 
     const user = json.result[0]
     return {
@@ -39,7 +66,8 @@ async function fetchCFData(handle: string): Promise<CFVerificationData | null> {
       rank: user.rank ?? 'unrated',
       verifiedAt: new Date().toISOString(),
     }
-  } catch {
+  } catch (error) {
+    console.error('Error fetching CF data:', error)
     return null
   }
 }

@@ -22,12 +22,21 @@ export default async function ProtectedPage() {
     }
 
     const user = data.user;
+    
+    // Fetch user's display name from profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('id', user.id)
+      .single();
+    
+    const displayName = profile?.name || user.email?.split('@')[0] || 'there';
 
     return (
       <div className='flex-1 w-full flex flex-col gap-8 p-6'>
         <div className='flex flex-col gap-4'>
           <h1 className='text-3xl font-bold'>
-            Welcome back, {user.email?.split('@')[0]}!
+            Welcome back, {displayName}
           </h1>
           <p className='text-muted-foreground'>
             Ready to continue your competitive programming journey?

@@ -187,9 +187,9 @@ export default function ContestsPage() {
       console.error('Error fetching contests:', error);
       if (!isManualRefresh) {
         toast({
-          title: '⚠️ Connection hiccup',
+          title: 'Connection error',
           description:
-            "Couldn't load contests right now. Check your connection and try again!",
+            'Failed to load contests. Please check your connection and try again.',
           variant: 'destructive',
         });
       }
@@ -197,8 +197,8 @@ export default function ContestsPage() {
       if (isManualRefresh) {
         setRefreshing(false);
         toast({
-          title: '✅ Refreshed',
-          description: 'Contest list updated successfully!',
+          title: 'Refreshed',
+          description: 'Contest list updated.',
           variant: 'default',
         });
       } else {
@@ -515,9 +515,8 @@ export default function ContestsPage() {
 
         if (response.ok) {
           toast({
-            title: "✅ You're in!",
-            description:
-              'Registration confirmed! Get ready to compete and show your skills.',
+            title: 'Registered',
+            description: 'You have been successfully registered for this contest.',
             variant: 'default',
           });
           fetchContests(); // Refresh to update registration status
@@ -547,9 +546,8 @@ export default function ContestsPage() {
         );
       } else {
         toast({
-          title: "✅ You're all set",
-          description:
-            'Already registered! Just wait for the contest to start, then jump right in.',
+          title: 'Already registered',
+          description: 'You are already registered for this contest. It will start soon.',
         });
       }
     }

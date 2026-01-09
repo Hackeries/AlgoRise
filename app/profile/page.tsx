@@ -78,6 +78,7 @@ export default function ProfilePage() {
   const [showVerificationDialog, setShowVerificationDialog] = useState(false);
 
   // Profile fields
+  const [name, setName] = useState<string>('');
   const [status, setStatus] = useState<ProfileStatus>(null);
   const [degreeType, setDegreeType] = useState<string>('');
   const [selectedCollege, setSelectedCollege] = useState<string>('');
@@ -136,6 +137,7 @@ export default function ProfilePage() {
         const data = await res.json();
         setCfVerified(data.cf_verified || false);
         setCfHandle(data.cf_handle || '');
+        setName(data.name || '');
         setStatus(data.status || null);
         setDegreeType(data.degree_type || '');
         setSelectedCollege(data.college_id || '');
@@ -189,8 +191,8 @@ export default function ProfilePage() {
   async function addNewCollege() {
     if (!newCollegeName.trim()) {
       toast({
-        title: '🏫 College name needed',
-        description: 'Enter your college name to connect with teammates!',
+        title: 'College name required',
+        description: 'Please enter your college name.',
         variant: 'destructive',
       });
       return;
@@ -211,8 +213,8 @@ export default function ProfilePage() {
       }
 
       toast({
-        title: '✅ College added!',
-        description: data.message || 'Your college profile is all set. Ready to compete!',
+        title: 'College added',
+        description: data.message || 'Your college has been added successfully.',
       });
 
       // Select the newly added college
@@ -224,8 +226,8 @@ export default function ProfilePage() {
       await loadColleges();
     } catch (error: any) {
       toast({
-        title: '⚠️ Couldn\'t add college',
-        description: error.message || 'Something went wrong. Try again!',
+        title: 'Failed to add college',
+        description: error.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -236,8 +238,8 @@ export default function ProfilePage() {
   async function addNewCompany() {
     if (!newCompanyName.trim()) {
       toast({
-        title: '🏭 Company name needed',
-        description: 'Add your dream company to track your interview prep progress!',
+        title: 'Company name required',
+        description: 'Please enter your company name.',
         variant: 'destructive',
       });
       return;
@@ -258,8 +260,8 @@ export default function ProfilePage() {
       }
 
       toast({
-        title: '✅ Company added!',
-        description: data.message || 'Great choice! Start crushing those interview problems.',
+        title: 'Company added',
+        description: data.message || 'Your company has been added successfully.',
       });
 
       // Select the newly added company
@@ -271,8 +273,8 @@ export default function ProfilePage() {
       await loadCompanies();
     } catch (error: any) {
       toast({
-        title: '⚠️ Couldn\'t add company',
-        description: error.message || 'Something went wrong. Try again!',
+        title: 'Failed to add company',
+        description: error.message || 'Something went wrong. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -339,6 +341,7 @@ export default function ProfilePage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          name: name.trim() || null,
           status,
           degree_type: status === 'student' ? degreeType : null,
           college_id: status === 'student' ? selectedCollege : null,
@@ -493,6 +496,23 @@ export default function ProfilePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className='space-y-6'>
+                {/* Name Field */}
+                <div className='space-y-3'>
+                  <Label htmlFor='name' className='text-base font-medium'>
+                    Display Name
+                  </Label>
+                  <Input
+                    id='name'
+                    placeholder='Enter your name'
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    className='h-11 text-base'
+                  />
+                  <p className='text-sm text-muted-foreground'>
+                    This name will be shown on leaderboards and your profile.
+                  </p>
+                </div>
+
                 {/* Status Selection */}
                 <div className='space-y-3'>
                   <Label htmlFor='status' className='text-base font-medium'>

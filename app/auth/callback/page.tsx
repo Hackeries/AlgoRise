@@ -140,7 +140,7 @@ export default function AuthCallback() {
             const { data: prof } = await supabase
               .from('profiles')
               .select('status')
-              .eq('user_id', currentUserId)
+              .eq('id', currentUserId)
               .single();
 
             // If user has verified CF handle and profile status, they're an existing user

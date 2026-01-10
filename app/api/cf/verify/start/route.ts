@@ -1,14 +1,41 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { cfGetUserInfo } from '@/lib/codeforces-api'
+import { cfGetUserInfo, cfGetProblems } from '@/lib/codeforces-api'
 
 function generateVerificationCode(): string {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
   let code = ''
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 8; i++) {
     code += chars.charAt(Math.floor(Math.random() * chars.length))
   }
-  return `AR-${code}`
+  return `AR_${code}`
+}
+
+async function getRandomProblem(): Promise<{ contestId: number; index: string; name: string } | null> {
+  try {
+    const response = await cfGetProblems()
+    if (response.status !== 'OK' || !response.result?.problems) {
+      return null
+    }
+
+    const problems = response.result.problems.filter(
+      (p: any) => p.contestId && p.contestId >= 1 && p.contestId <= 2100 && p.index
+    )
+
+    if (problems.length === 0) return null
+
+    const randomIndex = Math.floor(Math.random() * Math.min(problems.length, 500))
+    const problem = problems[randomIndex]
+
+    return {
+      contestId: problem.contestId,
+      index: problem.index,
+      name: problem.name,
+    }
+  } catch (error) {
+    console.error('Failed to get random problem:', error)
+    return null
+  }
 }
 
 export async function POST(req: Request) {
@@ -69,7 +96,15 @@ export async function POST(req: Request) {
     }
 
     const token = generateVerificationCode()
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString()
+
+    const problem = await getRandomProblem()
+    if (!problem) {
+      return NextResponse.json(
+        { error: 'Failed to fetch a verification problem. Please try again.' },
+        { status: 500 }
+      )
+    }
 
     const { error: upsertErr } = await supabase.from('cf_handles').upsert(
       {
@@ -77,6 +112,7 @@ export async function POST(req: Request) {
         handle: normalizedHandle,
         verified: false,
         verification_token: token,
+        verification_problem_id: `${problem.contestId}${problem.index}`,
         expires_at: expiresAt,
       },
       { onConflict: 'user_id' }
@@ -90,11 +126,19 @@ export async function POST(req: Request) {
       )
     }
 
+    const problemUrl = `https://codeforces.com/problemset/problem/${problem.contestId}/${problem.index}`
+
     return NextResponse.json({
       handle: normalizedHandle,
       token,
       expiresAt,
-      instructions: `To verify ownership of your Codeforces account, add "${token}" to your Organization field on Codeforces. Go to codeforces.com/settings/social and paste the token in the "Organization" field, then save. Once done, click "Verify" to complete the process. You can remove the token after verification.`,
+      problem: {
+        contestId: problem.contestId,
+        index: problem.index,
+        name: problem.name,
+        url: problemUrl,
+      },
+      instructions: `To verify ownership of your Codeforces account, submit a solution containing "${token}" (which will cause a Compilation Error) to the problem "${problem.name}". After submitting, click "Check Verification" to complete the process.`,
     })
   } catch (e) {
     console.error('Verification start error:', e)

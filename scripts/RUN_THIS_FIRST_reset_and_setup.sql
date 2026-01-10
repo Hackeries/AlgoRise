@@ -194,6 +194,7 @@ CREATE TABLE public.cf_handles (
   handle text NOT NULL,
   verified boolean NOT NULL DEFAULT false,
   verification_token text,
+  verification_problem_id text,
   expires_at timestamptz,
   last_sync_at timestamptz,
   created_at timestamptz NOT NULL DEFAULT timezone('utc', now()),

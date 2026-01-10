@@ -23,6 +23,7 @@ import {
   Loader2,
   Shield,
   Check,
+  Code,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -33,16 +34,24 @@ interface CFVerificationV3Props {
 
 type VerificationState = 'initial' | 'pending' | 'verified';
 
+interface VerificationProblem {
+  contestId: number;
+  index: string;
+  name?: string;
+  url: string;
+}
+
 interface VerificationStatus {
   state: VerificationState;
   handle?: string;
   token?: string;
+  problem?: VerificationProblem;
   expiresAt?: string;
   rating?: number;
   maxRating?: number;
 }
 
-const AUTO_CHECK_INTERVAL = 10000;
+const AUTO_CHECK_INTERVAL = 15000;
 
 export function CFVerificationV3({
   onVerificationComplete,
@@ -51,12 +60,14 @@ export function CFVerificationV3({
   const [state, setState] = useState<VerificationState>('initial');
   const [handle, setHandle] = useState('');
   const [token, setToken] = useState('');
+  const [problem, setProblem] = useState<VerificationProblem | null>(null);
   const [expiresAt, setExpiresAt] = useState<Date | null>(null);
   const [verifiedHandle, setVerifiedHandle] = useState('');
   const [rating, setRating] = useState(0);
   const [maxRating, setMaxRating] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState('');
   const [copied, setCopied] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
   const [isStarting, setIsStarting] = useState(false);
@@ -90,20 +101,21 @@ export function CFVerificationV3({
         return;
       }
 
-      const status: VerificationStatus = data;
-
-      if (status.state === 'verified' && status.handle) {
+      if (data.verified && data.handle) {
         setState('verified');
-        setVerifiedHandle(status.handle);
-        setRating(status.rating || 0);
-        setMaxRating(status.maxRating || 0);
+        setVerifiedHandle(data.handle);
+        setRating(data.rating || 0);
+        setMaxRating(data.maxRating || 0);
         clearTimers();
-      } else if (status.state === 'pending' && status.token && status.handle) {
+      } else if (data.pendingToken && data.handle) {
         setState('pending');
-        setHandle(status.handle);
-        setToken(status.token);
-        if (status.expiresAt) {
-          setExpiresAt(new Date(status.expiresAt));
+        setHandle(data.handle);
+        setToken(data.pendingToken);
+        if (data.problem) {
+          setProblem(data.problem);
+        }
+        if (data.expiresAt) {
+          setExpiresAt(new Date(data.expiresAt));
         }
       } else {
         setState('initial');
@@ -180,6 +192,8 @@ export function CFVerificationV3({
         setMaxRating(data.maxRating || 0);
         clearTimers();
         onVerificationComplete?.(data.handle || handle, data.rating || 0);
+      } else if (data.message) {
+        setError(data.message);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Verification check failed');
@@ -225,6 +239,9 @@ export function CFVerificationV3({
       }
 
       setToken(data.token);
+      if (data.problem) {
+        setProblem(data.problem);
+      }
       if (data.expiresAt) {
         setExpiresAt(new Date(data.expiresAt));
       }
@@ -243,6 +260,17 @@ export function CFVerificationV3({
       setTimeout(() => setCopied(false), 2000);
     } catch {
       setError('Failed to copy token to clipboard');
+    }
+  };
+
+  const copySubmissionCode = async () => {
+    try {
+      const code = `// ${token}\n// Verification code for AlgoRise\n${token}`;
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2000);
+    } catch {
+      setError('Failed to copy code to clipboard');
     }
   };
 
@@ -299,6 +327,8 @@ export function CFVerificationV3({
               target="_blank"
               rel="noopener noreferrer"
               className="text-muted-foreground transition-colors hover:text-foreground"
+              title="View Codeforces Profile"
+              aria-label="View Codeforces Profile"
             >
               <ExternalLink className="h-4 w-4" />
             </a>
@@ -336,7 +366,55 @@ export function CFVerificationV3({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-3">
+          <Alert>
+            <Code className="h-4 w-4" />
+            <AlertDescription>
+              <div className="space-y-3">
+                <p className="font-medium">Submit a Compilation Error to verify:</p>
+                <ol className="list-inside list-decimal space-y-2 text-sm text-muted-foreground">
+                  <li>
+                    Go to{' '}
+                    <a
+                      href={problem?.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-blue-500 underline-offset-4 hover:underline"
+                    >
+                      Problem {problem?.contestId}{problem?.index}
+                    </a>
+                  </li>
+                  <li>Copy the code below and submit it (it will cause a CE)</li>
+                  <li>Click &quot;Check Verification&quot; after submitting</li>
+                </ol>
+              </div>
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Code to Submit</Label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 rounded-lg border border-border bg-muted/50 px-4 py-3">
+                <code className="font-mono text-sm text-foreground whitespace-pre">// {token}{'\n'}// Verification code for AlgoRise{'\n'}{token}</code>
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={copySubmissionCode}
+                className="shrink-0"
+              >
+                {copiedCode ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Submit this code to any language - it will give a Compilation Error
+            </p>
+          </div>
+
+          <div className="space-y-2">
             <Label className="text-sm font-medium">Verification Token</Label>
             <div className="flex items-center gap-2">
               <div className="flex-1 rounded-lg border border-border bg-muted/50 px-4 py-3">
@@ -357,30 +435,6 @@ export function CFVerificationV3({
             </div>
           </div>
 
-          <Alert>
-            <AlertDescription>
-              <div className="space-y-2">
-                <p className="font-medium">Follow these steps:</p>
-                <ol className="list-inside list-decimal space-y-1 text-sm text-muted-foreground">
-                  <li>Copy the verification token above</li>
-                  <li>
-                    Go to your{' '}
-                    <a
-                      href="https://codeforces.com/settings/social"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-medium text-blue-500 underline-offset-4 hover:underline"
-                    >
-                      Codeforces settings
-                    </a>
-                  </li>
-                  <li>Paste the token in the "Organization" field</li>
-                  <li>Save your settings and click "Check Verification" below</li>
-                </ol>
-              </div>
-            </AlertDescription>
-          </Alert>
-
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -388,11 +442,11 @@ export function CFVerificationV3({
               className="flex-1"
             >
               <a
-                href="https://codeforces.com/settings/social"
+                href={problem?.url}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Open CF Settings
+                Open Problem
                 <ExternalLink className="ml-2 h-4 w-4" />
               </a>
             </Button>
@@ -416,7 +470,7 @@ export function CFVerificationV3({
           </div>
 
           <p className="text-center text-xs text-muted-foreground">
-            Auto-checking every 10 seconds
+            Auto-checking every 15 seconds
           </p>
 
           {error && (
@@ -433,6 +487,7 @@ export function CFVerificationV3({
               clearTimers();
               setState('initial');
               setToken('');
+              setProblem(null);
               setExpiresAt(null);
               setError(null);
             }}
@@ -453,7 +508,7 @@ export function CFVerificationV3({
           Verify Codeforces Handle
         </CardTitle>
         <CardDescription>
-          Link your Codeforces account to unlock personalized features
+          Link your Codeforces account by submitting a verification code
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

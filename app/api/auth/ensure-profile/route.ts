@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
     const supabase = await createClient()
     const {
@@ -17,25 +17,34 @@ export async function POST(req: Request) {
       .from("profiles")
       .select("id")
       .eq("id", user.id)
-      .single()
+      .maybeSingle()
 
     if (existingProfile) {
       return NextResponse.json({ success: true, created: false })
     }
 
     const now = new Date().toISOString()
-    const { error: insertErr } = await supabase.from("profiles").insert({
-      id: user.id,
-      created_at: now,
-      updated_at: now,
-    })
+    const { error: insertErr } = await supabase.from("profiles").upsert(
+      {
+        id: user.id,
+        created_at: now,
+        updated_at: now,
+      },
+      { onConflict: "id", ignoreDuplicates: true }
+    )
 
     if (insertErr) {
+      console.error("Profile insert error:", insertErr)
+      if (insertErr.code === "23505") {
+        return NextResponse.json({ success: true, created: false })
+      }
       return NextResponse.json({ error: insertErr.message }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, created: true })
-  } catch (e: any) {
-    return NextResponse.json({ error: e?.message || "unknown error" }, { status: 500 })
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : "unknown error"
+    console.error("Ensure profile error:", message)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

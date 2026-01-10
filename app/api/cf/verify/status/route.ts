@@ -16,7 +16,7 @@ export async function GET() {
 
     const { data: cfHandle, error: selectErr } = await supabase
       .from('cf_handles')
-      .select('handle, verified, verification_token, expires_at')
+      .select('handle, verified, verification_token, verification_problem_id, expires_at')
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -47,10 +47,22 @@ export async function GET() {
     const isExpired =
       cfHandle.expires_at && new Date(cfHandle.expires_at) < new Date()
 
+    let problem = null
+    if (cfHandle.verification_problem_id && !isExpired) {
+      const contestId = cfHandle.verification_problem_id.match(/^(\d+)/)?.[1] || ''
+      const index = cfHandle.verification_problem_id.replace(/^\d+/, '') || ''
+      problem = {
+        contestId: parseInt(contestId, 10),
+        index,
+        url: `https://codeforces.com/problemset/problem/${contestId}/${index}`,
+      }
+    }
+
     return NextResponse.json({
       verified: false,
       handle: cfHandle.handle,
       pendingToken: isExpired ? null : cfHandle.verification_token,
+      problem: isExpired ? null : problem,
       tokenExpired: isExpired,
       expiresAt: cfHandle.expires_at,
     })

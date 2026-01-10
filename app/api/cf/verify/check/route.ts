@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { cfGetUserInfo, type CodeforcesUser } from '@/lib/codeforces-api'
+import { cfGetUserInfo, cfGetUserStatus, type CodeforcesUser } from '@/lib/codeforces-api'
 
 export async function POST() {
   try {
@@ -17,7 +17,7 @@ export async function POST() {
 
     const { data: pendingVerification, error: selectErr } = await supabase
       .from('cf_handles')
-      .select('handle, verification_token, verified, expires_at')
+      .select('handle, verification_token, verification_problem_id, verified, expires_at')
       .eq('user_id', user.id)
       .single()
 
@@ -53,8 +53,52 @@ export async function POST() {
       )
     }
 
-    const cfResponse = await cfGetUserInfo(pendingVerification.handle)
+    const statusResponse = await cfGetUserStatus(pendingVerification.handle, 1, 20)
 
+    if (statusResponse.status !== 'OK' || !statusResponse.result) {
+      return NextResponse.json(
+        { error: 'Failed to fetch Codeforces submissions. Please try again.' },
+        { status: 502 }
+      )
+    }
+
+    const submissions = statusResponse.result as any[]
+    const token = pendingVerification.verification_token.toUpperCase()
+    const problemId = pendingVerification.verification_problem_id
+
+    let foundCEWithToken = false
+    let foundSubmission: any = null
+
+    for (const submission of submissions) {
+      const submissionProblemId = `${submission.problem?.contestId || ''}${submission.problem?.index || ''}`
+
+      if (submissionProblemId === problemId && submission.verdict === 'COMPILATION_ERROR') {
+        foundCEWithToken = true
+        foundSubmission = submission
+        break
+      }
+    }
+
+    if (!foundCEWithToken) {
+      const cfResponse = await cfGetUserInfo(pendingVerification.handle)
+      if (cfResponse.status !== 'OK' || !cfResponse.result?.[0]) {
+        return NextResponse.json(
+          { error: 'Failed to fetch Codeforces user info. Please try again.' },
+          { status: 502 }
+        )
+      }
+
+      const contestId = problemId?.match(/^(\d+)/)?.[1] || ''
+      const index = problemId?.replace(/^\d+/, '') || ''
+
+      return NextResponse.json({
+        verified: false,
+        message: `Compilation Error submission not found for the specified problem. Make sure you submitted a solution containing "${pendingVerification.verification_token}" to problem ${contestId}${index} on Codeforces.`,
+        hint: 'Submit code like: ' + pendingVerification.verification_token,
+      })
+    }
+
+    const cfResponse = await cfGetUserInfo(pendingVerification.handle)
     if (cfResponse.status !== 'OK' || !cfResponse.result?.[0]) {
       return NextResponse.json(
         { error: 'Failed to fetch Codeforces user info. Please try again.' },
@@ -63,21 +107,13 @@ export async function POST() {
     }
 
     const cfUser = cfResponse.result[0] as CodeforcesUser
-    const organization = (cfUser.organization || '').toLowerCase()
-    const token = pendingVerification.verification_token.toLowerCase()
-
-    if (!organization.includes(token)) {
-      return NextResponse.json({
-        verified: false,
-        message: `Token not found in Organization field. Make sure you added "${pendingVerification.verification_token}" to your Codeforces Organization field at codeforces.com/settings/social and saved the changes.`,
-      })
-    }
 
     const { error: updateErr } = await supabase
       .from('cf_handles')
       .update({
         verified: true,
         verification_token: null,
+        verification_problem_id: null,
         expires_at: null,
         last_sync_at: new Date().toISOString(),
       })

@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, CheckCircle2, AlertCircle, Search, Plus } from 'lucide-react';
-import { CFVerificationCompilation } from '@/components/auth/cf-verification-compilation';
+import { CFVerificationV3 } from '@/components/auth/cf-verification';
 import {
   Command,
   CommandEmpty,
@@ -454,7 +454,7 @@ export default function ProfilePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <CFVerificationCompilation
+                <CFVerificationV3
                   onVerificationComplete={handleVerificationComplete}
                 />
               </CardContent>

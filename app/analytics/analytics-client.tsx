@@ -30,7 +30,7 @@ import {
   Users,
   LineChart,
 } from 'lucide-react';
-import CFVerificationTrigger from '@/components/auth/cf-verification-trigger';
+import { CFVerificationV3 } from '@/components/auth/cf-verification';
 import { useCFVerification } from '@/lib/context/cf-verification';
 import { useAuth } from '@/lib/auth/context';
 import Link from 'next/link';
@@ -501,7 +501,7 @@ function CFNotVerifiedState() {
               This quick verification ensures we can fetch your accurate stats
               and provide personalized recommendations.
             </p>
-            <CFVerificationTrigger showTitle={false} compact={true} />
+            <CFVerificationV3 />
           </CardContent>
         </Card>
 

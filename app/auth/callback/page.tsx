@@ -127,6 +127,13 @@ export default function AuthCallback() {
           throw new Error("Session verification failed. Please try signing in again.")
         }
 
+        // Ensure profile exists in database
+        try {
+          await fetch("/api/auth/ensure-profile", { method: "POST" })
+        } catch (ensureProfileError) {
+          console.error("Failed to ensure profile:", ensureProfileError)
+        }
+
         let redirectTarget = "/profile"
         try {
           const currentUserId = finalSession.session?.user?.id;

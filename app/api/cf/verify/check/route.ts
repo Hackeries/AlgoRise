@@ -1,98 +1,125 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { cfGetUserInfo } from '@/lib/codeforces-api';
-
-async function fetchCfUser(handle: string) {
-  const response = await cfGetUserInfo(handle);
-  if (
-    response.status !== 'OK' ||
-    !('result' in response) ||
-    !response.result?.[0]
-  ) {
-    throw new Error(
-      'comment' in response ? response.comment : 'CF API bad response'
-    );
-  }
-  return response.result[0] as {
-    handle: string;
-    organization?: string;
-    rating?: number;
-    maxRating?: number;
-  };
-}
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { cfGetUserInfo, type CodeforcesUser } from '@/lib/codeforces-api'
 
 export async function POST() {
   try {
-    const supabase = await createClient();
+    const supabase = await createClient()
+
     const {
       data: { user },
       error: userErr,
-    } = await supabase.auth.getUser();
+    } = await supabase.auth.getUser()
 
-    if (userErr || !user)
-      return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-
-    const { data: row, error: selErr } = await supabase
-      .from('cf_handles')
-      .select('handle, verification_token, verified')
-      .eq('user_id', user.id)
-      .single();
-
-    if (selErr || !row)
-      return NextResponse.json(
-        { error: 'no handle to verify' },
-        { status: 400 }
-      );
-
-    if (row.verified) return NextResponse.json({ verified: true });
-
-    const cf = await fetchCfUser(row.handle);
-    const org = (cf.organization || '').toString().toLowerCase();
-    const token = (row.verification_token || '').toLowerCase();
-    const matched = !!token && org.includes(token);
-
-    if (!matched) {
-      return NextResponse.json(
-        { verified: false, reason: 'token not found in organization' },
-        { status: 200 }
-      );
+    if (userErr || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { error: upErr } = await supabase
+    const { data: pendingVerification, error: selectErr } = await supabase
+      .from('cf_handles')
+      .select('handle, verification_token, verified, expires_at')
+      .eq('user_id', user.id)
+      .single()
+
+    if (selectErr || !pendingVerification) {
+      return NextResponse.json(
+        { error: 'No pending verification found. Please start verification first.' },
+        { status: 400 }
+      )
+    }
+
+    if (pendingVerification.verified) {
+      return NextResponse.json({
+        verified: true,
+        handle: pendingVerification.handle,
+        message: 'Handle is already verified',
+      })
+    }
+
+    if (!pendingVerification.verification_token) {
+      return NextResponse.json(
+        { error: 'No verification token found. Please start verification again.' },
+        { status: 400 }
+      )
+    }
+
+    if (
+      pendingVerification.expires_at &&
+      new Date(pendingVerification.expires_at) < new Date()
+    ) {
+      return NextResponse.json(
+        { verified: false, message: 'Verification token has expired. Please start verification again.' },
+        { status: 400 }
+      )
+    }
+
+    const cfResponse = await cfGetUserInfo(pendingVerification.handle)
+
+    if (cfResponse.status !== 'OK' || !cfResponse.result?.[0]) {
+      return NextResponse.json(
+        { error: 'Failed to fetch Codeforces user info. Please try again.' },
+        { status: 502 }
+      )
+    }
+
+    const cfUser = cfResponse.result[0] as CodeforcesUser
+    const organization = (cfUser.organization || '').toLowerCase()
+    const token = pendingVerification.verification_token.toLowerCase()
+
+    if (!organization.includes(token)) {
+      return NextResponse.json({
+        verified: false,
+        message: `Token not found in Organization field. Make sure you added "${pendingVerification.verification_token}" to your Codeforces Organization field at codeforces.com/settings/social and saved the changes.`,
+      })
+    }
+
+    const { error: updateErr } = await supabase
       .from('cf_handles')
       .update({
         verified: true,
         verification_token: null,
+        expires_at: null,
         last_sync_at: new Date().toISOString(),
       })
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
 
-    if (upErr)
-      return NextResponse.json({ error: upErr.message }, { status: 500 });
+    if (updateErr) {
+      console.error('Failed to update verification status:', updateErr)
+      return NextResponse.json(
+        { error: 'Failed to complete verification' },
+        { status: 500 }
+      )
+    }
 
-    // Insert snapshot
-    const { error: snapErr } = await supabase.from('cf_snapshots').insert({
+    const { error: snapshotErr } = await supabase.from('cf_snapshots').insert({
       user_id: user.id,
-      handle: cf.handle,
-      rating: cf.rating ?? null,
-      max_rating: cf.maxRating ?? null,
+      handle: cfUser.handle,
+      rating: cfUser.rating ?? null,
+      max_rating: cfUser.maxRating ?? null,
+      rank: cfUser.rank ?? null,
+      max_rank: cfUser.maxRank ?? null,
+      contribution: null,
+      friend_of_count: null,
+      solved_count: null,
       fetched_at: new Date().toISOString(),
-    });
+    })
 
-    if (snapErr) {
-      console.error('Snapshot insert error:', snapErr);
-      return NextResponse.json({ error: snapErr.message }, { status: 500 });
+    if (snapshotErr) {
+      console.error('Failed to insert snapshot:', snapshotErr)
     }
 
     return NextResponse.json({
       verified: true,
-      rating: cf.rating ?? null,
-      maxRating: cf.maxRating ?? null,
-    });
-  } catch (e: any) {
+      handle: cfUser.handle,
+      rating: cfUser.rating ?? null,
+      maxRating: cfUser.maxRating ?? null,
+      rank: cfUser.rank ?? null,
+    })
+  } catch (e) {
+    console.error('Verification check error:', e)
     return NextResponse.json(
-      { error: e?.message || 'unknown error' },
+      { error: e instanceof Error ? e.message : 'Unknown error' },
       { status: 500 }
-    );
+    )
   }
 }

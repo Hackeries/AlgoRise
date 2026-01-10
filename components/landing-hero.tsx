@@ -17,7 +17,7 @@ import {
   BarChart3,
   Loader2,
 } from 'lucide-react';
-import CFVerificationTrigger from '@/components/auth/cf-verification-trigger';
+import { CFVerificationV3 } from '@/components/auth/cf-verification';
 import Link from 'next/link';
 
 type UserStats = {
@@ -495,10 +495,8 @@ export default function LandingHero() {
                     </div>
 
                     <div className="mb-5">
-                      <CFVerificationTrigger
-                        compact
-                        showTitle={false}
-                        onVerificationComplete={onVerified}
+                      <CFVerificationV3
+                        onVerificationComplete={(handle, rating) => onVerified({ handle })}
                       />
                     </div>
 

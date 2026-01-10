@@ -8,9 +8,20 @@ import { useAuth } from '@/lib/auth/context'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AuthConfigurationAlert } from '@/components/auth/auth-configuration-alert'
-import { Mail, Lock, Eye, EyeOff, Github, Loader2, ArrowRight, Code2 } from 'lucide-react'
+import {
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Github,
+  Loader2,
+  ArrowRight,
+  Code2,
+  CheckCircle2,
+  AlertCircle,
+} from 'lucide-react'
 
 const GoogleIcon = () => (
   <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -33,11 +44,18 @@ const GoogleIcon = () => (
   </svg>
 )
 
+const features = [
+  'AI-powered problem recommendations',
+  'Real-time progress analytics',
+  'Compete in private contests',
+  'Sync with Codeforces profile',
+]
+
 export default function LoginPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { refreshUser } = useAuth()
-  
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -51,7 +69,7 @@ export default function LoginPage() {
   useEffect(() => {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    
+
     if (
       !supabaseUrl ||
       !supabaseAnonKey ||
@@ -65,16 +83,16 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email || !password) return
-    
+
     setIsLoading(true)
     setError(null)
-    
+
     try {
       const supabase = createClient()
       const { error } = await supabase.auth.signInWithPassword({ email, password })
-      
+
       if (error) throw error
-      
+
       await refreshUser()
       router.push(redirectTo)
     } catch (err) {
@@ -85,13 +103,15 @@ export default function LoginPage() {
   }
 
   const handleOAuth = async (provider: 'google' | 'github') => {
+    if (oauthLoading) return
+
     setOAuthLoading(provider)
     setError(null)
-    
+
     try {
       const supabase = createClient()
       const origin = window.location.origin
-      
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
@@ -99,10 +119,13 @@ export default function LoginPage() {
           queryParams: { prompt: 'select_account' },
         },
       })
-      
-      if (error) throw error
+
+      if (error) {
+        throw error
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'OAuth login failed')
+      const message = err instanceof Error ? err.message : 'OAuth login failed'
+      setError(`Failed to sign in with ${provider === 'google' ? 'Google' : 'GitHub'}: ${message}`)
       setOAuthLoading(null)
     }
   }
@@ -121,57 +144,82 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex bg-background">
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary/5 items-center justify-center p-12">
-        <div className="max-w-md">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="p-3 rounded-xl bg-primary">
-              <Code2 className="h-8 w-8 text-primary-foreground" />
-            </div>
-            <span className="text-3xl font-bold">AlgoRise</span>
-          </div>
-          <h1 className="text-4xl font-bold tracking-tight mb-4">
-            Level up your competitive programming
-          </h1>
-          <p className="text-lg text-muted-foreground mb-8">
-            Practice smarter with personalized problem recommendations, track your progress, and compete with friends.
-          </p>
-          <div className="space-y-4">
-            {[
-              'AI-powered problem recommendations',
-              'Real-time progress analytics',
-              'Compete in private contests',
-              'Sync with Codeforces profile',
-            ].map((feature, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-primary" />
-                <span className="text-muted-foreground">{feature}</span>
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        {/* Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-primary/70" />
+
+        {/* Geometric Pattern Overlay */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 left-20 w-64 h-64 border border-white/20 rounded-full" />
+          <div className="absolute top-40 left-40 w-96 h-96 border border-white/10 rounded-full" />
+          <div className="absolute -bottom-20 -right-20 w-80 h-80 border border-white/15 rounded-full" />
+          <div className="absolute bottom-40 right-20 w-48 h-48 border border-white/20 rounded-full" />
+          <div className="absolute top-1/2 left-1/4 w-32 h-32 bg-white/5 rounded-2xl rotate-45" />
+          <div className="absolute bottom-1/4 right-1/3 w-24 h-24 bg-white/5 rounded-xl rotate-12" />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 flex items-center justify-center w-full p-12">
+          <div className="max-w-md">
+            {/* Logo */}
+            <div className="flex items-center gap-3 mb-12">
+              <div className="p-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg">
+                <Code2 className="h-8 w-8 text-white" />
               </div>
-            ))}
+              <span className="text-3xl font-bold text-white">AlgoRise</span>
+            </div>
+
+            {/* Tagline */}
+            <h1 className="text-4xl font-bold tracking-tight text-white mb-4">
+              Master Competitive Programming
+            </h1>
+            <p className="text-lg text-white/80 mb-10 leading-relaxed">
+              Practice smarter with personalized problem recommendations, track your progress, and
+              compete with friends.
+            </p>
+
+            {/* Feature Highlights */}
+            <div className="space-y-4">
+              {features.map((feature, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-3 text-white/90 group"
+                >
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                    <CheckCircle2 className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="text-base">{feature}</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Right Panel - Login Form */}
       <div className="flex-1 flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-sm">
+        <div className="w-full max-w-md">
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
-            <div className="p-2 rounded-lg bg-primary">
-              <Code2 className="h-6 w-6 text-primary-foreground" />
+          <div className="lg:hidden flex items-center gap-3 mb-10 justify-center">
+            <div className="p-2.5 rounded-xl bg-primary shadow-lg">
+              <Code2 className="h-7 w-7 text-primary-foreground" />
             </div>
             <span className="text-2xl font-bold">AlgoRise</span>
           </div>
 
+          {/* Header */}
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold">Welcome back</h2>
-            <p className="text-muted-foreground mt-1">Sign in to your account</p>
+            <h2 className="text-3xl font-bold tracking-tight">Welcome back</h2>
+            <p className="text-muted-foreground mt-2 text-base">
+              Sign in to continue your journey
+            </p>
           </div>
 
           {/* OAuth Buttons */}
-          <div className="space-y-3 mb-6">
+          <div className="space-y-3 mb-8">
             <Button
               variant="outline"
-              className="w-full h-11 gap-3 font-medium"
+              className="w-full h-12 gap-3 font-medium text-base border-2 hover:bg-accent/50 hover:border-accent transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               onClick={() => handleOAuth('google')}
               disabled={!!oauthLoading}
             >
@@ -180,12 +228,12 @@ export default function LoginPage() {
               ) : (
                 <GoogleIcon />
               )}
-              Continue with Google
+              <span>Continue with Google</span>
             </Button>
-            
+
             <Button
               variant="outline"
-              className="w-full h-11 gap-3 font-medium"
+              className="w-full h-12 gap-3 font-medium text-base border-2 hover:bg-accent/50 hover:border-accent transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               onClick={() => handleOAuth('github')}
               disabled={!!oauthLoading}
             >
@@ -194,87 +242,111 @@ export default function LoginPage() {
               ) : (
                 <Github className="h-5 w-5" />
               )}
-              Continue with GitHub
+              <span>Continue with GitHub</span>
             </Button>
           </div>
 
-          <div className="relative mb-6">
-            <Separator />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-3 text-xs text-muted-foreground">
-              or continue with email
-            </span>
+          {/* Divider */}
+          <div className="relative mb-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-background px-4 text-sm text-muted-foreground">
+                or continue with email
+              </span>
+            </div>
           </div>
 
+          {/* Error Alert */}
+          {error && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           {/* Email Form */}
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-sm font-medium">
+                Email address
+              </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-11"
+                  className="pl-10 h-12 text-base border-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:border-primary transition-all duration-200"
                   autoComplete="email"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password" className="text-sm font-medium">
+                  Password
+                </Label>
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 h-11"
+                  className="pl-10 pr-12 h-12 text-base border-2 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-0 focus-visible:border-primary transition-all duration-200"
                   autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-accent focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
 
-            {error && (
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                <p className="text-sm text-destructive">{error}</p>
-              </div>
-            )}
-
             <Button
               type="submit"
-              className="w-full h-11 gap-2"
+              className="w-full h-12 gap-2 font-medium text-base shadow-lg hover:shadow-xl transition-all duration-200 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               disabled={isLoading || !email || !password}
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Signing in...
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Signing in...</span>
                 </>
               ) : (
                 <>
-                  Sign in
+                  <span>Sign in</span>
                   <ArrowRight className="h-4 w-4" />
                 </>
               )}
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            Don't have an account?{' '}
-            <Link href="/auth/sign-up" className="text-primary hover:underline font-medium">
-              Sign up
+          {/* Sign Up Link */}
+          <p className="text-center text-base text-muted-foreground mt-8">
+            Don&apos;t have an account?{' '}
+            <Link
+              href="/auth/sign-up"
+              className="text-primary font-semibold hover:text-primary/80 hover:underline transition-colors"
+            >
+              Sign up for free
             </Link>
           </p>
         </div>

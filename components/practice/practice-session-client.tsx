@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useCFVerification } from "@/lib/context/cf-verification"
-import CFVerificationTrigger from "@/components/auth/cf-verification-trigger"
+import { CFVerificationV3 } from "@/components/auth/cf-verification"
 import { PracticeSessionSetup } from "./practice-session-setup"
 import { PracticeSessionActive } from "./practice-session-active"
 import { PracticeSessionResults } from "./practice-session-results"
@@ -68,7 +68,7 @@ export function PracticeSessionClient() {
               transition={{ duration: 0.4 }}
               className="max-w-2xl mx-auto mt-12"
             >
-              <CFVerificationTrigger />
+              <CFVerificationV3 />
             </motion.div>
           ) : sessionState === "setup" ? (
             <motion.div

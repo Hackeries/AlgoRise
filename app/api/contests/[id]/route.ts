@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server"
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -37,16 +37,47 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const { id } = await params
   const contestId = id
 
-  // ✅ FIX: Await here too
   const supabase = await createClient()
 
-  const { data: rawContest, error } = await supabase.from("contests").select("*").eq("id", contestId).single()
+  // Check if user is authenticated
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // Try fetching with regular client first
+  let { data: rawContest, error } = await supabase.from("contests").select("*").eq("id", contestId).single()
+
+  // If failed and user is not authenticated, try with service role for public contests
+  if ((error || !rawContest) && !user) {
+    const serviceClient = await createServiceRoleClient()
+    if (serviceClient) {
+      const { data: serviceContest, error: serviceError } = await serviceClient
+        .from("contests")
+        .select("*")
+        .eq("id", contestId)
+        .eq("visibility", "public")
+        .single()
+
+      if (!serviceError && serviceContest) {
+        rawContest = serviceContest
+        error = null
+      }
+    }
+  }
 
   if (error || !rawContest) {
     return NextResponse.json({ error: "Contest not found" }, { status: 404 })
   }
 
-  const { data: problemRows } = await supabase
+  // For unauthenticated users, only allow public contests
+  if (!user && rawContest.visibility !== "public") {
+    return NextResponse.json({ error: "Contest not found" }, { status: 404 })
+  }
+
+  // Use service role client for fetching problems if user is not authenticated
+  const queryClient = user ? supabase : (await createServiceRoleClient()) || supabase
+
+  const { data: problemRows } = await queryClient
     .from("contest_problems")
     .select("problem_id, title, contest_id_cf, index_cf, rating")
     .eq("contest_id", contestId)
@@ -63,7 +94,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
   const timeRemaining = status === "live" ? Math.max(0, (endsAt ?? now) - now) : Math.max(0, (startsAt ?? now) - now)
 
-  // ✅ Explicit typing for 'p'
   const problems = (problemRows || []).map((p: any) => ({
     id: p.problem_id ?? "",
     contestId: p.contest_id_cf ?? 0,
@@ -72,10 +102,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     rating: p.rating ?? 0,
   }))
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+  // Only fetch submissions for authenticated users
   const mySubmissions: Record<string, "solved" | "failed"> = {}
   if (user) {
     const { data: myRows } = await supabase
@@ -84,7 +111,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       .eq("contest_id", contestId)
       .eq("user_id", user.id)
 
-    // Prefer 'solved' if any solved exists; otherwise 'failed' if any failed exists.
     const latestMap = new Map<string, { status: "solved" | "failed"; created_at: string }>()
     for (const r of myRows || []) {
       const prev = latestMap.get(r.problem_id)
@@ -95,7 +121,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     latestMap.forEach((v, k) => (mySubmissions[k] = v.status))
   }
 
-  return NextResponse.json({
+  const response: any = {
     contest: {
       id: rawContest.id,
       name: rawContest.name,
@@ -114,7 +140,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       visibility: rawContest.visibility,
       host_user_id: rawContest.host_user_id,
       allow_late_join: rawContest.allow_late_join ?? true,
-      my_submissions: mySubmissions,
     },
-  })
+  }
+
+  // Only include my_submissions for authenticated users
+  if (user) {
+    response.contest.my_submissions = mySubmissions
+  }
+
+  return NextResponse.json(response)
 }

@@ -43,7 +43,6 @@ export async function updateSession(request: NextRequest) {
     '/',
     '/login',
     '/auth',
-    '/cf-verification-success',
     '/settings',
     '/visualizers',
     '/groups',

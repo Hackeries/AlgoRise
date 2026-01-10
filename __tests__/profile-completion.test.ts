@@ -6,7 +6,7 @@ import {
   getNextSuggestion,
   hasMinimumProfile,
   getProfileTier,
-} from '../lib/profile/completion';
+} from '@/lib/profile/completion';
 
 // Simple test function
 function runTest(name: string, testFn: () => void) {

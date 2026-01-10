@@ -32,7 +32,7 @@ const nextConfig = {
       ...(config.resolve.alias || {}),
       'react-toastify': path.resolve(
         process.cwd(),
-        'lib/shims/react-toastify.ts'
+        'src/lib/shims/react-toastify.ts'
       ),
     };
     return config;

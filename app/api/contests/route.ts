@@ -184,6 +184,7 @@ export async function POST(req: Request) {
     }
 
     // auto generate contest problems from codeforces by rating range
+    let problemsGenerated = 0;
     try {
       const minR = Number(contestInsert.rating_min) || 800;
       const maxR = Number(contestInsert.rating_max) || 1600;
@@ -228,11 +229,20 @@ export async function POST(req: Request) {
             rating: p.rating ?? null,
           }));
 
-          await supabase.from('contest_problems').insert(rows)
+          const { error: insertError } = await supabase.from('contest_problems').insert(rows);
+          if (insertError) {
+            console.error('Error inserting contest problems:', insertError);
+          } else {
+            problemsGenerated = rows.length;
+          }
+        } else {
+          console.warn(`No problems found in rating range ${minR}-${maxR}`);
         }
+      } else {
+        console.error('Failed to fetch problems from Codeforces API:', problemsResp);
       }
-    } catch {
-      // problem generation failed silently - contest still created
+    } catch (err) {
+      console.error('Error generating contest problems:', err);
     }
 
     return NextResponse.json({
@@ -241,6 +251,7 @@ export async function POST(req: Request) {
         id: contest.id,
         name: contest.name,
         status: contest.status,
+        problemsGenerated,
       },
     });
   } catch {

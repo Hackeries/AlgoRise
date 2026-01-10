@@ -69,10 +69,10 @@ interface PendingChallenge {
 }
 
 const BOT_DIFFICULTIES: { value: BotDifficulty; label: string; rating: string; description: string }[] = [
-  { value: 'beginner', label: 'Beginner', rating: '800-1000', description: 'New to competitive programming' },
-  { value: 'intermediate', label: 'Intermediate', rating: '1200-1400', description: 'Comfortable with basics' },
-  { value: 'advanced', label: 'Advanced', rating: '1600-1800', description: 'Strong problem solver' },
-  { value: 'expert', label: 'Expert', rating: '2000+', description: 'Master level opponent' },
+  { value: 'beginner', label: 'Beginner', rating: '800-1200', description: 'New to competitive programming' },
+  { value: 'intermediate', label: 'Intermediate', rating: '1200-1600', description: 'Comfortable with basics' },
+  { value: 'advanced', label: 'Advanced', rating: '1600-2400', description: 'Strong problem solver' },
+  { value: 'expert', label: 'Expert', rating: '2400-4000', description: 'Master level opponent' },
 ]
 
 const TIER_COLORS: Record<string, string> = {
@@ -139,8 +139,8 @@ export default function ArenaPage() {
       } else {
         // Default stats for new users
         setStats({
-          elo: 1200,
-          tier: 'gold',
+          elo: 800,
+          tier: 'bronze',
           matchesPlayed: 0,
           winRate: 0,
           currentStreak: 0,
@@ -149,8 +149,8 @@ export default function ArenaPage() {
     } catch (err) {
       console.error('Failed to fetch arena stats:', err)
       setStats({
-        elo: 1200,
-        tier: 'gold',
+        elo: 800,
+        tier: 'bronze',
         matchesPlayed: 0,
         winRate: 0,
         currentStreak: 0,

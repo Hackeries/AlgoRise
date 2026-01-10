@@ -2,6 +2,31 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { nanoid } from 'nanoid'
 
+async function ensureArenaRating(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const { data: existing } = await supabase
+    .from('arena_ratings')
+    .select('user_id')
+    .eq('user_id', userId)
+    .single()
+
+  if (!existing) {
+    await supabase.from('arena_ratings').insert({
+      user_id: userId,
+      elo_1v1: 800,
+      elo_3v3: 800,
+      tier_1v1: 'bronze',
+      tier_3v3: 'bronze',
+      matches_played_1v1: 0,
+      matches_played_3v3: 0,
+      matches_won_1v1: 0,
+      matches_won_3v3: 0,
+      current_win_streak: 0,
+      best_win_streak: 0,
+      titles: [],
+    }).select().single()
+  }
+}
+
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -16,6 +41,9 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Ensure the joining user has arena rating record
+    await ensureArenaRating(supabase, user.id)
+
     // Get challenge
     const { data: challenge, error: challengeError } = await supabase
       .from('arena_challenges')
@@ -27,8 +55,8 @@ export async function POST(
     if (challengeError || !challenge) {
       const matchId = nanoid(12)
       
-      // Create a demo match
-      await supabase.from('arena_matches').insert({
+      // Create a demo match - ignore errors if table doesn't exist
+      const { error: matchInsertError } = await supabase.from('arena_matches').insert({
         id: matchId,
         match_type: '1v1',
         mode: 'friendly',
@@ -38,6 +66,10 @@ export async function POST(
         problem_ids: ['demo_problem_1', 'demo_problem_2', 'demo_problem_3'],
         fog_of_progress: true,
       })
+
+      if (matchInsertError) {
+        console.error('Match insert error:', matchInsertError)
+      }
 
       return NextResponse.json({
         success: true,
@@ -61,6 +93,9 @@ export async function POST(
       return NextResponse.json({ error: 'Cannot join your own challenge' }, { status: 400 })
     }
 
+    // Ensure both players have arena ratings
+    await ensureArenaRating(supabase, challenge.creator_id)
+
     // Get player ratings for problem selection
     const { data: creatorRating } = await supabase
       .from('arena_ratings')
@@ -75,7 +110,7 @@ export async function POST(
       .single()
 
     const avgElo = Math.round(
-      ((creatorRating?.elo_1v1 ?? 1200) + (joinerRating?.elo_1v1 ?? 1200)) / 2
+      ((creatorRating?.elo_1v1 ?? 800) + (joinerRating?.elo_1v1 ?? 800)) / 2
     )
 
     // Select problems

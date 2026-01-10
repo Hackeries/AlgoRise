@@ -15,6 +15,7 @@ export async function GET() {
     .select(
       'role, groups(id, name, type, college_id, created_at, description, max_members)'
     )
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
   if (error)

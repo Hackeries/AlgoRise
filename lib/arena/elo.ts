@@ -56,14 +56,14 @@ export function calculateNewElo(params: EloCalculation): EloResult {
 }
 
 /**
- * Get tier based on ELO rating
+ * Get tier based on ELO rating (range 800-4000)
  */
 export function getTierFromElo(elo: number): ArenaTier {
-  if (elo < 1000) return 'bronze';
-  if (elo < 1200) return 'silver';
-  if (elo < 1400) return 'gold';
-  if (elo < 1600) return 'platinum';
-  if (elo < 1800) return 'diamond';
+  if (elo < 1200) return 'bronze';
+  if (elo < 1600) return 'silver';
+  if (elo < 2000) return 'gold';
+  if (elo < 2400) return 'platinum';
+  if (elo < 3000) return 'diamond';
   return 'master';
 }
 

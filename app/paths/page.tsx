@@ -648,6 +648,7 @@ export default function LearningPathsPage() {
   const [sectionProgress, setSectionProgress] = useState<Record<string, number>>({});
   const [subsectionProgress, setSubsectionProgress] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [currentStreak, setCurrentStreak] = useState(0);
 
   const totalProblems = useMemo(
     () =>
@@ -662,7 +663,20 @@ export default function LearningPathsPage() {
 
   useEffect(() => {
     loadAllProgress();
+    loadStreak();
   }, []);
+
+  const loadStreak = async () => {
+    try {
+      const res = await fetch('/api/streaks');
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentStreak(data?.currentStreak || 0);
+      }
+    } catch (error) {
+      console.error('Error loading streak:', error);
+    }
+  };
 
   const loadAllProgress = async () => {
     try {

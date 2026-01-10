@@ -242,12 +242,12 @@ export interface EloResult {
 // Constants
 // ============================================================================
 export const TIER_THRESHOLDS: Record<ArenaTier, { min: number; max: number }> = {
-  bronze: { min: 0, max: 999 },
-  silver: { min: 1000, max: 1199 },
-  gold: { min: 1200, max: 1399 },
-  platinum: { min: 1400, max: 1599 },
-  diamond: { min: 1600, max: 1799 },
-  master: { min: 1800, max: 9999 },
+  bronze: { min: 800, max: 1199 },
+  silver: { min: 1200, max: 1599 },
+  gold: { min: 1600, max: 1999 },
+  platinum: { min: 2000, max: 2399 },
+  diamond: { min: 2400, max: 2999 },
+  master: { min: 3000, max: 4000 },
 };
 
 export const TIER_COLORS: Record<ArenaTier, string> = {

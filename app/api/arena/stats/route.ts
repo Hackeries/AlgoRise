@@ -29,8 +29,8 @@ export async function GET() {
     }
 
     const stats = {
-      elo: rating?.elo_1v1 ?? 1200,
-      tier: rating?.tier_1v1 ?? 'gold',
+      elo: rating?.elo_1v1 ?? 800,
+      tier: rating?.tier_1v1 ?? 'bronze',
       matchesPlayed: rating?.matches_played_1v1 ?? 0,
       winRate: rating?.matches_played_1v1 
         ? Math.round((rating.matches_won_1v1 / rating.matches_played_1v1) * 100) 
@@ -43,8 +43,8 @@ export async function GET() {
     console.error('Arena stats error:', error)
     // Return default stats on error
     return NextResponse.json({
-      elo: 1200,
-      tier: 'gold',
+      elo: 800,
+      tier: 'bronze',
       matchesPlayed: 0,
       winRate: 0,
       currentStreak: 0,

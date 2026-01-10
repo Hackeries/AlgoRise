@@ -28,12 +28,12 @@ export async function POST(req: Request) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('college_id')
-      .eq('user_id', user.id)
-      .single();
+      .eq('id', user.id)
+      .maybeSingle();
 
     if (!profile?.college_id) {
       return NextResponse.json(
-        { error: 'You must set your college before creating an ICPC team' },
+        { error: 'You must set your college in your profile before creating an ICPC team. Go to Profile and complete your profile setup first.' },
         { status: 400 }
       );
     }

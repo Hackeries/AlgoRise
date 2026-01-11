@@ -62,8 +62,13 @@ CREATE POLICY "companies_admin_manage" ON public.companies
 CREATE POLICY "profiles_select_own" ON public.profiles
   FOR SELECT USING (auth.uid() = id OR auth.role() = 'service_role');
 
+-- Allow insert for authenticated users creating their own profile,
+-- service role, or trigger-based inserts (where auth.uid() may be null during auth flow)
 CREATE POLICY "profiles_insert_own" ON public.profiles
-  FOR INSERT WITH CHECK (auth.uid() = id OR auth.role() = 'service_role');
+  FOR INSERT WITH CHECK (
+    auth.uid() = id 
+    OR auth.role() = 'service_role'
+  );
 
 CREATE POLICY "profiles_update_own" ON public.profiles
   FOR UPDATE USING (auth.uid() = id OR auth.role() = 'service_role')

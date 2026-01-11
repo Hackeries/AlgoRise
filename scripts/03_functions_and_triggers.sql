@@ -48,29 +48,19 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
-DECLARE
-    profile_exists boolean;
 BEGIN
-    -- Check if profile already exists (shouldn't happen, but be safe)
-    SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = NEW.id) INTO profile_exists;
-    
-    IF NOT profile_exists THEN
-        -- Insert new profile with minimal required fields
-        INSERT INTO public.profiles (id, created_at, updated_at)
-        VALUES (NEW.id, NOW(), NOW());
-    END IF;
+    -- Simple insert with ON CONFLICT - no SELECT needed
+    -- This avoids any RLS issues with checking existence
+    INSERT INTO public.profiles (id, created_at, updated_at)
+    VALUES (NEW.id, NOW(), NOW())
+    ON CONFLICT (id) DO NOTHING;
     
     RETURN NEW;
-EXCEPTION 
-    WHEN unique_violation THEN
-        -- Profile already exists, that's fine
-        RETURN NEW;
-    WHEN OTHERS THEN
-        -- Log error but DON'T fail - user creation must succeed
-        -- The ensure-profile API endpoint will create the profile later if needed
-        RAISE WARNING 'handle_new_user: Could not create profile for user %: % (SQLSTATE: %)', 
-            NEW.id, SQLERRM, SQLSTATE;
-        RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+    -- NEVER fail - just log and continue
+    -- The ensure-profile API will handle profile creation if this fails
+    RAISE LOG 'handle_new_user warning for %: %', NEW.id, SQLERRM;
+    RETURN NEW;
 END;
 $$;
 
@@ -83,8 +73,11 @@ CREATE TRIGGER on_auth_user_created
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_new_user();
 
--- Grant execute permissions
+-- Grant execute permissions to all roles that might need it
 GRANT EXECUTE ON FUNCTION public.handle_new_user() TO service_role;
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO postgres;
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO anon;
 
 -- ======================== UPDATE USER PROFILE STATS ========================
 CREATE OR REPLACE FUNCTION public.update_user_stats(p_user_id uuid)

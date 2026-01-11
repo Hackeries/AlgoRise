@@ -110,6 +110,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     codeforces_handle text,
     leetcode_handle text,
     codechef_handle text,
+    atcoder_handle text,
+    gfg_handle text,
     subscription_plan text NOT NULL DEFAULT 'free',
     subscription_status text NOT NULL DEFAULT 'active',
     subscription_start timestamptz,

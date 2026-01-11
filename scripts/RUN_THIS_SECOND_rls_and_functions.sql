@@ -481,12 +481,17 @@ RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
+SET role = 'service_role'
 AS $$
 BEGIN
   INSERT INTO public.profiles (id, created_at, updated_at)
   VALUES (NEW.id, NOW(), NOW())
   ON CONFLICT (id) DO NOTHING;
   
+  RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  -- Log but don't fail user creation - profile can be created later
+  RAISE WARNING 'handle_new_user failed for user %: %', NEW.id, SQLERRM;
   RETURN NEW;
 END;
 $$;
@@ -499,6 +504,8 @@ CREATE TRIGGER on_auth_user_created
   EXECUTE FUNCTION public.handle_new_user();
 
 GRANT EXECUTE ON FUNCTION public.handle_new_user() TO service_role;
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO authenticated;
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO anon;
 
 -- ======================== SUCCESS MESSAGE ========================
 DO $$

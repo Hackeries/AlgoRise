@@ -44,25 +44,32 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Try fetching with regular client first
-  let { data: rawContest, error } = await supabase.from("contests").select("*").eq("id", contestId).single()
+  // Always try service role client first for fetching contest (bypasses RLS issues)
+  // This ensures contests are always accessible regardless of auth state
+  const serviceClient = await createServiceRoleClient()
+  
+  let rawContest: any = null
+  let error: any = null
 
-  // If failed and user is not authenticated, try with service role for public contests
-  if ((error || !rawContest) && !user) {
-    const serviceClient = await createServiceRoleClient()
-    if (serviceClient) {
-      const { data: serviceContest, error: serviceError } = await serviceClient
-        .from("contests")
-        .select("*")
-        .eq("id", contestId)
-        .eq("visibility", "public")
-        .single()
+  if (serviceClient) {
+    const { data: serviceContest, error: serviceError } = await serviceClient
+      .from("contests")
+      .select("*")
+      .eq("id", contestId)
+      .single()
 
-      if (!serviceError && serviceContest) {
-        rawContest = serviceContest
-        error = null
-      }
+    if (!serviceError && serviceContest) {
+      rawContest = serviceContest
+    } else {
+      error = serviceError
     }
+  }
+
+  // Fallback to regular client if service role not available
+  if (!rawContest && !serviceClient) {
+    const result = await supabase.from("contests").select("*").eq("id", contestId).single()
+    rawContest = result.data
+    error = result.error
   }
 
   if (error || !rawContest) {

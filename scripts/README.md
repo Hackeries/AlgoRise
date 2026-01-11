@@ -1,65 +1,125 @@
 # AlgoRise Database Scripts
 
-## 🚀 Quick Setup (Run in Order)
+Production-ready SQL scripts for setting up the AlgoRise database in Supabase.
 
-Run these scripts **in order** in your Supabase SQL Editor:
+## 📋 Scripts Overview
 
-| Order | File | What it does |
-|-------|------|--------------|
-| **1** | `RUN_THIS_FIRST_reset_and_setup.sql` | Creates all tables with proper schema |
-| **2** | `RUN_THIS_SECOND_rls_and_functions.sql` | Sets up RLS policies, functions & triggers |
-| **3** | `RUN_THIS_THIRD_seed_and_indexes.sql` | Adds seed data & performance indexes |
+| Order | File | Description |
+|-------|------|-------------|
+| 1 | `01_schema.sql` | Creates all tables, types, indexes, and triggers |
+| 2 | `02_rls_policies.sql` | Enables RLS and creates security policies |
+| 3 | `03_functions_and_triggers.sql` | Creates database functions and auth triggers |
+| 4 | `04_seed_data.sql` | Adds initial data (optional) |
 
-⚠️ **WARNING**: The first script will DELETE ALL EXISTING DATA. Only run on fresh databases.
+## 🚀 Quick Setup
 
----
+### For a Fresh Database
 
-## 📁 Files
+Run these scripts **in order** in the Supabase SQL Editor:
 
-| File | Purpose |
-|------|---------|
-| `RUN_THIS_FIRST_reset_and_setup.sql` | Drops existing tables, creates all 32 tables |
-| `RUN_THIS_SECOND_rls_and_functions.sql` | Row Level Security policies + helper functions + auth triggers |
-| `RUN_THIS_THIRD_seed_and_indexes.sql` | Learning paths, sample problems, performance indexes |
-| `005_sync_legacy_schema.sql` | **Optional**: Update existing tables without data loss |
-| `FIX_contests_rls_recursion.sql` | **Optional**: Fix contest RLS recursion issues |
-
----
-
-## 🔄 Updating Without Data Loss
-
-If you already have data and just need to add missing columns:
-```sql
--- Run only this file:
-005_sync_legacy_schema.sql
+```bash
+1. 01_schema.sql
+2. 02_rls_policies.sql  
+3. 03_functions_and_triggers.sql
+4. 04_seed_data.sql (optional)
 ```
 
----
+### For an Existing Database with Auth Issues
 
-## 📊 Tables Created
+If you're getting "Database error saving new user" during sign-up, run this in SQL Editor:
 
-- **Core**: profiles, streaks, colleges, companies
-- **Competitive**: cf_handles, cf_snapshots  
-- **Problems**: problems, problem_hints, problem_history, user_problems
-- **Learning**: learning_paths, problem_attempts, user_topic_mastery, etc.
-- **Social**: groups, group_memberships, group_invitations, group_challenges
-- **Contests**: contests, contest_participants, contest_problems, contest_submissions, contest_results
-- **Commerce**: subscriptions, purchases, payment_events
+```sql
+-- Fix the auth trigger
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+    INSERT INTO public.profiles (id, created_at, updated_at)
+    VALUES (NEW.id, NOW(), NOW())
+    ON CONFLICT (id) DO NOTHING;
+    RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+    RAISE WARNING 'handle_new_user failed: %', SQLERRM;
+    RETURN NEW;
+END;
+$$;
 
----
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
-## 🔐 Auth Triggers
+GRANT EXECUTE ON FUNCTION public.handle_new_user() TO service_role;
+```
 
-The `RUN_THIS_SECOND_rls_and_functions.sql` includes:
-- `handle_new_user()` function - Auto-creates profile when user signs up via OAuth
-- `on_auth_user_created` trigger - Fires on new user creation
+## ⚠️ Important Notes
 
----
+### Auth Trigger
 
-## ✅ Features Included
+The `handle_new_user()` function is **critical** for OAuth sign-up to work:
 
-- CF verification via Compilation Error submission
-- Auto profile creation on OAuth signup
-- Contest RLS with proper access control
-- Spaced repetition for problem reviews
-- Adaptive learning system
+- It runs automatically when a user signs up via Google/GitHub OAuth
+- If it fails, the entire sign-up fails with "Database error saving new user"
+- The function uses `SECURITY DEFINER` to bypass RLS
+- It **never throws errors** - it catches exceptions and returns NEW anyway
+- If the trigger fails silently, the API endpoint `/api/auth/ensure-profile` will create the profile
+
+### Row Level Security (RLS)
+
+All tables have RLS enabled. Key policies:
+
+- **profiles**: Users can only access their own profile
+- **contests**: Public contests visible to all, private contests only to participants
+- **service_role**: Has full access to all tables (used by API routes)
+
+### Environment Variables
+
+Make sure these are set in your production environment (Vercel):
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key  # Required for API routes!
+```
+
+## 🔧 Troubleshooting
+
+### "Database error saving new user"
+
+1. Go to Supabase Dashboard → SQL Editor
+2. Run the fix from the "For an Existing Database" section above
+3. Try signing in again
+
+### "Contest Not Found" for existing contests
+
+This usually means RLS is blocking access. Check:
+
+1. Is `SUPABASE_SERVICE_ROLE_KEY` set in production?
+2. Is the contest visibility set to "public"?
+3. Run script `02_rls_policies.sql` again to ensure policies exist
+
+### Policies already exist error
+
+If you see "policy X already exists", the script uses `DROP POLICY IF EXISTS` before creating. If you still see errors, the old policies may have different names. Run:
+
+```sql
+-- List all policies on a table
+SELECT policyname FROM pg_policies WHERE tablename = 'contests';
+
+-- Drop a specific policy
+DROP POLICY IF EXISTS "old_policy_name" ON public.contests;
+```
+
+## 📁 File Structure
+
+```
+scripts/
+├── 01_schema.sql              # Tables, types, indexes
+├── 02_rls_policies.sql        # Row Level Security
+├── 03_functions_and_triggers.sql  # Functions, auth trigger
+├── 04_seed_data.sql           # Initial data (optional)
+└── README.md                  # This file
+```

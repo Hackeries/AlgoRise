@@ -50,7 +50,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const fetcher = (url: string) => fetch(url).then(r => r.json());
+const fetcher = (url: string) => fetch(url, { credentials: 'include' }).then(r => r.json());
 
 interface Group {
   id: string;
@@ -166,6 +166,7 @@ export default function GroupsPage() {
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           name: groupName.trim(),
           description: groupDescription.trim() || undefined,
@@ -201,6 +202,7 @@ export default function GroupsPage() {
       const res = await fetch('/api/groups/leave', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ groupId: id }),
       });
       const json = await res.json();

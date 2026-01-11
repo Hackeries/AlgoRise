@@ -30,7 +30,7 @@ DO $$ BEGIN
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
-    CREATE TYPE group_type AS ENUM ('college', 'friends');
+    CREATE TYPE group_type AS ENUM ('college', 'friends', 'icpc');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN

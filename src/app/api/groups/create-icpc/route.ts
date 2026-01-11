@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create ICPC team with max 3 members
+    // Create ICPC team (3 members max is enforced at application level)
     const { data: group, error: gErr } = await supabase
       .from('groups')
       .insert({
@@ -46,7 +46,6 @@ export async function POST(req: Request) {
         type: 'icpc',
         created_by: user.id,
         college_id: profile.college_id,
-        max_members: 3,
         description: description || null,
       })
       .select('id')
